@@ -7,3 +7,7 @@ edition = "2021"
 
 [dependencies]
 syncrim = { path = "../" }
+serde = "1.0.160"
+serde_derive = "1.0.160"
+typetag = "0.2.8"
+serde_json = "1.0.96"

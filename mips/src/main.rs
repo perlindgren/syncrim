@@ -1,14 +1,34 @@
 use syncrim::*;
 
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+pub struct MipsCtrl {}
+
+#[typetag::serde()]
+impl Component for MipsCtrl {
+    fn to_(&self) {
+        println!("mips");
+    }
+}
+
 fn main() {
-    let c = Constant { v: 0 };
-    let c = Box::new(c) as Box<dyn NewTrait>;
+    let c = Constant { v: 42 };
+    let c = Box::new(c) as Box<dyn Component>;
     let r = Register { r_in: 0, r_out: 1 };
-    let r = Box::new(r) as Box<dyn NewTrait>;
+    let r = Box::new(r) as Box<dyn Component>;
+    let m = MipsCtrl {};
+    let m = Box::new(m) as Box<dyn Component>;
 
-    // let cs = Components {
-    //     components: vec![c, r],
-    // };
+    let cs = ComponentStore {
+        store: vec![c, r, m],
+    };
 
-    let v = vec![c, r];
+    cs.to_();
+
+    let json = serde_json::to_string(&cs).unwrap();
+    println!("json: {}", json);
+
+    let cs: ComponentStore = serde_json::from_str(&json).unwrap();
+    cs.to_();
 }

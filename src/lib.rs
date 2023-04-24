@@ -1,24 +1,43 @@
 use serde::{Deserialize, Serialize};
 // use serde_derive::{Deserialize, Serialize};
 
-pub trait Component {}
+#[typetag::serde()]
+pub trait Component {
+    fn to_(&self) {}
+}
 
+#[derive(Serialize, Deserialize)]
 pub struct Constant {
     pub v: u32,
 }
 
-impl Component for Constant {}
+#[typetag::serde]
+impl Component for Constant {
+    fn to_(&self) {
+        println!("constant v {}", self.v);
+    }
+}
 
+#[derive(Serialize, Deserialize)]
 pub struct Register {
     pub r_in: usize,
     pub r_out: usize,
 }
 
-impl Component for Register {}
+#[typetag::serde]
+impl Component for Register {
+    fn to_(&self) {
+        println!("register");
+    }
+}
 
-pub trait NewTrait: Serialize + Component {}
+#[derive(Serialize, Deserialize)]
+pub struct ComponentStore {
+    pub store: Vec<Box<dyn Component>>,
+}
 
-// #[derive(Serialize)]
-// pub struct ComponentStore {
-//     pub store: dyn NewTrait,
-// }
+impl ComponentStore {
+    pub fn to_(&self) {
+        self.store.iter().for_each(|c| c.to_());
+    }
+}

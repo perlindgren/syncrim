@@ -1,0 +1,8 @@
+{
+  "rust-analyzer.linkedProjects": [
+    "./mips/Cargo.toml"
+  ],
+  "cSpell.ignoreWords": [
+    "typetag"
+  ]
+}
