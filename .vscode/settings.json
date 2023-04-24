@@ -3,6 +3,7 @@
     "./mips/Cargo.toml"
   ],
   "cSpell.ignoreWords": [
+    "syncrim",
     "typetag"
   ]
 }
