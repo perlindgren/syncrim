@@ -1,12 +1,24 @@
 use mips::*;
-use syncrim::*;
+use syncrim::components::Component;
+use syncrim::{components::*, *};
 
 fn main() {
-    let c = Constant { v: 42 };
+    let c = Constant {
+        id: "c1".to_string(),
+        value: 42,
+    };
     let c = Box::new(c) as Box<dyn Component>;
-    let r = Register { r_in: 0, r_out: 1 };
+    let r = Register {
+        id: "r1".to_string(),
+        r_in: Input {
+            id: "c1".to_string(),
+            index: 0,
+        },
+    };
     let r = Box::new(r) as Box<dyn Component>;
-    let m = MipsCtrl {};
+    let m = MipsCtrl {
+        id: "mips_ctrl".to_string(),
+    };
     let m = Box::new(m) as Box<dyn Component>;
 
     let cs = ComponentStore {
@@ -18,6 +30,10 @@ fn main() {
     let json = serde_json::to_string(&cs).unwrap();
     println!("json: {}", json);
 
-    let cs: ComponentStore = serde_json::from_str(&json).unwrap();
+    let cs = ComponentStore::load(&json);
     cs.to_();
+
+    let hm = cs.to_id_ports();
+
+    println!("hm {:?}", hm);
 }
