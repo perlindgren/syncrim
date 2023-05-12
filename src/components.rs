@@ -40,10 +40,15 @@ pub struct Register {
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
     pub id: String,
-    select: Input,
-
+    pub select: Input,
     pub m_in: Vec<Input>,
-    pub m_out: Output,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Add {
+    pub id: String,
+    pub a_in: Input,
+    pub b_in: Input,
 }
 
 // --- not sure where these should go ---
@@ -77,6 +82,44 @@ impl Component for Register {
             Ports {
                 inputs: vec![self.r_in.clone()],
                 outputs: vec![Output::Sequential],
+            },
+        )
+    }
+}
+
+#[typetag::serde]
+impl Component for Mux {
+    fn to_(&self) {
+        println!("mux");
+    }
+
+    fn to_ports(&self) -> (String, Ports) {
+        let mut inputs = vec![self.select.clone()];
+        let mut m = self.m_in.clone();
+        inputs.append(&mut m);
+
+        (
+            self.id.clone(),
+            Ports {
+                inputs,
+                outputs: vec![Output::Combinatorial],
+            },
+        )
+    }
+}
+
+#[typetag::serde]
+impl Component for Add {
+    fn to_(&self) {
+        println!("add");
+    }
+
+    fn to_ports(&self) -> (String, Ports) {
+        (
+            self.id.clone(),
+            Ports {
+                inputs: vec![self.a_in.clone(), self.b_in.clone()],
+                outputs: vec![Output::Combinatorial],
             },
         )
     }

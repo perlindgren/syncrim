@@ -75,6 +75,8 @@ impl SimState {
                 sim_state.lens_values.values.push(0);
             }
         }
+
+        println!("id id {:?}", id_id);
         sim_state
     }
 }
