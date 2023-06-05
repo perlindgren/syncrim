@@ -95,4 +95,20 @@ pub struct SimState {
 }
 ```
 
+The initial simulator state is constructed from a `ComponentStore`.
 
+This allows us to get and set individual lensed values:
+
+```rust
+// Simulator implementation
+impl SimState {
+    pub fn get(&self, index: usize) -> u32 {
+        *self.lens_values.values.get(index).unwrap()
+    }
+
+    pub fn set(&mut self, index: usize, value: u32) {
+        let val_ref = self.lens_values.values.get_mut(index).unwrap();
+        *val_ref = value
+    }
+}
+```
