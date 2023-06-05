@@ -97,6 +97,16 @@ pub struct SimState {
 
 The initial simulator state is constructed from a `ComponentStore`.
 
+```rust
+pub fn new(component_store: ComponentStore) -> Self
+```
+
+
+
+---
+
+## Simulator Implementation
+
 This allows us to get and set individual lensed values:
 
 ```rust

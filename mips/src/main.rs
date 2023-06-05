@@ -78,10 +78,10 @@ fn main() {
     let cs = ComponentStore::load(&json);
     cs.to_();
 
-    let hm = cs.to_id_ports();
+    // let hm = cs.to_id_ports();
 
-    println!("hm {:#?}", hm);
+    // println!("hm {:#?}", hm);
 
     let sim_state = SimState::new(cs);
-    println!("SimState {:?}", sim_state);
+    println!("SimState {:#?}", sim_state);
 }

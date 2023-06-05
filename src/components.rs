@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug)]
 pub struct Ports {
     pub inputs: Vec<Input>,
+    pub out_type: OutputType,
     pub outputs: Vec<Output>,
 }
 
@@ -12,14 +13,20 @@ pub struct Input {
     pub index: usize,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub enum Output {
-    // Will be evaluated as a constant (function without inputs)
-    Constant(u32),
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub enum OutputType {
     // Will be evaluated as a combinatorial function from inputs to outputs
     Combinatorial,
     // Will be evaluated as synchronous copy from input to output
     Sequential,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub enum Output {
+    // Will be evaluated as a constant (function without inputs)
+    Constant(u32),
+    // Will be evaluated as a function
+    Function,
 }
 
 #[typetag::serde()]
@@ -35,7 +42,7 @@ pub trait Component {
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
     pub id: String,
-    pub value: u32,
+    pub value: u32, // perhaps vector here ... not sure
 }
 
 #[derive(Serialize, Deserialize)]
@@ -70,9 +77,10 @@ impl Component for Constant {
         (
             self.id.clone(),
             Ports {
-                // A constant does not take any inputs
+                // Constants do not take any inputs
                 inputs: vec![],
-                // A single output
+                out_type: OutputType::Combinatorial,
+                // Single output value
                 outputs: vec![Output::Constant(self.value)],
             },
         )
@@ -91,7 +99,8 @@ impl Component for Register {
             Ports {
                 // Vector of inputs
                 inputs: vec![self.r_in.clone()],
-                outputs: vec![Output::Sequential],
+                out_type: OutputType::Sequential,
+                outputs: vec![Output::Function],
             },
         )
     }
@@ -112,7 +121,8 @@ impl Component for Mux {
             self.id.clone(),
             Ports {
                 inputs,
-                outputs: vec![Output::Combinatorial],
+                out_type: OutputType::Combinatorial,
+                outputs: vec![Output::Function],
             },
         )
     }
@@ -129,7 +139,8 @@ impl Component for Add {
             self.id.clone(),
             Ports {
                 inputs: vec![self.a_in.clone(), self.b_in.clone()],
-                outputs: vec![Output::Combinatorial],
+                out_type: OutputType::Combinatorial,
+                outputs: vec![Output::Function],
             },
         )
     }

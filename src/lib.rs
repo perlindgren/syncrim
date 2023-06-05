@@ -1,8 +1,13 @@
 pub mod components;
 
 use components::{Component, Input, Ports};
+use petgraph::algo;
+use petgraph::algo::toposort;
+use petgraph::Direction::Outgoing;
+use petgraph::Graph;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::rc::Rc;
 use vizia::prelude::*;
 
 #[derive(Serialize, Deserialize)]
@@ -22,14 +27,15 @@ impl ComponentStore {
         self.store.iter().for_each(|c| c.to_());
     }
 
-    pub fn to_id_ports(&self) -> IdPorts {
-        let mut id_ports = HashMap::new();
-        self.store.iter().for_each(|c| {
-            let (id, ports) = c.get_id_ports();
-            id_ports.insert(id, ports);
-        });
-        id_ports
-    }
+    // pub fn to_id_ports(&self) -> IdPorts {
+    //     unimplemented!();
+    //     let mut id_ports = HashMap::new();
+    //     self.store.iter().for_each(|c| {
+    //         let (id, ports) = c.get_id_ports();
+    //         id_ports.insert(id, ports);
+    //     });
+    //     id_ports
+    // }
 }
 
 #[derive(Lens, Debug, Clone)]
@@ -40,7 +46,7 @@ pub struct LensValues {
 #[derive(Debug)]
 pub struct SimState {
     pub lens_values: LensValues,
-    pub id_ports: IdPorts,
+    // pub id_ports: IdPorts,
 }
 
 // a mapping (id -> index)
@@ -52,32 +58,32 @@ pub struct SimState {
 #[derive(Debug)]
 pub struct IdStartIndex(pub HashMap<String, usize>);
 
-// a mapping (id -> Input)
-// where Input holds the id and index for the connected component
-#[derive(Debug)]
-pub struct IdInput(pub HashMap<String, Input>);
+pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
+
+use crate::components::OutputType;
 
 impl SimState {
     pub fn new(component_store: ComponentStore) -> Self {
         let mut sim_state = SimState {
             lens_values: LensValues { values: vec![] },
-            id_ports: component_store.to_id_ports(),
+            // id_ports: component_store.to_id_ports(),
         };
 
         let mut id_start_index = IdStartIndex(HashMap::new());
 
-        let mut id_input = IdInput(HashMap::new()); // allocate storage for lensed outputs
+        let mut id_component = IdComponent(HashMap::new());
+
+        // allocate storage for lensed outputs
         for c in component_store.store {
             let (id, ports) = c.get_id_ports();
+
+            println!("id {}, ports {:?}", id, ports);
             // start index for outputs related to component
             id_start_index
                 .0
                 .insert(id.clone(), sim_state.lens_values.values.len().clone());
 
-            // build topological dependency
-            for input in ports.inputs {
-                id_input.0.insert(id.clone(), input);
-            }
+            id_component.0.insert(id, c);
 
             for _ in ports.outputs {
                 // create the value with a default to 0
@@ -85,7 +91,50 @@ impl SimState {
             }
         }
 
-        println!("id input {:?}", id_input);
+        println!("---");
+
+        for (id, _) in &id_component.0 {
+            println!("id {}", id);
+        }
+
+        let mut graph = Graph::<_, (), petgraph::Directed>::new();
+        let mut id_node = HashMap::new();
+
+        // insert nodes
+        for (id, _) in &id_component.0 {
+            let node = graph.add_node(id);
+            id_node.insert(id, node);
+        }
+        println!("id_node {:?}", id_node);
+
+        // insert edges
+        for (to_id, c) in &id_component.0 {
+            let to_component = id_component.0.get(to_id).unwrap();
+            let (_, ports) = to_component.get_id_ports();
+
+            println!("to_id :{}, ports: {:?}", to_id, ports);
+
+            if ports.out_type == OutputType::Combinatorial {
+                let to_node = id_node.get(to_id).unwrap();
+                let (_, ports) = c.get_id_ports();
+                for in_port in &ports.inputs {
+                    let from_id = &in_port.id;
+
+                    let from_node = id_node.get(from_id).unwrap();
+                    graph.add_edge(from_node.clone(), to_node.clone(), ());
+                    println!(
+                        "add_edge {}:{:?} -> {}:{:?}",
+                        from_id, from_node, to_id, to_node
+                    );
+                }
+            }
+        }
+
+        // topological order
+        let top = toposort(&graph, None);
+        println!("--- top \n{:?}", top);
+
+        // println!("id input {:?}", id_input);
         sim_state
     }
 }

@@ -1,4 +1,4 @@
-use syncrim::components::{Component, Ports};
+use syncrim::components::{Component, OutputType, Ports};
 
 use serde::{Deserialize, Serialize};
 
@@ -18,6 +18,7 @@ impl Component for MipsCtrl {
             self.id.clone(),
             Ports {
                 inputs: vec![],
+                out_type: OutputType::Combinatorial,
                 outputs: vec![],
             },
         )
