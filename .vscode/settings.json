@@ -1,10 +1,11 @@
 {
-  "rust-analyzer.linkedProjects": [
-    "./mips/Cargo.toml"
-  ],
+  "rust-analyzer.linkedProjects": ["./mips/Cargo.toml"],
   "cSpell.ignoreWords": [
+    "serde",
+    "struct",
     "syncrim",
     "typetag",
+    "usize",
     "vizia"
   ]
 }

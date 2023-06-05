@@ -6,12 +6,6 @@ pub struct Ports {
     pub outputs: Vec<Output>,
 }
 
-#[typetag::serde()]
-pub trait Component {
-    fn to_(&self) {}
-    fn to_ports(&self) -> (String, Ports);
-}
-
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Input {
     pub id: String,
@@ -20,10 +14,23 @@ pub struct Input {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Output {
-    Combinatorial,
-    Sequential,
+    // Will be evaluated as a constant (function without inputs)
     Constant(u32),
+    // Will be evaluated as a combinatorial function from inputs to outputs
+    Combinatorial,
+    // Will be evaluated as synchronous copy from input to output
+    Sequential,
 }
+
+#[typetag::serde()]
+pub trait Component {
+    // placeholder
+    fn to_(&self) {}
+    // returns the (id, Ports) of the component
+    fn get_id_ports(&self) -> (String, Ports);
+}
+
+// components
 
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
@@ -59,11 +66,13 @@ impl Component for Constant {
         println!("constant {:?}", self.value);
     }
 
-    fn to_ports(&self) -> (String, Ports) {
+    fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
             Ports {
+                // A constant does not take any inputs
                 inputs: vec![],
+                // A single output
                 outputs: vec![Output::Constant(self.value)],
             },
         )
@@ -76,10 +85,11 @@ impl Component for Register {
         println!("register");
     }
 
-    fn to_ports(&self) -> (String, Ports) {
+    fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
             Ports {
+                // Vector of inputs
                 inputs: vec![self.r_in.clone()],
                 outputs: vec![Output::Sequential],
             },
@@ -93,7 +103,7 @@ impl Component for Mux {
         println!("mux");
     }
 
-    fn to_ports(&self) -> (String, Ports) {
+    fn get_id_ports(&self) -> (String, Ports) {
         let mut inputs = vec![self.select.clone()];
         let mut m = self.m_in.clone();
         inputs.append(&mut m);
@@ -114,7 +124,7 @@ impl Component for Add {
         println!("add");
     }
 
-    fn to_ports(&self) -> (String, Ports) {
+    fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
             Ports {

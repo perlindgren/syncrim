@@ -13,7 +13,7 @@ impl Component for MipsCtrl {
         println!("mips");
     }
 
-    fn to_ports(&self) -> (String, Ports) {
+    fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
             Ports {

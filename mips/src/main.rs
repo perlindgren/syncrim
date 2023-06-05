@@ -80,7 +80,7 @@ fn main() {
 
     let hm = cs.to_id_ports();
 
-    println!("hm {:?}", hm);
+    println!("hm {:#?}", hm);
 
     let sim_state = SimState::new(cs);
     println!("SimState {:?}", sim_state);
