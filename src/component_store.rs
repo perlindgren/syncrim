@@ -1,12 +1,7 @@
-use crate::common::Component;
-use serde::{Deserialize, Serialize};
+use crate::common::ComponentStore;
+
 use std::fs::File;
 use std::io::prelude::*;
-
-#[derive(Serialize, Deserialize)]
-pub struct ComponentStore {
-    pub store: Vec<Box<dyn Component>>,
-}
 
 impl ComponentStore {
     pub fn load(json: &str) -> Self {

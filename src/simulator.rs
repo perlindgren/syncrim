@@ -1,20 +1,8 @@
-use crate::common::Component;
-use crate::common::OutputType;
-use crate::component_store::ComponentStore;
+use crate::common::{Component, ComponentStore, LensValues, OutputType, SimState};
+
 use petgraph::{algo::toposort, Graph};
 use std::collections::HashMap;
 use vizia::prelude::*;
-
-#[derive(Lens, Debug, Clone)]
-pub struct LensValues {
-    pub values: Vec<u32>,
-}
-
-#[derive(Debug)]
-pub struct SimState {
-    pub lens_values: LensValues,
-    // pub id_ports: IdPorts,
-}
 
 // a mapping (id -> index)
 // where index is the start index in the LensValues vector
@@ -27,54 +15,57 @@ pub struct IdStartIndex(pub HashMap<String, usize>);
 
 pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 
-impl SimState {
+impl<'a> SimState<'a> {
     pub fn new(component_store: ComponentStore) -> Self {
-        let mut sim_state = SimState {
-            lens_values: LensValues { values: vec![] },
-            // id_ports: component_store.to_id_ports(),
-        };
+        let mut lens_values = LensValues { values: vec![] };
 
         let mut id_start_index = IdStartIndex(HashMap::new());
 
-        let mut id_component = IdComponent(HashMap::new());
+        let mut id_component = HashMap::new(); // IdComponent(HashMap::new());
 
         // allocate storage for lensed outputs
-        for c in component_store.store {
+        for c in &component_store.store {
             let (id, ports) = c.get_id_ports();
 
             println!("id {}, ports {:?}", id, ports);
             // start index for outputs related to component
             id_start_index
                 .0
-                .insert(id.clone(), sim_state.lens_values.values.len().clone());
+                .insert(id.clone(), lens_values.values.len().clone());
 
-            id_component.0.insert(id, c);
+            id_component.insert(id, c);
 
             for _ in ports.outputs {
                 // create the value with a default to 0
-                sim_state.lens_values.values.push(0);
+                lens_values.values.push(0);
             }
         }
 
         println!("---");
 
-        for (id, _) in &id_component.0 {
+        for (id, _) in &id_component {
             println!("id {}", id);
         }
 
         let mut graph = Graph::<_, (), petgraph::Directed>::new();
         let mut id_node = HashMap::new();
+        let mut node_comp = HashMap::new();
 
         // insert nodes
-        for (id, _) in &id_component.0 {
+        for (id, c) in &id_component {
             let node = graph.add_node(id);
             id_node.insert(id, node);
+            node_comp.insert(node, c);
         }
         println!("id_node {:?}", id_node);
 
+        for (node, c) in &node_comp {
+            println!("node {:?}, comp_id {:?}", node, c.get_id_ports());
+        }
+
         // insert edges
-        for (to_id, c) in &id_component.0 {
-            let to_component = id_component.0.get(to_id).unwrap();
+        for (to_id, c) in &id_component {
+            let to_component = id_component.get(to_id).unwrap();
             let (_, ports) = to_component.get_id_ports();
 
             println!("to_id :{}, ports: {:?}", to_id, ports);
@@ -96,16 +87,32 @@ impl SimState {
         }
 
         // topological order
-        let top = toposort(&graph, None);
+        let top = toposort(&graph, None).unwrap();
         println!("--- top \n{:?}", top);
 
-        // println!("id input {:?}", id_input);
-        sim_state
+        let mut eval = vec![];
+        for node in &top {
+            let c = node_comp.get(node).unwrap().clone();
+            eval.push(c);
+        }
+
+        println!("--- eval");
+
+        for c in &eval {
+            let (id, _) = c.get_id_ports();
+            println!("id {}", id);
+        }
+
+        SimState {
+            lens_values,
+            component_store,
+            eval: vec![],
+        }
     }
 }
 
 // Simulator implementation
-impl SimState {
+impl<'a> SimState<'a> {
     pub fn get(&self, index: usize) -> u32 {
         *self.lens_values.values.get(index).unwrap()
     }
@@ -115,5 +122,3 @@ impl SimState {
         *val_ref = value
     }
 }
-
-// impl Model for SimState {}

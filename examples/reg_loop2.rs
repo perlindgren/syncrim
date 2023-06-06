@@ -12,23 +12,34 @@ fn main() {
         },
 
         b_in: Input {
-            id: "r1".to_string(),
+            id: "r2".to_string(),
             index: 0,
         },
     };
 
     let a = Box::new(a) as Box<dyn Component>;
 
-    let r = Register {
+    let r1 = Register {
         id: "r1".to_string(),
         r_in: Input {
             id: "add1".to_string(),
             index: 0,
         },
     };
-    let r = Box::new(r) as Box<dyn Component>;
+    let r1 = Box::new(r1) as Box<dyn Component>;
 
-    let cs = ComponentStore { store: vec![a, r] };
+    let r2 = Register {
+        id: "r2".to_string(),
+        r_in: Input {
+            id: "add1".to_string(),
+            index: 0,
+        },
+    };
+    let r2 = Box::new(r2) as Box<dyn Component>;
+
+    let cs = ComponentStore {
+        store: vec![a, r1, r2],
+    };
 
     println!("--- store id:s");
     cs.to_();

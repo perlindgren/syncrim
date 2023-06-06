@@ -6,10 +6,16 @@ pub struct LensValues {
     pub values: Vec<u32>,
 }
 
-#[derive(Debug)]
-pub struct SimState {
+#[derive(Serialize, Deserialize)]
+pub struct ComponentStore {
+    pub store: Vec<Box<dyn Component>>,
+}
+
+// Note: One can use Rc instead of Box, to get rid of lifetime
+pub struct SimState<'a> {
     pub lens_values: LensValues,
-    // pub id_ports: IdPorts,
+    pub component_store: ComponentStore,
+    pub eval: Vec<&'a Box<dyn Component>>,
 }
 // Common functionality for all components
 #[typetag::serde()]
