@@ -1,8 +1,7 @@
 use mips::*;
 use std::fs::File;
 use std::io::prelude::*;
-use syncrim::components::Component;
-use syncrim::{components::*, *};
+use syncrim::{component_store::ComponentStore, simulator::SimState};
 
 fn main() {
     let mut file = File::open("mips.json").unwrap();

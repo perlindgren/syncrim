@@ -1,4 +1,4 @@
-use syncrim::components::{Component, OutputType, Ports};
+use syncrim::common::{Component, OutputType, Ports};
 
 use serde::{Deserialize, Serialize};
 

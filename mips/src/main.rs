@@ -1,6 +1,10 @@
 use mips::*;
-use syncrim::components::Component;
-use syncrim::{components::*, *};
+use syncrim::{
+    common::{Component, Input, Output, OutputType},
+    component_store::ComponentStore,
+    components::*,
+    simulator::SimState,
+};
 
 fn main() {
     let c1 = Constant {
@@ -70,17 +74,10 @@ fn main() {
         store: vec![c1, c2, a, r, m, mips],
     };
 
-    cs.to_();
-
     let json = serde_json::to_string(&cs).unwrap();
     println!("json: {}", json);
 
     let cs = ComponentStore::load(&json);
-    cs.to_();
-
-    // let hm = cs.to_id_ports();
-
-    // println!("hm {:#?}", hm);
 
     let sim_state = SimState::new(cs);
     println!("SimState {:#?}", sim_state);

@@ -1,43 +1,13 @@
-pub mod components;
-pub mod simulator;
-
-use components::{Component, Input, Ports};
+use crate::common::OutputType;
+use crate::common::{Component, Input, Ports};
+use crate::component_store::ComponentStore;
 use petgraph::algo;
 use petgraph::algo::toposort;
 use petgraph::Direction::Outgoing;
 use petgraph::Graph;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::rc::Rc;
+
 use vizia::prelude::*;
-
-#[derive(Serialize, Deserialize)]
-pub struct ComponentStore {
-    pub store: Vec<Box<dyn Component>>,
-}
-
-// a mapping (id -> Ports)
-type IdPorts = HashMap<String, Ports>;
-
-impl ComponentStore {
-    pub fn load(json: &str) -> Self {
-        serde_json::from_str(&json).unwrap()
-    }
-
-    pub fn to_(&self) {
-        self.store.iter().for_each(|c| c.to_());
-    }
-
-    // pub fn to_id_ports(&self) -> IdPorts {
-    //     unimplemented!();
-    //     let mut id_ports = HashMap::new();
-    //     self.store.iter().for_each(|c| {
-    //         let (id, ports) = c.get_id_ports();
-    //         id_ports.insert(id, ports);
-    //     });
-    //     id_ports
-    // }
-}
 
 #[derive(Lens, Debug, Clone)]
 pub struct LensValues {
@@ -60,8 +30,6 @@ pub struct SimState {
 pub struct IdStartIndex(pub HashMap<String, usize>);
 
 pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
-
-use crate::components::OutputType;
 
 impl SimState {
     pub fn new(component_store: ComponentStore) -> Self {

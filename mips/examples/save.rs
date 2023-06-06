@@ -1,8 +1,12 @@
 use mips::*;
 use std::fs::File;
 use std::io::prelude::*;
-use syncrim::components::Component;
-use syncrim::{components::*, *};
+
+use syncrim::{
+    common::{Component, Input},
+    component_store::ComponentStore,
+    components::*,
+};
 
 fn main() {
     let c1 = Constant {
@@ -71,8 +75,6 @@ fn main() {
     let cs = ComponentStore {
         store: vec![c1, c2, a, r, m, mips],
     };
-
-    // cs.to_();
 
     let json = serde_json::to_string(&cs).unwrap();
     println!("json: {}", json);

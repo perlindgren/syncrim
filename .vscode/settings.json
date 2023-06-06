@@ -4,6 +4,7 @@
     "serde",
     "struct",
     "syncrim",
+    "toposort",
     "typetag",
     "usize",
     "vizia"
