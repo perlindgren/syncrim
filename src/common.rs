@@ -23,7 +23,7 @@ pub type IdStartIndex = HashMap<String, usize>;
 // Note: One can use Rc instead of Box, to get rid of lifetime
 pub struct SimState<'a> {
     pub lens_values: LensValues,
-    pub component_store: ComponentStore,
+    //pub component_store: ComponentStore,
     pub id_start_index: IdStartIndex,
     pub eval: Vec<&'a Box<dyn Component>>,
 }

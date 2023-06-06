@@ -44,6 +44,6 @@ fn main() {
     println!("--- store id:s");
     cs.to_();
 
-    let sim_state = SimState::new(cs);
+    let sim_state = SimState::new(&cs);
     println!("--- SimState\n {:#?}", sim_state.lens_values);
 }

@@ -33,6 +33,14 @@ fn main() {
     println!("--- store id:s");
     cs.to_();
 
-    let sim_state = SimState::new(cs);
+    let mut sim_state = SimState::new(&cs);
+    println!("--- SimState\n {:#?}", sim_state.lens_values);
+
+    // set initial value
+    sim_state.set_id_index("add1", 0, 1);
+    println!("--- SimState\n {:#?}", sim_state.lens_values);
+
+    // clock one cycle
+    sim_state.clock();
     println!("--- SimState\n {:#?}", sim_state.lens_values);
 }

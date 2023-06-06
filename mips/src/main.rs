@@ -77,6 +77,6 @@ fn main() {
 
     let cs = ComponentStore::load(&json);
 
-    let sim_state = SimState::new(cs);
+    let sim_state = SimState::new(&cs);
     println!("SimState {:#?}", sim_state.lens_values);
 }

@@ -1,19 +1,14 @@
-use crate::common::{
-    Component, ComponentStore, IdStartIndex, Input, LensValues, OutputType, SimState,
-};
-
+use crate::common::{Component, ComponentStore, Input, LensValues, OutputType, SimState};
 use petgraph::{algo::toposort, Graph};
 use std::collections::HashMap;
-use vizia::prelude::*;
+// use vizia::prelude::*;
 
 pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 
 impl<'a> SimState<'a> {
-    pub fn new(component_store: ComponentStore) -> Self {
+    pub fn new(component_store: &'a ComponentStore) -> Self {
         let mut lens_values = LensValues { values: vec![] };
-
         let mut id_start_index = HashMap::new();
-
         let mut id_component = HashMap::new(); // IdComponent(HashMap::new());
 
         // allocate storage for lensed outputs
@@ -83,7 +78,7 @@ impl<'a> SimState<'a> {
 
         let mut eval = vec![];
         for node in &top {
-            let c = node_comp.get(node).unwrap().clone();
+            let c = *node_comp.get(node).unwrap().clone();
             eval.push(c);
         }
 
@@ -96,9 +91,9 @@ impl<'a> SimState<'a> {
 
         SimState {
             lens_values,
-            component_store,
+            // component_store,
             id_start_index,
-            eval: vec![],
+            eval: eval,
         }
     }
 }
@@ -124,18 +119,28 @@ impl<'a> SimState<'a> {
         *self.id_start_index.get(id).unwrap()
     }
 
+    // set value by index
     pub fn set(&mut self, index: usize, value: u32) {
         let val_ref = self.lens_values.values.get_mut(index).unwrap();
         *val_ref = value
     }
 
+    // set value by id and offset (index)
+    // todo: maybe better by Output
     pub fn set_id_index(&mut self, id: &str, index: usize, value: u32) {
         let start_index = self.get_id_start_index(id);
-        let val_ref = self
-            .lens_values
-            .values
-            .get_mut(start_index + index)
-            .unwrap();
-        *val_ref = value
+        self.set(start_index + index, value);
+    }
+
+    // iterate over the evaluators
+    pub fn clock(&mut self) {
+        // clone to get rid of borrow dependency
+        // maybe we can find a better way
+        let evaluators = self.eval.clone();
+
+        for component in evaluators {
+            println!("here--- {:?}", component.to_());
+            component.evaluate(self);
+        }
     }
 }

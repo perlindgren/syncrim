@@ -79,6 +79,7 @@ impl Component for Register {
         let value = sim_state.get_input_val(&self.r_in);
         // set output
         sim_state.set_id_index(&self.id, 0, value);
+        println!("eval: register id {} in {}", self.id, value);
     }
 }
 
@@ -142,5 +143,10 @@ impl Component for Add {
 
         // set output
         sim_state.set_id_index(&self.id, 0, value);
+
+        println!(
+            "eval: add id {} in {} {} out {}",
+            self.id, a_in, b_in, value
+        );
     }
 }
