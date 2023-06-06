@@ -1,12 +1,8 @@
+use crate::common::Component;
 use crate::common::OutputType;
-use crate::common::{Component, Input, Ports};
 use crate::component_store::ComponentStore;
-use petgraph::algo;
-use petgraph::algo::toposort;
-use petgraph::Direction::Outgoing;
-use petgraph::Graph;
+use petgraph::{algo::toposort, Graph};
 use std::collections::HashMap;
-
 use vizia::prelude::*;
 
 #[derive(Lens, Debug, Clone)]
