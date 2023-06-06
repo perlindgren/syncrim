@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use vizia::prelude::*;
 
 #[derive(Lens, Debug, Clone)]
@@ -11,14 +12,23 @@ pub struct ComponentStore {
     pub store: Vec<Box<dyn Component>>,
 }
 
+// a mapping (id -> index)
+// where index is the start index in the LensValues vector
+// e.g., `mux1` starts at index 15, then its
+// select input is index 15
+// the first input is index 16
+// the second input is index 17, etc.
+pub type IdStartIndex = HashMap<String, usize>;
+
 // Note: One can use Rc instead of Box, to get rid of lifetime
 pub struct SimState<'a> {
     pub lens_values: LensValues,
     pub component_store: ComponentStore,
+    pub id_start_index: IdStartIndex,
     pub eval: Vec<&'a Box<dyn Component>>,
 }
 // Common functionality for all components
-#[typetag::serde()]
+#[typetag::serde(tag = "type")]
 pub trait Component {
     // placeholder
     fn to_(&self) {}
@@ -27,7 +37,7 @@ pub trait Component {
     fn get_id_ports(&self) -> (String, Ports);
 
     // evaluation function
-    fn evaluate(&self, sim_state: &mut SimState) {}
+    fn evaluate(&self, _sim_state: &mut SimState) {}
 }
 
 #[derive(Debug)]

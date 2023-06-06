@@ -49,6 +49,10 @@ impl Component for Constant {
             },
         )
     }
+
+    fn evaluate(&self, sim_state: &mut SimState) {
+        sim_state.set_id_index(&self.id, 0, self.value);
+    }
 }
 
 #[typetag::serde]
@@ -67,6 +71,14 @@ impl Component for Register {
                 outputs: vec![Output::Function],
             },
         )
+    }
+
+    // propagate input value to output
+    fn evaluate(&self, sim_state: &mut SimState) {
+        // get input value
+        let value = sim_state.get_input_val(&self.r_in);
+        // set output
+        sim_state.set_id_index(&self.id, 0, value);
     }
 }
 
@@ -90,6 +102,16 @@ impl Component for Mux {
             },
         )
     }
+
+    // propagate selected input value to output
+    fn evaluate(&self, sim_state: &mut SimState) {
+        // get input value
+        let select = sim_state.get_input_val(&self.select) as usize;
+        let value = sim_state.get_input_val(&self.m_in[select]);
+
+        // set output
+        sim_state.set_id_index(&self.id, 0, value);
+    }
 }
 
 #[typetag::serde]
@@ -107,5 +129,18 @@ impl Component for Add {
                 outputs: vec![Output::Function],
             },
         )
+    }
+
+    // propagate addition to output
+    fn evaluate(&self, sim_state: &mut SimState) {
+        // get input values
+        let a_in = sim_state.get_input_val(&self.a_in);
+        let b_in = sim_state.get_input_val(&self.b_in);
+
+        // compute addition (notice will panic on overflow)
+        let value = a_in + b_in;
+
+        // set output
+        sim_state.set_id_index(&self.id, 0, value);
     }
 }
