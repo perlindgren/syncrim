@@ -1,6 +1,4 @@
 use mips::*;
-use std::fs::File;
-use std::io::prelude::*;
 
 use syncrim::{
     common::{Component, Input},
@@ -76,9 +74,5 @@ fn main() {
         store: vec![c1, c2, a, r, m, mips],
     };
 
-    let json = serde_json::to_string(&cs).unwrap();
-    println!("json: {}", json);
-
-    let mut file = File::create("mips.json").unwrap();
-    file.write_all(json.as_bytes()).unwrap();
+    cs.save_file("mips.json");
 }

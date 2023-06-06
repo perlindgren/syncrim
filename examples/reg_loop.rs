@@ -32,13 +32,9 @@ fn main() {
 
     let cs = ComponentStore { store: vec![a, r] };
 
+    println!("--- store id:s");
     cs.to_();
 
-    let json = serde_json::to_string(&cs).unwrap();
-    println!("json: {}", json);
-
-    let cs = ComponentStore::load(&json);
-
     let sim_state = SimState::new(cs);
-    println!("SimState {:#?}", sim_state);
+    println!("--- SimState\n {:#?}", sim_state);
 }
