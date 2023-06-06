@@ -1,6 +1,5 @@
 use mips::*;
-use syncrim::components::Component;
-use syncrim::{components::*, *};
+use syncrim::{common::Component, syncrim::components::*};
 
 fn main() {
     let a = Add {
