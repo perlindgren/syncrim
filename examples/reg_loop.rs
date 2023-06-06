@@ -1,5 +1,9 @@
-use mips::*;
-use syncrim::{common::Component, syncrim::components::*};
+use syncrim::{
+    common::{Component, Input},
+    component_store::ComponentStore,
+    components::*,
+    simulator::SimState,
+};
 
 fn main() {
     let a = Add {

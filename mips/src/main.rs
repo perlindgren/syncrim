@@ -1,6 +1,6 @@
 use mips::*;
 use syncrim::{
-    common::{Component, Input, Output, OutputType},
+    common::{Component, Input},
     component_store::ComponentStore,
     components::*,
     simulator::SimState,
