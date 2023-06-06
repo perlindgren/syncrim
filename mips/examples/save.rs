@@ -72,7 +72,7 @@ fn main() {
         store: vec![c1, c2, a, r, m, mips],
     };
 
-    cs.to_();
+    // cs.to_();
 
     let json = serde_json::to_string(&cs).unwrap();
     println!("json: {}", json);
