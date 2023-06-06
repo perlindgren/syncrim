@@ -1,4 +1,4 @@
-use crate::common::{Component, Input, Output, OutputType, Ports};
+use crate::common::{Component, Input, Output, OutputType, Ports, SimState};
 use serde::{Deserialize, Serialize};
 
 // components

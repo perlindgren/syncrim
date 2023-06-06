@@ -1,4 +1,28 @@
 use serde::{Deserialize, Serialize};
+use vizia::prelude::*;
+
+#[derive(Lens, Debug, Clone)]
+pub struct LensValues {
+    pub values: Vec<u32>,
+}
+
+#[derive(Debug)]
+pub struct SimState {
+    pub lens_values: LensValues,
+    // pub id_ports: IdPorts,
+}
+// Common functionality for all components
+#[typetag::serde()]
+pub trait Component {
+    // placeholder
+    fn to_(&self) {}
+
+    // returns the (id, Ports) of the component
+    fn get_id_ports(&self) -> (String, Ports);
+
+    // evaluation function
+    fn evaluate(&self, sim_state: &mut SimState) {}
+}
 
 #[derive(Debug)]
 pub struct Ports {
@@ -27,12 +51,4 @@ pub enum Output {
     Constant(u32),
     // Will be evaluated as a function
     Function,
-}
-
-#[typetag::serde()]
-pub trait Component {
-    // placeholder
-    fn to_(&self) {}
-    // returns the (id, Ports) of the component
-    fn get_id_ports(&self) -> (String, Ports);
 }
