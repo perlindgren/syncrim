@@ -5,7 +5,7 @@ use std::io::prelude::*;
 
 impl ComponentStore {
     pub fn load(json: &str) -> Self {
-        serde_json::from_str(&json).unwrap()
+        serde_json::from_str(json).unwrap()
     }
 
     pub fn load_file(path: &str) -> Self {

@@ -20,11 +20,13 @@ pub struct ComponentStore {
 // the second input is index 17, etc.
 pub type IdStartIndex = HashMap<String, usize>;
 
-// Note: One can use Rc instead of Box, to get rid of lifetime
+// Note: One can use Rc instead of Box to get rid of lifetime.
+// This might also solve the clippy warning.
 pub struct Simulator<'a> {
     pub id_start_index: IdStartIndex,
 
     // Components stored in topological evaluation order
+    #[allow(clippy::borrowed_box)]
     pub ordered_components: Vec<&'a Box<dyn Component>>,
 }
 

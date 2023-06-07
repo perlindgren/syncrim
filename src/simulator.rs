@@ -18,10 +18,12 @@ impl<'a> Simulator<'a> {
 
             println!("id {}, ports {:?}", id, ports);
             // start index for outputs related to component
-            id_start_index.insert(id.clone(), lens_values.len().clone());
+            id_start_index.insert(id.clone(), lens_values.len());
 
             id_component.insert(id, c);
 
+            // create placeholder for output
+            #[allow(clippy::same_item_push)]
             for _ in ports.outputs {
                 // create the value with a default to 0
                 lens_values.push(0);
@@ -30,7 +32,7 @@ impl<'a> Simulator<'a> {
 
         println!("---");
 
-        for (id, _) in &id_component {
+        for id in id_component.keys() {
             println!("id {}", id);
         }
 
@@ -64,7 +66,7 @@ impl<'a> Simulator<'a> {
                     let from_id = &in_port.id;
 
                     let from_node = id_node.get(from_id).unwrap();
-                    graph.add_edge(from_node.clone(), to_node.clone(), ());
+                    graph.add_edge(*from_node, *to_node, ());
                     println!(
                         "add_edge {}:{:?} -> {}:{:?}",
                         from_id, from_node, to_id, to_node
@@ -79,7 +81,8 @@ impl<'a> Simulator<'a> {
 
         let mut eval = vec![];
         for node in &top {
-            let c = *node_comp.get(node).unwrap().clone();
+            #[allow(clippy::clone_double_ref)]
+            let c = (**node_comp.get(node).unwrap()).clone();
             eval.push(c);
         }
 

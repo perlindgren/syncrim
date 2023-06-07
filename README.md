@@ -134,7 +134,25 @@ impl<'a> Simulator<'a> {
 }
 ```
 
+As an example the `add` component implements `evaluate` by reading the two inputs, adding them, and storing the value (to output position 0). Todo: We might want to structure the outputs simar to the inputs.
 
+```rust
+impl Component for Add {
+    ...
+    // propagate addition to output
+    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
+        // get input values
+        let a_in = simulator.get_input_val(sim_state, &self.a_in);
+        let b_in = simulator.get_input_val(sim_state, &self.b_in);
+
+        // compute addition (notice will panic on overflow)
+        let value = a_in + b_in;
+
+        // set output
+        simulator.set_id_index(sim_state, &self.id, 0, value);
+    }
+}
+```
 ---
 
 ## Simulator Implementation
@@ -169,6 +187,10 @@ Recommended plugins:
 Settings:
 
 It can be convenient to use json formatter tied to format on save, this way we can keep models in easy readable and editable shape.
+
+### Clippy
+
+Before merging, make sure that it passes clippy, if not fix or locally allow the clippy warning. This allows us to later review why clippy warned us, in order to stay more (or less) idiomatic.
 
 ---
 
