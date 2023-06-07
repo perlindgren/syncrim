@@ -11,6 +11,7 @@ The model provides:
 ```rust
 pub struct Ports {
     pub inputs: Vec<Input>,
+    pub out_type: OutputType,
     pub outputs: Vec<Output>,
 }
 ```
@@ -18,17 +19,23 @@ pub struct Ports {
 Where:
 
 ```rust
-#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Input {
     pub id: String,
     pub index: usize,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub enum Output {
-    Constant(u32),
+pub enum OutputType {
+    // Will be evaluated as a combinatorial function from inputs to outputs
     Combinatorial,
+    // Will be evaluated as synchronous from input to output
     Sequential,
+}
+
+pub enum Output {
+    // Will be evaluated as a constant (function without inputs)
+    Constant(u32),
+    // Will be evaluated as a function
+    Function,
 }
 ```
 
@@ -37,12 +44,15 @@ pub enum Output {
 ## Traits
 
 ```rust
-#[typetag::serde()]
 pub trait Component {
     // placeholder
     fn to_(&self) {}
+
     // returns the (id, Ports) of the component
     fn get_id_ports(&self) -> (String, Ports);
+
+    // evaluation function
+    fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
 }
 ```
 
@@ -64,7 +74,6 @@ A (simulation) model can extend the set of components (see the `mips` member cra
 A model is defined by the storage:
 
 ```rust
-#[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
     pub store: Vec<Box<dyn Component>>,
 }
@@ -80,27 +89,50 @@ In order to view the simulator state we store (current) values as `vizia` `LensV
 
 ```rust
 #[derive(Lens, Debug, Clone)]
-pub struct LensValues {
-    pub values: Vec<u32>,
+pub struct SimState {
+    pub lens_values: Vec<u32>,
 }
 ```
 
 The `SimState` holds the values and the mapping between identifiers and ports.
 
 ```rust
-#[derive(Debug)]
 pub struct SimState {
     pub lens_values: LensValues,
-    pub id_ports: IdPorts,
+}
+
+pub struct Simulator<'a> {
+    pub id_start_index: IdStartIndex,
+
+    // Components stored in topological evaluation order
+    pub ordered_components: Vec<&'a Box<dyn Component>>,
 }
 ```
 
 The initial simulator state is constructed from a `ComponentStore`.
 
 ```rust
-pub fn new(component_store: ComponentStore) -> Self
+impl<'a> Simulator<'a> {
+    pub fn new(component_store: &'a ComponentStore) -> (Self, SimState) 
+    ...
+
 ```
 
+The `Simulator` is immutable (holding the evaluation order of components), while the `SimState` holds the mutable state (in terms of lensed values).
+
+To progress simulation, we iterated over the `ordered_components`:
+
+```rust
+impl<'a> Simulator<'a> {
+    ...
+    // iterate over the evaluators
+    pub fn clock(&self, sim_state: &mut SimState) {
+        for component in &self.ordered_components {
+            component.evaluate(self, sim_state);
+        }
+    }
+}
+```
 
 
 ---
@@ -122,3 +154,28 @@ impl SimState {
     }
 }
 ```
+
+---
+
+## Development
+
+### VsCode
+
+Recommended plugins:
+
+- `rust analyzer`
+- `Code Spell Checker`, to keep code and comments nice and clean.
+
+Settings:
+
+It can be convenient to use json formatter tied to format on save, this way we can keep models in easy readable and editable shape.
+
+---
+
+## License
+
+TDB (likely MIT + Apache)
+
+
+
+

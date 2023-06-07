@@ -23,7 +23,9 @@ pub type IdStartIndex = HashMap<String, usize>;
 // Note: One can use Rc instead of Box, to get rid of lifetime
 pub struct Simulator<'a> {
     pub id_start_index: IdStartIndex,
-    pub eval: Vec<&'a Box<dyn Component>>,
+
+    // Components stored in topological evaluation order
+    pub ordered_components: Vec<&'a Box<dyn Component>>,
 }
 
 // Common functionality for all components
@@ -56,7 +58,7 @@ pub struct Input {
 pub enum OutputType {
     // Will be evaluated as a combinatorial function from inputs to outputs
     Combinatorial,
-    // Will be evaluated as synchronous copy from input to output
+    // Will be evaluated as synchronous from input to output
     Sequential,
 }
 

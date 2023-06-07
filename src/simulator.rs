@@ -93,7 +93,7 @@ impl<'a> Simulator<'a> {
         (
             Simulator {
                 id_start_index,
-                eval: eval,
+                ordered_components: eval,
             },
             SimState { lens_values },
         )
@@ -132,7 +132,7 @@ impl<'a> Simulator<'a> {
 
     // iterate over the evaluators
     pub fn clock(&self, sim_state: &mut SimState) {
-        for component in &self.eval {
+        for component in &self.ordered_components {
             component.evaluate(self, sim_state);
         }
     }
