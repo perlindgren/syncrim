@@ -1,4 +1,4 @@
-use crate::common::{Component, Input, Output, OutputType, Ports, SimState};
+use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
 use serde::{Deserialize, Serialize};
 
 // components
@@ -50,8 +50,8 @@ impl Component for Constant {
         )
     }
 
-    fn evaluate(&self, sim_state: &mut SimState) {
-        sim_state.set_id_index(&self.id, 0, self.value);
+    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
+        simulator.set_id_index(sim_state, &self.id, 0, self.value);
     }
 }
 
@@ -74,11 +74,11 @@ impl Component for Register {
     }
 
     // propagate input value to output
-    fn evaluate(&self, sim_state: &mut SimState) {
+    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
         // get input value
-        let value = sim_state.get_input_val(&self.r_in);
+        let value = simulator.get_input_val(sim_state, &self.r_in);
         // set output
-        sim_state.set_id_index(&self.id, 0, value);
+        simulator.set_id_index(sim_state, &self.id, 0, value);
         println!("eval: register id {} in {}", self.id, value);
     }
 }
@@ -105,13 +105,13 @@ impl Component for Mux {
     }
 
     // propagate selected input value to output
-    fn evaluate(&self, sim_state: &mut SimState) {
+    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
         // get input value
-        let select = sim_state.get_input_val(&self.select) as usize;
-        let value = sim_state.get_input_val(&self.m_in[select]);
+        let select = simulator.get_input_val(sim_state, &self.select) as usize;
+        let value = simulator.get_input_val(sim_state, &self.m_in[select]);
 
         // set output
-        sim_state.set_id_index(&self.id, 0, value);
+        simulator.set_id_index(sim_state, &self.id, 0, value);
     }
 }
 
@@ -133,16 +133,16 @@ impl Component for Add {
     }
 
     // propagate addition to output
-    fn evaluate(&self, sim_state: &mut SimState) {
+    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
         // get input values
-        let a_in = sim_state.get_input_val(&self.a_in);
-        let b_in = sim_state.get_input_val(&self.b_in);
+        let a_in = simulator.get_input_val(sim_state, &self.a_in);
+        let b_in = simulator.get_input_val(sim_state, &self.b_in);
 
         // compute addition (notice will panic on overflow)
         let value = a_in + b_in;
 
         // set output
-        sim_state.set_id_index(&self.id, 0, value);
+        simulator.set_id_index(sim_state, &self.id, 0, value);
 
         println!(
             "eval: add id {} in {} {} out {}",

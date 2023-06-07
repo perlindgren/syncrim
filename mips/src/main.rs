@@ -1,6 +1,6 @@
 use mips::*;
 use syncrim::{
-    common::{Component, ComponentStore, Input, SimState},
+    common::{Component, ComponentStore, Input, Simulator},
     components::*,
 };
 
@@ -77,6 +77,6 @@ fn main() {
 
     let cs = ComponentStore::load(&json);
 
-    let sim_state = SimState::new(&cs);
-    println!("SimState {:#?}", sim_state.lens_values);
+    let (_simulator, sim_state) = Simulator::new(&cs);
+    println!("--- SimState\n {:#?}", sim_state.lens_values);
 }

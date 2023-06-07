@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use vizia::prelude::*;
 
 #[derive(Lens, Debug, Clone)]
-pub struct LensValues {
-    pub values: Vec<u32>,
+pub struct SimState {
+    pub lens_values: Vec<u32>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -21,12 +21,11 @@ pub struct ComponentStore {
 pub type IdStartIndex = HashMap<String, usize>;
 
 // Note: One can use Rc instead of Box, to get rid of lifetime
-pub struct SimState<'a> {
-    pub lens_values: LensValues,
-    //pub component_store: ComponentStore,
+pub struct Simulator<'a> {
     pub id_start_index: IdStartIndex,
     pub eval: Vec<&'a Box<dyn Component>>,
 }
+
 // Common functionality for all components
 #[typetag::serde(tag = "type")]
 pub trait Component {
@@ -37,7 +36,7 @@ pub trait Component {
     fn get_id_ports(&self) -> (String, Ports);
 
     // evaluation function
-    fn evaluate(&self, _sim_state: &mut SimState) {}
+    fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
 }
 
 #[derive(Debug)]

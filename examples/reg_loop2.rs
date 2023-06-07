@@ -1,5 +1,5 @@
 use syncrim::{
-    common::{Component, ComponentStore, Input, SimState},
+    common::{Component, ComponentStore, Input, Simulator},
     components::*,
 };
 
@@ -44,6 +44,6 @@ fn main() {
     println!("--- store id:s");
     cs.to_();
 
-    let sim_state = SimState::new(&cs);
+    let (_simulator, sim_state) = Simulator::new(&cs);
     println!("--- SimState\n {:#?}", sim_state.lens_values);
 }

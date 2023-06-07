@@ -1,13 +1,14 @@
-use crate::common::{Component, ComponentStore, Input, LensValues, OutputType, SimState};
+use crate::common::{Component, ComponentStore, Input, OutputType, SimState, Simulator};
 use petgraph::{algo::toposort, Graph};
 use std::collections::HashMap;
 // use vizia::prelude::*;
 
 pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 
-impl<'a> SimState<'a> {
-    pub fn new(component_store: &'a ComponentStore) -> Self {
-        let mut lens_values = LensValues { values: vec![] };
+impl<'a> Simulator<'a> {
+    pub fn new(component_store: &'a ComponentStore) -> (Self, SimState) {
+        let mut lens_values = vec![];
+
         let mut id_start_index = HashMap::new();
         let mut id_component = HashMap::new(); // IdComponent(HashMap::new());
 
@@ -17,13 +18,13 @@ impl<'a> SimState<'a> {
 
             println!("id {}, ports {:?}", id, ports);
             // start index for outputs related to component
-            id_start_index.insert(id.clone(), lens_values.values.len().clone());
+            id_start_index.insert(id.clone(), lens_values.len().clone());
 
             id_component.insert(id, c);
 
             for _ in ports.outputs {
                 // create the value with a default to 0
-                lens_values.values.push(0);
+                lens_values.push(0);
             }
         }
 
@@ -89,58 +90,50 @@ impl<'a> SimState<'a> {
             println!("id {}", id);
         }
 
-        SimState {
-            lens_values,
-            // component_store,
-            id_start_index,
-            eval: eval,
-        }
+        (
+            Simulator {
+                id_start_index,
+                eval: eval,
+            },
+            SimState { lens_values },
+        )
     }
 }
 
 // Simulator implementation
-impl<'a> SimState<'a> {
-    pub fn get(&self, index: usize) -> u32 {
-        *self.lens_values.values.get(index).unwrap()
+impl<'a> Simulator<'a> {
+    pub fn get(&self, sim_state: &SimState, index: usize) -> u32 {
+        sim_state.lens_values[index]
     }
 
     // get input value
-    pub fn get_input_val(&self, input: &Input) -> u32 {
+    pub fn get_input_val(&self, sim_state: &SimState, input: &Input) -> u32 {
         let start_index = *self.id_start_index.get(&input.id).unwrap();
-        *self
-            .lens_values
-            .values
-            .get(start_index + input.index)
-            .unwrap()
+        self.get(sim_state, start_index + input.index)
     }
 
-    // get mutable lense value by id
+    // get start index by id
     pub fn get_id_start_index(&self, id: &str) -> usize {
         *self.id_start_index.get(id).unwrap()
     }
 
     // set value by index
-    pub fn set(&mut self, index: usize, value: u32) {
-        let val_ref = self.lens_values.values.get_mut(index).unwrap();
+    pub fn set(&self, sim_state: &mut SimState, index: usize, value: u32) {
+        let val_ref = &mut sim_state.lens_values[index];
         *val_ref = value
     }
 
     // set value by id and offset (index)
     // todo: maybe better by Output
-    pub fn set_id_index(&mut self, id: &str, index: usize, value: u32) {
+    pub fn set_id_index(&self, sim_state: &mut SimState, id: &str, index: usize, value: u32) {
         let start_index = self.get_id_start_index(id);
-        self.set(start_index + index, value);
+        self.set(sim_state, start_index + index, value);
     }
 
     // iterate over the evaluators
-    pub fn clock(&mut self) {
-        // clone to get rid of borrow dependency
-        // maybe we can find a better way
-        let evaluators = self.eval.clone();
-
-        for component in evaluators {
-            println!("here--- {:?}", component.to_());
-            component.evaluate(self);
+    pub fn clock(&self, sim_state: &mut SimState) {
+        for component in &self.eval {
+            component.evaluate(self, sim_state);
         }
     }
 }
