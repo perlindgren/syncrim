@@ -3,6 +3,7 @@
   "cSpell.ignoreWords": [
     "Clippy",
     "petgraph",
+    "rgbf",
     "serde",
     "struct",
     "syncrim",
