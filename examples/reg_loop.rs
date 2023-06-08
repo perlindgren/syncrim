@@ -1,11 +1,14 @@
 use syncrim::{
-    common::{Component, ComponentStore, Input, Simulator},
+    common::{ComponentStore, Input, Simulator},
     components::*,
 };
+
+use std::rc::Rc;
 
 fn main() {
     let a = Add {
         id: "add1".to_string(),
+        pos: (10.0, 10.0),
         a_in: Input {
             id: "r1".to_string(),
             index: 0,
@@ -17,16 +20,17 @@ fn main() {
         },
     };
 
-    let a = Box::new(a) as Box<dyn Component>;
+    let a = Rc::new(a);
 
     let r = Register {
         id: "r1".to_string(),
+        pos: (100.0, 100.0),
         r_in: Input {
             id: "add1".to_string(),
             index: 0,
         },
     };
-    let r = Box::new(r) as Box<dyn Component>;
+    let r = Rc::new(r);
 
     let cs = ComponentStore { store: vec![a, r] };
 

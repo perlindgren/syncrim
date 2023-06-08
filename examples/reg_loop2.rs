@@ -3,9 +3,12 @@ use syncrim::{
     components::*,
 };
 
+use std::rc::Rc;
+
 fn main() {
     let a = Add {
         id: "add1".to_string(),
+        pos: (10.0, 10.0),
         a_in: Input {
             id: "r1".to_string(),
             index: 0,
@@ -17,25 +20,27 @@ fn main() {
         },
     };
 
-    let a = Box::new(a) as Box<dyn Component>;
+    let a = Rc::new(a);
 
     let r1 = Register {
         id: "r1".to_string(),
+        pos: (100.0, 10.0),
         r_in: Input {
             id: "add1".to_string(),
             index: 0,
         },
     };
-    let r1 = Box::new(r1) as Box<dyn Component>;
+    let r1 = Rc::new(r1);
 
     let r2 = Register {
         id: "r2".to_string(),
+        pos: (100.0, 50.0),
         r_in: Input {
             id: "add1".to_string(),
             index: 0,
         },
     };
-    let r2 = Box::new(r2) as Box<dyn Component>;
+    let r2 = Rc::new(r2);
 
     let cs = ComponentStore {
         store: vec![a, r1, r2],

@@ -5,8 +5,8 @@ use std::collections::HashMap;
 
 pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 
-impl<'a> Simulator<'a> {
-    pub fn new(component_store: &'a ComponentStore) -> (Self, SimState) {
+impl Simulator {
+    pub fn new(component_store: &ComponentStore) -> (Self, SimState) {
         let mut lens_values = vec![];
 
         let mut id_start_index = HashMap::new();
@@ -79,24 +79,19 @@ impl<'a> Simulator<'a> {
         let top = toposort(&graph, None).unwrap();
         println!("--- top \n{:?}", top);
 
-        let mut eval = vec![];
+        let mut ordered_components = vec![];
         for node in &top {
             #[allow(clippy::clone_double_ref)]
             let c = (**node_comp.get(node).unwrap()).clone();
-            eval.push(c);
+            ordered_components.push(c);
         }
 
         println!("--- eval");
 
-        for c in &eval {
-            let (id, _) = c.get_id_ports();
-            println!("id {}", id);
-        }
-
         (
             Simulator {
                 id_start_index,
-                ordered_components: eval,
+                ordered_components,
             },
             SimState { lens_values },
         )
@@ -104,7 +99,7 @@ impl<'a> Simulator<'a> {
 }
 
 // Simulator implementation
-impl<'a> Simulator<'a> {
+impl Simulator {
     pub fn get(&self, sim_state: &SimState, index: usize) -> u32 {
         sim_state.lens_values[index]
     }

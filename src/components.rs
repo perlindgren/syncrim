@@ -6,18 +6,21 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
     pub id: String,
+    pub pos: (f32, f32),
     pub value: u32, // perhaps vector here ... not sure
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Register {
     pub id: String,
+    pub pos: (f32, f32),
     pub r_in: Input,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
     pub id: String,
+    pub pos: (f32, f32),
     pub select: Input,
     pub m_in: Vec<Input>,
 }
@@ -25,6 +28,7 @@ pub struct Mux {
 #[derive(Serialize, Deserialize)]
 pub struct Add {
     pub id: String,
+    pub pos: (f32, f32),
     pub a_in: Input,
     pub b_in: Input,
 }
@@ -52,46 +56,6 @@ impl Component for Constant {
 
     fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
         simulator.set_id_index(sim_state, &self.id, 0, self.value);
-    }
-}
-
-#[typetag::serde]
-impl Component for Register {
-    fn to_(&self) {
-        println!("register");
-    }
-
-    fn get_id_ports(&self) -> (String, Ports) {
-        (
-            self.id.clone(),
-            Ports {
-                // Vector of inputs
-                inputs: vec![self.r_in.clone()],
-                out_type: OutputType::Sequential,
-                outputs: vec![Output::Function],
-            },
-        )
-    }
-
-    // propagate input value to output
-    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
-        // get input value
-        let value = simulator.get_input_val(sim_state, &self.r_in);
-        // set output
-        simulator.set_id_index(sim_state, &self.id, 0, value);
-        println!("eval: register id {} in {}", self.id, value);
-    }
-
-    // create view
-    fn view<'a>(&self, cx: &'a mut Context) {
-        println!("----Register View ");
-        let handle = View::build(RegisterView {}, cx, |cx| {})
-            .position_type(PositionType::SelfDirected)
-            .left(Pixels(100.0))
-            .top(Pixels(100.0))
-            .width(Pixels(10.0))
-            .height(Pixels(10.0));
-        // std::mem::forget(handle);
     }
 }
 
@@ -163,23 +127,51 @@ impl Component for Add {
     }
 }
 
+#[typetag::serde]
+impl Component for Register {
+    fn to_(&self) {
+        println!("register");
+    }
+
+    fn get_id_ports(&self) -> (String, Ports) {
+        (
+            self.id.clone(),
+            Ports {
+                // Vector of inputs
+                inputs: vec![self.r_in.clone()],
+                out_type: OutputType::Sequential,
+                outputs: vec![Output::Function],
+            },
+        )
+    }
+
+    // propagate input value to output
+    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
+        // get input value
+        let value = simulator.get_input_val(sim_state, &self.r_in);
+        // set output
+        simulator.set_id_index(sim_state, &self.id, 0, value);
+        println!("eval: register id {} in {}", self.id, value);
+    }
+
+    // create view
+    fn view(&self, cx: &mut Context, _sim_state: &SimState) {
+        println!("----Register View ");
+        View::build(RegisterView {}, cx, |_cx| {})
+            .position_type(PositionType::SelfDirected)
+            .left(Pixels(self.pos.0))
+            .top(Pixels(self.pos.1))
+            .width(Pixels(10.0))
+            .height(Pixels(10.0))
+            .bind(SimState::lens_values, |_, y| println!("lense {:?}", y.0));
+    }
+}
+
 // views
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
 
 pub struct RegisterView {}
-impl RegisterView {
-    pub fn new<'a>(cx: &'a mut Context, x: f32, y: f32) -> Handle<'a, Self> {
-        vizia::prelude::View::build(Self {}, cx, |cx| {
-            // input
-        })
-        .position_type(PositionType::SelfDirected)
-        .left(Pixels(100.0))
-        .top(Pixels(100.0))
-        .width(Pixels(10.0))
-        .height(Pixels(10.0))
-    }
-}
 
 impl View for RegisterView {
     fn element(&self) -> Option<&'static str> {

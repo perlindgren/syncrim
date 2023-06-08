@@ -1,25 +1,24 @@
+use std::rc::Rc;
 use syncrim::{
-    common::{Component, ComponentStore, Input, Simulator},
+    common::{ComponentStore, Input},
     components::*,
 };
 
 fn main() {
     let r = Register {
         id: "r1".to_string(),
+        pos: (100.0, 20.0),
         r_in: Input {
             id: "r1".to_string(),
             index: 0,
         },
     };
-    let r = Box::new(r) as Box<dyn Component>;
+    let r = Rc::new(r);
 
     let cs = ComponentStore { store: vec![r] };
 
     println!("--- store id:s");
     cs.to_();
 
-    let (simulator, mut sim_state) = Simulator::new(&cs);
-    println!("--- SimState\n {:#?}", sim_state.lens_values);
-
-    syncrim::gui::gui(cs);
+    syncrim::gui::gui(&cs);
 }

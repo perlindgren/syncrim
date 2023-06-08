@@ -56,6 +56,8 @@ pub trait Component {
 }
 ```
 
+For serialization to work, `typetag` is derived for the `Component` trait definition as well as its implementations. Under the hood, the dyn Traits are handled as enums by serde.
+
 ---
 
 ## Components
@@ -74,12 +76,13 @@ A (simulation) model can extend the set of components (see the `mips` member cra
 A model is defined by the storage:
 
 ```rust
+type Components = Vec<Rc<dyn Component>>;
+
+#[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
-    pub store: Vec<Box<dyn Component>>,
+    pub store: Components,
 }
 ```
-
-For serialization to work, `typetag` is derived for the `Component` trait definition as well as its implementations. Under the hood, the dyn Traits are handled as enums by serde.
 
 ---
 
@@ -105,7 +108,7 @@ pub struct Simulator<'a> {
     pub id_start_index: IdStartIndex,
 
     // Components stored in topological evaluation order
-    pub ordered_components: Vec<&'a Box<dyn Component>>,
+    pub ordered_components: Components,
 }
 ```
 
@@ -115,7 +118,7 @@ The initial simulator state is constructed from a `ComponentStore`.
 
 ```rust
 impl<'a> Simulator<'a> {
-    pub fn new(component_store: &'a ComponentStore) -> (Self, SimState) 
+    pub fn new(component_store: &'a ComponentStore) -> (Self, SimState)
     ...
 
 ```
@@ -136,7 +139,7 @@ impl<'a> Simulator<'a> {
 }
 ```
 
-As an example the `add` component implements `evaluate` by reading the two inputs, adding them, and storing the value (to output position 0). Todo: We might want to structure the outputs simar to the inputs.
+As an example the `add` component implements `evaluate` by reading the two inputs, adding them, and storing the value (to output position 0). Todo: We might want to structure the outputs similar to the inputs.
 
 ```rust
 impl Component for Add {
@@ -155,6 +158,7 @@ impl Component for Add {
     }
 }
 ```
+
 ---
 
 ## Development
@@ -179,7 +183,3 @@ Before merging, make sure that it passes clippy, if not fix or locally allow the
 ## License
 
 TDB (likely MIT + Apache)
-
-
-
-

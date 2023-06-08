@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::rc::Rc;
 use vizia::prelude::*;
 
 #[derive(Lens, Debug, Clone)]
@@ -7,10 +8,14 @@ pub struct SimState {
     pub lens_values: Vec<u32>,
 }
 
+type Components = Vec<Rc<dyn Component>>;
+
 #[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
-    pub store: Vec<Box<dyn Component>>,
+    pub store: Components,
 }
+
+// type Components = Vec<Box<dyn Component>>>;
 
 // a mapping (id -> index)
 // where index is the start index in the LensValues vector
@@ -20,14 +25,11 @@ pub struct ComponentStore {
 // the second input is index 17, etc.
 pub type IdStartIndex = HashMap<String, usize>;
 
-// Note: One can use Rc instead of Box to get rid of lifetime.
-// This might also solve the clippy warning.
-pub struct Simulator<'a> {
+pub struct Simulator {
     pub id_start_index: IdStartIndex,
 
     // Components stored in topological evaluation order
-    #[allow(clippy::borrowed_box)]
-    pub ordered_components: Vec<&'a Box<dyn Component>>,
+    pub ordered_components: Components,
 }
 
 // Common functionality for all components
@@ -43,7 +45,7 @@ pub trait Component {
     fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
 
     // create view
-    fn view<'a>(&self, cx: &'a mut Context) {}
+    fn view(&self, _cx: &mut Context, _sim_state: &SimState) {}
 }
 
 #[derive(Debug)]
