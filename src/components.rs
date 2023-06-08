@@ -81,6 +81,18 @@ impl Component for Register {
         simulator.set_id_index(sim_state, &self.id, 0, value);
         println!("eval: register id {} in {}", self.id, value);
     }
+
+    // create view
+    fn view<'a>(&self, cx: &'a mut Context) {
+        println!("----Register View ");
+        let handle = View::build(RegisterView {}, cx, |cx| {})
+            .position_type(PositionType::SelfDirected)
+            .left(Pixels(100.0))
+            .top(Pixels(100.0))
+            .width(Pixels(10.0))
+            .height(Pixels(10.0));
+        // std::mem::forget(handle);
+    }
 }
 
 #[typetag::serde]
@@ -148,5 +160,46 @@ impl Component for Add {
             "eval: add id {} in {} {} out {}",
             self.id, a_in, b_in, value
         );
+    }
+}
+
+// views
+use vizia::prelude::*;
+use vizia::vg::{Paint, Path};
+
+pub struct RegisterView {}
+impl RegisterView {
+    pub fn new<'a>(cx: &'a mut Context, x: f32, y: f32) -> Handle<'a, Self> {
+        vizia::prelude::View::build(Self {}, cx, |cx| {
+            // input
+        })
+        .position_type(PositionType::SelfDirected)
+        .left(Pixels(100.0))
+        .top(Pixels(100.0))
+        .width(Pixels(10.0))
+        .height(Pixels(10.0))
+    }
+}
+
+impl View for RegisterView {
+    fn element(&self) -> Option<&'static str> {
+        Some("Register")
+    }
+
+    fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
+        let bounds = cx.bounds();
+        println!("Register draw {:?}", bounds);
+
+        let mut path = Path::new();
+        let mut paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));
+        paint.set_line_width(cx.logical_to_physical(1.0));
+
+        path.move_to(bounds.left() + 0.5, bounds.top() + 0.5);
+        path.line_to(bounds.right() + 0.5, bounds.top() + 0.5);
+        path.line_to(bounds.right() + 0.5, bounds.bottom() + 0.5);
+        path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
+        path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
+
+        canvas.stroke_path(&mut path, &paint);
     }
 }
