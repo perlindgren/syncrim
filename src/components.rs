@@ -169,15 +169,13 @@ impl Component for Register {
     //         .height(Pixels(10.0));
     //     // .bind(SimState::lens_values, |_, y| println!("lense {:?}", y.0));
     // }
-    fn view(&self, cx: &mut Context) {
+    fn view(&self, cx: &mut Context, lens: &dyn Fn(&Context) -> Vec<u32>) {
         println!("----Register View ");
         View::build(RegisterView {}, cx, |cx| {
-            Label::new(
-                cx,
-                "1", // Gui::state
-                    //     .then(SimState::lens_values)
-                    //     .map(|v| format!("{:?}", v)),
-            );
+            Label::new(cx, {
+                println!("-- view view view --");
+                &format!("{:?}", lens(cx)[0])
+            });
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0))
@@ -185,7 +183,7 @@ impl Component for Register {
         .width(Pixels(10.0))
         .height(Pixels(10.0));
 
-        // .bind(SimState::lens_values, |_, y| println!("lense {:?}", y.0));
+        //     // .bind(SimState::lens_values, |_, y| println!("lense {:?}", y.0));
     }
 }
 

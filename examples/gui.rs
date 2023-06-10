@@ -9,24 +9,21 @@ fn main() {
         id: "r1".to_string(),
         pos: (100.0, 20.0),
         r_in: Input {
-            id: "r2".to_string(),
+            id: "c1".to_string(),
             index: 0,
         },
     };
     let r1 = Rc::new(r1);
 
-    let r2 = Register {
-        id: "r2".to_string(),
+    let c1 = Constant {
+        id: "c1".to_string(),
         pos: (100.0, 40.0),
-        r_in: Input {
-            id: "r1".to_string(),
-            index: 0,
-        },
+        value: 2,
     };
-    let r2 = Rc::new(r2);
+    let c1 = Rc::new(c1);
 
     let cs = ComponentStore {
-        store: vec![r1, r2],
+        store: vec![r1, c1],
     };
 
     println!("--- store id:s");

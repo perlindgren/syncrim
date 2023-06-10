@@ -5,6 +5,8 @@ use vizia::prelude::*;
 use crate::common::{ComponentStore, SimState, Simulator};
 // use crate::components::RegisterView;
 
+use std::rc::Rc;
+
 #[derive(Lens)]
 struct Gui {
     simulator: Simulator,
@@ -29,14 +31,14 @@ pub fn gui(cs: &ComponentStore) {
     sim_state.lens_values[1] = 1;
 
     Application::new(move |cx| {
-        Gui {
+        let gui = Gui {
             simulator,
             state: sim_state,
         }
         .build(cx);
 
         for c in Gui::simulator.then(Simulator::ordered_components).get(cx) {
-            c.view(cx);
+            c.view(cx, &|cx| Gui::state.get(cx).lens_values);
         }
 
         Label::new(
