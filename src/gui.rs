@@ -11,7 +11,7 @@ pub fn gui(cs: &ComponentStore) {
 
     Application::new(move |cx| {
         for c in &simulator.ordered_components {
-            c.view(cx, &sim_state);
+            c.view(cx);
         }
 
         // simulate one clock

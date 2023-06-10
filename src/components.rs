@@ -155,7 +155,7 @@ impl Component for Register {
     }
 
     // create view
-    fn view(&self, cx: &mut Context, _sim_state: &SimState) {
+    fn view(&self, cx: &mut Context) {
         println!("----Register View ");
         View::build(RegisterView {}, cx, |_cx| {})
             .position_type(PositionType::SelfDirected)

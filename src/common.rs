@@ -45,7 +45,7 @@ pub trait Component {
     fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
 
     // create view
-    fn view(&self, _cx: &mut Context, _sim_state: &SimState) {}
+    fn view(&self, _cx: &mut Context) {}
 }
 
 #[derive(Debug)]
