@@ -1,5 +1,6 @@
 use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
 use serde::{Deserialize, Serialize};
+use vizia::prelude::*;
 
 // components
 
@@ -155,14 +156,35 @@ impl Component for Register {
     }
 
     // create view
+    // fn view<L>(&self, cx: &mut Context, lens: L)
+    // where
+    //     L: Lens<Target = Vec<u32>>,
+    // {
+    //     println!("----Register View ");
+    //     View::build(RegisterView { lens }, cx, |_cx| {})
+    //         .position_type(PositionType::SelfDirected)
+    //         .left(Pixels(self.pos.0))
+    //         .top(Pixels(self.pos.1))
+    //         .width(Pixels(10.0))
+    //         .height(Pixels(10.0));
+    //     // .bind(SimState::lens_values, |_, y| println!("lense {:?}", y.0));
+    // }
     fn view(&self, cx: &mut Context) {
         println!("----Register View ");
-        View::build(RegisterView {}, cx, |_cx| {})
-            .position_type(PositionType::SelfDirected)
-            .left(Pixels(self.pos.0))
-            .top(Pixels(self.pos.1))
-            .width(Pixels(10.0))
-            .height(Pixels(10.0));
+        View::build(RegisterView {}, cx, |cx| {
+            Label::new(
+                cx,
+                "1", // Gui::state
+                    //     .then(SimState::lens_values)
+                    //     .map(|v| format!("{:?}", v)),
+            );
+        })
+        .position_type(PositionType::SelfDirected)
+        .left(Pixels(self.pos.0))
+        .top(Pixels(self.pos.1))
+        .width(Pixels(10.0))
+        .height(Pixels(10.0));
+
         // .bind(SimState::lens_values, |_, y| println!("lense {:?}", y.0));
     }
 }
@@ -171,6 +193,9 @@ impl Component for Register {
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
 
+// pub struct RegisterView<L: Lens> {
+//     lens: L,
+// }
 pub struct RegisterView {}
 
 impl View for RegisterView {

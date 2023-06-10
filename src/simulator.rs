@@ -1,10 +1,16 @@
 use crate::common::{Component, ComponentStore, Input, OutputType, SimState, Simulator};
 use petgraph::{algo::toposort, Graph};
 use std::collections::HashMap;
-// use vizia::prelude::*;
 
 pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 
+// Notice:
+// The topological order does not enforce any specific order of registers
+// Thus registers cannot point to other registers in a cyclic fashion
+// This is (likely) not occurring in practice.
+//
+// A solution is to evaluate register updates separately from other components
+// ... but not currently implemented ...
 impl Simulator {
     pub fn new(component_store: &ComponentStore) -> (Self, SimState) {
         let mut lens_values = vec![];

@@ -46,7 +46,8 @@ pub trait Component {
     fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
 
     // create view
-    fn view(&self, _cx: &mut Context) {}
+    // fn view(&self, cx: &mut Context, lens: impl Lens<Target = Vec<u32>>);
+    fn view(&self, cx: &mut Context) {}
 }
 
 #[derive(Debug)]
