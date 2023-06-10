@@ -1,5 +1,5 @@
 use syncrim::{
-    common::{Component, ComponentStore, Input, Simulator},
+    common::{ComponentStore, Input, Simulator},
     components::*,
 };
 

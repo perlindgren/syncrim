@@ -58,6 +58,45 @@ impl Component for Constant {
     fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
         simulator.set_id_index(sim_state, &self.id, 0, self.value);
     }
+
+    // create view
+    fn view(&self, cx: &mut Context, _state: Wrapper<crate::gui::gui_derived_lenses::state>) {
+        println!("---- Create Constant View");
+        View::build(ConstantView {}, cx, |cx| {
+            Label::new(cx, &format!("{:?}", self.value));
+        })
+        .position_type(PositionType::SelfDirected)
+        .min_size(Pixels(10.0))
+        .left(Pixels(self.pos.0 - 5.0))
+        .top(Pixels(self.pos.1 - 5.0))
+        .width(Pixels(10.0))
+        .height(Pixels(10.0));
+    }
+}
+
+pub struct ConstantView {}
+
+impl View for ConstantView {
+    fn element(&self) -> Option<&'static str> {
+        Some("Constant")
+    }
+
+    fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
+        let bounds = cx.bounds();
+        println!("Constant draw {:?}", bounds);
+
+        let mut path = Path::new();
+        let mut paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));
+        paint.set_line_width(cx.logical_to_physical(1.0));
+
+        path.move_to(bounds.left() + 0.5, bounds.top() + 0.5);
+        path.line_to(bounds.right() + 0.5, bounds.top() + 0.5);
+        path.line_to(bounds.right() + 0.5, bounds.bottom() + 0.5);
+        path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
+        path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
+
+        canvas.stroke_path(&mut path, &paint);
+    }
 }
 
 #[typetag::serde]
@@ -156,44 +195,22 @@ impl Component for Register {
     }
 
     // create view
-    // fn view<L>(&self, cx: &mut Context, lens: L)
-    // where
-    //     L: Lens<Target = Vec<u32>>,
-    // {
-    //     println!("----Register View ");
-    //     View::build(RegisterView { lens }, cx, |_cx| {})
-    //         .position_type(PositionType::SelfDirected)
-    //         .left(Pixels(self.pos.0))
-    //         .top(Pixels(self.pos.1))
-    //         .width(Pixels(10.0))
-    //         .height(Pixels(10.0));
-    //     // .bind(SimState::lens_values, |_, y| println!("lense {:?}", y.0));
-    // }
     fn view(&self, cx: &mut Context, state: Wrapper<crate::gui::gui_derived_lenses::state>) {
-        println!("----Register View ");
+        println!("---- Create Register View ");
         View::build(RegisterView {}, cx, |cx| {
-            // Label::new(cx, {
-            //     println!("-- view view view --");
-            //     &format!("{:?}", state.get(cx).lens_values[0])
-            // });
             Label::new(cx, state.map(|s| format!("{:?}", s.lens_values[0])));
         })
         .position_type(PositionType::SelfDirected)
-        .left(Pixels(self.pos.0))
-        .top(Pixels(self.pos.1))
+        .left(Pixels(self.pos.0 - 5.0))
+        .top(Pixels(self.pos.1 - 5.0))
         .width(Pixels(10.0))
         .height(Pixels(10.0));
-
-        //     // .bind(SimState::lens_values, |_, y| println!("lense {:?}", y.0));
     }
 }
 
 // views
 use vizia::vg::{Paint, Path};
 
-// pub struct RegisterView<L: Lens> {
-//     lens: L,
-// }
 pub struct RegisterView {}
 
 impl View for RegisterView {
