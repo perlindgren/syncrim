@@ -162,8 +162,8 @@ impl Component for Register {
             .left(Pixels(self.pos.0))
             .top(Pixels(self.pos.1))
             .width(Pixels(10.0))
-            .height(Pixels(10.0))
-            .bind(SimState::lens_values, |_, y| println!("lense {:?}", y.0));
+            .height(Pixels(10.0));
+        // .bind(SimState::lens_values, |_, y| println!("lense {:?}", y.0));
     }
 }
 

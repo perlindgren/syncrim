@@ -25,6 +25,7 @@ pub struct ComponentStore {
 // the second input is index 17, etc.
 pub type IdStartIndex = HashMap<String, usize>;
 
+#[derive(Lens)]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,
 

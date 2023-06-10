@@ -5,17 +5,29 @@ use syncrim::{
 };
 
 fn main() {
-    let r = Register {
+    let r1 = Register {
         id: "r1".to_string(),
         pos: (100.0, 20.0),
+        r_in: Input {
+            id: "r2".to_string(),
+            index: 0,
+        },
+    };
+    let r1 = Rc::new(r1);
+
+    let r2 = Register {
+        id: "r2".to_string(),
+        pos: (100.0, 40.0),
         r_in: Input {
             id: "r1".to_string(),
             index: 0,
         },
     };
-    let r = Rc::new(r);
+    let r2 = Rc::new(r2);
 
-    let cs = ComponentStore { store: vec![r] };
+    let cs = ComponentStore {
+        store: vec![r1, r2],
+    };
 
     println!("--- store id:s");
     cs.to_();
