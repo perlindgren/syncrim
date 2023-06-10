@@ -15,7 +15,7 @@ enum GuiEvent {
     Clock,
 }
 
-impl<'a> Model for Gui {
+impl Model for Gui {
     fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
         event.map(|app_event, _meta| match app_event {
             GuiEvent::Clock => self.simulator.clock(&mut self.state),
