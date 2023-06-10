@@ -8,9 +8,9 @@ use crate::common::{ComponentStore, SimState, Simulator};
 use std::rc::Rc;
 
 #[derive(Lens)]
-struct Gui {
-    simulator: Simulator,
-    state: SimState,
+pub struct Gui {
+    pub simulator: Simulator,
+    pub state: SimState,
 }
 
 enum GuiEvent {
@@ -28,7 +28,6 @@ impl<'a> Model for Gui {
 pub fn gui(cs: &ComponentStore) {
     let (simulator, mut sim_state) = Simulator::new(cs);
     println!("--- SimState\n {:#?}", sim_state.lens_values);
-    sim_state.lens_values[1] = 1;
 
     Application::new(move |cx| {
         let gui = Gui {
@@ -38,7 +37,7 @@ pub fn gui(cs: &ComponentStore) {
         .build(cx);
 
         for c in Gui::simulator.then(Simulator::ordered_components).get(cx) {
-            c.view(cx, &|cx| Gui::state.get(cx).lens_values);
+            c.view(cx, Gui::state);
         }
 
         Label::new(

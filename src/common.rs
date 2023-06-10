@@ -77,7 +77,8 @@ pub trait Component {
     fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
 
     // create view
-    fn view(&self, cx: &mut Context, fake_lens: &dyn Fn(&Context) -> Vec<u32>) {}
+    //fn view(&self, cx: &mut Context, fake_lens: &dyn Fn(&Context) -> Vec<u32>) {}
+    fn view(&self, cx: &mut Context, _state: Wrapper<crate::gui::gui_derived_lenses::state>) {}
     // fn view(&self, cx: &mut Context) {}
     // fn view(&self, cx: &mut Context, p: Rc<SimState>) {}
 }

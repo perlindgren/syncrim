@@ -169,13 +169,14 @@ impl Component for Register {
     //         .height(Pixels(10.0));
     //     // .bind(SimState::lens_values, |_, y| println!("lense {:?}", y.0));
     // }
-    fn view(&self, cx: &mut Context, lens: &dyn Fn(&Context) -> Vec<u32>) {
+    fn view(&self, cx: &mut Context, state: Wrapper<crate::gui::gui_derived_lenses::state>) {
         println!("----Register View ");
         View::build(RegisterView {}, cx, |cx| {
-            Label::new(cx, {
-                println!("-- view view view --");
-                &format!("{:?}", lens(cx)[0])
-            });
+            // Label::new(cx, {
+            //     println!("-- view view view --");
+            //     &format!("{:?}", state.get(cx).lens_values[0])
+            // });
+            Label::new(cx, state.map(|s| format!("{:?}", s.lens_values[0])));
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0))
