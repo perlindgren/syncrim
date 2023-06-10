@@ -8,39 +8,6 @@ pub struct SimState {
     pub lens_values: Vec<u32>,
 }
 
-// pub struct MyLens<A> {
-//     a: A,
-// }
-
-// impl<A> MyLens<A> {
-//     pub fn new(a: A) -> Self
-//     where
-//         A: Lens,
-//     {
-//         Self { a }
-//     }
-// }
-
-// impl<A> Lens for MyLens<A>
-// where
-//     A: Lens,
-// {
-//     type Source = A::Source;
-//     type Target = A::Target;
-
-//     fn view<O, F: FnOnce(Option<&Self::Target>) -> O>(&self, source: &Self::Source, map: F) -> O {
-//         self.a.view(source, map)
-//     }
-// }
-
-// impl<T: Clone> Clone for MyLens<T> {
-//     fn clone(&self) -> Self {
-//         Self { a: self.a.clone() }
-//     }
-// }
-
-// type MyLensType = Lens<Source = (), Target<u32>>;
-
 #[derive(Lens)]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,
@@ -77,11 +44,11 @@ pub trait Component {
     fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
 
     // create view
-    //fn view(&self, cx: &mut Context, fake_lens: &dyn Fn(&Context) -> Vec<u32>) {}
-    fn view(&self, cx: &mut Context, _state: Wrapper<crate::gui::gui_derived_lenses::state>) {}
-    // fn view(&self, cx: &mut Context) {}
-    // fn view(&self, cx: &mut Context, p: Rc<SimState>) {}
+    fn view(&self, _cx: &mut Context, _state: Wrapper<crate::gui::gui_derived_lenses::state>) {}
 }
+
+// Note: view uses the concrete type of the derived lens to allow object creation.
+// Perhaps we can find a better way (e.g., through type erasure).
 
 #[derive(Debug)]
 pub struct Ports {

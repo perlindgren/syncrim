@@ -189,7 +189,6 @@ impl Component for Register {
 }
 
 // views
-use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
 
 // pub struct RegisterView<L: Lens> {
