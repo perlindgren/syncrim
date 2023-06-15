@@ -49,10 +49,10 @@ impl Component for Register {
             // Label::new(cx, state.map(|s| format!("{:?}", s.lens_values[0])));
         })
         .position_type(PositionType::SelfDirected)
-        .left(Pixels(self.pos.0 - 5.0))
-        .top(Pixels(self.pos.1 - 5.0))
-        .width(Pixels(10.0))
-        .height(Pixels(10.0));
+        .left(Pixels(self.pos.0 - 10.0))
+        .top(Pixels(self.pos.1 - 15.0))
+        .width(Pixels(20.0))
+        .height(Pixels(30.0));
     }
 }
 
@@ -68,14 +68,26 @@ impl View for RegisterView {
         println!("Register draw {:?}", bounds);
 
         let mut path = Path::new();
-        let mut paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));
+        let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 0.0, 0.0));
         paint.set_line_width(cx.logical_to_physical(1.0));
 
-        path.move_to(bounds.left() + 0.5, bounds.top() + 0.5);
-        path.line_to(bounds.right() + 0.5, bounds.top() + 0.5);
-        path.line_to(bounds.right() + 0.5, bounds.bottom() + 0.5);
-        path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
-        path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
+        let left = bounds.left();
+        let right = bounds.right();
+        let top = bounds.top();
+        let bottom = bounds.bottom();
+        let width = bounds.width();
+        let height = bounds.height();
+
+        // draw box
+        path.move_to(left + 0.5, top + 0.5);
+        path.line_to(right + 0.5, top + 0.5);
+        path.line_to(right + 0.5, bottom + 0.5);
+        path.line_to(left + 0.5, bottom + 0.5);
+        path.line_to(left + 0.5, top + 0.5);
+
+        // draw cut out
+        path.line_to(left + width * 0.5 + 0.5, top + height * 0.25 + 0.5);
+        path.line_to(right + 0.5, top + 0.5);
 
         canvas.stroke_path(&path, &paint);
     }
