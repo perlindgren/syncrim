@@ -44,7 +44,13 @@ pub trait Component {
     fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
 
     // create view
-    fn view(&self, _cx: &mut Context, _state: Wrapper<crate::gui::gui_derived_lenses::state>) {}
+    fn view(
+        &self,
+        _cx: &mut Context,
+        _simulator: Rc<Simulator>,
+        // _state: Wrapper<crate::gui::gui_derived_lenses::state>,
+    ) {
+    }
 }
 
 // Note: view uses the concrete type of the derived lens to allow object creation.

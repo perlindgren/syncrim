@@ -1,5 +1,6 @@
 use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
 
@@ -39,15 +40,15 @@ impl Component for Add {
 
         // set output
         simulator.set_id_index(sim_state, &self.id, 0, value);
-
-        println!(
-            "eval: add id {} in {} {} out {}",
-            self.id, a_in, b_in, value
-        );
     }
 
     // create view
-    fn view(&self, cx: &mut Context, _state: Wrapper<crate::gui::gui_derived_lenses::state>) {
+    fn view(
+        &self,
+        cx: &mut Context,
+        _simulator: Rc<Simulator>,
+        //_state: Wrapper<crate::gui::gui_derived_lenses::state>,
+    ) {
         println!("---- Create Add View");
         View::build(AddView {}, cx, |cx| {
             // Label::new(cx, &format!("{:?}", self.value));
@@ -77,27 +78,28 @@ impl View for AddView {
 
         let h = bounds.height();
         let w = bounds.width();
-        let t = bounds.top();
-        let l = bounds.left();
+        let top = bounds.top();
+        let left = bounds.left();
         let r = bounds.right();
+        let bottom = bounds.bottom();
 
         // top left
-        path.move_to(l + 0.5, t + 0.5);
+        path.move_to(left + 0.5, top + 0.5);
 
         // top right corner
-        path.line_to(l + w * 0.5 + 0.5, t + 0.5);
-        path.line_to(r + 0.5, t + h * 0.25 + 0.5);
+        path.line_to(left + w * 0.5 + 0.5, top + 0.5);
+        path.line_to(r + 0.5, top + h * 0.25 + 0.5);
 
         // bottom right corner
-        path.line_to(bounds.right() + 0.5, bounds.bottom() - h * 0.25 + 0.5);
-        path.line_to(bounds.left() + w * 0.5 + 0.5, bounds.bottom() + 0.5);
-        path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
+        path.line_to(bounds.right() + 0.5, bottom - h * 0.25 + 0.5);
+        path.line_to(left + w * 0.5 + 0.5, bottom + 0.5);
+        path.line_to(left + 0.5, bottom + 0.5);
 
         // left outtake
-        path.line_to(bounds.left() + 0.5, bounds.bottom() - 0.25 * h + 0.5);
-        path.line_to(l + w * 0.25 + 0.5, t + 0.5 * h + 0.5);
-        path.line_to(bounds.left() + 0.5, bounds.top() + 0.25 * h + 0.5);
-        path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
+        path.line_to(left + 0.5, bottom - 0.25 * h + 0.5);
+        path.line_to(left + w * 0.25 + 0.5, top + 0.5 * h + 0.5);
+        path.line_to(left + 0.5, top + 0.25 * h + 0.5);
+        path.line_to(left + 0.5, top + 0.5);
 
         canvas.stroke_path(&mut path, &paint);
     }

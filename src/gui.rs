@@ -1,10 +1,11 @@
 use crate::common::{ComponentStore, SimState, Simulator};
+use std::rc::Rc;
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
 
 #[derive(Lens)]
 pub struct Gui {
-    pub simulator: Simulator,
+    pub simulator: Rc<Simulator>,
     pub state: SimState,
 }
 
@@ -23,19 +24,19 @@ impl Model for Gui {
 pub fn gui(cs: &ComponentStore) {
     let (simulator, sim_state) = Simulator::new(cs);
     println!("--- SimState\n {:#?}", sim_state.lens_values);
-
+    let simulator = Rc::new(simulator);
     Application::new(move |cx| {
         Gui {
-            simulator,
+            simulator: simulator.clone(),
             state: sim_state,
         }
         .build(cx);
 
-        // Grid (20*20)
+        // Grid
         Grid::new(cx);
 
-        for c in Gui::simulator.then(Simulator::ordered_components).get(cx) {
-            c.view(cx, Gui::state);
+        for c in &simulator.ordered_components {
+            c.view(cx, simulator.clone());
         }
 
         // a label to display the raw state for debugging purpose
@@ -61,12 +62,7 @@ impl Grid {
     // create view
     fn new(cx: &mut Context) {
         println!("---- Create Grid ");
-        View::build(GridView {}, cx, |cx| {})
-            .position_type(PositionType::SelfDirected)
-            .left(Pixels(0.0))
-            .top(Pixels(0.0));
-        // .width(Pixels(200.0))
-        // .height(Pixels(400.0));
+        View::build(GridView {}, cx, |cx| {});
     }
 }
 

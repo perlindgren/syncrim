@@ -1,5 +1,6 @@
 use crate::common::{Component, Output, OutputType, Ports, SimState, Simulator};
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
 
@@ -29,14 +30,19 @@ impl Component for Wire {
         )
     }
 
-    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {}
+    fn evaluate(&self, _simulator: &Simulator, sim_state: &mut SimState) {}
 
     // create view
-    fn view(&self, cx: &mut Context, _state: Wrapper<crate::gui::gui_derived_lenses::state>) {
+    fn view(
+        &self,
+        cx: &mut Context,
+        _simulator: Rc<Simulator>,
+        // _state: Wrapper<crate::gui::gui_derived_lenses::state>,
+    ) {
         println!("---- Create Wire View");
         View::build(WireView {}, cx, |cx| {})
             .position_type(PositionType::SelfDirected)
-            // .min_size(Pixels(20.0))
+            
             .left(Pixels(self.pos.0))
             .top(Pixels(self.pos.1))
             .width(Pixels(self.size.0))

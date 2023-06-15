@@ -1,8 +1,8 @@
 use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
-
 #[derive(Serialize, Deserialize)]
 pub struct Register {
     pub id: String,
@@ -38,10 +38,15 @@ impl Component for Register {
     }
 
     // create view
-    fn view(&self, cx: &mut Context, state: Wrapper<crate::gui::gui_derived_lenses::state>) {
+    fn view(
+        &self,
+        cx: &mut Context,
+        _simulator: Rc<Simulator>,
+        // state: Wrapper<crate::gui::gui_derived_lenses::state>,
+    ) {
         println!("---- Create Register View ");
         View::build(RegisterView {}, cx, |cx| {
-            Label::new(cx, state.map(|s| format!("{:?}", s.lens_values[0])));
+            // Label::new(cx, state.map(|s| format!("{:?}", s.lens_values[0])));
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 5.0))
