@@ -7,7 +7,7 @@ use syncrim::{
 fn main() {
     let add1 = Add {
         id: "add1".to_string(),
-        pos: (200.0, 75.0),
+        pos: (200.0, 120.0),
         a_in: Input {
             id: "c1".to_string(),
             index: 0,
@@ -29,13 +29,27 @@ fn main() {
 
     let c2 = Constant {
         id: "c2".to_string(),
-        pos: (120.0, 120.0),
+        pos: (100.0, 140.0),
         value: 2,
     };
     let c2 = Rc::new(c2);
 
-    let cs = ComponentStore {
-        store: vec![add1, c1, c2],
+    let w1 = Wire {
+        id: "w1".to_string(),
+        pos: (110.0, 100.0),
+        size: (70.0, 0.0),
+    };
+    let w1 = Rc::new(w1);
+
+    let w2 = Wire {
+        id: "w2".to_string(),
+        pos: (110.0, 140.0),
+        size: (70.0, 0.0),
+    };
+    let w2 = Rc::new(w2);
+
+        let cs = ComponentStore {
+        store: vec![add1, c1, c2, w1, w2],
     };
 
     println!("--- store id:s");

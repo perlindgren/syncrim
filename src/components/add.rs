@@ -75,10 +75,28 @@ impl View for AddView {
         let mut paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));
         paint.set_line_width(cx.logical_to_physical(1.0));
 
-        path.move_to(bounds.left() + 0.5, bounds.top() + 0.5);
-        path.line_to(bounds.right() + 0.5, bounds.top() + 0.5);
-        path.line_to(bounds.right() + 0.5, bounds.bottom() + 0.5);
+        let h = bounds.height();
+        let w = bounds.width();
+        let t = bounds.top();
+        let l = bounds.left();
+        let r = bounds.right();
+
+        // top left
+        path.move_to(l + 0.5, t + 0.5);
+
+        // top right corner
+        path.line_to(l + w * 0.5 + 0.5, t + 0.5);
+        path.line_to(r + 0.5, t + h * 0.25 + 0.5);
+
+        // bottom right corner
+        path.line_to(bounds.right() + 0.5, bounds.bottom() - h * 0.25 + 0.5);
+        path.line_to(bounds.left() + w * 0.5 + 0.5, bounds.bottom() + 0.5);
         path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
+
+        // left outtake
+        path.line_to(bounds.left() + 0.5, bounds.bottom() - 0.25 * h + 0.5);
+        path.line_to(l + w * 0.25 + 0.5, t + 0.5 * h + 0.5);
+        path.line_to(bounds.left() + 0.5, bounds.top() + 0.25 * h + 0.5);
         path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
 
         canvas.stroke_path(&mut path, &paint);

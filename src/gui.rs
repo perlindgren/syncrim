@@ -91,7 +91,7 @@ impl View for GridView {
         let columns: usize = (unscaled_width / 20.0).round() as usize;
 
         let mut path = Path::new();
-        let mut paint = Paint::color(vizia::vg::Color::rgbaf(0.0, 0.0, 1.0, 0.2));
+        let mut paint = Paint::color(vizia::vg::Color::rgbaf(0.0, 0.0, 1.0, 0.1));
 
         paint.set_line_width(cx.logical_to_physical(1.0));
 
