@@ -1,9 +1,6 @@
-// use vizia::fonts::icons_names::{DOWN, MINUS, UP};
-use vizia::prelude::*;
-// use vizia::vg::{Paint, Path};
-
 use crate::common::{ComponentStore, SimState, Simulator};
-// use crate::components::RegisterView;
+use vizia::prelude::*;
+use vizia::vg::{Paint, Path};
 
 #[derive(Lens)]
 pub struct Gui {
@@ -34,6 +31,9 @@ pub fn gui(cs: &ComponentStore) {
         }
         .build(cx);
 
+        // Grid (20*20)
+        Grid::new(cx);
+
         for c in Gui::simulator.then(Simulator::ordered_components).get(cx) {
             c.view(cx, Gui::state);
         }
@@ -53,4 +53,70 @@ pub fn gui(cs: &ComponentStore) {
         );
     })
     .run();
+}
+
+struct Grid {}
+
+impl Grid {
+    // create view
+    fn new(cx: &mut Context) {
+        println!("---- Create Grid ");
+        View::build(GridView {}, cx, |cx| {})
+            .position_type(PositionType::SelfDirected)
+            .left(Pixels(0.0))
+            .top(Pixels(0.0));
+        // .width(Pixels(200.0))
+        // .height(Pixels(400.0));
+    }
+}
+
+struct GridView {}
+
+impl View for GridView {
+    fn element(&self) -> Option<&'static str> {
+        Some("Grid")
+    }
+
+    // draw operates on native pixels
+    // bounds is given in scaled format
+    fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
+        let bounds = cx.bounds();
+        let scale = cx.scale_factor();
+        println!("Grid draw {:?}, {}", bounds, cx.scale_factor());
+
+        let unscaled_height = bounds.height() / scale;
+        let unscaled_width = bounds.width() / scale;
+
+        let rows: usize = (unscaled_height / 20.0).round() as usize;
+        let columns: usize = (unscaled_width / 20.0).round() as usize;
+
+        let mut path = Path::new();
+        let mut paint = Paint::color(vizia::vg::Color::rgbaf(0.0, 0.0, 1.0, 0.2));
+
+        paint.set_line_width(cx.logical_to_physical(1.0));
+
+        for r in 0..rows {
+            path.move_to(
+                bounds.left() + 0.5,
+                bounds.top() + r as f32 * 20.0 * scale + 0.5,
+            );
+            path.line_to(
+                bounds.right() + 0.5,
+                bounds.top() + r as f32 * 20.0 * scale + 0.5,
+            );
+        }
+
+        for c in 0..columns {
+            path.move_to(
+                bounds.left() + c as f32 * 20.0 * scale + 0.5,
+                bounds.top() + 0.5,
+            );
+            path.line_to(
+                bounds.left() + c as f32 * 20.0 * scale + 0.5,
+                bounds.bottom() + 0.5,
+            );
+        }
+
+        canvas.stroke_path(&mut path, &paint);
+    }
 }

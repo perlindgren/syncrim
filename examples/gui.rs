@@ -22,14 +22,14 @@ fn main() {
 
     let c1 = Constant {
         id: "c1".to_string(),
-        pos: (100.0, 50.0),
+        pos: (100.0, 100.0),
         value: 1,
     };
     let c1 = Rc::new(c1);
 
     let c2 = Constant {
         id: "c2".to_string(),
-        pos: (100.0, 100.0),
+        pos: (120.0, 120.0),
         value: 2,
     };
     let c2 = Rc::new(c2);
