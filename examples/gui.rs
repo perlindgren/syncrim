@@ -57,7 +57,7 @@ fn main() {
 
     let p1 = Probe {
         id: "p1".to_string(),
-        pos: (220.0, 170.0),
+        pos: (270.0, 120.0),
         input: Input {
             id: "add1".to_string(),
             index: 0,
