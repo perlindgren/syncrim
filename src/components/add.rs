@@ -43,14 +43,9 @@ impl Component for Add {
     }
 
     // create view
-    fn view(
-        &self,
-        cx: &mut Context,
-        _simulator: Rc<Simulator>,
-        //_state: Wrapper<crate::gui::gui_derived_lenses::state>,
-    ) {
+    fn view(&self, cx: &mut Context, _simulator: Rc<Simulator>) {
         println!("---- Create Add View");
-        View::build(AddView {}, cx, |cx| {
+        View::build(AddView {}, cx, |_cx| {
             // Label::new(cx, &format!("{:?}", self.value));
         })
         .position_type(PositionType::SelfDirected)
@@ -101,6 +96,6 @@ impl View for AddView {
         path.line_to(left + 0.5, top + 0.25 * h + 0.5);
         path.line_to(left + 0.5, top + 0.5);
 
-        canvas.stroke_path(&mut path, &paint);
+        canvas.stroke_path(&path, &paint);
     }
 }

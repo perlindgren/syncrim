@@ -1,4 +1,4 @@
-use crate::common::{Component, Input, OutputType, Ports, SimState, Simulator};
+use crate::common::{Component, Input, OutputType, Ports, Simulator};
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use vizia::prelude::*;
@@ -31,12 +31,7 @@ impl Component for Probe {
     }
 
     // create view
-    fn view(
-        &self,
-        cx: &mut Context,
-        simulator: Rc<Simulator>,
-        // _state: Wrapper<crate::gui::gui_derived_lenses::state>,
-    ) {
+    fn view(&self, cx: &mut Context, simulator: Rc<Simulator>) {
         println!("---- Create Probe View");
         View::build(ProbeView {}, cx, |cx| {
             let input = self.input.clone();
@@ -78,6 +73,6 @@ impl View for ProbeView {
         path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
         path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
 
-        canvas.fill_path(&mut path, &paint);
+        canvas.fill_path(&path, &paint);
     }
 }

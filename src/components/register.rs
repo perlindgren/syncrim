@@ -45,7 +45,7 @@ impl Component for Register {
         // state: Wrapper<crate::gui::gui_derived_lenses::state>,
     ) {
         println!("---- Create Register View ");
-        View::build(RegisterView {}, cx, |cx| {
+        View::build(RegisterView {}, cx, |_cx| {
             // Label::new(cx, state.map(|s| format!("{:?}", s.lens_values[0])));
         })
         .position_type(PositionType::SelfDirected)
@@ -77,6 +77,6 @@ impl View for RegisterView {
         path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
         path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
 
-        canvas.stroke_path(&mut path, &paint);
+        canvas.stroke_path(&path, &paint);
     }
 }

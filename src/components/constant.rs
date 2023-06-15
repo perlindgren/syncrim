@@ -75,6 +75,6 @@ impl View for ConstantView {
         path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
         path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
 
-        canvas.fill_path(&mut path, &paint);
+        canvas.fill_path(&path, &paint);
     }
 }

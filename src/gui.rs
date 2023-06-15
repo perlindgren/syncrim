@@ -33,7 +33,7 @@ pub fn gui(cs: &ComponentStore) {
         .build(cx);
 
         // Grid
-        Grid::new(cx);
+        Grid::view(cx);
 
         for c in &simulator.ordered_components {
             c.view(cx, simulator.clone());
@@ -60,9 +60,9 @@ struct Grid {}
 
 impl Grid {
     // create view
-    fn new(cx: &mut Context) {
+    fn view(cx: &mut Context) {
         println!("---- Create Grid ");
-        View::build(GridView {}, cx, |cx| {});
+        View::build(GridView {}, cx, |_cx| {});
     }
 }
 
@@ -113,6 +113,6 @@ impl View for GridView {
             );
         }
 
-        canvas.stroke_path(&mut path, &paint);
+        canvas.stroke_path(&path, &paint);
     }
 }

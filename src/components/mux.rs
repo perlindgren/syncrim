@@ -1,7 +1,7 @@
 use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
 use serde::{Deserialize, Serialize};
-use vizia::prelude::*;
-use vizia::vg::{Paint, Path};
+// use vizia::prelude::*;
+// use vizia::vg::{Paint, Path};
 
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
