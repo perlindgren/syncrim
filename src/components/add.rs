@@ -45,8 +45,10 @@ impl Component for Add {
     // create view
     fn view(&self, cx: &mut Context, _simulator: Rc<Simulator>) {
         println!("---- Create Add View");
-        View::build(AddView {}, cx, |_cx| {
-            // Label::new(cx, &format!("{:?}", self.value));
+        View::build(AddView {}, cx, |cx| {
+            Label::new(cx, "+")
+                .left(Percentage(50.0))
+                .top(Pixels(40.0 - 10.0));
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 20.0))
