@@ -78,7 +78,7 @@ impl View for GridView {
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
         let scale = cx.scale_factor();
-        println!("Grid draw {:?}, {}", bounds, cx.scale_factor());
+        // println!("Grid draw {:?}, {}", bounds, cx.scale_factor());
 
         let unscaled_height = bounds.height() / scale;
         let unscaled_width = bounds.width() / scale;

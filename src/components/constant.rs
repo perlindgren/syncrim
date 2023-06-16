@@ -62,7 +62,7 @@ impl View for ConstantView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        println!("Constant draw {:?}", bounds);
+        // println!("Constant draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 1.0, 0.0));

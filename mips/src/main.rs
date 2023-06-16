@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use mips::components::*;
 use syncrim::{common::ComponentStore, gui::gui};
 
 fn main() {

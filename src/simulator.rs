@@ -19,6 +19,8 @@ impl Simulator {
         let mut id_component = HashMap::new(); // IdComponent(HashMap::new());
 
         // allocate storage for lensed outputs
+
+        println!("-- allocate storage for lensed outputs");
         for c in &component_store.store {
             let (id, ports) = c.get_id_ports();
 
@@ -36,12 +38,6 @@ impl Simulator {
             }
         }
 
-        println!("---");
-
-        for id in id_component.keys() {
-            println!("id {}", id);
-        }
-
         let mut graph = Graph::<_, (), petgraph::Directed>::new();
         let mut id_node = HashMap::new();
         let mut node_comp = HashMap::new();
@@ -52,7 +48,8 @@ impl Simulator {
             id_node.insert(id, node);
             node_comp.insert(node, c);
         }
-        println!("id_node {:?}", id_node);
+
+        println!("\nid_node {:?}", id_node);
 
         for (node, c) in &node_comp {
             println!("node {:?}, comp_id {:?}", node, c.get_id_ports());

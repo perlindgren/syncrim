@@ -38,6 +38,8 @@ impl Component for Add {
         // compute addition (notice will panic on overflow)
         let value = a_in + b_in;
 
+        println!("eval Add a_in {}, b_in {}, value = {}", a_in, b_in, value);
+
         // set output
         simulator.set_id_index(sim_state, &self.id, 0, value);
     }
@@ -67,7 +69,7 @@ impl View for AddView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        println!("Add draw {:?}", bounds);
+        //println!("Add draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));

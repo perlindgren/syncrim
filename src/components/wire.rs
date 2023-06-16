@@ -53,7 +53,7 @@ impl View for WireView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        println!("Wire draw {:?}", bounds);
+        // println!("Wire draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbaf(0.0, 0.0, 0.1, 0.5));

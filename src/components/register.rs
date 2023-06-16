@@ -65,7 +65,7 @@ impl View for RegisterView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        println!("Register draw {:?}", bounds);
+        // println!("Register draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 0.0, 0.0));

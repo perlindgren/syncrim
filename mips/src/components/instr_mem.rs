@@ -26,7 +26,7 @@ impl Component for InstrMem {
         (
             self.id.clone(),
             Ports {
-                inputs: vec![],
+                inputs: vec![self.pc.clone()],
                 out_type: OutputType::Combinatorial,
                 outputs: vec![Output::Function],
             },
@@ -36,8 +36,11 @@ impl Component for InstrMem {
     fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
         // get instr at pc/4
         let pc = simulator.get_input_val(sim_state, &self.pc);
+
+        println!("--- evaluate instr mem: pc {}", pc);
         let instr = self.instr[(pc / 4) as usize];
         // set output
+        println!("--- output {}", instr);
         simulator.set_id_index(sim_state, &self.id, 0, instr);
     }
 
@@ -70,9 +73,13 @@ pub struct InstMem {
 }
 
 impl View for InstMem {
+    fn element(&self) -> Option<&'static str> {
+        Some("InstMem")
+    }
+
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        println!("InstMem draw {:?}", bounds);
+        // println!("InstMem draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(Color::rgbf(0.0, 1.0, 1.0));

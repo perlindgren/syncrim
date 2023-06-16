@@ -61,7 +61,7 @@ impl View for ProbeView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        println!("Probe draw {:?}", bounds);
+        // println!("Probe draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 1.0, 1.0));
