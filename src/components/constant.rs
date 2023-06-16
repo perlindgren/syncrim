@@ -46,7 +46,6 @@ impl Component for Constant {
             Label::new(cx, &format!("{:?}", self.value));
         })
         .position_type(PositionType::SelfDirected)
-        // .min_size(Pixels(20.0))
         .left(Pixels(self.pos.0 - 10.0))
         .top(Pixels(self.pos.1 - 10.0))
         .width(Pixels(20.0))

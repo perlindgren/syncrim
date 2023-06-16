@@ -71,29 +71,29 @@ impl View for AddView {
         let mut paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));
         paint.set_line_width(cx.logical_to_physical(1.0));
 
-        let h = bounds.height();
-        let w = bounds.width();
+        let height = bounds.height();
+        let width = bounds.width();
         let top = bounds.top();
         let left = bounds.left();
-        let r = bounds.right();
+        let right = bounds.right();
         let bottom = bounds.bottom();
 
         // top left
         path.move_to(left + 0.5, top + 0.5);
 
         // top right corner
-        path.line_to(left + w * 0.5 + 0.5, top + 0.5);
-        path.line_to(r + 0.5, top + h * 0.25 + 0.5);
+        path.line_to(left + width * 0.5 + 0.5, top + 0.5);
+        path.line_to(right + 0.5, top + height * 0.25 + 0.5);
 
         // bottom right corner
-        path.line_to(bounds.right() + 0.5, bottom - h * 0.25 + 0.5);
-        path.line_to(left + w * 0.5 + 0.5, bottom + 0.5);
+        path.line_to(right + 0.5, bottom - height * 0.25 + 0.5);
+        path.line_to(left + width * 0.5 + 0.5, bottom + 0.5);
         path.line_to(left + 0.5, bottom + 0.5);
 
         // left outtake
-        path.line_to(left + 0.5, bottom - 0.25 * h + 0.5);
-        path.line_to(left + w * 0.25 + 0.5, top + 0.5 * h + 0.5);
-        path.line_to(left + 0.5, top + 0.25 * h + 0.5);
+        path.line_to(left + 0.5, bottom - 0.25 * height + 0.5);
+        path.line_to(left + width * 0.25 + 0.5, top + 0.5 * height + 0.5);
+        path.line_to(left + 0.5, top + 0.25 * height + 0.5);
         path.line_to(left + 0.5, top + 0.5);
 
         canvas.stroke_path(&path, &paint);
