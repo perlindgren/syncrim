@@ -10,6 +10,7 @@
     "struct",
     "syncrim",
     "toposort",
+    "trik",
     "typetag",
     "usize",
     "vizia"
