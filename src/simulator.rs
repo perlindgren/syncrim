@@ -137,4 +137,8 @@ impl Simulator {
             component.evaluate(self, sim_state);
         }
     }
+
+    pub fn reset(&self, sim_state: &mut SimState) {
+        sim_state.lens_values.iter_mut().for_each(|val| *val = 0)
+    }
 }

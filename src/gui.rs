@@ -11,12 +11,14 @@ pub struct Gui {
 
 enum GuiEvent {
     Clock,
+    Reset,
 }
 
 impl Model for Gui {
     fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
         event.map(|app_event, _meta| match app_event {
             GuiEvent::Clock => self.simulator.clock(&mut self.state),
+            GuiEvent::Reset => self.simulator.reset(&mut self.state),
         });
     }
 }
@@ -47,11 +49,19 @@ pub fn gui(cs: &ComponentStore) {
                 .map(|v| format!("Raw state {:?}", v)),
         );
 
-        Button::new(
-            cx,
-            |ex| ex.emit(GuiEvent::Clock),
-            |cx| Label::new(cx, "Clock"),
-        );
+        HStack::new(cx, |cx| {
+            Button::new(
+                cx,
+                |ex| ex.emit(GuiEvent::Clock),
+                |cx| Label::new(cx, "Clock"),
+            );
+
+            Button::new(
+                cx,
+                |ex| ex.emit(GuiEvent::Reset),
+                |cx| Label::new(cx, "Reset"),
+            );
+        });
     })
     .run();
 }

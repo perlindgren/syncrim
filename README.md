@@ -156,6 +156,8 @@ Modularity:
 
   Ultimately the generic and architecture dependent components should be sufficient to model common embedded processors.
 
+- Use of logging framework. Currently, neither `SyncRim` nor `Vizia` uses any logging framework, however `Vizia` provides a `log!` macro for transparent tracing on `Wasm` and other platforms. This is currently not used by `SyncRim`).
+  
 - Error handling: Currently, `SyncRim` does not implement any graceful error handling (will abort with a panic).
 
 - Testing: CI based unit and integration tests. Currently there are no tests at all.
