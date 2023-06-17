@@ -7,30 +7,51 @@ use vizia::vg::{Paint, Path};
 pub struct Gui {
     pub simulator: Rc<Simulator>,
     pub state: SimState,
+    // History, acts like a stack
+    pub history: Vec<Vec<u32>>,
 }
 
 enum GuiEvent {
     Clock,
     Reset,
+    UnClock,
 }
 
 impl Model for Gui {
     fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
         event.map(|app_event, _meta| match app_event {
-            GuiEvent::Clock => self.simulator.clock(&mut self.state),
-            GuiEvent::Reset => self.simulator.reset(&mut self.state),
+            GuiEvent::Clock => {
+                // push current state
+                self.history.push(self.state.lens_values.clone());
+                self.simulator.clock(&mut self.state);
+            }
+            GuiEvent::Reset => {
+                self.simulator.reset(&mut self.state);
+                // clear history
+                self.history = vec![];
+            }
+            GuiEvent::UnClock => {
+                if let Some(state) = self.history.pop() {
+                    // set old state
+                    self.state.lens_values = state;
+                }
+            }
         });
     }
 }
 
 pub fn gui(cs: &ComponentStore) {
-    let (simulator, sim_state) = Simulator::new(cs);
+    let (simulator, mut sim_state) = Simulator::new(cs);
     println!("--- SimState\n {:#?}", sim_state.lens_values);
     let simulator = Rc::new(simulator);
+    // Initial clock to propagate constants
+    simulator.clock(&mut sim_state);
+
     Application::new(move |cx| {
         Gui {
             simulator: simulator.clone(),
             state: sim_state,
+            history: vec![],
         }
         .build(cx);
 
@@ -54,6 +75,12 @@ pub fn gui(cs: &ComponentStore) {
                 cx,
                 |ex| ex.emit(GuiEvent::Clock),
                 |cx| Label::new(cx, "Clock"),
+            );
+
+            Button::new(
+                cx,
+                |ex| ex.emit(GuiEvent::UnClock),
+                |cx| Label::new(cx, "UnClock"),
             );
 
             Button::new(

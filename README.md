@@ -83,7 +83,7 @@ Disclaimer: you will run into panics in case your model is faulty, sorry no nice
 
 - Flat hierarchy (no sub-components, at least for now). However the graphical representation may contain sub-views.
 
-- Grid based component layout. (However sub-views may use automated layout)
+- Grid based component layout. (However sub-views may use automated layout).
 
 Modularity:
 
@@ -115,6 +115,14 @@ Modularity:
 - Simulation by ordered traversal and simulation state mutation.
 
 - Graphical representation of simulation state.
+  
+  - `Clock` for progressing state. 
+  - 
+  - `UnClock` for reverting state.
+
+  - `Reset` to set initial state. 
+
+  Notice, the system is initially in `Reset`.
 
 - Limited set of commodity components:
   
@@ -134,7 +142,7 @@ Modularity:
 
 ## TODO:
 
-- The GUI is currently very primitive (a single `Clock` button). Envisioned functionality:
+- The GUI is currently very primitive (only `Clock`, `UnClock`, `Reset` controls). Envisioned functionality:
 
   - Run for given number of cycles. Run until signal condition. Restart. Step backwards. Step back until signal condition. Reset. Etc.
 

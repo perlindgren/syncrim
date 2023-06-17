@@ -139,6 +139,7 @@ impl Simulator {
     }
 
     pub fn reset(&self, sim_state: &mut SimState) {
-        sim_state.lens_values.iter_mut().for_each(|val| *val = 0)
+        sim_state.lens_values.iter_mut().for_each(|val| *val = 0);
+        self.clock(sim_state);
     }
 }
