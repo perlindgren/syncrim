@@ -19,10 +19,19 @@ pub struct Gui {
     pub mode: Mode,
 }
 
+#[derive(Debug, PartialEq, Copy, Clone)]
 enum GuiEvent {
     Clock,
     Reset,
     UnClock,
+    Play,
+    Pause,
+    PlayToggle,
+}
+
+// The actions that are associated with the key chords.
+#[derive(Debug, PartialEq, Copy, Clone)]
+enum Action {
     Play,
     Pause,
 }
@@ -39,6 +48,8 @@ impl Model for Gui {
                 self.simulator.reset(&mut self.state);
                 // clear history
                 self.history = vec![];
+                // make sure its in paused mode
+                self.mode = Mode::Pause;
             }
             GuiEvent::UnClock => {
                 if let Some(state) = self.history.pop() {
@@ -48,6 +59,12 @@ impl Model for Gui {
             }
             GuiEvent::Play => self.mode = Mode::Play,
             GuiEvent::Pause => self.mode = Mode::Pause,
+            GuiEvent::PlayToggle => {
+                self.mode = match self.mode {
+                    Mode::Play => Mode::Pause,
+                    _ => Mode::Play,
+                }
+            }
         });
     }
 }
@@ -59,6 +76,46 @@ pub fn gui(cs: &ComponentStore) {
     simulator.clock(&mut sim_state);
 
     Application::new(move |cx| {
+        // Build the keymap.
+        Keymap::from(vec![
+            (
+                KeyChord::new(Modifiers::empty(), Code::F5),
+                KeymapEntry::new(Action::Play, |ex| {
+                    println!("Action F5");
+                    ex.emit(GuiEvent::PlayToggle);
+                }),
+            ),
+            (
+                KeyChord::new(Modifiers::SHIFT, Code::F5),
+                KeymapEntry::new(Action::Play, |ex| {
+                    println!("Action Shift F5");
+                    ex.emit(GuiEvent::Pause);
+                }),
+            ),
+            (
+                KeyChord::new(Modifiers::SHIFT | Modifiers::CTRL, Code::F5),
+                KeymapEntry::new(Action::Play, |ex| {
+                    println!("Action Shift Ctrl F5");
+                    ex.emit(GuiEvent::Reset);
+                }),
+            ),
+            (
+                KeyChord::new(Modifiers::empty(), Code::F10),
+                KeymapEntry::new(Action::Play, |ex| {
+                    println!("Action F10");
+                    ex.emit(GuiEvent::Clock);
+                }),
+            ),
+            (
+                KeyChord::new(Modifiers::SHIFT, Code::F10),
+                KeymapEntry::new(Action::Play, |ex| {
+                    println!("Action Shift F10");
+                    ex.emit(GuiEvent::UnClock);
+                }),
+            ),
+        ])
+        .build(cx);
+
         Gui {
             simulator: simulator.clone(),
             state: sim_state,
