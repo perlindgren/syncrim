@@ -1,20 +1,30 @@
 use crate::common::{ComponentStore, SimState, Simulator};
 use std::rc::Rc;
-use vizia::prelude::*;
-use vizia::vg::{Paint, Path};
+use vizia::{
+    icons,
+    prelude::*,
+    vg::{Paint, Path},
+};
 
+pub enum Mode {
+    Pause,
+    Play,
+}
 #[derive(Lens)]
 pub struct Gui {
     pub simulator: Rc<Simulator>,
     pub state: SimState,
     // History, acts like a stack
     pub history: Vec<Vec<u32>>,
+    pub mode: Mode,
 }
 
 enum GuiEvent {
     Clock,
     Reset,
     UnClock,
+    Play,
+    Pause,
 }
 
 impl Model for Gui {
@@ -36,13 +46,14 @@ impl Model for Gui {
                     self.state.lens_values = state;
                 }
             }
+            GuiEvent::Play => self.mode = Mode::Play,
+            GuiEvent::Pause => self.mode = Mode::Pause,
         });
     }
 }
 
 pub fn gui(cs: &ComponentStore) {
     let (simulator, mut sim_state) = Simulator::new(cs);
-    println!("--- SimState\n {:#?}", sim_state.lens_values);
     let simulator = Rc::new(simulator);
     // Initial clock to propagate constants
     simulator.clock(&mut sim_state);
@@ -52,15 +63,18 @@ pub fn gui(cs: &ComponentStore) {
             simulator: simulator.clone(),
             state: sim_state,
             history: vec![],
+            mode: Mode::Pause,
         }
         .build(cx);
 
         // Grid
-        Grid::view(cx);
-
-        for c in &simulator.ordered_components {
-            c.view(cx, simulator.clone());
-        }
+        GridView::new(cx, |cx| {
+            for c in &simulator.ordered_components {
+                c.view(cx, simulator.clone());
+            }
+        })
+        .top(Stretch(1.0))
+        .bottom(Stretch(1.0));
 
         // a label to display the raw state for debugging purpose
         Label::new(
@@ -71,39 +85,87 @@ pub fn gui(cs: &ComponentStore) {
         );
 
         HStack::new(cx, |cx| {
-            Button::new(
-                cx,
-                |ex| ex.emit(GuiEvent::Clock),
-                |cx| Label::new(cx, "Clock"),
-            );
-
-            Button::new(
-                cx,
-                |ex| ex.emit(GuiEvent::UnClock),
-                |cx| Label::new(cx, "UnClock"),
-            );
-
+            // Reset
             Button::new(
                 cx,
                 |ex| ex.emit(GuiEvent::Reset),
-                |cx| Label::new(cx, "Reset"),
-            );
+                |cx| Label::new(cx, icons::ICON_PLAYER_SKIP_BACK),
+            )
+            .tooltip(|cx| {
+                Label::new(cx, "Reset");
+            });
+
+            // UnClock (step back)
+            Button::new(
+                cx,
+                |ex| ex.emit(GuiEvent::UnClock),
+                |cx| Label::new(cx, icons::ICON_CHEVRON_LEFT),
+            )
+            .tooltip(|cx| {
+                Label::new(cx, "UnClock");
+            });
+
+            // Clock (step forward)
+            Button::new(
+                cx,
+                |ex| ex.emit(GuiEvent::Clock),
+                |cx| Label::new(cx, icons::ICON_CHEVRON_RIGHT),
+            )
+            .tooltip(|cx| {
+                Label::new(cx, "Clock");
+            });
+
+            // Play (continuous mode)
+            Button::new(
+                cx,
+                |ex| ex.emit(GuiEvent::Play),
+                |cx| {
+                    Label::new(
+                        cx,
+                        Gui::mode.map(|mode| match mode {
+                            Mode::Pause => icons::ICON_PLAYER_PLAY,
+                            Mode::Play => icons::ICON_PLAYER_PLAY_FILLED,
+                        }),
+                    )
+                },
+            )
+            .tooltip(|cx| {
+                Label::new(cx, "Play");
+            });
+
+            // Pause (step mode)
+            Button::new(
+                cx,
+                |ex| ex.emit(GuiEvent::Pause),
+                |cx| {
+                    Label::new(
+                        cx,
+                        Gui::mode.map(|mode| match mode {
+                            Mode::Pause => icons::ICON_PLAYER_PAUSE_FILLED,
+                            Mode::Play => icons::ICON_PLAYER_PAUSE,
+                        }),
+                    )
+                },
+            )
+            .tooltip(|cx| {
+                Label::new(cx, "Pause");
+            });
         });
     })
+    .title("SyncRim")
     .run();
 }
 
-struct Grid {}
+struct GridView {}
 
-impl Grid {
-    // create view
-    fn view(cx: &mut Context) {
-        println!("---- Create Grid ");
-        View::build(GridView {}, cx, |_cx| {});
+impl GridView {
+    fn new<F>(cx: &mut Context, content: F) -> Handle<'_, Self>
+    where
+        F: FnOnce(&mut Context),
+    {
+        View::build(GridView {}, cx, |cx| content(cx))
     }
 }
-
-struct GridView {}
 
 impl View for GridView {
     fn element(&self) -> Option<&'static str> {
