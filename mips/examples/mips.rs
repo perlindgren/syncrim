@@ -4,7 +4,7 @@ use mips::components::*;
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
-    gui::gui,
+    gui_vizia::gui,
 };
 
 use std::rc::Rc;

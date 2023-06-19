@@ -2,6 +2,7 @@ use std::rc::Rc;
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
+    gui_vizia::gui,
 };
 
 fn main() {
@@ -58,5 +59,5 @@ fn main() {
 
     cs.save_file("model.json");
 
-    syncrim::gui::gui(&cs);
+    gui(&cs);
 }

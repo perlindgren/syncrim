@@ -1,4 +1,4 @@
-use crate::gui::GuiEvent;
+use crate::gui_vizia::GuiEvent;
 use vizia::{icons, prelude::*};
 
 pub(crate) struct Menu {}

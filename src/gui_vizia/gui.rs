@@ -1,6 +1,6 @@
 use crate::common::{ComponentStore, SimState, Simulator};
-use crate::gui::grid::GridView;
-use crate::gui::menu::Menu;
+use crate::gui_vizia::grid::GridView;
+use crate::gui_vizia::menu::Menu;
 use std::rc::Rc;
 use vizia::{
     icons,
@@ -96,7 +96,7 @@ pub fn gui(cs: &ComponentStore) {
         cx.add_stylesheet(STYLE).expect("Failed to add stylesheet");
 
         // Create keymap
-        crate::gui::keymap::new(cx);
+        crate::gui_vizia::keymap::new(cx);
 
         Gui {
             simulator: simulator.clone(),

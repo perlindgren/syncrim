@@ -1,4 +1,4 @@
-use crate::gui::GuiEvent;
+use crate::gui_vizia::GuiEvent;
 use vizia::prelude::*;
 
 // Dummy action for now
