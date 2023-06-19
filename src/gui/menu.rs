@@ -200,7 +200,13 @@ impl Menu {
                             |_| println!("Show License"),
                             |cx| Label::new(cx, "Show License"),
                         );
-                        MenuButton::new(cx, |_| println!("About"), |cx| Label::new(cx, "About"));
+                        MenuButton::new(
+                            cx,
+                            |cx| {
+                                cx.emit(GuiEvent::ShowAbout);
+                            },
+                            |cx| Label::new(cx, "About"),
+                        );
                     },
                 );
             });

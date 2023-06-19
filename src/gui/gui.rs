@@ -21,6 +21,7 @@ pub struct Gui {
     pub history: Vec<Vec<u32>>,
     pub mode: Mode,
     pub is_saved: bool,
+    pub show_about: bool,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -32,6 +33,8 @@ pub(crate) enum GuiEvent {
     Pause,
     PlayToggle,
     Preferences,
+    ShowAbout,
+    HideAbout,
 }
 
 impl Model for Gui {
@@ -76,6 +79,8 @@ impl Model for Gui {
                 }
             }
             GuiEvent::Preferences => println!("Preferences"),
+            GuiEvent::ShowAbout => self.show_about = true,
+            GuiEvent::HideAbout => self.show_about = false,
         });
     }
 }
@@ -109,6 +114,7 @@ pub fn gui(cs: &ComponentStore) {
             history: vec![],
             mode: Mode::Pause,
             is_saved: false,
+            show_about: false,
         }
         .build(cx);
 
@@ -217,6 +223,18 @@ pub fn gui(cs: &ComponentStore) {
                 })
                 .size(Auto);
             });
+            Popup::new(cx, Gui::show_about, true, |cx| {
+                Label::new(cx, "Modal Title").class("title");
+                Label::new(cx, "This is a message");
+                Button::new(
+                    cx,
+                    |cx| cx.emit(GuiEvent::HideAbout),
+                    |cx| Label::new(cx, "Ok"),
+                )
+                .class("accent");
+            })
+            // .on_blur(|cx| cx.emit(GuiEvent::HideAbout))
+            .class("modal");
         });
     })
     .title("SyncRim")
