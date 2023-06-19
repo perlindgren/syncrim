@@ -80,44 +80,13 @@ impl Model for Gui {
     }
 }
 
-// const STYLE: &str = r#"
-
-//     .modal {
-//         space: 1s;
-//         background-color: white;
-//         border-radius: 3px;
-//         border-width: 1px;
-//         border-color: #999999;
-//         outer-shadow: 0 3 10 #00000055;
-//         overflow: visible;
-//         child-space: 10px;
-//     }
-
-//     .modal>vstack>label {
-//         width: auto;
-//         height: auto;
-//         space: 5px;
-//         child-space: 1s;
-//     }
-
-//     .modal button {
-//         border-radius: 3px;
-//         child-space: 1s;
-//     }
-
-//     .modal hstack {
-//         child-space: 1s;
-//         col-between: 20px;
-//     }
-// "#;
-
 const STYLE: &str = r#"
     .tt_shortcut {
         color: #c4c4c4;
     }
 
-    submenu.file_menu > popop {
-        width: 600px;
+    submenu.file_menu > popup {
+        width: 200px;
     }
 "#;
 
@@ -170,7 +139,11 @@ pub fn gui(cs: &ComponentStore) {
                 |cx| Label::new(cx, icons::ICON_PLAYER_SKIP_BACK),
             )
             .tooltip(|cx| {
-                Label::new(cx, "Reset Shift + Ctrl + F5");
+                HStack::new(cx, |cx| {
+                    Label::new(cx, "Reset");
+                    Label::new(cx, " Shift + Ctrl + F5").class("tt_shortcut");
+                })
+                .size(Auto);
             });
 
             // UnClock (step back)
@@ -180,7 +153,11 @@ pub fn gui(cs: &ComponentStore) {
                 |cx| Label::new(cx, icons::ICON_CHEVRON_LEFT),
             )
             .tooltip(|cx| {
-                Label::new(cx, "UnClock Shift + F10");
+                HStack::new(cx, |cx| {
+                    Label::new(cx, "UnClock");
+                    Label::new(cx, " Shift + F10").class("tt_shortcut");
+                })
+                .size(Auto);
             });
 
             // Clock (step forward)
