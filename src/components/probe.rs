@@ -38,7 +38,7 @@ impl Component for Probe {
 
             Label::new(
                 cx,
-                crate::gui::Gui::state.map(move |sim_state| {
+                crate::gui_vizia::Gui::state.map(move |sim_state| {
                     format!(" {:?}", simulator.clone().get_input_val(sim_state, &input))
                 }),
             );

@@ -1,5 +1,5 @@
 {
-  "rust-analyzer.linkedProjects": ["./mips/Cargo.toml"],
+  "rust-analyzer.linkedProjects": ["./mips/Cargo.toml", "./Cargo.toml"],
   "cSpell.ignoreWords": [
     "Clippy",
     "Insr",

@@ -107,7 +107,7 @@ impl View for MuxView {
         // selector
         let select = self
             .simulator
-            .get_input_val(&crate::gui::Gui::state.get(cx), &self.select);
+            .get_input_val(&crate::gui_vizia::Gui::state.get(cx), &self.select);
 
         println!("----- select = {}", select);
         paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));

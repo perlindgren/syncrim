@@ -8,18 +8,13 @@ use vizia::{
     //vg::{Paint, Path},
 };
 
-pub enum Mode {
-    Pause,
-    Play,
-}
-
 #[derive(Lens)]
 pub struct Gui {
     pub simulator: Rc<Simulator>,
     pub state: SimState,
     // History, acts like a stack
     pub history: Vec<Vec<u32>>,
-    pub mode: Mode,
+    pub pause: bool,
     pub is_saved: bool,
     pub show_about: bool,
 }
@@ -62,7 +57,7 @@ impl Model for Gui {
                 // clear history
                 self.history = vec![];
                 // make sure its in paused mode
-                self.mode = Mode::Pause;
+                self.pause = true;
             }
             GuiEvent::UnClock => {
                 if let Some(state) = self.history.pop() {
@@ -70,14 +65,9 @@ impl Model for Gui {
                     self.state.lens_values = state;
                 }
             }
-            GuiEvent::Play => self.mode = Mode::Play,
-            GuiEvent::Pause => self.mode = Mode::Pause,
-            GuiEvent::PlayToggle => {
-                self.mode = match self.mode {
-                    Mode::Play => Mode::Pause,
-                    _ => Mode::Play,
-                }
-            }
+            GuiEvent::Play => self.pause = false,
+            GuiEvent::Pause => self.pause = true,
+            GuiEvent::PlayToggle => self.pause = !self.pause,
             GuiEvent::Preferences => println!("Preferences"),
             GuiEvent::ShowAbout => self.show_about = true,
             GuiEvent::HideAbout => self.show_about = false,
@@ -112,7 +102,7 @@ pub fn gui(cs: &ComponentStore) {
             simulator: simulator.clone(),
             state: sim_state,
             history: vec![],
-            mode: Mode::Pause,
+            pause: true,
             is_saved: false,
             show_about: false,
         }
@@ -187,9 +177,12 @@ pub fn gui(cs: &ComponentStore) {
                 |cx| {
                     Label::new(
                         cx,
-                        Gui::mode.map(|mode| match mode {
-                            Mode::Pause => icons::ICON_PLAYER_PLAY,
-                            Mode::Play => icons::ICON_PLAYER_PLAY_FILLED,
+                        Gui::pause.map(|pause| {
+                            if *pause {
+                                icons::ICON_PLAYER_PLAY
+                            } else {
+                                icons::ICON_PLAYER_PLAY_FILLED
+                            }
                         }),
                     )
                 },
@@ -209,9 +202,12 @@ pub fn gui(cs: &ComponentStore) {
                 |cx| {
                     Label::new(
                         cx,
-                        Gui::mode.map(|mode| match mode {
-                            Mode::Pause => icons::ICON_PLAYER_PAUSE_FILLED,
-                            Mode::Play => icons::ICON_PLAYER_PAUSE,
+                        Gui::pause.map(|pause| {
+                            if *pause {
+                                icons::ICON_PLAYER_PAUSE_FILLED
+                            } else {
+                                icons::ICON_PLAYER_PAUSE
+                            }
                         }),
                     )
                 },
