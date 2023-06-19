@@ -99,7 +99,10 @@ impl Menu {
                             },
                         );
                     },
-                );
+                )
+                .class("file_menu");
+
+                // .size(Auto);
                 Submenu::new(
                     cx,
                     |cx| Label::new(cx, "Edit"),
