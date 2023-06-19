@@ -70,10 +70,18 @@ fn main() {
                 size: (30.0, 0.0),
             }),
             Rc::new(Probe {
-                id: "p1".to_string(),
+                id: "p_add".to_string(),
                 pos: (280.0, 120.0),
                 input: Input {
                     id: "add1".to_string(),
+                    index: 0,
+                },
+            }),
+            Rc::new(Probe {
+                id: "p_reg".to_string(),
+                pos: (130.0, 120.0),
+                input: Input {
+                    id: "r1".to_string(),
                     index: 0,
                 },
             }),
