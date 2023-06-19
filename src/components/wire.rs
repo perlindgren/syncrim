@@ -32,7 +32,7 @@ impl Component for Wire {
 
     fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
 
-    // create view
+    // create view vizia
     fn view(&self, cx: &mut Context, _simulator: Rc<Simulator>) {
         println!("---- Create Wire View");
         View::build(WireView {}, cx, |_cx| {})

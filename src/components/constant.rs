@@ -34,7 +34,33 @@ impl Component for Constant {
         simulator.set_id_index(sim_state, &self.id, 0, self.value);
     }
 
-    // create view
+    // egui
+    fn render(&self, ui: &mut egui::Ui, simulator: Rc<Simulator>, offset: egui::Vec2, scale: f32) {
+        let mut offset = offset.clone();
+        offset.x += self.pos.0 * scale;
+        offset.y += self.pos.1 * scale;
+        println!("---- Create Add View");
+        // The shape
+        // 40x30
+        /*
+        ui.painter().add(egui::Shape::text(
+            egui::Painter::fonts(),
+            egui::Pos2 {
+                x: 0.0f32,
+                y: 0.0f32,
+            } + offset,
+            egui::Align2::LEFT_TOP,
+            self.value.to_string(),
+            egui::FontId::proportional(scale),
+            egui::Color32::GREEN,
+        ));
+        */
+        //ui.add(egui::Label::new(self.value.to_string()));
+        //ui.label(self.value.to_string());
+        //ui.painter().add(egui::Shape::closed_line());
+    }
+
+    // create view vizia
     fn view(
         &self,
         cx: &mut Context,

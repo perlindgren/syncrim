@@ -44,7 +44,95 @@ impl Component for Add {
         simulator.set_id_index(sim_state, &self.id, 0, value);
     }
 
-    // create view
+    // egui
+    fn render(&self, ui: &mut egui::Ui, simulator: Rc<Simulator>, offset: egui::Vec2, scale: f32) {
+        let mut offset = offset.clone();
+        offset.x += self.pos.0 * scale;
+        offset.y += self.pos.1 * scale;
+        println!("---- Create Add View");
+        // The shape
+        // 40x30
+        ui.painter().add(egui::Shape::closed_line(
+            vec![
+                egui::Pos2 {
+                    x: 0f32 * scale,
+                    y: 0f32 * scale,
+                } + offset,
+                egui::Pos2 {
+                    x: 10f32 * scale,
+                    y: 0f32 * scale,
+                } + offset,
+                egui::Pos2 {
+                    x: 20f32 * scale,
+                    y: 10f32 * scale,
+                } + offset,
+                egui::Pos2 {
+                    x: 20f32 * scale,
+                    y: 30f32 * scale,
+                } + offset,
+                egui::Pos2 {
+                    x: 10f32 * scale,
+                    y: 40f32 * scale,
+                } + offset,
+                egui::Pos2 {
+                    x: 0f32 * scale,
+                    y: 40f32 * scale,
+                } + offset,
+                egui::Pos2 {
+                    x: 0f32 * scale,
+                    y: 30f32 * scale,
+                } + offset,
+                egui::Pos2 {
+                    x: 5f32 * scale,
+                    y: 20f32 * scale,
+                } + offset,
+                egui::Pos2 {
+                    x: 0f32 * scale,
+                    y: 10f32 * scale,
+                } + offset,
+            ],
+            egui::Stroke {
+                width: 1.0f32,
+                color: egui::Color32::BLACK,
+            },
+        ));
+
+        // plus sign
+        ui.painter().add(egui::Shape::line_segment(
+            [
+                egui::Pos2 {
+                    x: 10f32 * scale,
+                    y: 20f32 * scale,
+                } + offset,
+                egui::Pos2 {
+                    x: 15f32 * scale,
+                    y: 20f32 * scale,
+                } + offset,
+            ],
+            egui::Stroke {
+                width: 1.0f32,
+                color: egui::Color32::BLACK,
+            },
+        ));
+        ui.painter().add(egui::Shape::line_segment(
+            [
+                egui::Pos2 {
+                    x: 12.5f32 * scale,
+                    y: 17.5f32 * scale,
+                } + offset,
+                egui::Pos2 {
+                    x: 12.5f32 * scale,
+                    y: 22.5f32 * scale,
+                } + offset,
+            ],
+            egui::Stroke {
+                width: 1.0f32,
+                color: egui::Color32::BLACK,
+            },
+        ));
+    }
+
+    // create view vizia
     fn view(&self, cx: &mut Context, _simulator: Rc<Simulator>) {
         println!("---- Create Add View");
         View::build(AddView {}, cx, |cx| {

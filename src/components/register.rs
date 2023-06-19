@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
+
 #[derive(Serialize, Deserialize)]
 pub struct Register {
     pub id: String,
@@ -37,7 +38,7 @@ impl Component for Register {
         println!("eval: register id {} in {}", self.id, value);
     }
 
-    // create view
+    // create view vizia
     fn view(
         &self,
         cx: &mut Context,

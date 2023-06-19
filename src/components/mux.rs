@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
+
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
     pub id: String,
@@ -42,7 +43,7 @@ impl Component for Mux {
         simulator.set_id_index(sim_state, &self.id, 0, value);
     }
 
-    // create view
+    // create view vizia
     fn view(&self, cx: &mut Context, simulator: Rc<Simulator>) {
         println!("---- Create Add View");
         View::build(

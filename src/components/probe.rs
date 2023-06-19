@@ -1,4 +1,5 @@
 use crate::common::{Component, Input, OutputType, Ports, Simulator};
+use egui;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use vizia::prelude::*;
@@ -31,6 +32,11 @@ impl Component for Probe {
     }
 
     // create view
+    fn render(&self, ui: &mut egui::Ui, simulator: Rc<Simulator>, offset: egui::Vec2, scale: f32) {
+        println!("---- Create Probe View");
+    }
+
+    // create view vizia
     fn view(&self, cx: &mut Context, simulator: Rc<Simulator>) {
         println!("---- Create Probe View");
         View::build(ProbeView {}, cx, |cx| {
