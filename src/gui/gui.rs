@@ -22,20 +22,14 @@ pub struct Gui {
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
-enum GuiEvent {
+pub(crate) enum GuiEvent {
     Clock,
     Reset,
     UnClock,
     Play,
     Pause,
     PlayToggle,
-}
-
-// The actions that are associated with the key chords.
-#[derive(Debug, PartialEq, Copy, Clone)]
-enum Action {
-    Play,
-    Pause,
+    Preferences,
 }
 
 impl Model for Gui {
@@ -79,6 +73,7 @@ impl Model for Gui {
                     _ => Mode::Play,
                 }
             }
+            GuiEvent::Preferences => println!("Preferences"),
         });
     }
 }
@@ -90,45 +85,8 @@ pub fn gui(cs: &ComponentStore) {
     simulator.clock(&mut sim_state);
 
     Application::new(move |cx| {
-        // Build the keymap.
-        Keymap::from(vec![
-            (
-                KeyChord::new(Modifiers::empty(), Code::F5),
-                KeymapEntry::new(Action::Play, |ex| {
-                    println!("Action F5");
-                    ex.emit(GuiEvent::PlayToggle);
-                }),
-            ),
-            (
-                KeyChord::new(Modifiers::SHIFT, Code::F5),
-                KeymapEntry::new(Action::Play, |ex| {
-                    println!("Action Shift F5");
-                    ex.emit(GuiEvent::Pause);
-                }),
-            ),
-            (
-                KeyChord::new(Modifiers::SHIFT | Modifiers::CTRL, Code::F5),
-                KeymapEntry::new(Action::Play, |ex| {
-                    println!("Action Shift Ctrl F5");
-                    ex.emit(GuiEvent::Reset);
-                }),
-            ),
-            (
-                KeyChord::new(Modifiers::empty(), Code::F10),
-                KeymapEntry::new(Action::Play, |ex| {
-                    println!("Action F10");
-                    ex.emit(GuiEvent::Clock);
-                }),
-            ),
-            (
-                KeyChord::new(Modifiers::SHIFT, Code::F10),
-                KeymapEntry::new(Action::Play, |ex| {
-                    println!("Action Shift F10");
-                    ex.emit(GuiEvent::UnClock);
-                }),
-            ),
-        ])
-        .build(cx);
+        // Create keymap
+        crate::gui::keymap::new(cx);
 
         Gui {
             simulator: simulator.clone(),

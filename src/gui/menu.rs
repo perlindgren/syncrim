@@ -1,3 +1,4 @@
+use crate::gui::GuiEvent;
 use vizia::{icons, prelude::*};
 
 pub(crate) struct Menu {}
@@ -77,6 +78,16 @@ impl Menu {
                             |cx| Label::new(cx, "Save As"),
                         );
                         MenuDivider::new(cx);
+                        MenuButton::new(
+                            cx,
+                            |cx| cx.emit(GuiEvent::Preferences),
+                            |cx| {
+                                HStack::new(cx, |cx| {
+                                    Label::new(cx, "Preferences");
+                                    Label::new(cx, &format!("Ctrl + P")).class("shortcut");
+                                })
+                            },
+                        );
                         MenuButton::new(
                             cx,
                             |cx| cx.emit(WindowEvent::WindowClose),
