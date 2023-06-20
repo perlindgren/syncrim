@@ -1,5 +1,5 @@
 use crate::common::{ComponentStore, SimState, Simulator};
-use crate::gui_vizia::{grid::GridView, menu::Menu, transport::TransportView};
+use crate::gui_vizia::{grid::Grid, menu::Menu, transport::Transport};
 
 use std::rc::Rc;
 use vizia::prelude::*;
@@ -104,10 +104,32 @@ pub fn gui(cs: &ComponentStore) {
         }
         .build(cx);
 
-        Menu::new(cx).background_color(Color::beige()).size(Auto);
+        // Menu
+        Menu::new(cx, |cx| {
+            HStack::new(cx, |cx| {
+                Transport::new(cx).top(Stretch(1.0)).bottom(Stretch(1.0)); // .left(Stretch(1.0)).right(Stretch(1.0)); //.top(Stretch(1.0)).bottom(Stretch(1.0));
+                Label::new(
+                    cx,
+                    Gui::state
+                        .then(SimState::lens_values)
+                        .map(|v| format!("Raw state {:?}", v)),
+                )
+                .top(Stretch(1.0))
+                .bottom(Stretch(1.0));
+                //.left(Stretch(1.0))
+                //.right(Stretch(1.0));
+            })
+            .top(Stretch(1.0))
+            .bottom(Stretch(1.0));
+            // .left(Stretch(1.0))
+            // .right(Stretch(1.0));
+        })
+        .background_color(Color::beige())
+        .height(Pixels(40.0));
+        //.size(Auto);
 
         // Grid
-        GridView::new(cx, |cx| {
+        Grid::new(cx, |cx| {
             for c in &simulator.ordered_components {
                 c.view(cx, simulator.clone());
             }
@@ -115,15 +137,21 @@ pub fn gui(cs: &ComponentStore) {
         .top(Stretch(1.0))
         .bottom(Stretch(1.0));
 
-        // a label to display the raw state for debugging purpose
-        Label::new(
-            cx,
-            Gui::state
-                .then(SimState::lens_values)
-                .map(|v| format!("Raw state {:?}", v)),
-        );
+        //
+        Popup::new(cx, Gui::show_about, true, |cx| {
+            Label::new(cx, "About").class("title");
+            Label::new(cx, "SyncRim 0.1.0");
+            Label::new(cx, "per.lindgren@ltu.se");
 
-        TransportView::new(cx);
+            Button::new(
+                cx,
+                |cx| cx.emit(GuiEvent::HideAbout),
+                |cx| Label::new(cx, "Ok"),
+            )
+            .class("accent");
+        })
+        .on_blur(|cx| cx.emit(GuiEvent::HideAbout))
+        .class("modal");
     })
     .title("SyncRim")
     .run();

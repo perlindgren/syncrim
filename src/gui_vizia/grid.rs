@@ -3,18 +3,18 @@ use vizia::{
     vg::{Paint, Path},
 };
 
-pub(crate) struct GridView {}
+pub(crate) struct Grid {}
 
-impl GridView {
+impl Grid {
     pub(crate) fn new<F>(cx: &mut Context, content: F) -> Handle<'_, Self>
     where
         F: FnOnce(&mut Context),
     {
-        View::build(GridView {}, cx, |cx| content(cx))
+        View::build(Grid {}, cx, |cx| content(cx))
     }
 }
 
-impl View for GridView {
+impl View for Grid {
     fn element(&self) -> Option<&'static str> {
         Some("Grid")
     }
