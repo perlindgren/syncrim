@@ -76,10 +76,24 @@ const STYLE: &str = r#"
         color: #c4c4c4;
     }
 
+
     submenu.file_menu > popup {
         width: 200px;
     }
+
+    * {
+        border-width: 1px;
+        border-color: red;
+      }
 "#;
+
+// .menubar {
+//     top: 100px
+// }
+
+// .menubutton {
+//     top: 200px
+// }
 
 pub fn gui(cs: &ComponentStore) {
     let (simulator, mut sim_state) = Simulator::new(cs);
@@ -107,7 +121,7 @@ pub fn gui(cs: &ComponentStore) {
         // Menu
         Menu::new(cx, |cx| {
             HStack::new(cx, |cx| {
-                Transport::new(cx).top(Stretch(1.0)).bottom(Stretch(1.0)); // .left(Stretch(1.0)).right(Stretch(1.0)); //.top(Stretch(1.0)).bottom(Stretch(1.0));
+                Transport::new(cx).top(Stretch(1.0)).bottom(Stretch(1.0));
                 Label::new(
                     cx,
                     Gui::state
@@ -116,17 +130,12 @@ pub fn gui(cs: &ComponentStore) {
                 )
                 .top(Stretch(1.0))
                 .bottom(Stretch(1.0));
-                //.left(Stretch(1.0))
-                //.right(Stretch(1.0));
             })
             .top(Stretch(1.0))
             .bottom(Stretch(1.0));
-            // .left(Stretch(1.0))
-            // .right(Stretch(1.0));
         })
         .background_color(Color::beige())
         .height(Pixels(40.0));
-        //.size(Auto);
 
         // Grid
         Grid::new(cx, |cx| {

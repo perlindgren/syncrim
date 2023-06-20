@@ -213,7 +213,10 @@ impl Menu {
                             );
                         },
                     );
-                });
+                })
+                .top(Pixels(0.0))
+                .min_width(Pixels(300.0));
+
                 //.size(Auto);
                 content(cx);
             });
