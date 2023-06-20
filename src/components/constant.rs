@@ -39,7 +39,7 @@ impl Component for Constant {
         let mut offset = offset.clone();
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
-        println!("---- Create Add View");
+        //println!("---- Create Add View");
         // The shape
         // 40x30
         /*

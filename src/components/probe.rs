@@ -33,7 +33,7 @@ impl Component for Probe {
 
     // create view
     fn render(&self, ui: &mut egui::Ui, simulator: Rc<Simulator>, offset: egui::Vec2, scale: f32) {
-        println!("---- Create Probe View");
+        //println!("---- Create Probe View");
     }
 
     // create view vizia
