@@ -30,6 +30,7 @@ pub(crate) enum GuiEvent {
 
 impl Model for Gui {
     fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
+        #[allow(clippy::single_match)]
         event.map(|window_event, meta| match window_event {
             // Intercept WindowClose event to show a dialog if not 'saved'.
             WindowEvent::WindowClose => {
