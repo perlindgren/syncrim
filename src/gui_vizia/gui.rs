@@ -80,13 +80,11 @@ const STYLE: &str = r#"
     submenu.file_menu > popup {
         width: 200px;
     }
-
-    * {
-        border-width: 1px;
-        border-color: red;
-      }
 "#;
-
+// * {
+//     border-width: 1px;
+//     border-color: red;
+//   }
 // .menubar {
 //     top: 100px
 // }
@@ -122,10 +120,7 @@ pub fn gui(cs: &ComponentStore) {
             // Menu
             Menu::new(cx, |cx| {
                 HStack::new(cx, |cx| {
-                    Transport::new(cx)
-                        .width(Auto)
-                        .top(Stretch(1.0))
-                        .bottom(Stretch(1.0));
+                    Transport::new(cx).size(Auto);
                     Label::new(
                         cx,
                         Gui::state
@@ -133,27 +128,23 @@ pub fn gui(cs: &ComponentStore) {
                             .map(|v| format!("Raw state {:?}", v)),
                     )
                     .top(Stretch(1.0))
-                    .bottom(Stretch(1.0));
+                    .bottom(Stretch(1.0))
+                    .height(Auto);
                 })
-                .width(Auto)
+                .col_between(Pixels(10.0))
                 .top(Stretch(1.0))
-                .bottom(Stretch(1.0));
+                .bottom(Stretch(1.0))
+                .size(Auto);
             })
-            .background_color(Color::beige())
-            //.height(Auto)
-            .height(Pixels(40.0))
-            .child_space(Pixels(5.0));
+            .background_color(Color::lightgray())
+            .height(Auto);
 
             // Grid
             Grid::new(cx, |cx| {
                 for c in &simulator.ordered_components {
                     c.view(cx, simulator.clone());
                 }
-            })
-            // .top(Stretch(1.0))
-            // .bottom(Stretch(1.0));
-            //.height(Auto);
-            ;
+            });
 
             //
             Popup::new(cx, Gui::show_about, true, |cx| {

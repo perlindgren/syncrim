@@ -102,9 +102,7 @@ impl Transport {
                 });
             })
             .col_between(Pixels(5.0))
-            .child_top(Stretch(1.0))
-            .child_bottom(Stretch(1.0))
-            .width(Auto);
+            .size(Auto);
         })
     }
 }

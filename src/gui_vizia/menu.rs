@@ -215,13 +215,10 @@ impl Menu {
                         },
                     );
                 })
-                .top(Stretch(1.0))
-                .bottom(Stretch(1.0))
-                //.height(Stretch(1.0))
-                .height(Auto)
-                .width(Auto);
+                .size(Auto);
                 content(cx);
-            });
+            })
+            .height(Auto);
         })
     }
 }
