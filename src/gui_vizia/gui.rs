@@ -118,53 +118,59 @@ pub fn gui(cs: &ComponentStore) {
         }
         .build(cx);
 
-        // Menu
-        Menu::new(cx, |cx| {
-            HStack::new(cx, |cx| {
-                Transport::new(cx)
-                    .width(Auto)
+        VStack::new(cx, |cx| {
+            // Menu
+            Menu::new(cx, |cx| {
+                HStack::new(cx, |cx| {
+                    Transport::new(cx)
+                        .width(Auto)
+                        .top(Stretch(1.0))
+                        .bottom(Stretch(1.0));
+                    Label::new(
+                        cx,
+                        Gui::state
+                            .then(SimState::lens_values)
+                            .map(|v| format!("Raw state {:?}", v)),
+                    )
                     .top(Stretch(1.0))
                     .bottom(Stretch(1.0));
-                Label::new(
-                    cx,
-                    Gui::state
-                        .then(SimState::lens_values)
-                        .map(|v| format!("Raw state {:?}", v)),
-                )
+                })
+                .width(Auto)
                 .top(Stretch(1.0))
                 .bottom(Stretch(1.0));
             })
-            .width(Auto)
-            .top(Stretch(1.0))
-            .bottom(Stretch(1.0));
-        })
-        .background_color(Color::beige())
-        .height(Pixels(40.0));
+            .background_color(Color::beige())
+            //.height(Auto)
+            .height(Pixels(40.0))
+            .child_space(Pixels(5.0));
 
-        // Grid
-        Grid::new(cx, |cx| {
-            for c in &simulator.ordered_components {
-                c.view(cx, simulator.clone());
-            }
-        })
-        .top(Stretch(1.0))
-        .bottom(Stretch(1.0));
+            // Grid
+            Grid::new(cx, |cx| {
+                for c in &simulator.ordered_components {
+                    c.view(cx, simulator.clone());
+                }
+            })
+            // .top(Stretch(1.0))
+            // .bottom(Stretch(1.0));
+            //.height(Auto);
+            ;
 
-        //
-        Popup::new(cx, Gui::show_about, true, |cx| {
-            Label::new(cx, "About").class("title");
-            Label::new(cx, "SyncRim 0.1.0");
-            Label::new(cx, "per.lindgren@ltu.se");
+            //
+            Popup::new(cx, Gui::show_about, true, |cx| {
+                Label::new(cx, "About").class("title");
+                Label::new(cx, "SyncRim 0.1.0");
+                Label::new(cx, "per.lindgren@ltu.se");
 
-            Button::new(
-                cx,
-                |cx| cx.emit(GuiEvent::HideAbout),
-                |cx| Label::new(cx, "Ok"),
-            )
-            .class("accent");
-        })
-        .on_blur(|cx| cx.emit(GuiEvent::HideAbout))
-        .class("modal");
+                Button::new(
+                    cx,
+                    |cx| cx.emit(GuiEvent::HideAbout),
+                    |cx| Label::new(cx, "Ok"),
+                )
+                .class("accent");
+            })
+            .on_blur(|cx| cx.emit(GuiEvent::HideAbout))
+            .class("modal");
+        });
     })
     .title("SyncRim")
     .run();
