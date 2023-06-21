@@ -121,7 +121,10 @@ pub fn gui(cs: &ComponentStore) {
         // Menu
         Menu::new(cx, |cx| {
             HStack::new(cx, |cx| {
-                Transport::new(cx).top(Stretch(1.0)).bottom(Stretch(1.0));
+                Transport::new(cx)
+                    .width(Auto)
+                    .top(Stretch(1.0))
+                    .bottom(Stretch(1.0));
                 Label::new(
                     cx,
                     Gui::state
@@ -131,6 +134,7 @@ pub fn gui(cs: &ComponentStore) {
                 .top(Stretch(1.0))
                 .bottom(Stretch(1.0));
             })
+            .width(Auto)
             .top(Stretch(1.0))
             .bottom(Stretch(1.0));
         })

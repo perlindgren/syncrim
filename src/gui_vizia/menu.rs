@@ -106,7 +106,6 @@ impl Menu {
                     )
                     .class("file_menu");
 
-                    // .size(Auto);
                     Submenu::new(
                         cx,
                         |cx| Label::new(cx, "Edit"),
@@ -143,6 +142,7 @@ impl Menu {
                             );
                         },
                     );
+
                     Submenu::new(
                         cx,
                         |cx| Label::new(cx, "View"),
@@ -195,6 +195,7 @@ impl Menu {
                             );
                         },
                     );
+
                     Submenu::new(
                         cx,
                         |cx| Label::new(cx, "Help"),
@@ -214,10 +215,10 @@ impl Menu {
                         },
                     );
                 })
-                .top(Pixels(0.0))
-                .min_width(Pixels(300.0));
-
-                //.size(Auto);
+                .top(Stretch(1.0))
+                .bottom(Stretch(1.0))
+                //.height(Stretch(1.0))
+                .width(Auto);
                 content(cx);
             });
         })
