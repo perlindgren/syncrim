@@ -35,29 +35,37 @@ impl Component for Constant {
     }
 
     // egui
-    fn render(&self, ui: &mut egui::Ui, simulator: Rc<Simulator>, offset: egui::Vec2, scale: f32) {
+    fn render(
+        &self,
+        _sim_state: &mut crate::common::SimState,
+        ui: &mut egui::Ui,
+        simulator: Rc<Simulator>,
+        offset: egui::Vec2,
+        scale: f32,
+    ) {
         let mut offset = offset.clone();
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
-        //println!("---- Create Add View");
-        // The shape
-        // 40x30
-        /*
-        ui.painter().add(egui::Shape::text(
-            egui::Painter::fonts(),
-            egui::Pos2 {
-                x: 0.0f32,
-                y: 0.0f32,
-            } + offset,
-            egui::Align2::LEFT_TOP,
-            self.value.to_string(),
-            egui::FontId::proportional(scale),
-            egui::Color32::GREEN,
-        ));
-        */
-        //ui.add(egui::Label::new(self.value.to_string()));
-        //ui.label(self.value.to_string());
-        //ui.painter().add(egui::Shape::closed_line());
+        let w = egui::Window::new(format!("test{}", self.id))
+            .movable(false)
+            .frame(egui::Frame {
+                inner_margin: egui::Margin::same(1f32),
+                outer_margin: egui::Margin::same(1f32),
+                rounding: egui::Rounding::none(),
+                shadow: epaint::Shadow::NONE,
+                fill: egui::Color32::LIGHT_GREEN,
+                stroke: egui::Stroke::NONE,
+            })
+            .fixed_pos(egui::Pos2 {
+                x: offset.x,
+                y: offset.y,
+            })
+            .title_bar(false)
+            .resizable(false)
+            .pivot(egui::Align2::CENTER_CENTER);
+        w.show(ui.ctx(), |ui| {
+            ui.label(self.value.to_string());
+        });
     }
 
     // create view vizia

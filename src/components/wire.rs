@@ -1,4 +1,4 @@
-use crate::common::{Component, OutputType, Ports, SimState, Simulator};
+use crate::common::{offset_helper, Component, OutputType, Ports, SimState, Simulator};
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use vizia::prelude::*;
@@ -32,6 +32,28 @@ impl Component for Wire {
 
     fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
 
+    fn render(
+        &self,
+        _sim_state: &mut crate::common::SimState,
+        ui: &mut egui::Ui,
+        simulator: Rc<Simulator>,
+        offset: egui::Vec2,
+        scale: f32,
+    ) {
+        let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
+        let mut offset = offset.clone();
+        offset.x += self.pos.0 * scale;
+        offset.y += self.pos.1 * scale;
+        let s = scale;
+        let o = offset;
+        ui.painter().add(egui::Shape::line_segment(
+            [oh((0f32, 0f32), s, o), oh((self.size.0, self.size.1), s, o)],
+            egui::Stroke {
+                width: 1.0f32,
+                color: egui::Color32::BLACK,
+            },
+        ));
+    }
     // create view vizia
     fn view(&self, cx: &mut Context, _simulator: Rc<Simulator>) {
         println!("---- Create Wire View");

@@ -1,5 +1,4 @@
 use crate::common::{Component, Input, OutputType, Ports, Simulator};
-use egui;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use vizia::prelude::*;
@@ -31,9 +30,42 @@ impl Component for Probe {
         )
     }
 
-    // create view
-    fn render(&self, ui: &mut egui::Ui, simulator: Rc<Simulator>, offset: egui::Vec2, scale: f32) {
-        //println!("---- Create Probe View");
+    // egui
+    fn render(
+        &self,
+        sim_state: &mut crate::common::SimState,
+        ui: &mut egui::Ui,
+        simulator: Rc<Simulator>,
+        offset: egui::Vec2,
+        scale: f32,
+    ) {
+        let mut offset = offset.clone();
+        offset.x += self.pos.0 * scale;
+        offset.y += self.pos.1 * scale;
+        let input = self.input.clone();
+        let w = egui::Window::new(format!("test{}", self.id))
+            .movable(false)
+            .frame(egui::Frame {
+                inner_margin: egui::Margin::same(1f32),
+                outer_margin: egui::Margin::same(1f32),
+                rounding: egui::Rounding::none(),
+                shadow: epaint::Shadow::NONE,
+                fill: egui::Color32::LIGHT_BLUE,
+                stroke: egui::Stroke::NONE,
+            })
+            .fixed_pos(egui::Pos2 {
+                x: offset.x,
+                y: offset.y,
+            })
+            .title_bar(false)
+            .resizable(false)
+            .pivot(egui::Align2::CENTER_CENTER);
+        w.show(ui.ctx(), |ui| {
+            ui.label(format!(
+                " {:?}",
+                simulator.clone().get_input_val(sim_state, &input)
+            ));
+        });
     }
 
     // create view vizia

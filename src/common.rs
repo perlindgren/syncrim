@@ -1,4 +1,3 @@
-use egui::Ui;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -48,7 +47,15 @@ pub trait Component {
     fn view(&self, _cx: &mut Context, _simulator: Rc<Simulator>) {}
 
     // egui
-    fn render(&self, _ui: &mut Ui, _simulator: Rc<Simulator>, _start: egui::Vec2, _scale: f32) {}
+    fn render(
+        &self,
+        _sim_state: &mut SimState,
+        _ui: &mut egui::Ui,
+        _simulator: Rc<Simulator>,
+        _start: egui::Vec2,
+        _scale: f32,
+    ) {
+    }
 }
 
 // Note: view uses the concrete type of the derived lens to allow object creation.

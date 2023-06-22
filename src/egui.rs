@@ -97,7 +97,13 @@ impl Gui {
     fn draw_area(&mut self, ctx: &egui::Context, frame: egui::Frame) {
         egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
             for c in &self.simulator.ordered_components {
-                c.render(ui, self.simulator.clone(), self.offset, self.scale);
+                c.render(
+                    &mut self.state,
+                    ui,
+                    self.simulator.clone(),
+                    self.offset,
+                    self.scale,
+                );
             }
         });
     }

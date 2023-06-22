@@ -10,8 +10,6 @@ fn main() {
             Rc::new(Add {
                 id: "add1".to_string(),
                 pos: (200.0, 120.0),
-                //pos: (-10.0, 120.0),
-                //pos: (100.0, 120.0),
                 a_in: Input {
                     id: "c1".to_string(),
                     index: 0,

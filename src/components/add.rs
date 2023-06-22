@@ -47,7 +47,14 @@ impl Component for Add {
     }
 
     // egui
-    fn render(&self, ui: &mut egui::Ui, simulator: Rc<Simulator>, offset: egui::Vec2, scale: f32) {
+    fn render(
+        &self,
+        _sim_state: &mut crate::common::SimState,
+        ui: &mut egui::Ui,
+        simulator: Rc<Simulator>,
+        offset: egui::Vec2,
+        scale: f32,
+    ) {
         // 41x81
         // middle: 21x 41y (0 0)
         let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
