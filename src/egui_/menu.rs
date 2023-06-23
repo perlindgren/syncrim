@@ -112,17 +112,6 @@ impl Menu {
                 gui.simulator.clock(&mut gui.state);
                 println!("stepped once!");
             }
-            /*
-            if ui.button("Scale").clicked() {
-                match self.scale {
-                    x if (0.2f32..0.7f32).contains(&x) => self.scale = 1.0f32,
-                    x if (0.7f32..1.3f32).contains(&x) => self.scale = 2.0f32,
-                    x if (1.7f32..2.3f32).contains(&x) => self.scale = 3.0f32,
-                    x if (2.7f32..3.2f32).contains(&x) => self.scale = 4.0f32,
-                    _ => self.scale = 0.5f32,
-                }
-            }
-            */
         });
     }
 }

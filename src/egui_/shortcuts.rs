@@ -17,35 +17,25 @@ pub struct Shortcuts {
 
 impl Shortcuts {
     pub fn new() -> Self {
+        let ctrl = Modifiers {
+            alt: false,
+            ctrl: true,
+            shift: false,
+            mac_cmd: false,
+            command: false,
+        };
+
         Shortcuts {
             file_new: KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: true,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: ctrl,
                 key: Key::N,
             },
             file_open: KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: true,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: ctrl,
                 key: Key::O,
             },
             file_save: KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: true,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: ctrl,
                 key: Key::S,
             },
             file_save_as: KeyboardShortcut {
@@ -59,73 +49,31 @@ impl Shortcuts {
                 key: Key::S,
             },
             file_preferences: KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: true,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: ctrl,
                 key: Key::P,
             },
             file_quit: KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: true,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: ctrl,
                 key: Key::Q,
             },
             edit_cut: KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: true,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: ctrl,
                 key: Key::X,
             },
             edit_copy: KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: true,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: ctrl,
                 key: Key::C,
             },
             edit_paste: KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: true,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: ctrl,
                 key: Key::P,
             },
             view_zoom_in: KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: true,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: ctrl,
                 key: Key::PlusEquals,
             },
             view_zoom_out: KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: true,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: ctrl,
                 key: Key::Minus,
             },
         }
