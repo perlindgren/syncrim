@@ -1,7 +1,7 @@
 pub(crate) struct Menu {}
 
 impl Menu {
-    pub(crate) fn new(ui: &mut egui::Ui, gui: &mut crate::egui_::Gui) {
+    pub(crate) fn new(ui: &mut egui::Ui, gui: &mut crate::gui_egui::egui::Gui) {
         fn btn(ui: &mut egui::Ui, name: &str, keys: egui::KeyboardShortcut) -> egui::Response {
             ui.add(egui::Button::new(name).shortcut_text(ui.ctx().format_shortcut(&keys)))
         }
@@ -49,10 +49,10 @@ impl Menu {
 
             ui.menu_button("View", |ui| {
                 if btn(ui, "Zoom In", gui.shortcuts.view_zoom_in).clicked() {
-                    crate::egui_::shortcuts::view_zoom_in_fn(gui);
+                    crate::gui_egui::shortcuts::view_zoom_in_fn(gui);
                 }
                 if btn(ui, "Zoom Out", gui.shortcuts.view_zoom_out).clicked() {
-                    crate::egui_::shortcuts::view_zoom_out_fn(gui);
+                    crate::gui_egui::shortcuts::view_zoom_out_fn(gui);
                 }
                 ui.menu_button("Zoom Level", |ui| {
                     if ui.button("10%").clicked() {

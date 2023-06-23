@@ -1,5 +1,5 @@
 use crate::common::{ComponentStore, SimState, Simulator};
-use crate::egui_::{menu::Menu, shortcuts::Shortcuts};
+use crate::gui_egui::{menu::Menu, shortcuts::Shortcuts};
 use eframe::egui;
 use std::rc::Rc;
 
