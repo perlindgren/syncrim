@@ -61,10 +61,13 @@ impl Component for Probe {
             .resizable(false)
             .pivot(egui::Align2::CENTER_CENTER);
         w.show(ui.ctx(), |ui| {
-            ui.label(format!(
-                " {:?}",
-                simulator.clone().get_input_val(sim_state, &input)
-            ));
+            ui.label(
+                egui::RichText::new(format!(
+                    "{:?}",
+                    simulator.clone().get_input_val(sim_state, &input)
+                ))
+                .size(scale * 12f32),
+            );
         });
     }
 

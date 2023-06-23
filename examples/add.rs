@@ -58,5 +58,5 @@ fn main() {
 
     cs.save_file("model.json");
 
-    syncrim::egui::gui(&cs);
+    syncrim::egui_::gui(&cs);
 }

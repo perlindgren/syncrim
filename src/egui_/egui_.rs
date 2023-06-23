@@ -1,4 +1,5 @@
 use crate::common::{ComponentStore, SimState, Simulator};
+use crate::egui_::{menu::Menu, shortcuts::Shortcuts};
 use eframe::egui;
 use std::rc::Rc;
 
@@ -11,6 +12,7 @@ pub struct Gui {
     // When the ui elements change size
     pub ui_change: bool,
     pub offset: egui::Vec2,
+    pub shortcuts: Shortcuts,
 }
 
 pub fn gui(cs: &ComponentStore) -> Result<(), eframe::Error> {
@@ -25,12 +27,14 @@ pub fn gui(cs: &ComponentStore) -> Result<(), eframe::Error> {
         scale: 1.0f32,
         ui_change: true,
         offset: egui::Vec2 { x: 0f32, y: 0f32 },
+        shortcuts: Shortcuts::new(),
     };
     eframe::run_native("SyncRim", options, Box::new(|_cc| Box::new(gui)))
 }
 
 impl eframe::App for Gui {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.shortcuts.inputs(ctx, self);
         let frame = egui::Frame::none().fill(egui::Color32::WHITE);
 
         // For getting the correct offset for our drawing we need to get the top bar
@@ -49,6 +53,7 @@ impl eframe::App for Gui {
             egui::Context::request_repaint(ctx);
             return;
         }
+
         /*
         println!(
             "size: y: {}, x: {}",
@@ -94,6 +99,7 @@ impl Gui {
                 .abs()
                 > 0.1;
     }
+
     fn draw_area(&mut self, ctx: &egui::Context, frame: egui::Frame) {
         egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
             for c in &self.simulator.ordered_components {
@@ -107,6 +113,7 @@ impl Gui {
             }
         });
     }
+
     fn side_panel(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("leftGui").show(ctx, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
@@ -119,39 +126,6 @@ impl Gui {
     }
 
     fn top_bar(&mut self, ctx: &egui::Context) {
-        egui::TopBottomPanel::top("topBar").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                if ui.button("▶").clicked() {
-                    //self.history.push(self.state.lens_values.clone());
-                    //self.simulator.clock(&mut self.state);
-                    println!("run!");
-                }
-                if ui.button("■").clicked() {
-                    //self.history.push(self.state.lens_values.clone());
-                    //self.simulator.clock(&mut self.state);
-                    println!("paused!");
-                }
-                if ui.button("⏮").clicked() {
-                    //self.history.push(self.state.lens_values.clone());
-                    //self.simulator.clock(&mut self.state);
-                    println!("stepped back once!");
-                }
-                if ui.button("⏭").clicked() {
-                    //self.history.push(self.state.lens_values.clone());
-                    self.simulator.clock(&mut self.state);
-                    println!("stepped once!");
-                }
-                //ui.label("File");
-                if ui.button("Scale").clicked() {
-                    match self.scale {
-                        x if (0.2f32..0.7f32).contains(&x) => self.scale = 1.0f32,
-                        x if (0.7f32..1.3f32).contains(&x) => self.scale = 2.0f32,
-                        x if (1.7f32..2.3f32).contains(&x) => self.scale = 3.0f32,
-                        x if (2.7f32..3.2f32).contains(&x) => self.scale = 4.0f32,
-                        _ => self.scale = 0.5f32,
-                    }
-                }
-            });
-        });
+        egui::TopBottomPanel::top("topBar").show(ctx, |ui| Menu::new(ui, self));
     }
 }
