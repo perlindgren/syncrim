@@ -16,10 +16,11 @@ impl ComponentStore {
         ComponentStore::load(&json)
     }
 
-    pub fn save_file(&self, path: &str) {
+    pub fn save_file(&self) {
         let json = serde_json::to_string(self).unwrap();
         println!("json: {}", json);
-        let mut file = File::create(path).unwrap();
+        println!("path {}", self.path);
+        let mut file = File::create(&self.path).unwrap();
         file.write_all(json.as_bytes()).unwrap();
     }
 

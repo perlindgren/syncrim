@@ -3,12 +3,12 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use vizia::prelude::*;
 
-#[derive(Lens, Debug, Clone)]
+#[derive(Lens, Debug, Data, Clone)]
 pub struct SimState {
     pub lens_values: Vec<u32>,
 }
 
-#[derive(Lens)]
+#[derive(Lens, Data, Clone)]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,
 
@@ -20,6 +20,7 @@ type Components = Vec<Rc<dyn Component>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
+    pub path: String,
     pub store: Components,
 }
 
@@ -44,7 +45,8 @@ pub trait Component {
     fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
 
     // create view
-    fn view(&self, _cx: &mut Context, _simulator: Rc<Simulator>) {}
+    // fn view(&self, _cx: &mut Context, _simulator: Rc<Simulator>) {}
+    fn view(&self, _cx: &mut Context) {}
 }
 
 // Note: view uses the concrete type of the derived lens to allow object creation.

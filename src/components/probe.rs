@@ -1,6 +1,5 @@
-use crate::common::{Component, Input, OutputType, Ports, Simulator};
+use crate::common::{Component, Input, OutputType, Ports};
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
 
@@ -31,17 +30,18 @@ impl Component for Probe {
     }
 
     // create view
-    fn view(&self, cx: &mut Context, simulator: Rc<Simulator>) {
+    fn view(&self, cx: &mut Context) {
         println!("---- Create Probe View");
         View::build(ProbeView {}, cx, |cx| {
             let input = self.input.clone();
 
-            Label::new(
-                cx,
-                crate::gui_vizia::Gui::state.map(move |sim_state| {
-                    format!(" {:?}", simulator.clone().get_input_val(sim_state, &input))
-                }),
-            );
+            Binding::new(cx, crate::gui_vizia::GuiData::clock, move |cx, _| {
+                Label::new(cx, {
+                    let simulator = crate::gui_vizia::GuiData::simulator.get(cx);
+                    let sim_state = crate::gui_vizia::GuiData::state.get(cx);
+                    &format!(" {:?}", simulator.get_input_val(&sim_state, &input))
+                });
+            });
         })
         .position_type(PositionType::SelfDirected)
         // .min_size(Pixels(20.0))

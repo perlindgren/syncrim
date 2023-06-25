@@ -37,6 +37,19 @@ impl Menu {
                                     })
                                 },
                             );
+                            MenuButton::new(
+                                cx,
+                                |cx| {
+                                    println!("Re-Open");
+                                    cx.emit(GuiEvent::ReOpen);
+                                },
+                                |cx| {
+                                    HStack::new(cx, |cx| {
+                                        Label::new(cx, "Re Open");
+                                        Label::new(cx, "Ctrl + R").class("shortcut");
+                                    })
+                                },
+                            );
                             Submenu::new(
                                 cx,
                                 |cx| Label::new(cx, "Open Recent"),

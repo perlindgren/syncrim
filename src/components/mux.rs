@@ -1,6 +1,5 @@
 use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
 #[derive(Serialize, Deserialize)]
@@ -43,11 +42,11 @@ impl Component for Mux {
     }
 
     // create view
-    fn view(&self, cx: &mut Context, simulator: Rc<Simulator>) {
+    fn view(&self, cx: &mut Context) {
         println!("---- Create Add View");
+
         View::build(
             MuxView {
-                simulator,
                 select: self.select.clone(),
             },
             cx,
@@ -62,7 +61,7 @@ impl Component for Mux {
 }
 
 pub struct MuxView {
-    simulator: Rc<Simulator>,
+    // simulator: Rc<Simulator>,
     select: Input,
 }
 
@@ -105,9 +104,9 @@ impl View for MuxView {
         canvas.stroke_path(&path, &paint);
 
         // selector
-        let select = self
-            .simulator
-            .get_input_val(&crate::gui_vizia::Gui::state.get(cx), &self.select);
+        let simulator = crate::gui_vizia::GuiData::simulator.get(cx);
+        let sim_state = crate::gui_vizia::GuiData::state.get(cx);
+        let select = simulator.get_input_val(&sim_state, &self.select);
 
         println!("----- select = {}", select);
         paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));

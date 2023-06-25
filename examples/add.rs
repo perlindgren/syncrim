@@ -7,6 +7,7 @@ use syncrim::{
 
 fn main() {
     let cs = ComponentStore {
+        path: "add.json".to_string(),
         store: vec![
             Rc::new(Add {
                 id: "add1".to_string(),
@@ -57,7 +58,7 @@ fn main() {
         ],
     };
 
-    cs.save_file("model.json");
+    cs.save_file();
 
     gui(&cs);
 }

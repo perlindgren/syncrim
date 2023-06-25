@@ -3,7 +3,7 @@ use vizia::{
     vg::{Paint, Path},
 };
 
-pub(crate) struct Grid {}
+pub struct Grid {}
 
 impl Grid {
     pub(crate) fn new<F>(cx: &mut Context, content: F) -> Handle<'_, Self>

@@ -1,4 +1,4 @@
-use crate::gui_vizia::{Gui, GuiEvent};
+use crate::gui_vizia::{GuiData, GuiEvent};
 use vizia::{icons, prelude::*};
 
 pub(crate) struct Transport {}
@@ -58,7 +58,7 @@ impl Transport {
                     |cx| {
                         Label::new(
                             cx,
-                            Gui::pause.map(|pause| {
+                            GuiData::pause.map(|pause| {
                                 if *pause {
                                     icons::ICON_PLAYER_PLAY
                                 } else {
@@ -83,7 +83,7 @@ impl Transport {
                     |cx| {
                         Label::new(
                             cx,
-                            Gui::pause.map(|pause| {
+                            GuiData::pause.map(|pause| {
                                 if *pause {
                                     icons::ICON_PLAYER_PAUSE_FILLED
                                 } else {

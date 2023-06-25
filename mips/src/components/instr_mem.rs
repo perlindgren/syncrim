@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 use syncrim::{
     common::{Component, Input, Output, OutputType, Ports, SimState, Simulator},
     vizia::{
@@ -45,7 +44,7 @@ impl Component for InstrMem {
     }
 
     // create view
-    fn view(&self, cx: &mut Context, _simulator: Rc<Simulator>) {
+    fn view(&self, cx: &mut Context) {
         println!("---- Create InsrMem View");
         View::build(
             InstMem {

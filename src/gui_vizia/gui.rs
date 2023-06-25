@@ -1,22 +1,25 @@
 use crate::common::{ComponentStore, SimState, Simulator};
 use crate::gui_vizia::{grid::Grid, menu::Menu, transport::Transport};
-
-use std::rc::Rc;
 use vizia::prelude::*;
 
-#[derive(Lens)]
-pub struct Gui {
-    pub simulator: Rc<Simulator>,
+#[derive(Lens, Data, Clone)]
+pub struct GuiData {
+    pub path: String,
+    pub clock: usize,
+    pub simulator: Simulator,
     pub state: SimState,
     // History, acts like a stack
     pub history: Vec<Vec<u32>>,
     pub pause: bool,
     pub is_saved: bool,
     pub show_about: bool,
+    pub component_ids: Vec<String>,
+    pub selected_id: usize,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub(crate) enum GuiEvent {
+    ReOpen,
     Clock,
     Reset,
     UnClock,
@@ -26,9 +29,10 @@ pub(crate) enum GuiEvent {
     Preferences,
     ShowAbout,
     HideAbout,
+    // SelectComponent(usize),
 }
 
-impl Model for Gui {
+impl Model for GuiData {
     fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
         #[allow(clippy::single_match)]
         event.map(|window_event, meta| match window_event {
@@ -44,13 +48,37 @@ impl Model for Gui {
         });
 
         event.map(|app_event, _meta| match app_event {
+            GuiEvent::ReOpen => {
+                // Re-Open model
+                println!("re-open path {}", self.path);
+                let cs = Box::new(ComponentStore::load_file(&self.path));
+                let (simulator, mut sim_state) = Simulator::new(&cs);
+
+                // Initial clock to propagate constants
+                let mut clock = 0;
+                simulator.clock(&mut sim_state, &mut clock);
+                let component_ids: Vec<String> = simulator
+                    .ordered_components
+                    .iter()
+                    .map(|c| c.get_id_ports().0)
+                    .collect();
+
+                self.path = cs.path.clone();
+                self.clock = clock;
+                self.history = vec![];
+                self.simulator = simulator;
+                self.state = sim_state;
+                self.component_ids = component_ids;
+
+                println!("re-opened");
+            }
             GuiEvent::Clock => {
                 // push current state
                 self.history.push(self.state.lens_values.clone());
-                self.simulator.clock(&mut self.state);
+                self.simulator.clock(&mut self.state, &mut self.clock);
             }
             GuiEvent::Reset => {
-                self.simulator.reset(&mut self.state);
+                self.simulator.reset(&mut self.state, &mut self.clock);
                 // clear history
                 self.history = vec![];
                 // make sure its in paused mode
@@ -68,6 +96,7 @@ impl Model for Gui {
             GuiEvent::Preferences => println!("Preferences"),
             GuiEvent::ShowAbout => self.show_about = true,
             GuiEvent::HideAbout => self.show_about = false,
+            // GuiEvent::SelectComponent(index) => self.selected_id = *index,
         });
     }
 }
@@ -96,10 +125,17 @@ const STYLE: &str = r#"
 
 pub fn gui(cs: &ComponentStore) {
     let (simulator, mut sim_state) = Simulator::new(cs);
-    let simulator = Rc::new(simulator);
+    // let simulator = Rc::new(simulator);
     // Initial clock to propagate constants
-    simulator.clock(&mut sim_state);
+    let mut clock = 0;
+    simulator.clock(&mut sim_state, &mut clock);
+    let component_ids: Vec<String> = simulator
+        .ordered_components
+        .iter()
+        .map(|c| c.get_id_ports().0)
+        .collect();
 
+    let path = cs.path.clone();
     Application::new(move |cx| {
         // Styling
         cx.add_stylesheet(STYLE).expect("Failed to add stylesheet");
@@ -107,13 +143,17 @@ pub fn gui(cs: &ComponentStore) {
         // Create keymap
         crate::gui_vizia::keymap::new(cx);
 
-        Gui {
-            simulator: simulator.clone(),
+        GuiData {
+            path,
+            clock,
+            simulator: simulator,
             state: sim_state,
             history: vec![],
             pause: true,
             is_saved: false,
             show_about: false,
+            component_ids,
+            selected_id: 0,
         }
         .build(cx);
 
@@ -124,7 +164,7 @@ pub fn gui(cs: &ComponentStore) {
                     Transport::new(cx).size(Auto);
                     Label::new(
                         cx,
-                        Gui::state
+                        GuiData::state
                             .then(SimState::lens_values)
                             .map(|v| format!("Raw state {:?}", v)),
                     )
@@ -140,15 +180,28 @@ pub fn gui(cs: &ComponentStore) {
             .background_color(Color::lightgray())
             .height(Auto);
 
-            // Grid
             Grid::new(cx, |cx| {
-                for c in &simulator.ordered_components {
-                    c.view(cx, simulator.clone());
-                }
+                Binding::new(
+                    cx,
+                    GuiData::simulator.then(Simulator::ordered_components),
+                    |cx, wrapper_oc| {
+                        let oc = wrapper_oc.get(cx);
+                        for c in oc {
+                            c.view(cx);
+                        }
+                    },
+                )
             });
 
             //
-            Popup::new(cx, Gui::show_about, true, |cx| {
+            // HStack::new(cx, |cx| {
+            // Component selector
+            // PickList::new(cx, Gui::component_ids, Gui::selected_id, true)
+            //     .on_select(|cx, index| cx.emit(GuiEvent::SelectComponent(index)))
+            //     .width(Pixels(140.0));
+
+            // About
+            Popup::new(cx, GuiData::show_about, true, |cx| {
                 Label::new(cx, "About").class("title");
                 Label::new(cx, "SyncRim 0.1.0");
                 Label::new(cx, "per.lindgren@ltu.se");

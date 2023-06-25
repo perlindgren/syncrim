@@ -132,14 +132,15 @@ impl Simulator {
     }
 
     // iterate over the evaluators
-    pub fn clock(&self, sim_state: &mut SimState) {
+    pub fn clock(&self, sim_state: &mut SimState, clock: &mut usize) {
         for component in &self.ordered_components {
             component.evaluate(self, sim_state);
         }
+        *clock += 1;
     }
 
-    pub fn reset(&self, sim_state: &mut SimState) {
+    pub fn reset(&self, sim_state: &mut SimState, clock: &mut usize) {
         sim_state.lens_values.iter_mut().for_each(|val| *val = 0);
-        self.clock(sim_state);
+        self.clock(sim_state, clock);
     }
 }

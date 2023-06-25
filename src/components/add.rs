@@ -1,6 +1,5 @@
 use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
 
@@ -45,7 +44,7 @@ impl Component for Add {
     }
 
     // create view
-    fn view(&self, cx: &mut Context, _simulator: Rc<Simulator>) {
+    fn view(&self, cx: &mut Context) {
         println!("---- Create Add View");
         View::build(AddView {}, cx, |cx| {
             Label::new(cx, "+")

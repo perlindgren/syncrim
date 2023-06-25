@@ -1,6 +1,5 @@
 use crate::common::{Component, Output, OutputType, Ports, SimState, Simulator};
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
 
@@ -35,12 +34,7 @@ impl Component for Constant {
     }
 
     // create view
-    fn view(
-        &self,
-        cx: &mut Context,
-        _simulator: Rc<Simulator>,
-        //_state: Wrapper<crate::gui::gui_derived_lenses::state>,
-    ) {
+    fn view(&self, cx: &mut Context) {
         println!("---- Create Constant View");
         View::build(ConstantView {}, cx, |cx| {
             Label::new(cx, &format!("{:?}", self.value));

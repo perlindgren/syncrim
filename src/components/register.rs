@@ -1,6 +1,5 @@
 use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
 #[derive(Serialize, Deserialize)]
@@ -41,7 +40,6 @@ impl Component for Register {
     fn view(
         &self,
         cx: &mut Context,
-        _simulator: Rc<Simulator>,
         // state: Wrapper<crate::gui::gui_derived_lenses::state>,
     ) {
         println!("---- Create Register View ");
