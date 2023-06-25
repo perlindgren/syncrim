@@ -7,7 +7,7 @@ pub struct GuiData {
     pub path: String,
     pub clock: usize,
     pub simulator: Simulator,
-    pub state: SimState,
+    pub sim_state: SimState,
     // History, acts like a stack
     pub history: Vec<Vec<u32>>,
     pub pause: bool,
@@ -67,18 +67,18 @@ impl Model for GuiData {
                 self.clock = clock;
                 self.history = vec![];
                 self.simulator = simulator;
-                self.state = sim_state;
+                self.sim_state = sim_state;
                 self.component_ids = component_ids;
 
                 println!("re-opened");
             }
             GuiEvent::Clock => {
                 // push current state
-                self.history.push(self.state.lens_values.clone());
-                self.simulator.clock(&mut self.state, &mut self.clock);
+                self.history.push(self.sim_state.lens_values.clone());
+                self.simulator.clock(&mut self.sim_state, &mut self.clock);
             }
             GuiEvent::Reset => {
-                self.simulator.reset(&mut self.state, &mut self.clock);
+                self.simulator.reset(&mut self.sim_state, &mut self.clock);
                 // clear history
                 self.history = vec![];
                 // make sure its in paused mode
@@ -87,7 +87,7 @@ impl Model for GuiData {
             GuiEvent::UnClock => {
                 if let Some(state) = self.history.pop() {
                     // set old state
-                    self.state.lens_values = state;
+                    self.sim_state.lens_values = state;
                 }
             }
             GuiEvent::Play => self.pause = false,
@@ -146,8 +146,8 @@ pub fn gui(cs: &ComponentStore) {
         GuiData {
             path,
             clock,
-            simulator: simulator,
-            state: sim_state,
+            simulator,
+            sim_state,
             history: vec![],
             pause: true,
             is_saved: false,
@@ -164,7 +164,7 @@ pub fn gui(cs: &ComponentStore) {
                     Transport::new(cx).size(Auto);
                     Label::new(
                         cx,
-                        GuiData::state
+                        GuiData::sim_state
                             .then(SimState::lens_values)
                             .map(|v| format!("Raw state {:?}", v)),
                     )

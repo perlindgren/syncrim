@@ -1,8 +1,8 @@
 use crate::common::{Component, Input, OutputType, Ports};
+use crate::gui_vizia::GuiData;
 use serde::{Deserialize, Serialize};
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
-
 #[derive(Serialize, Deserialize)]
 pub struct Probe {
     pub id: String,
@@ -37,8 +37,8 @@ impl Component for Probe {
 
             Binding::new(cx, crate::gui_vizia::GuiData::clock, move |cx, _| {
                 Label::new(cx, {
-                    let simulator = crate::gui_vizia::GuiData::simulator.get(cx);
-                    let sim_state = crate::gui_vizia::GuiData::state.get(cx);
+                    let simulator = GuiData::simulator.get(cx);
+                    let sim_state = GuiData::sim_state.get(cx);
                     &format!(" {:?}", simulator.get_input_val(&sim_state, &input))
                 });
             });

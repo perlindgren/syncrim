@@ -1,4 +1,5 @@
 use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
+use crate::gui_vizia::GuiData;
 use serde::{Deserialize, Serialize};
 use vizia::prelude::*;
 use vizia::vg::{Paint, Path};
@@ -104,8 +105,8 @@ impl View for MuxView {
         canvas.stroke_path(&path, &paint);
 
         // selector
-        let simulator = crate::gui_vizia::GuiData::simulator.get(cx);
-        let sim_state = crate::gui_vizia::GuiData::state.get(cx);
+        let simulator = GuiData::simulator.get(cx);
+        let sim_state = GuiData::sim_state.get(cx);
         let select = simulator.get_input_val(&sim_state, &self.select);
 
         println!("----- select = {}", select);
