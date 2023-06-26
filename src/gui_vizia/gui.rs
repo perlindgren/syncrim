@@ -182,12 +182,14 @@ pub fn gui(cs: &ComponentStore) {
             .height(Auto);
 
             Grid::new(cx, |cx| {
+                // (re-)bind all components when simulator changed
                 Binding::new(
                     cx,
                     GuiData::simulator.then(Simulator::ordered_components),
                     |cx, wrapper_oc| {
                         let oc = wrapper_oc.get(cx);
                         for c in oc {
+                            // bind all components to be triggered by clock change
                             Binding::new(cx, GuiData::clock, move |cx, _| {
                                 c.view(cx);
                             });
