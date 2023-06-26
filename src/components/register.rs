@@ -1,4 +1,6 @@
-use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
+use crate::common::{
+    offset_helper, Component, Input, Output, OutputType, Ports, SimState, Simulator,
+};
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use vizia::prelude::*;
@@ -36,6 +38,42 @@ impl Component for Register {
         // set output
         simulator.set_id_index(sim_state, &self.id, 0, value);
         println!("eval: register id {} in {}", self.id, value);
+    }
+
+    // egui
+    fn render(
+        &self,
+        _sim_state: &mut crate::common::SimState,
+        ui: &mut egui::Ui,
+        simulator: Rc<Simulator>,
+        offset: egui::Vec2,
+        scale: f32,
+    ) {
+        // 21x41
+        // middle: 11x 21y (0 0)
+        let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
+        let mut offset = offset.clone();
+        offset.x += self.pos.0 * scale;
+        offset.y += self.pos.1 * scale;
+        let s = scale;
+        let o = offset;
+
+        // The shape
+        ui.painter().add(egui::Shape::line(
+            vec![
+                oh((-10f32, -20f32), s, o),
+                oh((10f32, -20f32), s, o),
+                oh((0f32, -15f32), s, o),
+                oh((-10f32, -20f32), s, o),
+                oh((-10f32, 20f32), s, o),
+                oh((10f32, 20f32), s, o),
+                oh((10f32, -20f32), s, o),
+            ],
+            egui::Stroke {
+                width: scale,
+                color: egui::Color32::BLACK,
+            },
+        ));
     }
 
     // create view vizia

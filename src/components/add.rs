@@ -79,7 +79,7 @@ impl Component for Add {
                 oh((-20f32, -20f32), s, o),
             ],
             egui::Stroke {
-                width: 1.0f32,
+                width: scale,
                 color: egui::Color32::RED,
             },
         ));
@@ -87,14 +87,14 @@ impl Component for Add {
         ui.painter().add(egui::Shape::line_segment(
             [oh((0f32, 0f32), s, o), oh((10f32, 0f32), s, o)],
             egui::Stroke {
-                width: 1.0f32,
+                width: scale,
                 color: egui::Color32::BLACK,
             },
         ));
         ui.painter().add(egui::Shape::line_segment(
             [oh((5f32, -5f32), s, o), oh((5f32, 5f32), s, o)],
             egui::Stroke {
-                width: 1.0f32,
+                width: scale,
                 color: egui::Color32::BLACK,
             },
         ));

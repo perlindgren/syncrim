@@ -2,7 +2,7 @@ use std::rc::Rc;
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
-    gui::gui,
+    gui_egui::egui::gui,
 };
 
 fn main() {

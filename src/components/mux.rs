@@ -1,4 +1,6 @@
-use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
+use crate::common::{
+    offset_helper, Component, Input, Output, OutputType, Ports, SimState, Simulator,
+};
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use vizia::prelude::*;
@@ -41,6 +43,60 @@ impl Component for Mux {
 
         // set output
         simulator.set_id_index(sim_state, &self.id, 0, value);
+    }
+
+    // egui
+    fn render(
+        &self,
+        sim_state: &mut crate::common::SimState,
+        ui: &mut egui::Ui,
+        simulator: Rc<Simulator>,
+        offset: egui::Vec2,
+        scale: f32,
+    ) {
+        // 41x(20*ports + 11)
+        // middle: 21x ((20*ports + 10)/2+1)y (0 0)
+        let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
+        let mut offset = offset.clone();
+        offset.x += self.pos.0 * scale;
+        offset.y += self.pos.1 * scale;
+        let s = scale;
+        let o = offset;
+        let pa = self.m_in.len() as f32;
+
+        // selector
+        let select = simulator.get_input_val(sim_state, &self.select);
+
+        // The shape
+        ui.painter().add(egui::Shape::closed_line(
+            vec![
+                oh((-20f32, pa * (-10f32) - 10f32), s, o),
+                oh((0f32, pa * (-10f32) - 10f32), s, o),
+                oh((20f32, pa * (-10f32) + 10f32), s, o),
+                oh((20f32, pa * (10f32) - 10f32), s, o),
+                oh((0f32, pa * (10f32) + 10f32), s, o),
+                oh((-20f32, pa * (10f32) + 10f32), s, o),
+            ],
+            egui::Stroke {
+                width: scale,
+                color: egui::Color32::BLACK,
+            },
+        ));
+        // select line
+        ui.painter().add(egui::Shape::line_segment(
+            [
+                oh(
+                    (-20f32, ((select as f32) * 20f32) - pa * 10f32 + 10f32),
+                    s,
+                    o,
+                ),
+                oh((20f32, 0f32), s, o),
+            ],
+            egui::Stroke {
+                width: scale,
+                color: egui::Color32::RED,
+            },
+        ));
     }
 
     // create view vizia

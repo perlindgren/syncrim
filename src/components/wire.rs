@@ -49,7 +49,7 @@ impl Component for Wire {
         ui.painter().add(egui::Shape::line_segment(
             [oh((0f32, 0f32), s, o), oh((self.size.0, self.size.1), s, o)],
             egui::Stroke {
-                width: 1.0f32,
+                width: scale,
                 color: egui::Color32::BLACK,
             },
         ));
