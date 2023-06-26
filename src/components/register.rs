@@ -1,4 +1,5 @@
 use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
+use crate::gui_vizia::tooltip::new_tooltip;
 use crate::gui_vizia::GuiData;
 use serde::{Deserialize, Serialize};
 use vizia::prelude::*;
@@ -42,40 +43,42 @@ impl Component for Register {
     fn view(&self, cx: &mut Context) {
         println!("---- Create Register View ");
 
-        View::build(RegisterView {}, cx, |_cx| {})
+        let handle = View::build(RegisterView {}, cx, |_cx| {})
             .position_type(PositionType::SelfDirected)
             .left(Pixels(self.pos.0 - 10.0))
             .top(Pixels(self.pos.1 - 15.0))
             .width(Pixels(20.0))
-            .height(Pixels(30.0))
-            //.on_over(|ex| println!("over register"))
-            .tooltip(|cx| {
-                let simulator = GuiData::simulator.get(cx);
-                let sim_state = GuiData::sim_state.get(cx);
-                let (id, ports) = self.get_id_ports();
+            .height(Pixels(30.0));
+        new_tooltip(handle, cx, self as &dyn Component);
 
-                VStack::new(cx, |cx| {
-                    Label::new(cx, &id);
-                    for input in ports.inputs {
-                        HStack::new(cx, |cx| {
-                            let v = simulator.get_input_val(&sim_state, &input);
-                            Label::new(cx, &input.id);
-                            Label::new(cx, v).class("tt_shortcut");
-                        })
-                        .size(Auto);
-                    }
-                    for output in 0..ports.outputs.len() {
-                        HStack::new(cx, |cx| {
-                            let v = simulator
-                                .get(&sim_state, simulator.get_id_start_index(&id) + output);
-                            Label::new(cx, &format!("out {}", output));
-                            Label::new(cx, v).class("tt_shortcut");
-                        })
-                        .size(Auto);
-                    }
-                })
-                .size(Auto);
-            });
+        //.on_over(|ex| println!("over register"))
+        // .tooltip(|cx| {
+        //     let simulator = GuiData::simulator.get(cx);
+        //     let sim_state = GuiData::sim_state.get(cx);
+        //     let (id, ports) = self.get_id_ports();
+
+        //     VStack::new(cx, |cx| {
+        //         Label::new(cx, &id);
+        //         for input in ports.inputs {
+        //             HStack::new(cx, |cx| {
+        //                 let v = simulator.get_input_val(&sim_state, &input);
+        //                 Label::new(cx, &input.id);
+        //                 Label::new(cx, v).class("tt_shortcut");
+        //             })
+        //             .size(Auto);
+        //         }
+        //         for output in 0..ports.outputs.len() {
+        //             HStack::new(cx, |cx| {
+        //                 let v = simulator
+        //                     .get(&sim_state, simulator.get_id_start_index(&id) + output);
+        //                 Label::new(cx, &format!("out {}", output));
+        //                 Label::new(cx, v).class("tt_shortcut");
+        //             })
+        //             .size(Auto);
+        //         }
+        //     })
+        //     .size(Auto);
+        // });
     }
 }
 
