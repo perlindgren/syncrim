@@ -190,9 +190,9 @@ pub fn gui(cs: &ComponentStore) {
                         let oc = wrapper_oc.get(cx);
                         for c in oc {
                             // bind all components to be triggered by clock change
-                            Binding::new(cx, GuiData::clock, move |cx, _| {
-                                c.view(cx);
-                            });
+                            // Binding::new(cx, GuiData::clock, move |cx, _| {
+                            c.view(cx);
+                            //});
                         }
                     },
                 )
