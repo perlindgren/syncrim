@@ -110,6 +110,7 @@ const STYLE: &str = r#"
     submenu.file_menu > popup {
         width: 200px;
     }
+    
 "#;
 // * {
 //     border-width: 1px;
@@ -187,7 +188,9 @@ pub fn gui(cs: &ComponentStore) {
                     |cx, wrapper_oc| {
                         let oc = wrapper_oc.get(cx);
                         for c in oc {
-                            c.view(cx);
+                            Binding::new(cx, GuiData::clock, move |cx, _| {
+                                c.view(cx);
+                            });
                         }
                     },
                 )
