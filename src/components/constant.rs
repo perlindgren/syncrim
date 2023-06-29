@@ -1,8 +1,12 @@
-use crate::common::{Component, Output, OutputType, Ports, SimState, Simulator};
+use crate::{
+    common::{Component, Output, OutputType, Ports, SimState, Simulator},
+    gui_vizia::tooltip::new_component_tooltip,
+};
 use serde::{Deserialize, Serialize};
-use vizia::prelude::*;
-use vizia::vg::{Paint, Path};
-
+use vizia::{
+    prelude::*,
+    vg::{Paint, Path},
+};
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
     pub id: String,
@@ -43,7 +47,8 @@ impl Component for Constant {
         .left(Pixels(self.pos.0 - 10.0))
         .top(Pixels(self.pos.1 - 10.0))
         .width(Pixels(20.0))
-        .height(Pixels(20.0));
+        .height(Pixels(20.0))
+        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 

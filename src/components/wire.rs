@@ -1,7 +1,12 @@
-use crate::common::{Component, OutputType, Ports, SimState, Simulator};
+use crate::{
+    common::{Component, Input, OutputType, Ports},
+    gui_vizia::{tooltip::new_component_tooltip, GuiData},
+};
 use serde::{Deserialize, Serialize};
-use vizia::prelude::*;
-use vizia::vg::{Paint, Path};
+use vizia::{
+    prelude::*,
+    vg::{Paint, Path},
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct Wire {
@@ -29,8 +34,6 @@ impl Component for Wire {
         )
     }
 
-    fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
-
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create Wire View");
@@ -39,7 +42,8 @@ impl Component for Wire {
             .left(Pixels(self.pos.0))
             .top(Pixels(self.pos.1))
             .width(Pixels(self.size.0))
-            .height(Pixels(self.size.1));
+            .height(Pixels(self.size.1))
+            .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 

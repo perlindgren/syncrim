@@ -1,8 +1,13 @@
-use crate::common::{Component, Input, Output, OutputType, Ports, SimState, Simulator};
-use crate::gui_vizia::GuiData;
+use crate::{
+    common::{Component, Input, Output, OutputType, Ports, SimState, Simulator},
+    gui_vizia::{tooltip::new_component_tooltip, GuiData},
+};
 use serde::{Deserialize, Serialize};
-use vizia::prelude::*;
-use vizia::vg::{Paint, Path};
+use vizia::{
+    prelude::*,
+    vg::{Paint, Path},
+};
+
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
     pub id: String,
@@ -57,7 +62,8 @@ impl Component for Mux {
         .left(Pixels(self.pos.0 - 20.0))
         .top(Pixels(self.pos.1 - 10.0 * self.m_in.len() as f32 - 10.0))
         .width(Pixels(40.0))
-        .height(Pixels(20.0 * self.m_in.len() as f32 + 20.0));
+        .height(Pixels(20.0 * self.m_in.len() as f32 + 20.0))
+        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 

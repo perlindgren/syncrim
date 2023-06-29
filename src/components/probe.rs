@@ -1,8 +1,13 @@
-use crate::common::{Component, Input, OutputType, Ports};
-use crate::gui_vizia::GuiData;
+use crate::{
+    common::{Component, Input, OutputType, Ports},
+    gui_vizia::{tooltip::new_component_tooltip, GuiData},
+};
 use serde::{Deserialize, Serialize};
-use vizia::prelude::*;
-use vizia::vg::{Paint, Path};
+use vizia::{
+    prelude::*,
+    vg::{Paint, Path},
+};
+
 #[derive(Serialize, Deserialize)]
 pub struct Probe {
     pub id: String,
@@ -48,7 +53,8 @@ impl Component for Probe {
         .left(Pixels(self.pos.0 - 10.0))
         .top(Pixels(self.pos.1 - 10.0))
         .width(Pixels(20.0))
-        .height(Pixels(20.0));
+        .height(Pixels(20.0))
+        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 
