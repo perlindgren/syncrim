@@ -1,6 +1,6 @@
 # SyncRim
 
-A graphical simulator for synchronous circuits written in Rust based on the [vizia](https://github.com/vizia/vizia) framework. The long term goal is to simulate models of modern embedded processors, giving the user control over - and insight in - the inner workings of a CPU without the need for traditional RTL waveform simulations which are hard to interpret. Other use cases stretch exploratory research of synchronous circuits, hardware software co-design etc. 
+A graphical simulator for synchronous circuits written in Rust based on the [vizia](https://github.com/vizia/vizia) framework. The long term goal is to simulate models of modern embedded processors, giving the user control over - and insight in - the inner workings of a CPU without the need for traditional RTL waveform simulations which are hard to interpret. Other use cases stretch exploratory research of synchronous circuits, hardware software co-design etc.
 
 `SyncRim` is heavily inspired by an in-house [SyncSim](https://syncsim.sourceforge.net/) development at Luleå University of Technology. SyncSim has been successfully used in teaching Micro-computer Engineering at LTU for almost two decades, but it starts to show its age. `SyncRim` a Rust implementation of `SyncSim` is tempting :)
 
@@ -40,13 +40,13 @@ Disclaimer: you will run into panics in case your model is faulty, sorry no nice
 
 ---
 
-## Key design goals:
+## Key design goals
 
 - `SyncRim` should be modular (providing a user extendable library of components and a simulation engine).
 
 - Models in `SyncRim` should be possible to alter and load without the need to re-compile the application.
 
-## Technologies used:
+## Technologies used
 
 - [vizia](https://github.com/vizia/vizia) was chosen based on numerous criteria:
   
@@ -64,7 +64,7 @@ Disclaimer: you will run into panics in case your model is faulty, sorry no nice
 
 - [petgraph](https://github.com/petgraph/petgraph) for underlying graph handling.
 
-## Design overview:
+## Design overview
 
 `SyncRim` is based on the following guiding principles:
 
@@ -94,14 +94,14 @@ Modularity:
 
 - A compiled `SyncRim` application can load/run models for the supported set of components without re-compilation. E.g, a
 
-  - `SyncRim-MIPS` application imports the `SyncRim` base and implements (or imports) additional components needed for defining a simulation model for the `MIPS` architecture, while a 
+  - `SyncRim-MIPS` application imports the `SyncRim` base and implements (or imports) additional components needed for defining a simulation model for the `MIPS` architecture, while a  
   - `SyncRim-RISC-V` application imports the `SyncRim` base, and similarly implements (or imports) additional architecture specific components for the `RISC-V` architecture.
 
   In this way, common components can re-used between targets, while the `SyncRim` base can be kept small and maintainable.
 
 ---
 
-## POC implementation:
+## POC implementation
 
 `SyncRim` is in early development. The POC implementation currently demonstrates:
 
@@ -115,14 +115,16 @@ Modularity:
 
 - Graphical representation of simulation state.
   
-  - `Clock` for progressing state. 
-  - 
+  - `Clock` for progressing state.
   - `UnClock` for reverting state.
+  - `Reset` to set initial state.
+  - `Play` to enter continuous clocking moe.
+  - `Pause` to exit continuous clocking mode.
 
-  - `Reset` to set initial state. 
+  Notice, the system is initially in `Reset`. (Continuous mode not yet implemented.)
 
-  Notice, the system is initially in `Reset`.
-
+- Menu and keyboard shortcuts (backing functionality mostly unimplemented.)
+  
 - Limited set of commodity components:
   
   - `Add` a two input adder
@@ -139,7 +141,7 @@ Modularity:
   
   - A `MIPS` component extension (`InstrMem` component)
 
-## TODO:
+## TODO
 
 - The GUI is currently very primitive (only a transport providing `Clock`, `UnClock`, `Reset`, `Play`, `Pause` controls). Envisioned functionality:
 
@@ -173,8 +175,7 @@ Modularity:
   
 ---
 
-
-## Implementation specifics.
+## Implementation specifics
 
 In the following we highlight some specifics of the current design.
 
