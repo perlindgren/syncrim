@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use syncrim::{
     common::{Component, Input, Output, OutputType, Ports, SimState, Simulator},
+    gui_vizia::tooltip::new_component_tooltip,
     vizia::{
         prelude::*,
         vg::{Color, Paint, Path},
@@ -62,7 +63,8 @@ impl Component for InstrMem {
         .left(Pixels(self.pos.0 - 50.0))
         .top(Pixels(self.pos.1 - 100.0))
         .width(Pixels(100.0))
-        .height(Pixels(200.0));
+        .height(Pixels(200.0))
+        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 
