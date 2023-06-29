@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use syncrim::{
-    common::{Component, Input, Output, OutputType, Ports, SimState, Simulator},
+    common::{Component, Input, Output, OutputType, Ports, Simulator},
     gui_vizia::tooltip::new_component_tooltip,
     vizia::{
         prelude::*,
@@ -33,15 +33,15 @@ impl Component for InstrMem {
         )
     }
 
-    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
+    fn evaluate(&self, simulator: &mut Simulator) {
         // get instr at pc/4
-        let pc = simulator.get_input_val(sim_state, &self.pc);
+        let pc = simulator.get_input_val(&self.pc);
 
         println!("--- evaluate instr mem: pc {}", pc);
         let instr = self.instr[(pc / 4) as usize];
         // set output
         println!("--- output {}", instr);
-        simulator.set_id_index(sim_state, &self.id, 0, instr);
+        simulator.set_id_index(&self.id, 0, instr);
     }
 
     // create view
