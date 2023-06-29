@@ -35,14 +35,13 @@ pub trait Component {
     // placeholder
     fn to_(&self) {}
 
-    // returns the (id, Ports) of the component
+    /// returns the (id, Ports) of the component
     fn get_id_ports(&self) -> (String, Ports);
 
-    // evaluation function
+    /// evaluation function
     fn evaluate(&self, _simulator: &mut Simulator) {}
 
-    // create view
-    // fn view(&self, _cx: &mut Context, _simulator: Rc<Simulator>) {}
+    /// create view
     fn view(&self, _cx: &mut Context) {}
 }
 

@@ -10,12 +10,12 @@ To test `SyncRim` run:
 cargo run --example <example>
 ```
 
-This will build and run the corresponding example and as a side effect create a loadable model (`model.json`).
+This will build and run the corresponding example and as a side effect create a loadable model (`<example>.json`).
 
-To load and run the created model (`model.json`).
+To load and run the created model (`<example>.json`).
 
 ```shell
-cargo run
+cargo run -- -model <example>.json
 ```
 
 Alternatively, you can run the `mips` example from the `mips` folder.
@@ -32,9 +32,9 @@ cd mips # if not already done
 cargo run
 ```
 
-You can also run the examples correspondingly in `vscode`. 
+You can also run the examples correspondingly in `vscode`.
 
-After the initial models have been generated you may alter them (edit the `json` files and just run the corresponding `main` to simulate the altered model). 
+After the initial models have been generated you may alter them (edit the `json` files and just run the corresponding `main` to simulate the altered model).
 
 Disclaimer: you will run into panics in case your model is faulty, sorry no nice error messages to be expected. Circular dependent combinatorial circuits are considered illegal (for good reasons). Direct register to register dependencies (without intermittent combinatorial components) will likely render undefined behavior.
 
@@ -50,11 +50,11 @@ Disclaimer: you will run into panics in case your model is faulty, sorry no nice
 
 - [vizia](https://github.com/vizia/vizia) was chosen based on numerous criteria:
   
-  - Rust based from the ground up, offering good ergonomics. 
+  - Rust based from the ground up, offering good ergonomics.
 
   - Cross platform (Linux/Windows/OSX).
 
-  - Modern declarative approach to GUI design, allowing scaling and CSS based theming. 
+  - Modern declarative approach to GUI design, allowing scaling and CSS based theming.
   
   - Great community support by `geom3trik`, other users and co-developers.
 
@@ -63,7 +63,6 @@ Disclaimer: you will run into panics in case your model is faulty, sorry no nice
 - [typetag](https://github.com/dtolnay/typetag) to serialize/deserialize trait objects (component instances).
 
 - [petgraph](https://github.com/petgraph/petgraph) for underlying graph handling.
-
 
 ## Design overview:
 
@@ -79,7 +78,7 @@ Disclaimer: you will run into panics in case your model is faulty, sorry no nice
 
   - Models are used to handle events in the system (business logic). The top level model has access to the global simulation state.
   
-  - Views are used for graphical representation, with immutable access to global state (through `Lens` abstraction).
+  - Views are used for graphical representation, with immutable access to global state (through Vizia `Lens` abstraction).
 
 - Flat hierarchy (no sub-components, at least for now). However the graphical representation may contain sub-views.
 
@@ -126,15 +125,15 @@ Modularity:
 
 - Limited set of commodity components:
   
-  - Adder
+  - `Add` a two input adder
 
-  - Generic Multiplexer
+  - `Mux` a generic multiplexer, with a select 0..N-1, and N input signals.
 
-  - Constant
+  - `Constant` a constant value.
 
-  - Probe (for visualization of simulation state)
+  - `Probe` (a component for visualization of simulation signal)
 
-  - Register
+  - `Register` a component storing a signal value and propagating inputs to outputs on clock.
 
 - Modularization:
   
@@ -142,13 +141,13 @@ Modularity:
 
 ## TODO:
 
-- The GUI is currently very primitive (only `Clock`, `UnClock`, `Reset` controls). Envisioned functionality:
+- The GUI is currently very primitive (only a transport providing `Clock`, `UnClock`, `Reset`, `Play`, `Pause` controls). Envisioned functionality:
 
   - Run for given number of cycles. Run until signal condition. Restart. Step backwards. Step back until signal condition. Reset. Etc.
 
-  - Load new model. Potentially a model editor. (For now models are exported in `json` format offering relatively easy editing but a graphical editor is of course better).
+  - Load new model. Potentially a model editor. (For now models are exported in `json` format offering relatively easy editing but a graphical editor is of course better). Re-load of altered `json` is implemented, but no file selector.
 
-- The simulator state is current consisting of `Vec<u32>` where each signal amounts to a `u32` value. Here we can think of some sort of bit-vector representation.   
+- The simulator state is current consisting of `Vec<u32>` where each signal amounts to a `u32` value. Here we can think of some sort of bit-vector representation.
 
 - Topological order may be incorrect in case of register to register dependencies without intermittent combinatorial components.
 
@@ -178,7 +177,6 @@ Modularity:
 ## Implementation specifics.
 
 In the following we highlight some specifics of the current design.
-
 
 ## Types for the storage model
 
@@ -230,14 +228,14 @@ pub trait Component {
     fn get_id_ports(&self) -> (String, Ports);
 
     // evaluation function 
-    fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
+    fn evaluate(&self, _simulator: &mut Simulator) {}
 
      // create view
-    fn view(&self, _cx: &mut Context, _simulator: Rc<Simulator>) {}
+    fn view(&self, _cx: &mut Context) {}
 }
 ```
 
-Any component must implement the `Component` trait, (`evaluate` and `view` are optional but not required).
+Any component must implement the `Component` trait, (`evaluate` and `view` are optional).
 
 For serialization to work, `typetag` is derived for the `Component` trait definition as well as its implementations. Under the hood, the `dyn Trait`s are handled as enums by serde.
 
@@ -272,16 +270,17 @@ pub struct ComponentStore {
 
 ## Simulator State
 
-In order to view the simulator state we store (current) values as `vizia` `LensValues` (deriving the `Lens` trait).
+In order to view the simulator state we store (current) values as a `Vizia` `Lens`.
 
 ```rust
 #[derive(Lens, Debug, Clone)]
-pub struct SimState {
-    pub lens_values: Vec<u32>,
+pub struct Simulator {
+    ...
+    pub sim_state: Vec<u32>,
 }
 ```
 
-The `SimState` holds the values and the mapping between identifiers and ports.
+The `Simulator` holds the values and the mapping between identifiers and ports.
 
 ```rust
 pub struct Simulator<'a> {
@@ -297,21 +296,21 @@ pub struct Simulator<'a> {
 The initial simulator state is constructed from a `ComponentStore`.
 
 ```rust
-impl<'a> Simulator<'a> {
-    pub fn new(component_store: &'a ComponentStore) -> (Self, SimState)
+impl Simulator {
+    pub fn new(component_store: &ComponentStore) -> Self
     ...
 
 ```
 
-The `Simulator` is immutable (holding the evaluation order of components), while the `SimState` holds the mutable state (in terms of lensed values).
+The `Simulator` holds the evaluation order of components in `ordered_components`, and the mutable state (`sim_state`).
 
 To progress simulation, we iterated over the `ordered_components`:
 
 ```rust
-impl<'a> Simulator<'a> {
+impl Simulator {
     ...
     // iterate over the evaluators
-    pub fn clock(&self, sim_state: &mut SimState) {
+    pub fn clock(&mut self, clock: &mut Clock) {
         for component in &self.ordered_components {
             component.evaluate(self, sim_state);
         }
@@ -319,25 +318,112 @@ impl<'a> Simulator<'a> {
 }
 ```
 
-As an example the `add` component implements `evaluate` by reading the two inputs, adding them, and storing the value (to output position 0). Todo: We might want to structure the outputs similar to the inputs.
+---
+
+## Example component `Add`
+
+The `Add` component is defined by:
+
+```rust
+#[derive(Serialize, Deserialize)]
+pub struct Add {
+    pub id: String,
+    pub pos: (f32, f32),
+    pub a_in: Input,
+    pub b_in: Input,
+}
+```
+
+An instance of `Add` might look like this:
+
+```rust
+Add {
+    id: "add1",
+    pos: (200.0, 120.0),
+    a_in: Input {
+      id: "c1",
+      index : 0
+    },
+    b_in: Input {
+      id: "r1",
+      index: 0
+    }
+}
+```
+
+The corresponding serialized `json` looks like this:
+
+```json
+        {
+            "type": "Add",
+            "id": "add1",
+            "pos": [
+                200.0,
+                120.0
+            ],
+            "a_in": {
+                "id": "c1",
+                "index": 0
+            },
+            "b_in": {
+                "id": "r1",
+                "index": 0
+            }
+        },
+```
+
+The `Add` component implements `get_id_ports`, `evaluate` and `view`. The first is used on loading a model for determining the dependencies (and from that the topological order), the second is used for simulation and the third to create a `Vizia` view of the component.
+
+Notice that the `get_id_ports` returns a vector of output types. In this case the component has just one output (the sum of inputs computed as a function). On loading the model, consecutive space is allocated for each output and a mapping created from the component identifier to the allocated space.
+
+`evaluate` retrieves the input values from the simulator, computes the sum and stores it at the first position of the allocated space. In case a component has several outputs, the offset is passed, e.g., `simulator.set_id_index(..., 1, ...)`, to set the 2nd output of the component.
 
 ```rust
 impl Component for Add {
-    ...
+    
+    fn get_id_ports(&self) -> (String, Ports) {
+        (
+            self.id.clone(),
+            Ports {
+                inputs: vec![self.a_in.clone(), self.b_in.clone()],
+                out_type: OutputType::Combinatorial,
+                outputs: vec![Output::Function],
+            },
+        )
+    }
+    
     // propagate addition to output
-    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
+    fn evaluate(&self, simulator: &mut Simulator) {
         // get input values
-        let a_in = simulator.get_input_val(sim_state, &self.a_in);
-        let b_in = simulator.get_input_val(sim_state, &self.b_in);
+        let a_in = simulator.get_input_val(&self.a_in);
+        let b_in = simulator.get_input_val(&self.b_in);
 
         // compute addition (notice will panic on overflow)
         let value = a_in + b_in;
 
-        // set output
-        simulator.set_id_index(sim_state, &self.id, 0, value);
+        // set output #0
+        simulator.set_id_index(&self.id, 0, value);
+    }
+
+    // create view
+    fn view(&self, cx: &mut Context) {
+        
+        View::build(AddView {}, cx, |cx| {
+            Label::new(cx, "+")
+                .left(Percentage(50.0))
+                .top(Pixels(40.0 - 10.0));
+        })
+        .position_type(PositionType::SelfDirected)
+        .left(Pixels(self.pos.0 - 20.0))
+        .top(Pixels(self.pos.1 - 40.0))
+        .width(Pixels(40.0))
+        .height(Pixels(80.0))
+        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 ```
+
+The `Add` component is anchored at `pos` with height 80 and width 40 pixels. The tooltip is used to show the inputs and outputs on hovering.
 
 ---
 
