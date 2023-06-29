@@ -1,6 +1,6 @@
 use crate::{
     common::{Component, Input, OutputType, Ports},
-    gui_vizia::{tooltip::new_component_tooltip, GuiData},
+    gui_vizia::tooltip::new_component_tooltip,
 };
 use serde::{Deserialize, Serialize};
 use vizia::{
