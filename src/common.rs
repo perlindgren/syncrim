@@ -3,17 +3,14 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use vizia::prelude::*;
 
-#[derive(Lens, Debug, Data, Clone)]
-pub struct SimState {
-    pub lens_values: Vec<u32>,
-}
-
 #[derive(Lens, Data, Clone)]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,
 
     // Components stored in topological evaluation order
     pub ordered_components: Components,
+    pub sim_state: Vec<u32>,
+    pub history: Vec<Vec<u32>>,
 }
 
 type Components = Vec<Rc<dyn Component>>;
@@ -42,7 +39,7 @@ pub trait Component {
     fn get_id_ports(&self) -> (String, Ports);
 
     // evaluation function
-    fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
+    fn evaluate(&self, _simulator: &mut Simulator) {}
 
     // create view
     // fn view(&self, _cx: &mut Context, _simulator: Rc<Simulator>) {}

@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Input, Output, OutputType, Ports, SimState, Simulator},
+    common::{Component, Input, Output, OutputType, Ports, Simulator},
     gui_vizia::tooltip::new_component_tooltip,
 };
 use serde::{Deserialize, Serialize};
@@ -34,11 +34,11 @@ impl Component for Register {
     }
 
     // propagate input value to output
-    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
+    fn evaluate(&self, simulator: &mut Simulator) {
         // get input value
-        let value = simulator.get_input_val(sim_state, &self.r_in);
+        let value = simulator.get_input_val(&self.r_in);
         // set output
-        simulator.set_id_index(sim_state, &self.id, 0, value);
+        simulator.set_id_index(&self.id, 0, value);
         println!("eval: register id {} in {}", self.id, value);
     }
 

@@ -1,4 +1,4 @@
-use crate::common::{Component, ComponentStore, Input, OutputType, SimState, Simulator};
+use crate::common::{Component, ComponentStore, Input, OutputType, Simulator};
 use petgraph::{algo::toposort, Graph};
 use std::collections::HashMap;
 
@@ -12,7 +12,7 @@ pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 // A solution is to evaluate register updates separately from other components
 // ... but not currently implemented ...
 impl Simulator {
-    pub fn new(component_store: &ComponentStore) -> (Self, SimState) {
+    pub fn new(component_store: &ComponentStore) -> Self {
         let mut lens_values = vec![];
 
         let mut id_start_index = HashMap::new();
@@ -91,26 +91,25 @@ impl Simulator {
 
         println!("--- eval");
 
-        (
-            Simulator {
-                id_start_index,
-                ordered_components,
-            },
-            SimState { lens_values },
-        )
+        Simulator {
+            id_start_index,
+            ordered_components,
+            sim_state: lens_values,
+            history: vec![],
+        }
     }
 }
 
 // Simulator implementation
 impl Simulator {
-    pub fn get(&self, sim_state: &SimState, index: usize) -> u32 {
-        sim_state.lens_values[index]
+    pub fn get(&self, index: usize) -> u32 {
+        self.sim_state[index]
     }
 
     // get input value
-    pub fn get_input_val(&self, sim_state: &SimState, input: &Input) -> u32 {
+    pub fn get_input_val(&self, input: &Input) -> u32 {
         let start_index = *self.id_start_index.get(&input.id).unwrap();
-        self.get(sim_state, start_index + input.index)
+        self.get(start_index + input.index)
     }
 
     // get start index by id
@@ -119,28 +118,40 @@ impl Simulator {
     }
 
     // set value by index
-    pub fn set(&self, sim_state: &mut SimState, index: usize, value: u32) {
-        let val_ref = &mut sim_state.lens_values[index];
-        *val_ref = value
+    pub fn set(&mut self, index: usize, value: u32) {
+        self.sim_state[index] = value;
     }
 
     // set value by id and offset (index)
     // todo: maybe better by Output
-    pub fn set_id_index(&self, sim_state: &mut SimState, id: &str, index: usize, value: u32) {
+    pub fn set_id_index(&mut self, id: &str, index: usize, value: u32) {
         let start_index = self.get_id_start_index(id);
-        self.set(sim_state, start_index + index, value);
+        self.set(start_index + index, value);
     }
 
     // iterate over the evaluators
-    pub fn clock(&self, sim_state: &mut SimState, clock: &mut usize) {
-        for component in &self.ordered_components {
-            component.evaluate(self, sim_state);
+    pub fn clock(&mut self, clock: &mut usize) {
+        // push current state
+        self.history.push(self.sim_state.clone());
+        let ordered_components = self.ordered_components.clone();
+        for component in ordered_components {
+            component.evaluate(self);
         }
-        *clock += 1;
+        *clock = self.history.len();
     }
 
-    pub fn reset(&self, sim_state: &mut SimState, clock: &mut usize) {
-        sim_state.lens_values.iter_mut().for_each(|val| *val = 0);
-        self.clock(sim_state, clock);
+    pub fn un_clock(&mut self, clock: &mut usize) {
+        if *clock > 1 {
+            let state = self.history.pop().unwrap();
+            // set old state
+            self.sim_state = state;
+        }
+        *clock = self.history.len();
+    }
+
+    pub fn reset(&mut self, clock: &mut usize) {
+        self.history = vec![];
+        self.sim_state.iter_mut().for_each(|val| *val = 0);
+        self.clock(clock);
     }
 }

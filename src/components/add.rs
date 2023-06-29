@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Input, Output, OutputType, Ports, SimState, Simulator},
+    common::{Component, Input, Output, OutputType, Ports, Simulator},
     gui_vizia::tooltip::new_component_tooltip,
 };
 use serde::{Deserialize, Serialize};
@@ -34,10 +34,10 @@ impl Component for Add {
     }
 
     // propagate addition to output
-    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
+    fn evaluate(&self, simulator: &mut Simulator) {
         // get input values
-        let a_in = simulator.get_input_val(sim_state, &self.a_in);
-        let b_in = simulator.get_input_val(sim_state, &self.b_in);
+        let a_in = simulator.get_input_val(&self.a_in);
+        let b_in = simulator.get_input_val(&self.b_in);
 
         // compute addition (notice will panic on overflow)
         let value = a_in + b_in;
@@ -45,7 +45,7 @@ impl Component for Add {
         println!("eval Add a_in {}, b_in {}, value = {}", a_in, b_in, value);
 
         // set output
-        simulator.set_id_index(sim_state, &self.id, 0, value);
+        simulator.set_id_index(&self.id, 0, value);
     }
 
     // create view

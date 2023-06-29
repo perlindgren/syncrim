@@ -12,12 +12,7 @@ pub fn new_component_tooltip(cx: &mut Context, component: &dyn Component) {
                 Binding::new(cx, GuiData::clock, move |cx, _| {
                     Label::new(
                         cx,
-                        &format!(
-                            "{:?}",
-                            GuiData::simulator
-                                .get(cx)
-                                .get_input_val(&GuiData::sim_state.get(cx), &input)
-                        ),
+                        &format!("{:?}", GuiData::simulator.get(cx).get_input_val(&input)),
                     )
                     .class("tt_shortcut");
                 })
@@ -34,7 +29,6 @@ pub fn new_component_tooltip(cx: &mut Context, component: &dyn Component) {
                         &format!(
                             "{:?}",
                             GuiData::simulator.get(cx).get(
-                                &GuiData::sim_state.get(cx),
                                 GuiData::simulator.get(cx).get_id_start_index(&id_clone) + output
                             )
                         ),

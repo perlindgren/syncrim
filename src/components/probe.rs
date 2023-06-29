@@ -43,8 +43,7 @@ impl Component for Probe {
             Binding::new(cx, crate::gui_vizia::GuiData::clock, move |cx, _| {
                 Label::new(cx, {
                     let simulator = GuiData::simulator.get(cx);
-                    let sim_state = GuiData::sim_state.get(cx);
-                    &format!(" {:?}", simulator.get_input_val(&sim_state, &input))
+                    &format!(" {:?}", simulator.get_input_val(&input))
                 });
             });
         })

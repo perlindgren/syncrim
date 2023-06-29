@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Input, Output, OutputType, Ports, SimState, Simulator},
+    common::{Component, Input, Output, OutputType, Ports, Simulator},
     gui_vizia::{tooltip::new_component_tooltip, GuiData},
 };
 use serde::{Deserialize, Serialize};
@@ -38,13 +38,13 @@ impl Component for Mux {
     }
 
     // propagate selected input value to output
-    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
+    fn evaluate(&self, simulator: &mut Simulator) {
         // get input value
-        let select = simulator.get_input_val(sim_state, &self.select) as usize;
-        let value = simulator.get_input_val(sim_state, &self.m_in[select]);
+        let select = simulator.get_input_val(&self.select) as usize;
+        let value = simulator.get_input_val(&self.m_in[select]);
 
         // set output
-        simulator.set_id_index(sim_state, &self.id, 0, value);
+        simulator.set_id_index(&self.id, 0, value);
     }
 
     // create view
@@ -112,8 +112,8 @@ impl View for MuxView {
 
         // selector
         let simulator = GuiData::simulator.get(cx);
-        let sim_state = GuiData::sim_state.get(cx);
-        let select = simulator.get_input_val(&sim_state, &self.select);
+
+        let select = simulator.get_input_val(&self.select);
 
         println!("----- select = {}", select);
         paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));

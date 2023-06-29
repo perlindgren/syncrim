@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Output, OutputType, Ports, SimState, Simulator},
+    common::{Component, Output, OutputType, Ports, Simulator},
     gui_vizia::tooltip::new_component_tooltip,
 };
 use serde::{Deserialize, Serialize};
@@ -33,8 +33,8 @@ impl Component for Constant {
         )
     }
 
-    fn evaluate(&self, simulator: &Simulator, sim_state: &mut SimState) {
-        simulator.set_id_index(sim_state, &self.id, 0, self.value);
+    fn evaluate(&self, simulator: &mut Simulator) {
+        simulator.set_id_index(&self.id, 0, self.value);
     }
 
     // create view
