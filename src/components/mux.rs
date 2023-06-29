@@ -68,7 +68,6 @@ impl Component for Mux {
 }
 
 pub struct MuxView {
-    // simulator: Rc<Simulator>,
     select: Input,
 }
 
