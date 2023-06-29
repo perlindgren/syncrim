@@ -38,37 +38,65 @@ fn main() {
             Rc::new(Wire {
                 id: "w1".to_string(),
                 pos: (110.0, 100.0),
-                size: (70.0, 0.0),
+                delta: (70.0, 0.0),
+                input: Input {
+                    id: "c1".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "w2".to_string(),
                 pos: (110.0, 140.0),
-                size: (70.0, 0.0),
+                delta: (70.0, 0.0),
+                input: Input {
+                    id: "r1".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "w3".to_string(),
                 pos: (220.0, 120.0),
-                size: (40.0, 0.0),
+                delta: (40.0, 0.0),
+                input: Input {
+                    id: "add1".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "w4".to_string(),
                 pos: (260.0, 120.0),
-                size: (0.0, 60.0),
+                delta: (0.0, 60.0),
+                input: Input {
+                    id: "add1".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "w5".to_string(),
-                pos: (260.0, 180.0),
-                size: (-200.0, 0.0),
+                pos: (60.0, 180.0),
+                delta: (200.0, 0.0),
+                input: Input {
+                    id: "add1".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "w6".to_string(),
-                pos: (60.0, 180.0),
-                size: (0.0, -40.0),
+                pos: (60.0, 140.0),
+                delta: (0.0, 40.0),
+                input: Input {
+                    id: "add1".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "w7".to_string(),
                 pos: (60.0, 140.0),
-                size: (30.0, 0.0),
+                delta: (30.0, 0.0),
+                input: Input {
+                    id: "add1".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Probe {
                 id: "p_add".to_string(),
@@ -135,32 +163,56 @@ fn main() {
             Rc::new(Wire {
                 id: "wm_sel".to_string(),
                 pos: (260.0, 180.0),
-                size: (0.0, 70.0),
+                delta: (0.0, 70.0),
+                input: Input {
+                    id: "add1".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "wm1".to_string(),
                 pos: (200.0, 270.0),
-                size: (50.0, 0.0),
+                delta: (50.0, 0.0),
+                input: Input {
+                    id: "mc1".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "wm2".to_string(),
                 pos: (200.0, 290.0),
-                size: (50.0, 0.0),
+                delta: (50.0, 0.0),
+                input: Input {
+                    id: "mc2".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "wm3".to_string(),
                 pos: (200.0, 310.0),
-                size: (50.0, 0.0),
+                delta: (50.0, 0.0),
+                input: Input {
+                    id: "mc3".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "wm4".to_string(),
                 pos: (200.0, 330.0),
-                size: (50.0, 0.0),
+                delta: (50.0, 0.0),
+                input: Input {
+                    id: "mc4".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "wm_o0".to_string(),
                 pos: (290.0, 300.0),
-                size: (50.0, 0.0),
+                delta: (50.0, 0.0),
+                input: Input {
+                    id: "mux".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Probe {
                 id: "p_mux".to_string(),

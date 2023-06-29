@@ -35,17 +35,29 @@ fn main() {
             Rc::new(Wire {
                 id: "w1".to_string(),
                 pos: (110.0, 100.0),
-                size: (70.0, 0.0),
+                delta: (70.0, 0.0),
+                input: Input {
+                    id: "c1".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "w2".to_string(),
                 pos: (110.0, 140.0),
-                size: (70.0, 0.0),
+                delta: (70.0, 0.0),
+                input: Input {
+                    id: "c2".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Wire {
                 id: "w3".to_string(),
                 pos: (220.0, 120.0),
-                size: (40.0, 0.0),
+                delta: (40.0, 0.0),
+                input: Input {
+                    id: "add1".to_string(),
+                    index: 0,
+                },
             }),
             Rc::new(Probe {
                 id: "p1".to_string(),
