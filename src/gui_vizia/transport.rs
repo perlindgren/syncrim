@@ -13,7 +13,7 @@ impl Transport {
                 Button::new(
                     cx,
                     |ex| ex.emit(GuiEvent::Reset),
-                    |cx| Label::new(cx, icons::ICON_PLAYER_SKIP_BACK),
+                    |cx| Label::new(cx, icons::ICON_PLAYER_SKIP_BACK).class("icon"),
                 )
                 .tooltip(|cx| {
                     HStack::new(cx, |cx| {
@@ -27,7 +27,7 @@ impl Transport {
                 Button::new(
                     cx,
                     |ex| ex.emit(GuiEvent::UnClock),
-                    |cx| Label::new(cx, icons::ICON_CHEVRON_LEFT),
+                    |cx| Label::new(cx, icons::ICON_CHEVRON_LEFT).class("icon"),
                 )
                 .tooltip(|cx| {
                     HStack::new(cx, |cx| {
@@ -41,7 +41,7 @@ impl Transport {
                 Button::new(
                     cx,
                     |ex| ex.emit(GuiEvent::Clock),
-                    |cx| Label::new(cx, icons::ICON_CHEVRON_RIGHT),
+                    |cx| Label::new(cx, icons::ICON_CHEVRON_RIGHT).class("icon"),
                 )
                 .tooltip(|cx| {
                     HStack::new(cx, |cx| {
@@ -66,6 +66,7 @@ impl Transport {
                                 }
                             }),
                         )
+                        .class("icon")
                     },
                 )
                 .tooltip(|cx| {
@@ -91,6 +92,7 @@ impl Transport {
                                 }
                             }),
                         )
+                        .class("icon")
                     },
                 )
                 .tooltip(|cx| {
