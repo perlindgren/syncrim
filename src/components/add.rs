@@ -52,46 +52,57 @@ impl Component for Add {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create Add View");
-        View::build(AddView {}, cx, |cx| {
-            Label::new(cx, "+")
-                .left(Percentage(50.0))
-                .top(Pixels(40.0 - 10.0));
-        })
-        .position_type(PositionType::SelfDirected)
-        .left(Pixels(self.pos.0 - 20.0))
-        .top(Pixels(self.pos.1 - 40.0))
-        .width(Pixels(40.0))
-        .height(Pixels(80.0))
-        .on_hover(|ex| {
-            println!("on_hover");
-            ex.emit(HoverEvent::OnHover)
-        })
-        .on_hover_out(|ex| {
-            println!("on_hover_out");
-            ex.emit(HoverEvent::OnHoverOut);
-        });
+        AddModel {
+            hovered: false,
+            pinned: true,
+            displayed: true,
+        }
+        .build(cx);
 
-        AddModel { hovered: false }.build(cx);
+        ZStack::new(cx, |cx| {
+            View::build(AddView {}, cx, |cx| {
+                Label::new(cx, "+")
+                    .left(Percentage(50.0))
+                    .top(Pixels(40.0 - 10.0));
+                Hover::new(cx, AddModel::pinned).bind(
+                    AddModel::displayed,
+                    |mut handle, hovered| {
+                        println!("---- data changed");
+                        let cx = handle.context();
+                        let displayed = hovered.get(cx);
 
-        Hover::new(cx, self.pos).bind(AddModel::hovered, |mut handle, hovered| {
-            println!("---- data changed");
-            let cx = handle.context();
-            let hovered = hovered.get(cx);
-
-            if hovered {
-                handle.display(Display::Flex);
-            } else {
-                handle.display(Display::None);
-            };
+                        if displayed {
+                            handle.display(Display::Flex);
+                        } else {
+                            // handle.display(Display::None);
+                        };
+                    },
+                );
+            })
+            .position_type(PositionType::SelfDirected)
+            .left(Pixels(self.pos.0 - 20.0))
+            .top(Pixels(self.pos.1 - 40.0))
+            .width(Pixels(40.0))
+            .height(Pixels(80.0))
+            .on_hover(|ex| {
+                println!("on_hover");
+                ex.emit(HoverEvent::OnHover)
+            })
+            .on_hover_out(|ex| {
+                println!("on_hover_out");
+                ex.emit(HoverEvent::OnHoverOut);
+            });
         });
 
         //.tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 
-#[derive(Lens, Data, Clone)]
+#[derive(Lens, Data, Clone, Debug)]
 pub struct AddModel {
     hovered: bool,
+    pinned: bool,
+    displayed: bool,
 }
 
 impl Model for AddModel {
@@ -100,10 +111,20 @@ impl Model for AddModel {
             HoverEvent::OnHover => {
                 println!("on_hover_received");
                 self.hovered = true;
+                self.displayed = true;
+                println!("{:?}", self);
             }
             HoverEvent::OnHoverOut => {
                 println!("on_hover_out_received");
                 self.hovered = false;
+                self.displayed = self.pinned;
+                println!("{:?}", self);
+            }
+            HoverEvent::PinnedToggle => {
+                println!("pinned_toggle");
+                self.pinned = !self.pinned;
+                self.displayed = self.pinned;
+                println!("{:?}", self);
             }
         });
     }
