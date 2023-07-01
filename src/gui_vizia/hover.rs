@@ -1,5 +1,3 @@
-use std::intrinsics::mir::Discriminant;
-
 use crate::{
     common::{Component, Input, Output, OutputType, Ports, Simulator},
     gui_vizia::tooltip::new_component_tooltip,
@@ -17,26 +15,27 @@ pub struct Hover {
 
 impl Hover {
     pub fn new(cx: &mut Context, pos: (f32, f32)) {
-        println!("---- Create Add View");
+        println!("---- Create Hover View");
         View::build(Hover { hovered: false }, cx, |cx| {
             Element::new(cx)
-                .size(Pixels(100.0))
+                .size(Pixels(10.0))
                 .background_color(Color::green());
         })
-        .position_type(PositionType::SelfDirected)
-        // .display(
-        //     Display::Flex, // Hover::hovered.map(|hovered| {
-        //                 // if *hovered {
-        //                 //     Display::Flex
-        //                 // } else {
-        //                 //     Display::None
-        //                 // }
-        //                 // })
-        // );
-        //.left(Pixels(pos.0))
-        //.top(Pixels(pos.1));
+        //  .position_type(PositionType::SelfDirected)
+        .bind(Hover::hovered, |cx, hovered| println!("data changed"))
+        .left(Pixels(pos.0))
+        .top(Pixels(pos.1));
 
-        // Hover::hovered.map(|cx, )
+        // .display({
+        //     let x = Hover::hovered.map(|hovered| {
+        //         if *hovered {
+        //             Display::Flex
+        //         } else {
+        //             Display::None
+        //         }
+        //     });
+        //     Display::Flex
+        // });
     }
 }
 

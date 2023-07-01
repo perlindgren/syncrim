@@ -89,14 +89,24 @@ impl Simulator {
             ordered_components.push(c);
         }
 
-        println!("--- eval");
+        let component_ids: Vec<String> = ordered_components
+            .iter()
+            .map(|c| c.get_id_ports().0)
+            .collect();
 
-        Simulator {
+        let mut simulator = Simulator {
             id_start_index,
             ordered_components,
             sim_state: lens_values,
             history: vec![],
-        }
+            component_ids,
+        };
+
+        // simulate one clock cycle
+        let mut clock = 0;
+
+        simulator.clock(&mut clock);
+        simulator
     }
 }
 

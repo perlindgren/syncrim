@@ -11,6 +11,7 @@ pub struct Simulator {
     pub ordered_components: Components,
     pub sim_state: Vec<u32>,
     pub history: Vec<Vec<u32>>,
+    pub component_ids: Vec<String>,
 }
 
 type Components = Vec<Rc<dyn Component>>;

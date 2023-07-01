@@ -56,15 +56,22 @@ impl Component for Add {
             Label::new(cx, "+")
                 .left(Percentage(50.0))
                 .top(Pixels(40.0 - 10.0));
-            Hover::new(cx, self.pos);
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 20.0))
         .top(Pixels(self.pos.1 - 40.0))
         .width(Pixels(40.0))
         .height(Pixels(80.0))
-        .on_hover(|ex| ex.emit(HoverEvent::OnHover))
-        .on_hover_out(|ex| ex.emit(HoverEvent::OnHover));
+        .on_hover(|ex| {
+            println!("on_hover");
+            ex.emit(HoverEvent::OnHover)
+        })
+        .on_hover_out(|ex| {
+            println!("on_hover_out");
+            ex.emit(HoverEvent::OnHoverOut);
+        });
+
+        Hover::new(cx, self.pos);
 
         //.tooltip(|cx| new_component_tooltip(cx, self));
     }

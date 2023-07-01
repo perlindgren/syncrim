@@ -10,7 +10,6 @@ pub struct GuiData {
     pub pause: bool,
     pub is_saved: bool,
     pub show_about: bool,
-    pub component_ids: Vec<String>,
     pub selected_id: usize,
 }
 
@@ -45,16 +44,9 @@ impl Model for GuiData {
         });
 
         event.map(|app_event, _meta| match app_event {
-            GuiEvent::ReOpen => {
-                // Re-Open model
-                self.open();
-            }
-            GuiEvent::Clock => {
-                self.simulator.clock(&mut self.clock);
-            }
-            GuiEvent::UnClock => {
-                self.simulator.un_clock(&mut self.clock);
-            }
+            GuiEvent::ReOpen => self.open(),
+            GuiEvent::Clock => self.simulator.clock(&mut self.clock),
+            GuiEvent::UnClock => self.simulator.un_clock(&mut self.clock),
             GuiEvent::Reset => {
                 self.simulator.reset(&mut self.clock);
                 self.pause = true;
@@ -75,22 +67,11 @@ impl GuiData {
         // Re-Open model
         println!("open path {}", self.path);
         let cs = Box::new(ComponentStore::load_file(&self.path));
-        let mut simulator = Simulator::new(&cs);
-
-        // Initial clock to propagate constants
-        let mut clock = 0;
-
-        simulator.clock(&mut clock);
-        let component_ids: Vec<String> = simulator
-            .ordered_components
-            .iter()
-            .map(|c| c.get_id_ports().0)
-            .collect();
+        let simulator = Simulator::new(&cs);
 
         self.path = cs.path.clone();
-        self.clock = clock;
+        self.clock = 1;
         self.simulator = simulator;
-        self.component_ids = component_ids;
 
         println!("opened");
     }
@@ -120,18 +101,9 @@ const STYLE: &str = r#"
 // }
 
 pub fn gui(cs: &ComponentStore) {
-    let mut simulator = Simulator::new(cs);
-    // let simulator = Rc::new(simulator);
-    // Initial clock to propagate constants
-    let mut clock = 0;
-    simulator.clock(&mut clock);
-    let component_ids: Vec<String> = simulator
-        .ordered_components
-        .iter()
-        .map(|c| c.get_id_ports().0)
-        .collect();
-
+    let simulator = Simulator::new(cs);
     let path = cs.path.clone();
+
     Application::new(move |cx| {
         // Styling
         cx.add_stylesheet(STYLE).expect("Failed to add stylesheet");
@@ -140,12 +112,11 @@ pub fn gui(cs: &ComponentStore) {
 
         GuiData {
             path,
-            clock,
+            clock: 1,
             simulator,
             pause: true,
             is_saved: false,
             show_about: false,
-            component_ids,
             selected_id: 0,
         }
         .build(cx);
@@ -159,15 +130,6 @@ pub fn gui(cs: &ComponentStore) {
                         .top(Stretch(1.0))
                         .bottom(Stretch(1.0))
                         .height(Auto);
-                    // Label::new(
-                    //     cx,
-                    //     GuiData::sim_state
-                    //         .then(SimState::lens_values)
-                    //         .map(|v| format!("Raw state {:?}", v)),
-                    // )
-                    // .top(Stretch(1.0))
-                    // .bottom(Stretch(1.0))
-                    // .height(Auto);
                 })
                 .col_between(Pixels(10.0))
                 .top(Stretch(1.0))
@@ -185,10 +147,7 @@ pub fn gui(cs: &ComponentStore) {
                     |cx, wrapper_oc| {
                         let oc = wrapper_oc.get(cx);
                         for c in oc {
-                            // bind all components to be triggered by clock change
-                            // Binding::new(cx, GuiData::clock, move |cx, _| {
                             c.view(cx);
-                            //});
                         }
                     },
                 )
