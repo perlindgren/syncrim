@@ -1,6 +1,6 @@
 use crate::{
     common::{Component, Input, Output, OutputType, Ports, Simulator},
-    gui_vizia::tooltip::new_component_tooltip,
+    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
 use serde::{Deserialize, Serialize};
 use vizia::{
@@ -46,13 +46,16 @@ impl Component for Register {
     fn view(&self, cx: &mut Context) {
         println!("---- Create Register View ");
 
-        View::build(RegisterView {}, cx, |_cx| {})
-            .position_type(PositionType::SelfDirected)
-            .left(Pixels(self.pos.0 - 10.0))
-            .top(Pixels(self.pos.1 - 15.0))
-            .width(Pixels(20.0))
-            .height(Pixels(30.0))
-            .tooltip(|cx| new_component_tooltip(cx, self));
+        View::build(RegisterView {}, cx, |cx| {
+            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+        })
+        .position_type(PositionType::SelfDirected)
+        .left(Pixels(self.pos.0 - 10.0))
+        .top(Pixels(self.pos.1 - 15.0))
+        .width(Pixels(20.0))
+        .height(Pixels(30.0))
+        .on_press(|ex| ex.emit(PopupEvent::Switch))
+        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 

@@ -49,7 +49,7 @@ pub trait Component {
 // Note: view uses the concrete type of the derived lens to allow object creation.
 // Perhaps we can find a better way (e.g., through type erasure).
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Ports {
     pub inputs: Vec<Input>,
     pub out_type: OutputType,
@@ -62,7 +62,7 @@ pub struct Input {
     pub index: usize,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum OutputType {
     // Will be evaluated as a combinatorial function from inputs to outputs
     Combinatorial,
@@ -70,7 +70,7 @@ pub enum OutputType {
     Sequential,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum Output {
     // Will be evaluated as a constant (function without inputs)
     Constant(u32),

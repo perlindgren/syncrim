@@ -1,7 +1,6 @@
-use crate::gui_vizia::hover::{Hover, HoverEvent};
 use crate::{
     common::{Component, Input, Output, OutputType, Ports, Simulator},
-    gui_vizia::{hover, tooltip::new_component_tooltip},
+    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
 use serde::{Deserialize, Serialize};
 use vizia::{
@@ -52,81 +51,19 @@ impl Component for Add {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create Add View");
-        AddModel {
-            hovered: false,
-            pinned: true,
-            displayed: true,
-        }
-        .build(cx);
 
-        ZStack::new(cx, |cx| {
-            View::build(AddView {}, cx, |cx| {
-                Label::new(cx, "+")
-                    .left(Percentage(50.0))
-                    .top(Pixels(40.0 - 10.0));
-                Hover::new(cx, AddModel::pinned).bind(
-                    AddModel::displayed,
-                    |mut handle, hovered| {
-                        println!("---- data changed");
-                        let cx = handle.context();
-                        let displayed = hovered.get(cx);
-
-                        if displayed {
-                            handle.display(Display::Flex);
-                        } else {
-                            // handle.display(Display::None);
-                        };
-                    },
-                );
-            })
-            .position_type(PositionType::SelfDirected)
-            .left(Pixels(self.pos.0 - 20.0))
-            .top(Pixels(self.pos.1 - 40.0))
-            .width(Pixels(40.0))
-            .height(Pixels(80.0))
-            .on_hover(|ex| {
-                println!("on_hover");
-                ex.emit(HoverEvent::OnHover)
-            })
-            .on_hover_out(|ex| {
-                println!("on_hover_out");
-                ex.emit(HoverEvent::OnHoverOut);
-            });
-        });
-
-        //.tooltip(|cx| new_component_tooltip(cx, self));
-    }
-}
-
-#[derive(Lens, Data, Clone, Debug)]
-pub struct AddModel {
-    hovered: bool,
-    pinned: bool,
-    displayed: bool,
-}
-
-impl Model for AddModel {
-    fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
-        event.map(|hover_event, _meta| match hover_event {
-            HoverEvent::OnHover => {
-                println!("on_hover_received");
-                self.hovered = true;
-                self.displayed = true;
-                println!("{:?}", self);
-            }
-            HoverEvent::OnHoverOut => {
-                println!("on_hover_out_received");
-                self.hovered = false;
-                self.displayed = self.pinned;
-                println!("{:?}", self);
-            }
-            HoverEvent::PinnedToggle => {
-                println!("pinned_toggle");
-                self.pinned = !self.pinned;
-                self.displayed = self.pinned;
-                println!("{:?}", self);
-            }
-        });
+        View::build(AddView {}, cx, move |cx| {
+            Label::new(cx, "+")
+                .left(Percentage(50.0))
+                .top(Pixels(40.0 - 10.0));
+            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+        })
+        .left(Pixels(self.pos.0 - 20.0))
+        .top(Pixels(self.pos.1 - 40.0))
+        .width(Pixels(40.0))
+        .height(Pixels(80.0))
+        .on_press(|ex| ex.emit(PopupEvent::Switch))
+        .tooltip(|cx| new_component_tooltip(cx, self.clone()));
     }
 }
 
