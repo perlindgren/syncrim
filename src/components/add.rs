@@ -52,7 +52,7 @@ impl Component for Add {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create Add View");
-        View::build(AddView { hovered: false }, cx, |cx| {
+        View::build(AddView {}, cx, |cx| {
             Label::new(cx, "+")
                 .left(Percentage(50.0))
                 .top(Pixels(40.0 - 10.0));
@@ -71,31 +71,30 @@ impl Component for Add {
             ex.emit(HoverEvent::OnHoverOut);
         });
 
-        Hover::new(cx, self.pos).bind(AddView::hovered, |cx, hovered| {
+        AddModel { hovered: false }.build(cx);
+
+        Hover::new(cx, self.pos).bind(AddModel::hovered, |mut handle, hovered| {
             println!("---- data changed");
-            // hovered.map(|hovered| {
-            //     if *hovered {
-            //         cx.display(Display::Flex);
-            //     } else {
-            //         cx.display(Display::None);
-            //     }
-            // });
+            let cx = handle.context();
+            let hovered = hovered.get(cx);
+
+            if hovered {
+                handle.display(Display::Flex);
+            } else {
+                handle.display(Display::None);
+            };
         });
 
         //.tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 
-#[derive(Lens)]
-pub struct AddView {
+#[derive(Lens, Data, Clone)]
+pub struct AddModel {
     hovered: bool,
 }
 
-impl View for AddView {
-    fn element(&self) -> Option<&'static str> {
-        Some("Add")
-    }
-
+impl Model for AddModel {
     fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
         event.map(|hover_event, _meta| match hover_event {
             HoverEvent::OnHover => {
@@ -107,6 +106,14 @@ impl View for AddView {
                 self.hovered = false;
             }
         });
+    }
+}
+
+pub struct AddView {}
+
+impl View for AddView {
+    fn element(&self) -> Option<&'static str> {
+        Some("Add")
     }
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
