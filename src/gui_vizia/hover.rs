@@ -14,17 +14,17 @@ pub struct Hover {
 }
 
 impl Hover {
-    pub fn new(cx: &mut Context, pos: (f32, f32)) {
+    pub fn new(cx: &mut Context, pos: (f32, f32)) -> Handle<Self> {
         println!("---- Create Hover View");
         View::build(Hover { hovered: false }, cx, |cx| {
             Element::new(cx)
                 .size(Pixels(10.0))
                 .background_color(Color::green());
         })
-        //  .position_type(PositionType::SelfDirected)
-        .bind(Hover::hovered, |cx, hovered| println!("data changed"))
+        .position_type(PositionType::SelfDirected)
+        // .bind(Hover::hovered, |cx, hovered| println!("data changed"))
         .left(Pixels(pos.0))
-        .top(Pixels(pos.1));
+        .top(Pixels(pos.1))
 
         // .display({
         //     let x = Hover::hovered.map(|hovered| {
