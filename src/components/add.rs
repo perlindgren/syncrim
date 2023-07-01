@@ -1,6 +1,7 @@
+use crate::gui_vizia::hover::{Hover, HoverEvent};
 use crate::{
     common::{Component, Input, Output, OutputType, Ports, Simulator},
-    gui_vizia::tooltip::new_component_tooltip,
+    gui_vizia::{hover, tooltip::new_component_tooltip},
 };
 use serde::{Deserialize, Serialize};
 use vizia::{
@@ -55,13 +56,17 @@ impl Component for Add {
             Label::new(cx, "+")
                 .left(Percentage(50.0))
                 .top(Pixels(40.0 - 10.0));
+            Hover::new(cx, self.pos);
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 20.0))
         .top(Pixels(self.pos.1 - 40.0))
         .width(Pixels(40.0))
         .height(Pixels(80.0))
-        .tooltip(|cx| new_component_tooltip(cx, self));
+        .on_hover(|ex| ex.emit(HoverEvent::OnHover))
+        .on_hover_out(|ex| ex.emit(HoverEvent::OnHover));
+
+        //.tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 
