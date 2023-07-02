@@ -1,3 +1,4 @@
+use mips::components::*;
 use std::cell::Cell;
 use std::rc::Rc;
 use syncrim::{
@@ -8,7 +9,7 @@ use syncrim::{
 
 fn main() {
     let cs = ComponentStore {
-        path: "regfile.json".to_string(),
+        path: "reg_file.json".to_string(),
         store: vec![
             Rc::new(Constant {
                 id: "c_read_reg_1".to_string(),

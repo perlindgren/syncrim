@@ -1,4 +1,6 @@
-use crate::{
+use serde::{Deserialize, Serialize};
+use std::cell::Cell;
+use syncrim::{
     common::{Component, Input, Output, OutputType, Ports, Simulator},
     gui_vizia::tooltip::new_component_tooltip,
     vizia::{
@@ -6,8 +8,6 @@ use crate::{
         vg::{Color, Paint, Path},
     },
 };
-use serde::{Deserialize, Serialize};
-use std::cell::Cell;
 
 #[derive(Serialize, Deserialize)]
 pub struct RegFile {

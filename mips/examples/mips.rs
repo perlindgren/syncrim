@@ -1,13 +1,12 @@
 // An example MIPS model
 
 use mips::components::*;
+use std::rc::Rc;
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
     gui_vizia::gui,
 };
-
-use std::rc::Rc;
 
 fn main() {
     let cs = ComponentStore {
