@@ -29,7 +29,10 @@ impl Menu {
                             );
                             MenuButton::new(
                                 cx,
-                                |_| println!("Open"),
+                                |cx| {
+                                    println!("Open");
+                                    cx.emit(GuiEvent::Open);
+                                },
                                 |cx| {
                                     HStack::new(cx, |cx| {
                                         Label::new(cx, "Open");

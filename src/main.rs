@@ -1,4 +1,5 @@
 use clap::Parser;
+use std::path::PathBuf;
 use syncrim::{common::ComponentStore, gui_vizia::gui};
 
 /// Simple program to greet a person
@@ -12,6 +13,7 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let cs = ComponentStore::load_file(&args.model);
-    gui(&cs);
+    let path = PathBuf::from(args.model);
+    let cs = ComponentStore::load_file(&path);
+    gui(&cs, &path);
 }

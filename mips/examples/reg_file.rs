@@ -1,6 +1,6 @@
 use mips::components::*;
 use std::cell::Cell;
-use std::rc::Rc;
+use std::{path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
@@ -9,7 +9,6 @@ use syncrim::{
 
 fn main() {
     let cs = ComponentStore {
-        path: "reg_file.json".to_string(),
         store: vec![
             Rc::new(Constant {
                 id: "c_read_reg_1".to_string(),
@@ -72,7 +71,7 @@ fn main() {
         ],
     };
 
-    cs.save_file();
-
-    gui(&cs);
+    let path = PathBuf::from("reg_file.json");
+    cs.save_file(&path);
+    gui(&cs, &path);
 }

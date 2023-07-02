@@ -1,10 +1,12 @@
 use crate::common::{ComponentStore, Simulator};
 use crate::gui_vizia::{grid::Grid, menu::Menu, transport::Transport};
+use rfd::FileDialog;
+use std::path::PathBuf;
 use vizia::prelude::*;
 
 #[derive(Lens, Data, Clone)]
 pub struct GuiData {
-    pub path: String,
+    pub path: PathBuf,
     pub clock: usize,
     pub simulator: Simulator,
     pub pause: bool,
@@ -15,6 +17,7 @@ pub struct GuiData {
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub(crate) enum GuiEvent {
+    Open,
     ReOpen,
     Clock,
     Reset,
@@ -44,6 +47,14 @@ impl Model for GuiData {
         });
 
         event.map(|app_event, _meta| match app_event {
+            GuiEvent::Open => {
+                let files = FileDialog::new().add_filter("json", &["json"]).pick_file();
+                println!("files {:?}", files);
+                if let Some(path_buf) = files {
+                    self.path = path_buf.to_owned();
+                    self.open();
+                }
+            }
             GuiEvent::ReOpen => self.open(),
             GuiEvent::Clock => self.simulator.clock(&mut self.clock),
             GuiEvent::UnClock => self.simulator.un_clock(&mut self.clock),
@@ -65,11 +76,10 @@ impl Model for GuiData {
 impl GuiData {
     fn open(&mut self) {
         // Re-Open model
-        println!("open path {}", self.path);
+        println!("open path {:?}", self.path);
         let cs = Box::new(ComponentStore::load_file(&self.path));
         let simulator = Simulator::new(&cs);
 
-        self.path = cs.path.clone();
         self.clock = 1;
         self.simulator = simulator;
 
@@ -100,9 +110,9 @@ const STYLE: &str = r#"
 //     top: 200px
 // }
 
-pub fn gui(cs: &ComponentStore) {
+pub fn gui(cs: &ComponentStore, path: &PathBuf) {
     let simulator = Simulator::new(cs);
-    let path = cs.path.clone();
+    let path = path.to_owned().clone();
 
     Application::new(move |cx| {
         // Styling

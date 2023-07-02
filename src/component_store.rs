@@ -1,14 +1,13 @@
 use crate::common::ComponentStore;
 
-use std::fs::File;
-use std::io::prelude::*;
+use std::{fs::File, io::prelude::*, path::PathBuf};
 
 impl ComponentStore {
     pub fn load(json: &str) -> Self {
         serde_json::from_str(json).unwrap()
     }
 
-    pub fn load_file(path: &str) -> Self {
+    pub fn load_file(path: &PathBuf) -> Self {
         let mut file = File::open(path).unwrap();
         let mut json = String::new();
         file.read_to_string(&mut json).unwrap();
@@ -16,11 +15,11 @@ impl ComponentStore {
         ComponentStore::load(&json)
     }
 
-    pub fn save_file(&self) {
+    pub fn save_file(&self, path: &PathBuf) {
         let json = serde_json::to_string(self).unwrap();
         println!("json: {}", json);
-        println!("path {}", self.path);
-        let mut file = File::create(&self.path).unwrap();
+        println!("path {:?}", path);
+        let mut file = File::create(path).unwrap();
         file.write_all(json.as_bytes()).unwrap();
     }
 

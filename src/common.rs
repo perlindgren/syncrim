@@ -18,7 +18,7 @@ type Components = Vec<Rc<dyn Component>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
-    pub path: String,
+    // pub path: String,
     pub store: Components,
 }
 

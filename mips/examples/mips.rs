@@ -1,7 +1,7 @@
 // An example MIPS model
 
 use mips::components::*;
-use std::rc::Rc;
+use std::{path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
@@ -10,7 +10,6 @@ use syncrim::{
 
 fn main() {
     let cs = ComponentStore {
-        path: "mips.json".to_string(),
         store: vec![
             Rc::new(Add {
                 id: "add1".to_string(),
@@ -156,7 +155,7 @@ fn main() {
         ],
     };
 
-    cs.save_file();
-
-    gui(&cs);
+    let path = PathBuf::from("mips.json");
+    cs.save_file(&path);
+    gui(&cs, &path);
 }
