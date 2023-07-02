@@ -9,6 +9,7 @@
     "menubutton",
     "petgraph",
     "popop",
+    "regfile",
     "rgbaf",
     "rgbf",
     "serde",

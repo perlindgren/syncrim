@@ -144,6 +144,7 @@ impl Simulator {
         // push current state
         self.history.push(self.sim_state.clone());
         let ordered_components = self.ordered_components.clone();
+
         for component in ordered_components {
             component.evaluate(self);
         }
