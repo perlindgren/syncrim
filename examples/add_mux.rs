@@ -117,7 +117,7 @@ fn main() {
                 id: "mux".to_string(),
                 pos: (270.0, 300.0),
                 select: Input {
-                    id: "r1".to_string(),
+                    id: "add1".to_string(),
                     index: 0,
                 },
                 m_in: vec![

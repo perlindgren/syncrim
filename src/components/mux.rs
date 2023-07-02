@@ -41,6 +41,7 @@ impl Component for Mux {
     fn evaluate(&self, simulator: &mut Simulator) {
         // get input value
         let select = simulator.get_input_val(&self.select) as usize;
+        println!("select {}", select);
         let value = simulator.get_input_val(&self.m_in[select]);
 
         // set output
