@@ -44,16 +44,15 @@ fn main() {
                 height: 150.0,
 
                 // ports
-                read_addr: vec![
-                    Input {
-                        id: "c_read_reg_1".to_string(),
-                        index: 0,
-                    },
-                    Input {
-                        id: "c_read_reg_2".to_string(),
-                        index: 0,
-                    },
-                ],
+                read_addr1: Input {
+                    id: "c_read_reg_1".to_string(),
+                    index: 0,
+                },
+                read_addr2: Input {
+                    id: "c_read_reg_2".to_string(),
+                    index: 0,
+                },
+
                 write_data: Input {
                     id: "c_write_data".to_string(),
                     index: 0,

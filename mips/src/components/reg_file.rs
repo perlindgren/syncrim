@@ -17,13 +17,28 @@ pub struct RegFile {
     pub height: f32,
 
     // ports
-    pub read_addr: Vec<Input>,
+    pub read_addr1: Input,
+    pub read_addr2: Input,
     pub write_data: Input,
     pub write_addr: Input,
     pub write_enable: Input,
 
-    // data
+    // data, should be an array of 32 Cells, but its harder to manage in Rust (Cell not Copy)
     pub registers: Vec<Cell<u32>>,
+}
+
+impl RegFile {
+    fn read_reg(&self, simulator: &Simulator, input: &Input) -> u32 {
+        let read_addr = simulator.get_input_val(input) as usize;
+        println!("read_addr {}", read_addr);
+
+        // mips always reads 0;
+        if read_addr > 0 {
+            self.registers[read_addr].get()
+        } else {
+            0
+        }
+    }
 }
 
 #[typetag::serde()]
@@ -33,17 +48,12 @@ impl Component for RegFile {
     }
 
     fn get_id_ports(&self) -> (String, Ports) {
-        let outputs: Vec<Output> = self.read_addr.iter().map(|_| Output::Function).collect();
-        let mut inputs = self.read_addr.clone();
-        inputs.push(self.write_data.clone());
-        inputs.push(self.write_addr.clone());
-        inputs.push(self.write_enable.clone());
         (
             self.id.clone(),
             Ports {
-                inputs,
+                inputs: vec![self.read_addr1.clone(), self.read_addr2.clone()],
                 out_type: OutputType::Combinatorial,
-                outputs,
+                outputs: vec![Output::Function; 2],
             },
         )
     }
@@ -60,21 +70,14 @@ impl Component for RegFile {
         let base = simulator.get_id_start_index(&self.id);
         println!("base {}", base);
         println!("sim_state {:?}", simulator.sim_state);
-        for (offset, input) in self.read_addr.iter().enumerate() {
-            println!("offset {}", offset);
-            let read_addr = simulator.get_input_val(input) as usize;
-            println!("read_addr {}", read_addr);
 
-            // mips always reads 0;
-            let reg_value = if read_addr > 0 {
-                self.registers[read_addr].get()
-            } else {
-                0
-            };
+        let reg_value = self.read_reg(simulator, &self.read_addr1);
+        println!("reg_value {}", reg_value);
+        simulator.set(base, reg_value);
 
-            println!("reg_value {}", reg_value);
-            simulator.set(base + offset, reg_value);
-        }
+        let reg_value = self.read_reg(simulator, &self.read_addr2);
+        println!("reg_value {}", reg_value);
+        simulator.set(base + 1, reg_value);
     }
 
     // create view
