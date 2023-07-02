@@ -58,6 +58,13 @@ pub fn new(cx: &mut Context) {
                 ex.emit(GuiEvent::ReOpen);
             }),
         ),
+        (
+            KeyChord::new(Modifiers::CTRL, Code::KeyO),
+            KeymapEntry::new(Action::Dummy, |ex| {
+                println!("Action Ctrl O");
+                ex.emit(GuiEvent::Open);
+            }),
+        ),
     ])
     .build(cx);
 }
