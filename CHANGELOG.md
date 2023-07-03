@@ -4,6 +4,14 @@ Tracking changes per date:
 
 ## 230703
 
+- Webhooks for Discord channel.
+
+- `.gitignore` to exclude `.gv` and `.json` files.
+
+- `SignExtension` component.
+
+## 230703
+
 Compilation times might be annoying. It seems that under Linux there is a lot more dependencies than under Windows, so building `SyncRim` is faster on Win10 than under Linux (stock settings). There are a number of things to try out to reduce compilation times (and in particular `hot` iterations).
 
 - Disable generation of debug (DWARF) info. `debug = false` (or `debug = 0`). If stack backtraces are needed use `debug = 1`, which is still faster than `debug = 2` (`debug = true` equivalent).
