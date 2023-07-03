@@ -4,6 +4,10 @@ A graphical simulator for synchronous circuits written in Rust based on the [viz
 
 `SyncRim` is heavily inspired by an in-house [SyncSim](https://syncsim.sourceforge.net/) development at Luleå University of Technology. SyncSim has been successfully used in teaching Micro-computer Engineering at LTU for almost two decades, but it starts to show its age. `SyncRim` a Rust implementation of `SyncSim` is tempting :)
 
+## Dependencies
+
+For faster builds under Linux, we depend on `clang` and `mold` being installed. You may disable the alternate linking in `.cargo/config.toml`, if you want to stick with `lld` comment out the linker configuration.
+
 To test `SyncRim` run:
 
 ```shell
@@ -49,13 +53,13 @@ Disclaimer: you will run into panics in case your model is faulty, sorry no nice
 ## Technologies used
 
 - [vizia](https://github.com/vizia/vizia) was chosen based on numerous criteria:
-  
+
   - Rust based from the ground up, offering good ergonomics.
 
   - Cross platform (Linux/Windows/OSX).
 
   - Modern declarative approach to GUI design, allowing scaling and CSS based theming.
-  
+
   - Great community support by `geom3trik`, other users and co-developers.
 
 - [serde](https://github.com/serde-rs/serde) for serialization/deserialization (storing/loading) models.
@@ -77,7 +81,7 @@ Disclaimer: you will run into panics in case your model is faulty, sorry no nice
 - A clear separation between Models and Views:
 
   - Models are used to handle events in the system (business logic). The top level model has access to the global simulation state.
-  
+
   - Views are used for graphical representation, with immutable access to global state (through Vizia `Lens` abstraction).
 
 - Flat hierarchy (no sub-components, at least for now). However the graphical representation may contain sub-views.
@@ -87,14 +91,13 @@ Disclaimer: you will run into panics in case your model is faulty, sorry no nice
 Modularity:
 
 - `SyncRim` is a library providing a set of commodity components.
-  
 - Additional components may be defined in re-usable libraries.
 
 - A `SyncRim` application can be compiled as a stand-alone application supporting components from various libraries.
 
 - A compiled `SyncRim` application can load/run models for the supported set of components without re-compilation. E.g, a
 
-  - `SyncRim-MIPS` application imports the `SyncRim` base and implements (or imports) additional components needed for defining a simulation model for the `MIPS` architecture, while a  
+  - `SyncRim-MIPS` application imports the `SyncRim` base and implements (or imports) additional components needed for defining a simulation model for the `MIPS` architecture, while a
   - `SyncRim-RISC-V` application imports the `SyncRim` base, and similarly implements (or imports) additional architecture specific components for the `RISC-V` architecture.
 
   In this way, common components can re-used between targets, while the `SyncRim` base can be kept small and maintainable.
@@ -110,11 +113,10 @@ Modularity:
 - Storing and loading simulation models using `serde`.
 
 - Establishing topological order for component models.
-  
 - Simulation by ordered traversal and simulation state mutation.
 
 - Graphical representation of simulation state.
-  
+
   - `Clock` for progressing state.
   - `UnClock` for reverting state.
   - `Reset` to set initial state.
@@ -124,9 +126,8 @@ Modularity:
   Notice, the system is initially in `Reset`. (Continuous mode not yet implemented.)
 
 - Menu and keyboard shortcuts (backing functionality mostly unimplemented.)
-  
 - Limited set of commodity components:
-  
+
   - `Add` a two input adder
 
   - `Mux` a generic multiplexer, with a select 0..N-1, and N input signals.
@@ -138,7 +139,7 @@ Modularity:
   - `Register` a component storing a signal value and propagating inputs to outputs on clock.
 
 - Modularization:
-  
+
   - A `MIPS` component extension (`InstrMem` component)
 
 ## TODO
@@ -156,7 +157,7 @@ Modularity:
 - The set of commodity components should be extended.
 
   - Generic instruction/data memory components, with integration to signal condition monitoring (allow e.g., breakpoints in the code, or addresses/data reads/writes).
-  
+
   - Generic de-multiplexer, sign/zero extend components etc.
 
 - Extended set of architecture dependent components:
@@ -166,13 +167,12 @@ Modularity:
   Ultimately the generic and architecture dependent components should be sufficient to model common embedded processors.
 
 - Use of logging framework. Currently, neither `SyncRim` nor `Vizia` uses any logging framework, however `Vizia` provides a `log!` macro for transparent tracing on `Wasm` and other platforms. This is currently not used by `SyncRim`).
-  
 - Error handling: Currently, `SyncRim` does not implement any graceful error handling (will abort with a panic).
 
 - Testing: CI based unit and integration tests. Currently there are no tests at all.
 
 - Probably a zillion other things.
-  
+
 ---
 
 ## Implementation specifics
@@ -228,7 +228,7 @@ pub trait Component {
     // returns the (id, Ports) of the component
     fn get_id_ports(&self) -> (String, Ports);
 
-    // evaluation function 
+    // evaluation function
     fn evaluate(&self, _simulator: &mut Simulator) {}
 
      // create view
@@ -381,7 +381,7 @@ Notice that the `get_id_ports` returns a vector of output types. In this case th
 
 ```rust
 impl Component for Add {
-    
+
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
@@ -392,7 +392,7 @@ impl Component for Add {
             },
         )
     }
-    
+
     // propagate addition to output
     fn evaluate(&self, simulator: &mut Simulator) {
         // get input values
@@ -408,7 +408,7 @@ impl Component for Add {
 
     // create view
     fn view(&self, cx: &mut Context) {
-        
+
         View::build(AddView {}, cx, |cx| {
             Label::new(cx, "+")
                 .left(Percentage(50.0))
