@@ -22,8 +22,8 @@ vizia = { git = "https://github.com/vizia/vizia.git" }
 # vizia = { path = "../vizia", features = ["serde"] }
 
 [profile.dev]
-debug = 0
+debug = true
 
 [profile.release]
 incremental = true
-debug = 0
+debug = true

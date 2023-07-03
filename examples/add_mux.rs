@@ -62,7 +62,7 @@ fn main() {
                 },
             }),
             Rc::new(Wire {
-                id: "w4".to_string(),
+                id: "w89".to_string(),
                 pos: (260.0, 120.0),
                 delta: (0.0, 60.0),
                 input: Input {

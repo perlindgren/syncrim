@@ -2,6 +2,17 @@
 
 Tracking changes per date:
 
+## 230703
+
+Compilation times might be annoying. It seems that under Linux there is a lot more dependencies than under Windows, so building `SyncRim` is faster on Win10 than under Linux (stock settings). There are a number of things to try out to reduce compilation times (and in particular `hot` iterations).
+
+- Disable generation of debug (DWARF) info. `debug = false` (or `debug = 0`). If stack backtraces are needed use `debug = 1`, which is still faster than `debug = 2` (`debug = true` equivalent).
+- Use `mold` instead of `lld`.
+
+Together `debug = 0` and `mold` linking may yield significant improvements. (On the `7950x3d`, `hot` re-compiles improved from around 4 seconds to 0.3 seconds (in the range of measuring errors for vscode interactions etc.) With `debug = true` + `mold` 0.5 seconds or so, both acceptable, `mold` makes the biggest difference to incremental builds.
+
+See `Cargo.toml` and `.cargo/config.toml` for updated configuration. Notice, you need to install `mold` through your package manager for this to work.
+
 ## 230702
 
 - `path` no longer stored in `.json` model.
