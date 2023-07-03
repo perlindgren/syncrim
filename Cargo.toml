@@ -22,8 +22,8 @@ vizia = { git = "https://github.com/vizia/vizia.git" }
 # vizia = { path = "../vizia", features = ["serde"] }
 
 [profile.dev]
-debug = true
+debug = 1 # allows for stack back trace
 
 [profile.release]
 incremental = true
-debug = true
+debug = 1          # allows for stack back trace
