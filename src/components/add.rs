@@ -7,6 +7,7 @@ use vizia::{
     prelude::*,
     vg::{Paint, Path},
 };
+use crate::common::Signal;
 
 #[derive(Serialize, Deserialize)]
 pub struct Add {
@@ -40,12 +41,14 @@ impl Component for Add {
         let b_in = simulator.get_input_val(&self.b_in);
 
         // compute addition (notice will panic on overflow)
-        let value = a_in + b_in;
+        let (value, overflow) = Signal::overflowing_add(a_in, b_in);
 
-        println!("eval Add a_in {}, b_in {}, value = {}", a_in, b_in, value);
+        println!("eval Add a_in {}, b_in {}, value = {}, overflow = {}",
+                 a_in, b_in, value, overflow);
 
         // set output
         simulator.set_id_index(&self.id, 0, value);
+        simulator.set_id_index(&self.id, 1, Signal::from(overflow));
     }
 
     // create view
