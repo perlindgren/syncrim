@@ -51,7 +51,7 @@ impl Model for GuiData {
                 let files = FileDialog::new().add_filter("json", &["json"]).pick_file();
                 println!("files {:?}", files);
                 if let Some(path_buf) = files {
-                    self.path = path_buf.to_owned();
+                    self.path = path_buf;
                     self.open();
                 }
             }
@@ -112,7 +112,7 @@ const STYLE: &str = r#"
 
 pub fn gui(cs: &ComponentStore, path: &PathBuf) {
     let simulator = Simulator::new(cs);
-    let path = path.to_owned().clone();
+    let path = path.to_owned();
 
     Application::new(move |cx| {
         // Styling

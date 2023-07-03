@@ -63,7 +63,7 @@ impl Component for Add {
         .width(Pixels(40.0))
         .height(Pixels(80.0))
         .on_press(|ex| ex.emit(PopupEvent::Switch))
-        .tooltip(|cx| new_component_tooltip(cx, self.clone()));
+        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 
