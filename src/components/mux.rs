@@ -115,7 +115,7 @@ impl View for MuxView {
 
         let select = simulator.get_input_val(&self.select);
 
-        println!("----- select = {}", select);
+        // println!("----- select = {}", select);
         paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));
         let mut path = Path::new();
 
