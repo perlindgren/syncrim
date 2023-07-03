@@ -20,6 +20,7 @@
     "trik",
     "typetag",
     "usize",
-    "vizia"
+    "vizia",
+    "winit"
   ]
 }

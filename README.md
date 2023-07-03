@@ -44,6 +44,16 @@ Disclaimer: you will run into panics in case your model is faulty, sorry no nice
 
 ---
 
+## `winit` and Scaling
+
+At least under Linux, scaling can be incorrectly determined by `winit`. This will cause various graphical artifacts (e.g., weird clipping of fonts in tooltips). It is not problem with `Vizia` or any other GUI per-se, but a problem of Linux not defining a stable way of providing the current scaling. A workaround is possible by setting the environment variable `WINIT_X11_SCALE_FACTOR` to `1.0` (or any other scaling wanted). An example for `fish` shell:
+
+```fish
+set -x WINIT_X11_SCALE_FACTOR 1.0
+```
+
+---
+
 ## Key design goals
 
 - `SyncRim` should be modular (providing a user extendable library of components and a simulation engine).
