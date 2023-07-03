@@ -1,6 +1,12 @@
 use crate::common::{Component, ComponentStore, Input, OutputType, Signal, Simulator};
-use petgraph::{algo::toposort, Graph};
+use petgraph::{
+    algo::toposort,
+    dot::{Config, Dot},
+    Graph,
+};
+
 use std::collections::HashMap;
+use std::{fs::File, io::prelude::*, path::PathBuf};
 
 pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 
@@ -44,7 +50,7 @@ impl Simulator {
 
         // insert nodes
         for (id, c) in &id_component {
-            let node = graph.add_node(id);
+            let node = graph.add_node(id.to_owned());
             id_node.insert(id, node);
             node_comp.insert(node, c);
         }
@@ -100,6 +106,7 @@ impl Simulator {
             sim_state: lens_values,
             history: vec![],
             component_ids,
+            graph,
         };
 
         // simulate one clock cycle
@@ -112,34 +119,34 @@ impl Simulator {
 
 // Simulator implementation
 impl Simulator {
+    /// get input by index
     pub fn get(&self, index: usize) -> Signal {
         self.sim_state[index]
     }
 
-    // get input value
+    /// get input value
     pub fn get_input_val(&self, input: &Input) -> Signal {
         let start_index = *self.id_start_index.get(&input.id).unwrap();
         self.get(start_index + input.index)
     }
 
-    // get start index by id
+    /// get start index by id
     pub fn get_id_start_index(&self, id: &str) -> usize {
         *self.id_start_index.get(id).unwrap()
     }
 
-    // set value by index
+    /// set value by index
     pub fn set(&mut self, index: usize, value: Signal) {
         self.sim_state[index] = value;
     }
 
-    // set value by id and offset (index)
-    // todo: maybe better by Output
+    /// set value by id and offset (index)
     pub fn set_id_index(&mut self, id: &str, index: usize, value: Signal) {
         let start_index = self.get_id_start_index(id);
         self.set(start_index + index, value);
     }
 
-    // iterate over the evaluators
+    /// iterate over the evaluators and increase clock by one
     pub fn clock(&mut self, clock: &mut usize) {
         // push current state
         self.history.push(self.sim_state.clone());
@@ -151,6 +158,7 @@ impl Simulator {
         *clock = self.history.len();
     }
 
+    /// reverse simulation using history if clock > 1
     pub fn un_clock(&mut self, clock: &mut usize) {
         if *clock > 1 {
             let state = self.history.pop().unwrap();
@@ -160,9 +168,22 @@ impl Simulator {
         *clock = self.history.len();
     }
 
+    /// reset simulator
     pub fn reset(&mut self, clock: &mut usize) {
         self.history = vec![];
         self.sim_state.iter_mut().for_each(|val| *val = 0);
         self.clock(clock);
+    }
+
+    /// save as `dot` file with `.gv` extension
+    pub fn save_dot(&self, path: &PathBuf) {
+        let mut path = path.to_owned();
+        path.set_extension("gv");
+        let mut file = File::create(path).unwrap();
+        let dot_string = format!(
+            "{:?}",
+            Dot::with_config(&self.graph, &[Config::EdgeNoLabel])
+        );
+        file.write_all(dot_string.as_bytes()).unwrap();
     }
 }
