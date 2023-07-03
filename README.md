@@ -463,8 +463,14 @@ The `Add` component is anchored at `pos` with height 80 and width 40 pixels. The
 
 Recommended plugins:
 
-- `rust analyzer`
+- `rust analyzer`.
+
+- `crates`, for checking cargo versioning.
+
 - `Code Spell Checker`, to keep code and comments nice and clean.
+
+- `Graphviz Preview`, (or some other `.gv`/`.dot` integration).
+
 
 Settings:
 
