@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Install dependencies
-      run: sudo apt-get install librust-atk-dev
+      run: sudo apt-get install librust-atk-dev librust-gdk-dev
     - uses: rui314/setup-mold@v1
     - uses: actions/checkout@v3
     - name: Build
