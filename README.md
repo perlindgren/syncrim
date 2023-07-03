@@ -459,6 +459,8 @@ The `Add` component is anchored at `pos` with height 80 and width 40 pixels. The
 
 ## Development
 
+<iframe src="https://discord.com/widget?id=1112428216175566868&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+
 ### VsCode
 
 Recommended plugins:
