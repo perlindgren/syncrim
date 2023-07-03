@@ -1,3 +1,4 @@
+use petgraph::Graph;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -5,7 +6,7 @@ use vizia::prelude::*;
 
 pub type Signal = u32;
 
-#[derive(Lens, Data, Clone)]
+#[derive(Lens, Clone)]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,
 
@@ -14,6 +15,7 @@ pub struct Simulator {
     pub sim_state: Vec<Signal>,
     pub history: Vec<Vec<Signal>>,
     pub component_ids: Vec<String>,
+    pub graph: Graph<String, ()>,
 }
 
 type Components = Vec<Rc<dyn Component>>;

@@ -4,7 +4,7 @@ use rfd::FileDialog;
 use std::path::PathBuf;
 use vizia::prelude::*;
 
-#[derive(Lens, Data, Clone)]
+#[derive(Lens, Clone)]
 pub struct GuiData {
     pub path: PathBuf,
     pub clock: usize,
@@ -113,6 +113,7 @@ const STYLE: &str = r#"
 pub fn gui(cs: &ComponentStore, path: &PathBuf) {
     let simulator = Simulator::new(cs);
     let path = path.to_owned();
+    simulator.save_dot(&path);
 
     Application::new(move |cx| {
         // Styling

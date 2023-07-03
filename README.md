@@ -78,6 +78,8 @@ set -x WINIT_X11_SCALE_FACTOR 1.0
 
 - [petgraph](https://github.com/petgraph/petgraph) for underlying graph handling.
 
+- [graphviz](https://graphviz.org/) for visualizing the model dependencies.
+
 ## Design overview
 
 `SyncRim` is based on the following guiding principles:
@@ -150,7 +152,18 @@ Modularity:
 
 - Modularization:
 
-  - A `MIPS` component extension (`InstrMem` component)
+  - A `MIPS` component extension holding
+    - `InstrMem` component (very primitive, just a POC)
+    - `RegFile` component (should be usable)
+
+- Graphviz support:
+  On startup the initial model will be serialized as a `<model>.gv` file. This can be previewed directly in `vscode` using the [dot](https://marketplace.visualstudio.com/items?itemName=tintinweb.graphviz-interactive-preview) plugin and/or by the `dot` command line tool (typically packed together with a `graphviz` distribution).
+
+  E.g.
+
+  ```shell
+  dot -Tpdf <model>.gv -o <model>.pdf
+  ```
 
 ## TODO
 
@@ -158,7 +171,12 @@ Modularity:
 
   - Run for given number of cycles. Run until signal condition. Restart. Step backwards. Step back until signal condition. Reset. Etc.
 
-  - Load new model. Potentially a model editor. (For now models are exported in `json` format offering relatively easy editing but a graphical editor is of course better). Re-load of altered `json` is implemented, but no file selector.
+  - A model editor.
+
+  For now models are exported in `json` format offering relatively easy editing but a graphical editor is of course better.
+
+  - `Re-load` (CTRL R), or
+  - `Open` (CTRL O) of altered `json` is supported.
 
 - The simulator state is current consisting of `Vec<Signal>` where each signal amounts to a `u32` value. Here we can think of some sort of bit-vector representation.
 
@@ -177,6 +195,7 @@ Modularity:
   Ultimately the generic and architecture dependent components should be sufficient to model common embedded processors.
 
 - Use of logging framework. Currently, neither `SyncRim` nor `Vizia` uses any logging framework, however `Vizia` provides a `log!` macro for transparent tracing on `Wasm` and other platforms. This is currently not used by `SyncRim`).
+
 - Error handling: Currently, `SyncRim` does not implement any graceful error handling (will abort with a panic).
 
 - Testing: CI based unit and integration tests. Currently there are no tests at all.
