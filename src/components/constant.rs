@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Output, OutputType, Ports, Simulator},
+    common::{Component, Output, OutputType, Ports, Signal, Simulator},
     gui_vizia::tooltip::new_component_tooltip,
 };
 use serde::{Deserialize, Serialize};
@@ -11,7 +11,7 @@ use vizia::{
 pub struct Constant {
     pub id: String,
     pub pos: (f32, f32),
-    pub value: u32, // perhaps vector here ... not sure
+    pub value: Signal, // perhaps vector here ... not sure
 }
 
 #[typetag::serde]

@@ -3,14 +3,16 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use vizia::prelude::*;
 
+pub type Signal = u32;
+
 #[derive(Lens, Data, Clone)]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,
 
     // Components stored in topological evaluation order
     pub ordered_components: Components,
-    pub sim_state: Vec<u32>,
-    pub history: Vec<Vec<u32>>,
+    pub sim_state: Vec<Signal>,
+    pub history: Vec<Vec<Signal>>,
     pub component_ids: Vec<String>,
 }
 
@@ -73,7 +75,7 @@ pub enum OutputType {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum Output {
     // Will be evaluated as a constant (function without inputs)
-    Constant(u32),
+    Constant(Signal),
     // Will be evaluated as a function
     Function,
 }

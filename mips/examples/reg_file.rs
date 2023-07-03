@@ -2,7 +2,7 @@ use mips::components::*;
 use std::cell::Cell;
 use std::{path::PathBuf, rc::Rc};
 use syncrim::{
-    common::{ComponentStore, Input},
+    common::{ComponentStore, Input, Signal},
     components::*,
     gui_vizia::gui,
 };
@@ -33,7 +33,7 @@ fn main() {
             Rc::new(Constant {
                 id: "c_write_enable".to_string(),
                 pos: (100.0, 180.0),
-                value: true as u32,
+                value: true as Signal,
             }),
             // regfile
             Rc::new(RegFile {

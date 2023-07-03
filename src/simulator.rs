@@ -1,4 +1,4 @@
-use crate::common::{Component, ComponentStore, Input, OutputType, Simulator};
+use crate::common::{Component, ComponentStore, Input, OutputType, Signal, Simulator};
 use petgraph::{algo::toposort, Graph};
 use std::collections::HashMap;
 
@@ -112,12 +112,12 @@ impl Simulator {
 
 // Simulator implementation
 impl Simulator {
-    pub fn get(&self, index: usize) -> u32 {
+    pub fn get(&self, index: usize) -> Signal {
         self.sim_state[index]
     }
 
     // get input value
-    pub fn get_input_val(&self, input: &Input) -> u32 {
+    pub fn get_input_val(&self, input: &Input) -> Signal {
         let start_index = *self.id_start_index.get(&input.id).unwrap();
         self.get(start_index + input.index)
     }
@@ -128,13 +128,13 @@ impl Simulator {
     }
 
     // set value by index
-    pub fn set(&mut self, index: usize, value: u32) {
+    pub fn set(&mut self, index: usize, value: Signal) {
         self.sim_state[index] = value;
     }
 
     // set value by id and offset (index)
     // todo: maybe better by Output
-    pub fn set_id_index(&mut self, id: &str, index: usize, value: u32) {
+    pub fn set_id_index(&mut self, id: &str, index: usize, value: Signal) {
         let start_index = self.get_id_start_index(id);
         self.set(start_index + index, value);
     }

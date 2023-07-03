@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use syncrim::{
-    common::{Component, Input, Output, OutputType, Ports, Simulator},
+    common::{Component, Input, Output, OutputType, Ports, Signal, Simulator},
     gui_vizia::tooltip::new_component_tooltip,
     vizia::{
         prelude::*,
@@ -59,7 +59,7 @@ impl Component for RegFile {
     }
 
     fn evaluate(&self, simulator: &mut Simulator) {
-        if simulator.get_input_val(&self.write_enable) == true as u32 {
+        if simulator.get_input_val(&self.write_enable) == true as Signal {
             let data = simulator.get_input_val(&self.write_data);
             println!("data {}", data);
             let write_addr = simulator.get_input_val(&self.write_addr) as usize;

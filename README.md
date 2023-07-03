@@ -160,7 +160,7 @@ Modularity:
 
   - Load new model. Potentially a model editor. (For now models are exported in `json` format offering relatively easy editing but a graphical editor is of course better). Re-load of altered `json` is implemented, but no file selector.
 
-- The simulator state is current consisting of `Vec<u32>` where each signal amounts to a `u32` value. Here we can think of some sort of bit-vector representation.
+- The simulator state is current consisting of `Vec<Signal>` where each signal amounts to a `u32` value. Here we can think of some sort of bit-vector representation.
 
 - Topological order may be incorrect in case of register to register dependencies without intermittent combinatorial components.
 
@@ -287,7 +287,7 @@ In order to view the simulator state we store (current) values as a `Vizia` `Len
 #[derive(Lens, Debug, Clone)]
 pub struct Simulator {
     ...
-    pub sim_state: Vec<u32>,
+    pub sim_state: Vec<Signal>,
 }
 ```
 
