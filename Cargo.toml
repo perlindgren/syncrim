@@ -20,9 +20,14 @@ typetag = "0.2.8"
 vizia = { git = "https://github.com/vizia/vizia.git" }
 # vizia = { path = "../vizia" } # using local vizia dependency
 
+[features]
+default = ["vizia"]
+vizia = []
+egui = []
+
 [profile.dev]
 debug = 1 # faster build, still allows for stack back trace
 
 [profile.release]
 incremental = true
-debug = 1 # faster build, still allows for stack back trace
+debug = 1          # faster build, still allows for stack back trace
