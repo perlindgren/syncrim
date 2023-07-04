@@ -2,11 +2,17 @@
 
 A graphical simulator for synchronous circuits written in Rust based on the [vizia](https://github.com/vizia/vizia) framework. The long term goal is to simulate models of modern embedded processors, giving the user control over - and insight in - the inner workings of a CPU without the need for traditional RTL waveform simulations which are hard to interpret. Other use cases stretch exploratory research of synchronous circuits, hardware software co-design etc.
 
-`SyncRim` is heavily inspired by an in-house [SyncSim](https://syncsim.sourceforge.net/) development at Luleå University of Technology. SyncSim has been successfully used in teaching Micro-computer Engineering at LTU for almost two decades, but it starts to show its age. `SyncRim` a Rust implementation of `SyncSim` is tempting :)
+`SyncRim` is heavily inspired by the Java based in-house [SyncSim](https://syncsim.sourceforge.net/) development at Luleå University of Technology (LTU). SyncSim has been (and still is) used in teaching Micro-computer Engineering at LTU for almost two decades, but it starts to show its age. `SyncRim` a Rust implementation of `SyncSim` is tempting :)
 
+---
 ## Dependencies
 
 For faster builds under Linux, we depend on `clang` and `mold` being installed. You may disable the alternate linking in `.cargo/config.toml`, if you want to stick with `lld` comment out the linker configuration.
+
+For visualization of the underlying simulation model install [graphviz](https://graphviz.org/).
+
+---
+## Running examples
 
 To test `SyncRim` run:
 
@@ -103,6 +109,7 @@ set -x WINIT_X11_SCALE_FACTOR 1.0
 Modularity:
 
 - `SyncRim` is a library providing a set of commodity components.
+
 - Additional components may be defined in re-usable libraries.
 
 - A `SyncRim` application can be compiled as a stand-alone application supporting components from various libraries.
@@ -110,6 +117,7 @@ Modularity:
 - A compiled `SyncRim` application can load/run models for the supported set of components without re-compilation. E.g, a
 
   - `SyncRim-MIPS` application imports the `SyncRim` base and implements (or imports) additional components needed for defining a simulation model for the `MIPS` architecture, while a
+
   - `SyncRim-RISC-V` application imports the `SyncRim` base, and similarly implements (or imports) additional architecture specific components for the `RISC-V` architecture.
 
   In this way, common components can re-used between targets, while the `SyncRim` base can be kept small and maintainable.
@@ -125,6 +133,7 @@ Modularity:
 - Storing and loading simulation models using `serde`.
 
 - Establishing topological order for component models.
+
 - Simulation by ordered traversal and simulation state mutation.
 
 - Graphical representation of simulation state.
@@ -132,15 +141,16 @@ Modularity:
   - `Clock` for progressing state.
   - `UnClock` for reverting state.
   - `Reset` to set initial state.
-  - `Play` to enter continuous clocking moe.
+  - `Play` to enter continuous clocking mode (lacks backing implementation).
   - `Pause` to exit continuous clocking mode.
 
   Notice, the system is initially in `Reset`. (Continuous mode not yet implemented.)
 
 - Menu and keyboard shortcuts (backing functionality mostly unimplemented.)
+
 - Limited set of commodity components:
 
-  - `Add` a two input adder
+  - `Add` a two input adder with a overflow flag output.
 
   - `Mux` a generic multiplexer, with a select 0..N-1, and N input signals.
 
@@ -243,6 +253,8 @@ pub enum Output {
 }
 ```
 
+Notice, the `Output/OutputType` may be subject to change, see github [#3](https://github.com/perlindgren/syncrim/issues/3).
+
 These types are used to build components.
 
 ---
@@ -275,11 +287,13 @@ For serialization to work, `typetag` is derived for the `Component` trait defini
 
 SyncSim provides a set of predefined components:
 
-- `Constant`
-- `Register`
-- `Mux`
-- `Add`
-- `Probe`
+- `Constant`, a single value constant
+- `Register`, a single register
+- `Mux`, a generic multiplexer
+- `Add`, a two input adder with overflow flag output
+- `Sext`, a parametrized sign extension component,
+- `Probe`, a single value view, intended for test and development.
+- `ProbeOut`, a singe value data probe, intended for automatic testing.
 
 The components implement the `Component` trait, used to build a various mappings.
 
@@ -327,12 +341,13 @@ The initial simulator state is constructed from a `ComponentStore`.
 
 ```rust
 impl Simulator {
-    pub fn new(component_store: &ComponentStore) -> Self
+    pub fn new(component_store: &ComponentStore, clock: &mut usize) -> Self
     ...
 
 ```
+As a side effect the `clock` will be set to 1 (indicating the `reset` state).
 
-The `Simulator` holds the evaluation order of components in `ordered_components`, and the mutable state (`sim_state`).
+The `Simulator` holds the evaluation order of components in `ordered_components`, and the mutable state (`sim_state`). 
 
 To progress simulation, we iterated over the `ordered_components`:
 
@@ -347,6 +362,7 @@ impl Simulator {
     }
 }
 ```
+As as side effect the `clock` will be incremented.
 
 ---
 
@@ -459,6 +475,30 @@ The `Add` component is anchored at `pos` with height 80 and width 40 pixels. The
 
 ## Development
 
+### Github
+
+The CI based on Github actions performs:
+
+- `cargo audit`, for checking security vulnerabilities.
+
+- `cargo clippy`, for linting and conformance.
+
+- `cargo test --all`, for automated tests.
+
+  - The `test` folder holds the integration tests for simulating components.
+
+There is currently no automatic interaction tests of the GUI components.
+
+### Workflow
+
+- Please run cargo tests and clippy before pushing to `master` branch (`master` branch protection currently disabled).
+
+- Avoid adding autogenerated files (`.json`, `.gv` or any files from the target directory).
+
+- If possible run `Code Spell Checker` or similar to keep comments and code in good shape. If spelling exceptions needed add to `"cSpell.ignoreWords":` in the `.vscode` folder.
+
+- Update `CHANGELOG.md` (at least) on breaking changes, and keep in sync with `TODO.md` and `issues` on Github when applicable. (`CHANGELOG.md` tracking is currently not automatically enforced.)
+
 ### VsCode
 
 Recommended plugins:
@@ -471,14 +511,8 @@ Recommended plugins:
 
 - `Graphviz Preview`, (or some other `.gv`/`.dot` integration).
 
-
-Settings:
-
 It can be convenient to use `json` formatter tied to format on save, this way we can keep models in easy readable and editable shape.
 
-### Clippy
-
-Before merging, make sure that it passes clippy, if not fix or locally allow the clippy warning. This allows us to later review why clippy warned us, in order to stay more (or less) idiomatic.
 
 ---
 
