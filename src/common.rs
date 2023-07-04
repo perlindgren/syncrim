@@ -67,6 +67,15 @@ pub struct Input {
     pub index: usize,
 }
 
+impl Input {
+    pub fn new(id: &str, index: usize) -> Self {
+        Input {
+            id: id.to_string(),
+            index,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum OutputType {
     // Will be evaluated as a combinatorial function from inputs to outputs
