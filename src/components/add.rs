@@ -1,6 +1,5 @@
-use crate::common::Signal;
 use crate::{
-    common::{Component, Input, Output, OutputType, Ports, Simulator},
+    common::{Component, Input, Output, OutputType, Ports, Signal, SignedSignal, Simulator},
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
 use serde::{Deserialize, Serialize};
@@ -29,7 +28,7 @@ impl Component for Add {
             Ports {
                 inputs: vec![self.a_in.clone(), self.b_in.clone()],
                 out_type: OutputType::Combinatorial,
-                outputs: vec![Output::Function],
+                outputs: vec![Output::Function; 2],
             },
         )
     }
@@ -41,7 +40,8 @@ impl Component for Add {
         let b_in = simulator.get_input_val(&self.b_in);
 
         // compute addition (notice will panic on overflow)
-        let (value, overflow) = Signal::overflowing_add(a_in, b_in);
+        let (value, overflow) =
+            SignedSignal::overflowing_add(a_in as SignedSignal, b_in as SignedSignal);
 
         println!(
             "eval Add a_in {}, b_in {}, value = {}, overflow = {}",
@@ -49,7 +49,7 @@ impl Component for Add {
         );
 
         // set output
-        simulator.set_id_index(&self.id, 0, value);
+        simulator.set_id_index(&self.id, 0, value as Signal);
         simulator.set_id_index(&self.id, 1, Signal::from(overflow));
     }
 

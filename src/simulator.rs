@@ -18,7 +18,7 @@ pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 // A solution is to evaluate register updates separately from other components
 // ... but not currently implemented ...
 impl Simulator {
-    pub fn new(component_store: &ComponentStore) -> Self {
+    pub fn new(component_store: &ComponentStore, clock: &mut usize) -> Self {
         let mut lens_values = vec![];
 
         let mut id_start_index = HashMap::new();
@@ -109,10 +109,9 @@ impl Simulator {
             graph,
         };
 
-        // simulate one clock cycle
-        let mut clock = 0;
+        println!("sim_state {:?}", simulator.sim_state);
 
-        simulator.clock(&mut clock);
+        simulator.clock(clock);
         simulator
     }
 }

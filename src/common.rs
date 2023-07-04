@@ -5,6 +5,7 @@ use std::rc::Rc;
 use vizia::prelude::*;
 
 pub type Signal = u32;
+pub type SignedSignal = i32;
 
 #[derive(Lens, Clone)]
 pub struct Simulator {

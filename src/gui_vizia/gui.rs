@@ -78,9 +78,8 @@ impl GuiData {
         // Re-Open model
         println!("open path {:?}", self.path);
         let cs = Box::new(ComponentStore::load_file(&self.path));
-        let simulator = Simulator::new(&cs);
+        let simulator = Simulator::new(&cs, &mut self.clock);
 
-        self.clock = 1;
         self.simulator = simulator;
 
         println!("opened");
@@ -111,7 +110,8 @@ const STYLE: &str = r#"
 // }
 
 pub fn gui(cs: &ComponentStore, path: &PathBuf) {
-    let simulator = Simulator::new(cs);
+    let mut clock = 0;
+    let simulator = Simulator::new(cs, &mut clock);
     let path = path.to_owned();
     simulator.save_dot(&path);
 
@@ -123,7 +123,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
 
         GuiData {
             path,
-            clock: 1,
+            clock,
             simulator,
             pause: true,
             is_saved: false,
