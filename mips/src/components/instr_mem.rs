@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use syncrim::{
-    common::{Component, Input, Output, OutputType, Ports, Simulator},
+    common::{Component, ViziaComponent, Input, Output, OutputType, Ports, Simulator},
     gui_vizia::tooltip::new_component_tooltip,
     vizia::{
         prelude::*,
@@ -43,7 +43,10 @@ impl Component for InstrMem {
         println!("--- output {}", instr);
         simulator.set_id_index(&self.id, 0, instr);
     }
+}
 
+#[typetag::serde]
+impl ViziaComponent for InstrMem {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create InsrMem View");

@@ -6,5 +6,6 @@ mod menu;
 pub mod popup;
 pub mod tooltip;
 mod transport;
+pub mod components;
 
 pub use gui::*;

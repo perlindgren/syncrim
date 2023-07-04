@@ -19,7 +19,7 @@ pub struct Simulator {
     pub graph: Graph<String, ()>,
 }
 
-type Components = Vec<Rc<dyn Component>>;
+type Components = Vec<Rc<dyn ViziaComponent>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
@@ -46,13 +46,13 @@ pub trait Component {
 
     /// evaluation function
     fn evaluate(&self, _simulator: &mut Simulator) {}
-
-    /// create view
-    fn view(&self, _cx: &mut Context) {}
 }
 
-// Note: view uses the concrete type of the derived lens to allow object creation.
-// Perhaps we can find a better way (e.g., through type erasure).
+#[typetag::serde(tag = "type")]
+pub trait ViziaComponent:Component {
+    /// create Vizia view
+    fn view(&self, _cx: &mut Context) {}
+}
 
 #[derive(Debug, Clone)]
 pub struct Ports {

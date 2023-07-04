@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Input, Output, OutputType, Ports, Simulator},
+    common::{Component, ViziaComponent, Input, Output, OutputType, Ports, Simulator},
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
 use serde::{Deserialize, Serialize};
@@ -41,7 +41,9 @@ impl Component for Register {
         simulator.set_id_index(&self.id, 0, value);
         println!("eval: register id {} in {}", self.id, value);
     }
-
+}
+#[typetag::serde]
+impl ViziaComponent for Register {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create Register View ");
