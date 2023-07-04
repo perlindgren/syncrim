@@ -1,4 +1,4 @@
-use crate::common::{Component, Output, OutputType, Ports};
+use crate::common::{Component, ViziaComponent, Output, OutputType, Ports};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -25,3 +25,6 @@ impl Component for ProbeOut {
         )
     }
 }
+
+#[typetag::serde]
+impl ViziaComponent for ProbeOut {}

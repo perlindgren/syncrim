@@ -1,6 +1,6 @@
 // use std::fmt::Alignment;
 use crate::{
-    common::{Component, Input, Output, OutputType, Ports, Signal, Simulator},
+    common::{Component, ViziaComponent, Input, Output, OutputType, Ports, Signal, Simulator},
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
 use serde::{Deserialize, Serialize};
@@ -64,6 +64,9 @@ impl Component for Sext {
         simulator.set_id_index(&self.id, 0, value);
     }
 
+}
+#[typetag::serde]
+impl ViziaComponent for Sext {
     // create viewI
     fn view(&self, cx: &mut Context) {
         println!("---- Create Sext View");

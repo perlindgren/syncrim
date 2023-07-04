@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Input, OutputType, Ports},
+    common::{Component, ViziaComponent, Input, OutputType, Ports},
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
 };
 use serde::{Deserialize, Serialize};
@@ -33,7 +33,9 @@ impl Component for Probe {
             },
         )
     }
-
+}
+#[typetag::serde]
+impl ViziaComponent for Probe {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create Probe View");

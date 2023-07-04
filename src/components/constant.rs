@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Output, OutputType, Ports, Signal, Simulator},
+    common::{Component, ViziaComponent, Output, OutputType, Ports, Signal, Simulator},
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
 use serde::{Deserialize, Serialize};
@@ -37,6 +37,11 @@ impl Component for Constant {
         simulator.set_id_index(&self.id, 0, self.value);
     }
 
+    
+}
+
+#[typetag::serde]
+impl ViziaComponent for Constant {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create Constant View");
@@ -54,7 +59,6 @@ impl Component for Constant {
         .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
-
 pub struct ConstantView {}
 
 impl View for ConstantView {

@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Input, OutputType, Ports},
+    common::{Component, ViziaComponent, Input, OutputType, Ports},
     gui_vizia::tooltip::new_component_tooltip,
 };
 use serde::{Deserialize, Serialize};
@@ -34,7 +34,9 @@ impl Component for Wire {
             },
         )
     }
-
+}
+#[typetag::serde]
+impl ViziaComponent for Wire {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create Wire View");

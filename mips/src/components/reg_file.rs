@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use syncrim::{
-    common::{Component, Input, Output, OutputType, Ports, Signal, Simulator},
+    common::{Component, ViziaComponent, Input, Output, OutputType, Ports, Signal, Simulator},
     gui_vizia::tooltip::new_component_tooltip,
     vizia::{
         prelude::*,
@@ -79,7 +79,9 @@ impl Component for RegFile {
         println!("reg_value {}", reg_value);
         simulator.set(base + 1, reg_value);
     }
-
+}
+#[typetag::serde]
+impl ViziaComponent for RegFile {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create RegFile View");

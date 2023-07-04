@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Input, Output, OutputType, Ports, Simulator},
+    common::{Component, ViziaComponent, Input, Output, OutputType, Ports, Simulator},
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
 };
 use serde::{Deserialize, Serialize};
@@ -48,6 +48,9 @@ impl Component for Mux {
         simulator.set_id_index(&self.id, 0, value);
     }
 
+}
+#[typetag::serde]
+impl ViziaComponent for Mux {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create Add View");
