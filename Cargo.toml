@@ -12,18 +12,17 @@ members = ["mips"]
 clap = { version = "4.3.10", features = ["derive"] }
 petgraph = "0.6.3"
 rfd = "0.11.4"
-serde = { version = "1.0.164", features = ["rc"] }
-serde_derive = "1.0.164"
+serde = { version = "1.0.166", features = ["rc"] }
+serde_derive = "1.0.166"
 serde_json = "1.0.99"
 typetag = "0.2.8"
 
 vizia = { git = "https://github.com/vizia/vizia.git" }
-# vizia = { git = "https://github.com/perlindgren/vizia.git", branch = "icons-update", features = ["serde"] }
-# vizia = { path = "../vizia", features = ["serde"] }
+# vizia = { path = "../vizia" } # using local vizia dependency
 
 [profile.dev]
-debug = 1 # allows for stack back trace
+debug = 1 # faster build, still allows for stack back trace
 
 [profile.release]
 incremental = true
-debug = 1          # allows for stack back trace
+debug = 1 # faster build, still allows for stack back trace
