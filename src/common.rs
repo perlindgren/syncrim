@@ -24,9 +24,14 @@ pub struct Simulator {
 // #[cfg(all(not(test), feature = "vizia"))]
 // type Components = Vec<Rc<dyn ViziaComponent>>;
 
-// #[cfg(test)]
-// type Components = Vec<Rc<dyn Component>>;
+#[cfg(test)]
+type Components = Vec<Rc<dyn Component>>;
+
+#[cfg(all(not(test), feature = "vizia"))]
 type Components = Vec<Rc<dyn ViziaComponent>>;
+
+#[cfg(all(not(test), feature = "egui"))]
+type Components = Vec<Rc<dyn EguiComponent>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct ComponentStore {

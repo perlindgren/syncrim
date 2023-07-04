@@ -4,8 +4,8 @@ pub mod components;
 pub mod simulator;
 
 // Vizia frontend
-#[cfg(feature = "vizia")]
+#[cfg(all(not(test), feature = "vizia"))]
 pub mod gui_vizia;
 
-#[cfg(feature = "vizia")]
+#[cfg(all(not(test), feature = "vizia"))]
 pub use vizia;

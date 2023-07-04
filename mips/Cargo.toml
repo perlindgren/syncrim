@@ -7,7 +7,19 @@ edition = "2021"
 
 [dependencies]
 syncrim = { path = "../" }
-serde = "1.0.163"
-serde_derive = "1.0.163"
+serde = "1.0.166"
+serde_derive = "1.0.166"
 typetag = "0.2.8"
 serde_json = "1.0.96"
+
+[features]
+default = ["vizia"]
+vizia = ["syncrim/vizia"]
+egui = []
+
+[profile.dev]
+debug = 1 # faster build, still allows for stack back trace
+
+[profile.release]
+incremental = true
+debug = 1          # faster build, still allows for stack back trace
