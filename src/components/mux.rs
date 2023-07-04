@@ -1,6 +1,6 @@
 use crate::{
     common::{Component, Input, Output, OutputType, Ports, Simulator},
-    gui_vizia::{tooltip::new_component_tooltip, GuiData},
+    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
 };
 use serde::{Deserialize, Serialize};
 use vizia::{
@@ -57,13 +57,16 @@ impl Component for Mux {
                 select: self.select.clone(),
             },
             cx,
-            |_cx| {},
+            |cx| {
+                NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+            },
         )
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 20.0))
         .top(Pixels(self.pos.1 - 10.0 * self.m_in.len() as f32 - 10.0))
         .width(Pixels(40.0))
         .height(Pixels(20.0 * self.m_in.len() as f32 + 20.0))
+        .on_press(|ex| ex.emit(PopupEvent::Switch))
         .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }

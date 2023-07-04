@@ -1,6 +1,6 @@
 use crate::{
     common::{Component, Output, OutputType, Ports, Signal, Simulator},
-    gui_vizia::tooltip::new_component_tooltip,
+    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
 use serde::{Deserialize, Serialize};
 use vizia::{
@@ -41,13 +41,16 @@ impl Component for Constant {
     fn view(&self, cx: &mut Context) {
         println!("---- Create Constant View");
         View::build(ConstantView {}, cx, |cx| {
-            Label::new(cx, &format!("{:?}", self.value));
+            Label::new(cx, &format!("{:?}", self.value)).hoverable(false);
+            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 10.0))
         .top(Pixels(self.pos.1 - 10.0))
         .width(Pixels(20.0))
         .height(Pixels(20.0))
+        // TODO: do we want/need tooltip/popup for constants
+        .on_press(|ex| ex.emit(PopupEvent::Switch))
         .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }

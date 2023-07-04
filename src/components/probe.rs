@@ -1,6 +1,6 @@
 use crate::{
     common::{Component, Input, OutputType, Ports},
-    gui_vizia::{tooltip::new_component_tooltip, GuiData},
+    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
 };
 use serde::{Deserialize, Serialize};
 use vizia::{
@@ -44,15 +44,17 @@ impl Component for Probe {
                 Label::new(cx, {
                     let simulator = GuiData::simulator.get(cx);
                     &format!(" {:?}", simulator.get_input_val(&input))
-                });
+                })
+                .hoverable(false);
             });
+            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
         .position_type(PositionType::SelfDirected)
-        // .min_size(Pixels(20.0))
         .left(Pixels(self.pos.0 - 10.0))
         .top(Pixels(self.pos.1 - 10.0))
         .width(Pixels(20.0))
         .height(Pixels(20.0))
+        .on_press(|ex| ex.emit(PopupEvent::Switch))
         .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }

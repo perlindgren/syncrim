@@ -4,8 +4,7 @@ use crate::{
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
 use serde::{Deserialize, Serialize};
-// use std::ops::Shl;
-// use std::u32::MAX;
+
 use vizia::{
     prelude::*,
     vg::{Paint, Path},
@@ -37,7 +36,8 @@ impl Component for Sext {
         )
     }
 
-    // propagate addition to output
+    // propagate sign extension to output
+    // TODO: always extend to Signal size? (it should not matter and should be slightly cheaper)
     fn evaluate(&self, simulator: &mut Simulator) {
         // get input values
         let mut value = simulator.get_input_val(&self.sext_in);
@@ -73,7 +73,8 @@ impl Component for Sext {
             Label::new(cx, "SXT")
                 .width(Pixels(80.0))
                 .top(Pixels(20.0))
-                .text_align(TextAlign::Center);
+                .text_align(TextAlign::Center)
+                .hoverable(false);
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
         .left(Pixels(self.pos.0 - 40.0))

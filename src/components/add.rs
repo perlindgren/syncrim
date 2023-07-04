@@ -1,3 +1,4 @@
+use crate::common::Signal;
 use crate::{
     common::{Component, Input, Output, OutputType, Ports, Simulator},
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
@@ -7,7 +8,6 @@ use vizia::{
     prelude::*,
     vg::{Paint, Path},
 };
-use crate::common::Signal;
 
 #[derive(Serialize, Deserialize)]
 pub struct Add {
@@ -43,8 +43,10 @@ impl Component for Add {
         // compute addition (notice will panic on overflow)
         let (value, overflow) = Signal::overflowing_add(a_in, b_in);
 
-        println!("eval Add a_in {}, b_in {}, value = {}, overflow = {}",
-                 a_in, b_in, value, overflow);
+        println!(
+            "eval Add a_in {}, b_in {}, value = {}, overflow = {}",
+            a_in, b_in, value, overflow
+        );
 
         // set output
         simulator.set_id_index(&self.id, 0, value);
@@ -58,7 +60,8 @@ impl Component for Add {
         View::build(AddView {}, cx, move |cx| {
             Label::new(cx, "+")
                 .left(Percentage(50.0))
-                .top(Pixels(40.0 - 10.0));
+                .top(Pixels(40.0 - 10.0))
+                .hoverable(false);
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
         .left(Pixels(self.pos.0 - 20.0))
