@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::path::PathBuf;
-use syncrim::{common::ComponentStore, gui_vizia::gui};
+use syncrim::common::ComponentStore;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -15,5 +15,7 @@ fn main() {
     let args = Args::parse();
     let path = PathBuf::from(args.model);
     let cs = ComponentStore::load_file(&path);
-    gui(&cs, &path);
+    if cfg!(feature = "vizia") {
+        syncrim::gui_vizia::gui(&cs, &path);
+    }
 }

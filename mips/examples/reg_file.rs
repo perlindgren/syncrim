@@ -4,7 +4,6 @@ use std::{path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input, Signal},
     components::*,
-    gui_vizia::gui,
 };
 
 fn main() {
@@ -73,5 +72,7 @@ fn main() {
 
     let path = PathBuf::from("reg_file.json");
     cs.save_file(&path);
-    gui(&cs, &path);
+    if cfg!(feature = "vizia") {
+        syncrim::gui_vizia::gui(&cs, &path);
+    }
 }

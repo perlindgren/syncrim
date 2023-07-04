@@ -2,12 +2,14 @@ use petgraph::Graph;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
+
+#[cfg(feature = "vizia")]
 use vizia::prelude::*;
 
 pub type Signal = u32;
 pub type SignedSignal = i32;
 
-#[derive(Lens, Clone)]
+#[cfg_attr(feature = "vizia", derive(Lens, Clone))]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,
 
@@ -19,11 +21,15 @@ pub struct Simulator {
     pub graph: Graph<String, ()>,
 }
 
+// #[cfg(all(not(test), feature = "vizia"))]
+// type Components = Vec<Rc<dyn ViziaComponent>>;
+
+// #[cfg(test)]
+// type Components = Vec<Rc<dyn Component>>;
 type Components = Vec<Rc<dyn ViziaComponent>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
-    // pub path: String,
     pub store: Components,
 }
 
@@ -49,9 +55,9 @@ pub trait Component {
 }
 
 #[typetag::serde(tag = "type")]
-pub trait ViziaComponent:Component {
+pub trait ViziaComponent: Component {
     /// create Vizia view
-    fn view(&self, _cx: &mut Context) {}
+    fn view(&self, _cx: &mut vizia::context::Context) {}
 }
 
 #[derive(Debug, Clone)]

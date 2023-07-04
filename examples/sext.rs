@@ -2,7 +2,6 @@ use std::{path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
-    gui_vizia::gui,
 };
 
 fn main() {
@@ -25,7 +24,10 @@ fn main() {
             Rc::new(Sext {
                 id: "sxt0".to_string(),
                 pos: (180.0, 100.0),
-                sext_in: Input {id: "c0".to_string(), index: 0},
+                sext_in: Input {
+                    id: "c0".to_string(),
+                    index: 0,
+                },
                 in_size: 16,
                 out_size: 24,
             }),
@@ -51,5 +53,7 @@ fn main() {
 
     let path = PathBuf::from("sext.json");
     cs.save_file(&path);
-    gui(&cs, &path);
+    if cfg!(feature = "vizia") {
+        syncrim::gui_vizia::gui(&cs, &path);
+    }
 }
