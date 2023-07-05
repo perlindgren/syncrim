@@ -8,5 +8,5 @@ fn main() {
     let _cs = ComponentStore::load_file(&path);
 
     #[cfg(feature = "gui-vizia")]
-    syncrim::gui_vizia(&_cs, &path);
+    syncrim::gui_vizia::gui(&_cs, &path);
 }
