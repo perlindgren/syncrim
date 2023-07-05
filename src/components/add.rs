@@ -1,9 +1,5 @@
-use crate::{
-    common::{Component, Input, Output, OutputType, Ports, Signal, SignedSignal, Simulator},
-    
-};
+use crate::common::{Component, Input, Output, OutputType, Ports, Signal, SignedSignal, Simulator};
 use serde::{Deserialize, Serialize};
-
 
 #[derive(Serialize, Deserialize)]
 pub struct Add {
@@ -16,7 +12,7 @@ pub struct Add {
 #[typetag::serde]
 impl Component for Add {
     fn to_(&self) {
-        println!("add");
+        println!("Add");
     }
 
     fn get_id_ports(&self) -> (String, Ports) {
@@ -50,4 +46,3 @@ impl Component for Add {
         simulator.set_id_index(&self.id, 1, Signal::from(overflow));
     }
 }
-

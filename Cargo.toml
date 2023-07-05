@@ -24,8 +24,8 @@ optional = true
 # vizia = { path = "../vizia" } # using local vizia dependency
 
 [features]
-default = ["vizia"]
-vizia = ["dep:vizia"]
+default = ["gui-vizia"]
+gui-vizia = ["vizia"]
 egui = []
 
 [profile.dev]

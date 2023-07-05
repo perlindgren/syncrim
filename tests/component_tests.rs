@@ -8,24 +8,13 @@ use syncrim::{
 fn test_add() {
     let cs = ComponentStore {
         store: vec![
-            Rc::new(ProbeOut {
-                id: "po1".to_string(),
-            }),
-            Rc::new(ProbeOut {
-                id: "po2".to_string(),
-            }),
+            Rc::new(ProbeOut::new("po1")),
+            Rc::new(ProbeOut::new("po2")),
             Rc::new(Add {
                 id: "add".to_string(),
                 pos: (0.0, 0.0),
-                a_in: Input {
-                    id: "po1".to_string(),
-                    index: 0,
-                },
-
-                b_in: Input {
-                    id: "po2".to_string(),
-                    index: 0,
-                },
+                a_in: Input::new("po1", 0),
+                b_in: Input::new("po2", 0),
             }),
         ],
     };
@@ -35,14 +24,8 @@ fn test_add() {
     assert_eq!(clock, 1);
 
     // outputs
-    let add_val = &Input {
-        id: "add".to_string(),
-        index: 0,
-    };
-    let add_overflow = &Input {
-        id: "add".to_string(),
-        index: 1,
-    };
+    let add_val = &Input::new("add", 0);
+    let add_overflow = &Input::new("add", 1);
 
     // reset
     assert_eq!(simulator.get_input_val(add_val), 0);

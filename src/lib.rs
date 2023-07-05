@@ -4,8 +4,14 @@ pub mod components;
 pub mod simulator;
 
 // Vizia frontend
-#[cfg(all(not(test), feature = "vizia"))]
+#[cfg(feature = "gui-vizia")]
 pub mod gui_vizia;
 
-#[cfg(all(not(test), feature = "vizia"))]
-pub use vizia;
+// #[cfg(feature = "gui-vizia")]
+// pub use vizia;
+
+// // Re-exports
+// pub use serde;
+// pub use serde_derive;
+// pub use serde_json;
+// pub use typetag;

@@ -14,8 +14,8 @@ struct Args {
 fn main() {
     let args = Args::parse();
     let path = PathBuf::from(args.model);
-    let cs = ComponentStore::load_file(&path);
-    if cfg!(feature = "vizia") {
-        syncrim::gui_vizia::gui(&cs, &path);
-    }
+
+    let _cs = ComponentStore::load_file(&path);
+    #[cfg(feature = "gui-vizia")]
+    syncrim::gui_vizia::gui(&_cs, &path);
 }

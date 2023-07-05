@@ -51,7 +51,7 @@ fn main() {
 
     let path = PathBuf::from("reg.json");
     cs.save_file(&path);
-    if cfg!(feature = "vizia") {
-        syncrim::gui_vizia::gui(&cs, &path);
-    }
+
+    #[cfg(feature = "gui-vizia")]
+    syncrim::gui_vizia::gui(&cs, &path);
 }
