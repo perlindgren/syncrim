@@ -7,5 +7,6 @@ pub mod simulator;
 #[cfg(feature = "gui-vizia")]
 pub mod gui_vizia;
 
+// Re-export
 #[cfg(feature = "gui-vizia")]
 pub use vizia;

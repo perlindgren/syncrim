@@ -15,11 +15,10 @@ serde_json = "1.0.96"
 path = "../"
 default-features = false
 
-
 [features]
 default = ["gui-vizia"]
 gui-vizia = ["syncrim/gui-vizia"]
-gui-egui = []
+gui-egui = ["syncrim/gui-egui"]
 
 [profile.dev]
 debug = 1 # faster build, still allows for stack back trace

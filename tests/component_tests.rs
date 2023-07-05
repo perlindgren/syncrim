@@ -28,7 +28,7 @@ fn test_add() {
     let add_overflow = &Input::new("add", 1);
 
     // reset
-    assert_eq!(simulator.get_input_val(add_val), 0);
+    assert_eq!(simulator.get_input_val(add_val), 0 + 0);
     assert_eq!(simulator.get_input_val(add_overflow), false as Signal);
 
     println!("<setup for clock 2>");
