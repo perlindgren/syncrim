@@ -10,18 +10,11 @@ impl ViziaComponent for InstrMem {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create InsrMem View");
-        View::build(
-            InstMem {
-                // simulator,
-                // select: self.select.clone(),
-            },
-            cx,
-            |cx| {
-                Label::new(cx, "Inst Mem")
-                    .left(Percentage(20.0))
-                    .top(Percentage(45.0));
-            },
-        )
+        View::build(InstMem {}, cx, |cx| {
+            Label::new(cx, "Inst Mem")
+                .left(Percentage(20.0))
+                .top(Percentage(45.0));
+        })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 50.0))
         .top(Pixels(self.pos.1 - 100.0))
@@ -31,10 +24,7 @@ impl ViziaComponent for InstrMem {
     }
 }
 
-pub struct InstMem {
-    //simulator: Rc<Simulator>,
-    //select: Input,
-}
+pub struct InstMem {}
 
 impl View for InstMem {
     fn element(&self) -> Option<&'static str> {
