@@ -6,6 +6,7 @@ use syncrim::{
     components::*,
 };
 
+// TODO: fix wires and layout
 fn main() {
     let cs = ComponentStore {
         store: vec![
@@ -42,27 +43,11 @@ fn main() {
                 height: 150.0,
 
                 // ports
-                read_addr1: Input {
-                    id: "c_read_reg_1".to_string(),
-                    index: 0,
-                },
-                read_addr2: Input {
-                    id: "c_read_reg_2".to_string(),
-                    index: 0,
-                },
-
-                write_data: Input {
-                    id: "c_write_data".to_string(),
-                    index: 0,
-                },
-                write_addr: Input {
-                    id: "c_write_addr".to_string(),
-                    index: 0,
-                },
-                write_enable: Input {
-                    id: "c_write_enable".to_string(),
-                    index: 0,
-                },
+                read_addr1: Input::new("c_read_reg_1", 0),
+                read_addr2: Input::new("c_read_reg_2", 0),
+                write_data: Input::new("c_write_data", 0),
+                write_addr: Input::new("c_write_addr", 0),
+                write_enable: Input::new("c_write_enable", 0),
 
                 // data
                 registers: vec![Cell::new(0); 32],
