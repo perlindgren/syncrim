@@ -5,6 +5,7 @@ A graphical simulator for synchronous circuits written in Rust based on the [viz
 `SyncRim` is heavily inspired by the Java based in-house [SyncSim](https://syncsim.sourceforge.net/) development at Luleå University of Technology (LTU). SyncSim has been (and still is) used in teaching Micro-computer Engineering at LTU for almost two decades, but it starts to show its age. `SyncRim` a Rust implementation of `SyncSim` is tempting :)
 
 ---
+
 ## Dependencies
 
 For faster builds under Linux, we depend on `clang` and `mold` being installed. You may disable the alternate linking in `.cargo/config.toml`, if you want to stick with `lld` comment out the linker configuration.
@@ -12,6 +13,7 @@ For faster builds under Linux, we depend on `clang` and `mold` being installed. 
 For visualization of the underlying simulation model install [graphviz](https://graphviz.org/).
 
 ---
+
 ## Running examples
 
 To test `SyncRim` run:
@@ -383,9 +385,10 @@ impl Simulator {
     ...
 
 ```
+
 As a side effect the `clock` will be set to 1 (indicating the `reset` state).
 
-The `Simulator` holds the evaluation order of components in `ordered_components`, and the mutable state (`sim_state`). 
+The `Simulator` holds the evaluation order of components in `ordered_components`, and the mutable state (`sim_state`).
 
 To progress simulation, we iterated over the `ordered_components`:
 
@@ -400,6 +403,7 @@ impl Simulator {
     }
 }
 ```
+
 As as side effect the `clock` will be incremented.
 
 ---
@@ -574,7 +578,6 @@ Recommended plugins:
 
   This is not a perfect solution as RA will not correctly handle tests with `#[should_panic]`, (they will actually panic if run from within `vscode`). A better solution would be preferable.
 
-
 - `crates`, for checking cargo versioning.
 
 - `Code Spell Checker`, to keep code and comments nice and clean.
@@ -582,7 +585,6 @@ Recommended plugins:
 - `Graphviz Preview`, (or some other `.gv`/`.dot` integration).
 
 It can be convenient to use `json` formatter tied to format on save, this way we can keep models in easy readable and editable shape.
-
 
 ---
 
