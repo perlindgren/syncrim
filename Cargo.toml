@@ -26,7 +26,7 @@ optional = true
 [features]
 default = ["gui-vizia"]
 gui-vizia = ["vizia"]
-egui = []
+gui-egui = []
 
 [profile.dev]
 debug = 1 # faster build, still allows for stack back trace

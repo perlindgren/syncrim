@@ -15,14 +15,11 @@ serde_json = "1.0.96"
 path = "../"
 default-features = false
 
-[dependencies.vizia]
-git = "https://github.com/vizia/vizia.git"
-optional = true
 
 [features]
 default = ["gui-vizia"]
-gui-vizia = ["vizia", "syncrim/gui-vizia"]
-egui = []
+gui-vizia = ["syncrim/gui-vizia"]
+gui-egui = []
 
 [profile.dev]
 debug = 1 # faster build, still allows for stack back trace

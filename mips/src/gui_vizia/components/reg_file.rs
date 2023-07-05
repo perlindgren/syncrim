@@ -1,8 +1,11 @@
 use crate::components::RegFile;
-use syncrim::{common::ViziaComponent, gui_vizia::tooltip::new_component_tooltip};
-use vizia::{
-    prelude::*,
-    vg::{Color, Paint, Path},
+use syncrim::{
+    common::ViziaComponent,
+    gui_vizia::tooltip::new_component_tooltip,
+    vizia::{
+        prelude::*,
+        vg::{Color, Paint, Path},
+    },
 };
 
 #[typetag::serde]
