@@ -25,3 +25,9 @@ impl Component for ProbeOut {
         )
     }
 }
+
+impl ProbeOut {
+    pub fn new(id: &str) -> Self {
+        ProbeOut { id: id.to_string() }
+    }
+}

@@ -2,6 +2,12 @@
 
 Tracking changes per date:
 
+## 230705
+
+- Refactoring of `Component` trait such that logic part is separated from GUI part.
+
+- Test framework added, where integration (simulation tests are found in the `tests` folders.)
+
 ## 230703
 
 - Webhooks for Discord channel.
@@ -10,7 +16,6 @@ Tracking changes per date:
 
 - `SignExtension` component.
 
-## 230703
 
 Compilation times might be annoying. It seems that under Linux there is a lot more dependencies than under Windows, so building `SyncRim` is faster on Win10 than under Linux (stock settings). There are a number of things to try out to reduce compilation times (and in particular `hot` iterations).
 

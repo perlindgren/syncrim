@@ -5,6 +5,7 @@ A graphical simulator for synchronous circuits written in Rust based on the [viz
 `SyncRim` is heavily inspired by the Java based in-house [SyncSim](https://syncsim.sourceforge.net/) development at Luleå University of Technology (LTU). SyncSim has been (and still is) used in teaching Micro-computer Engineering at LTU for almost two decades, but it starts to show its age. `SyncRim` a Rust implementation of `SyncSim` is tempting :)
 
 ---
+
 ## Dependencies
 
 For faster builds under Linux, we depend on `clang` and `mold` being installed. You may disable the alternate linking in `.cargo/config.toml`, if you want to stick with `lld` comment out the linker configuration.
@@ -12,6 +13,7 @@ For faster builds under Linux, we depend on `clang` and `mold` being installed. 
 For visualization of the underlying simulation model install [graphviz](https://graphviz.org/).
 
 ---
+
 ## Running examples
 
 To test `SyncRim` run:
@@ -299,16 +301,54 @@ The components implement the `Component` trait, used to build a various mappings
 
 A (simulation) model can extend the set of components (see the `mips` member crate).
 
-A model is defined by the storage:
+A model is defined by the storage `ComponentStore`:
 
 ```rust
+#[cfg(test)]
 type Components = Vec<Rc<dyn Component>>;
+
+#[cfg(all(not(test), feature = "gui-vizia"))]
+type Components = Vec<Rc<dyn ViziaComponent>>;
+
+#[cfg(all(not(test), feature = "egui"))]
+type Components = Vec<Rc<dyn EguiComponent>>;
 
 #[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
     pub store: Components,
 }
+
+// Common functionality for all components
+#[typetag::serde(tag = "type")]
+pub trait Component {
+    // placeholder
+    fn to_(&self) {}
+
+    /// returns the (id, Ports) of the component
+    fn get_id_ports(&self) -> (String, Ports);
+
+    /// evaluation function
+    fn evaluate(&self, _simulator: &mut Simulator) {}
+}
+
+// Specific functionality for Vizia frontend
+#[typetag::serde(tag = "type")]
+pub trait ViziaComponent: Component {
+    /// create Vizia view
+    fn view(&self, _cx: &mut vizia::context::Context) {}
+}
+
+// Specific functionality for EGui frontend
+#[typetag::serde(tag = "type")]
+pub trait EguiComponent: Component {
+    /// TBD
+    fn tbd(&self) {}
+}
 ```
+
+The business logic is captured by the `Component` trait, while the `ViziaComponent`/`EguiComponent` traits specify the frontend behavior. Notice `Egui` behavior is still to be determined.
+
+`SyncRim` is featured gated, allowing front-ends to be optionally pulled in. By default, the `vizia` feature is active, but tests can be run without any frontend selected (`--no-default-features`).
 
 ---
 
@@ -345,9 +385,10 @@ impl Simulator {
     ...
 
 ```
+
 As a side effect the `clock` will be set to 1 (indicating the `reset` state).
 
-The `Simulator` holds the evaluation order of components in `ordered_components`, and the mutable state (`sim_state`). 
+The `Simulator` holds the evaluation order of components in `ordered_components`, and the mutable state (`sim_state`).
 
 To progress simulation, we iterated over the `ordered_components`:
 
@@ -362,6 +403,7 @@ impl Simulator {
     }
 }
 ```
+
 As as side effect the `clock` will be incremented.
 
 ---
@@ -424,8 +466,13 @@ Notice that the `get_id_ports` returns a vector of output types. In this case th
 
 `evaluate` retrieves the input values from the simulator, computes the sum and stores it at the first position of the allocated space. In case a component has several outputs, the offset is passed, e.g., `simulator.set_id_index(..., 1, ...)`, to set the 2nd output of the component.
 
+The logic part is found in `src/components/add.rs`:
+
 ```rust
 impl Component for Add {
+    fn to_(&self) {
+        println!("Add");
+    }
 
     fn get_id_ports(&self) -> (String, Ports) {
         (
@@ -433,7 +480,7 @@ impl Component for Add {
             Ports {
                 inputs: vec![self.a_in.clone(), self.b_in.clone()],
                 out_type: OutputType::Combinatorial,
-                outputs: vec![Output::Function],
+                outputs: vec![Output::Function; 2],
             },
         )
     }
@@ -445,31 +492,47 @@ impl Component for Add {
         let b_in = simulator.get_input_val(&self.b_in);
 
         // compute addition (notice will panic on overflow)
-        let value = a_in + b_in;
+        let (value, overflow) =
+            SignedSignal::overflowing_add(a_in as SignedSignal, b_in as SignedSignal);
 
-        // set output #0
-        simulator.set_id_index(&self.id, 0, value);
+        println!(
+            "eval Add a_in {}, b_in {}, value = {}, overflow = {}",
+            a_in, b_in, value, overflow
+        );
+
+        // set output
+        simulator.set_id_index(&self.id, 0, value as Signal);
+        simulator.set_id_index(&self.id, 1, Signal::from(overflow));
     }
+}
+```
 
+A Vizia frontend for the `Add` component is found in `src/gui_vizia/components/add.rs`:
+
+```rust
+impl ViziaComponent for Add {
     // create view
     fn view(&self, cx: &mut Context) {
+        println!("---- Create Add View");
 
-        View::build(AddView {}, cx, |cx| {
+        View::build(AddView {}, cx, move |cx| {
             Label::new(cx, "+")
                 .left(Percentage(50.0))
-                .top(Pixels(40.0 - 10.0));
+                .top(Pixels(40.0 - 10.0))
+                .hoverable(false);
+            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
-        .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 20.0))
         .top(Pixels(self.pos.1 - 40.0))
         .width(Pixels(40.0))
         .height(Pixels(80.0))
+        .on_press(|ex| ex.emit(PopupEvent::Switch))
         .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 ```
 
-The `Add` component is anchored at `pos` with height 80 and width 40 pixels. The tooltip is used to show the inputs and outputs on hovering.
+The `Add` component is anchored at `pos` with height 80 and width 40 pixels. The tooltip is used to show the inputs and outputs on hovering. The `View` implementation (not depicted), provides `element` (used for CSS styling) and `draw` used for rendering.
 
 ---
 
@@ -483,9 +546,9 @@ The CI based on Github actions performs:
 
 - `cargo clippy`, for linting and conformance.
 
-- `cargo test --all`, for automated tests.
+- `cargo test --all`, for automated tests. (`--all` implies that all workspace members gets tested, in our case the `mips` crate).
 
-  - The `test` folder holds the integration tests for simulating components.
+  - The `test` folder(s) holds the integration tests for simulating components.
 
 There is currently no automatic interaction tests of the GUI components.
 
@@ -504,6 +567,16 @@ There is currently no automatic interaction tests of the GUI components.
 Recommended plugins:
 
 - `rust analyzer`.
+  By default RA sets the `cfg(test)` (which allows for RA to access testing code). However, GUI dependencies are optional (for performance reasons only pulled in when needed). In particular tests in `SyncRim` assert only the logical part (not GUI related behavior), thus no front-ends are pulled in during test. For RA to correctly handle front-end (GUI) dependencies, we need to unset `cfg(test)`. In the `.vscode/settings.json`, you find:
+
+  ```toml
+   ...
+   "rust-analyzer.cargo.unsetTest": [
+    "syncrim"
+  ],
+  ```
+
+  This is not a perfect solution as RA will not correctly handle tests with `#[should_panic]`, (they will actually panic if run from within `vscode`). A better solution would be preferable.
 
 - `crates`, for checking cargo versioning.
 
@@ -512,7 +585,6 @@ Recommended plugins:
 - `Graphviz Preview`, (or some other `.gv`/`.dot` integration).
 
 It can be convenient to use `json` formatter tied to format on save, this way we can keep models in easy readable and editable shape.
-
 
 ---
 

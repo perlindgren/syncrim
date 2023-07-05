@@ -2,11 +2,36 @@ use petgraph::Graph;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
+
+#[cfg(feature = "gui-vizia")]
 use vizia::prelude::*;
 
 pub type Signal = u32;
 pub type SignedSignal = i32;
 
+#[cfg(not(feature = "gui-vizia"))]
+type Components = Vec<Rc<dyn Component>>;
+
+#[cfg(feature = "gui-vizia")]
+type Components = Vec<Rc<dyn ViziaComponent>>;
+
+// #[cfg(all(not(test), feature = "egui"))]
+// type Components = Vec<Rc<dyn EguiComponent>>;
+
+#[cfg(not(feature = "gui-vizia"))]
+#[derive(Clone)]
+pub struct Simulator {
+    pub id_start_index: IdStartIndex,
+
+    // Components stored in topological evaluation order
+    pub ordered_components: Components,
+    pub sim_state: Vec<Signal>,
+    pub history: Vec<Vec<Signal>>,
+    pub component_ids: Vec<String>,
+    pub graph: Graph<String, ()>,
+}
+
+#[cfg(feature = "gui-vizia")]
 #[derive(Lens, Clone)]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,
@@ -19,11 +44,8 @@ pub struct Simulator {
     pub graph: Graph<String, ()>,
 }
 
-type Components = Vec<Rc<dyn Component>>;
-
 #[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
-    // pub path: String,
     pub store: Components,
 }
 
@@ -46,13 +68,23 @@ pub trait Component {
 
     /// evaluation function
     fn evaluate(&self, _simulator: &mut Simulator) {}
-
-    /// create view
-    fn view(&self, _cx: &mut Context) {}
 }
 
-// Note: view uses the concrete type of the derived lens to allow object creation.
-// Perhaps we can find a better way (e.g., through type erasure).
+// Specific functionality for Vizia frontend
+#[cfg(feature = "gui-vizia")]
+#[typetag::serde(tag = "type")]
+pub trait ViziaComponent: Component {
+    /// create Vizia view
+    fn view(&self, _cx: &mut vizia::context::Context) {}
+}
+
+// Specific functionality for EGui frontend
+#[cfg(feature = "egui")]
+#[typetag::serde(tag = "type")]
+pub trait EguiComponent: Component {
+    /// TBD
+    fn tbd(&self) {}
+}
 
 #[derive(Debug, Clone)]
 pub struct Ports {
