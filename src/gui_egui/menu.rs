@@ -1,7 +1,7 @@
 pub(crate) struct Menu {}
 
 impl Menu {
-    pub(crate) fn new(ui: &mut egui::Ui, gui: &mut crate::gui_egui::egui::Gui) {
+    pub(crate) fn new(ui: &mut egui::Ui, gui: &mut crate::gui_egui::gui::Gui) {
         fn btn(ui: &mut egui::Ui, name: &str, keys: egui::KeyboardShortcut) -> egui::Response {
             ui.add(egui::Button::new(name).shortcut_text(ui.ctx().format_shortcut(&keys)))
         }
@@ -49,10 +49,10 @@ impl Menu {
 
             ui.menu_button("View", |ui| {
                 if btn(ui, "Zoom In", gui.shortcuts.view_zoom_in).clicked() {
-                    crate::gui_egui::shortcuts::view_zoom_in_fn(gui);
+                    crate::gui_egui::keymap::view_zoom_in_fn(gui);
                 }
                 if btn(ui, "Zoom Out", gui.shortcuts.view_zoom_out).clicked() {
-                    crate::gui_egui::shortcuts::view_zoom_out_fn(gui);
+                    crate::gui_egui::keymap::view_zoom_out_fn(gui);
                 }
                 ui.menu_button("Zoom Level", |ui| {
                     if ui.button("10%").clicked() {
@@ -92,26 +92,23 @@ impl Menu {
             });
         });
         ui.horizontal(|ui| {
-            if ui.button("▶").clicked() {
-                //self.history.push(self.state.lens_values.clone());
-                //self.simulator.clock(&mut self.state);
-                println!("run!");
-            }
-            if ui.button("■").clicked() {
-                //self.history.push(self.state.lens_values.clone());
-                //self.simulator.clock(&mut self.state);
-                println!("paused!");
+            if ui.button("⟲").clicked() {
+                gui.simulator.reset(&mut gui.clock);
+                gui.pause = true;
             }
             if ui.button("⏮").clicked() {
-                //self.history.push(self.state.lens_values.clone());
-                //self.simulator.clock(&mut self.state);
-                println!("stepped back once!");
+                gui.simulator.un_clock(&mut gui.clock);
             }
             if ui.button("⏭").clicked() {
-                //self.history.push(self.state.lens_values.clone());
-                gui.simulator.clock(&mut gui.state);
-                println!("stepped once!");
+                gui.simulator.clock(&mut gui.clock);
             }
+            if ui.button("▶").clicked() {
+                gui.pause = false;
+            }
+            if ui.button("⏸").clicked() {
+                gui.pause = true;
+            }
+            ui.label(format!("Clock #{}", gui.clock));
         });
     }
 }

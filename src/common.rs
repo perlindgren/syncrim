@@ -1,22 +1,48 @@
+use petgraph::Graph;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
+
+#[cfg(feature = "gui-vizia")]
 use vizia::prelude::*;
 
-#[derive(Lens, Debug, Clone)]
-pub struct SimState {
-    pub lens_values: Vec<u32>,
-}
+pub type Signal = u32;
+pub type SignedSignal = i32;
 
-#[derive(Lens)]
+#[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
+type Components = Vec<Rc<dyn Component>>;
+
+#[cfg(feature = "gui-vizia")]
+type Components = Vec<Rc<dyn ViziaComponent>>;
+
+#[cfg(all(not(test), feature = "egui"))]
+type Components = Vec<Rc<dyn EguiComponent>>;
+
+#[cfg(feature = "gui-egui")]
+#[derive(Clone)]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,
 
     // Components stored in topological evaluation order
     pub ordered_components: Components,
+    pub sim_state: Vec<Signal>,
+    pub history: Vec<Vec<Signal>>,
+    pub component_ids: Vec<String>,
+    pub graph: Graph<String, ()>,
 }
 
-type Components = Vec<Rc<dyn Component>>;
+#[cfg(feature = "gui-vizia")]
+#[derive(Lens, Clone)]
+pub struct Simulator {
+    pub id_start_index: IdStartIndex,
+
+    // Components stored in topological evaluation order
+    pub ordered_components: Components,
+    pub sim_state: Vec<Signal>,
+    pub history: Vec<Vec<Signal>>,
+    pub component_ids: Vec<String>,
+    pub graph: Graph<String, ()>,
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
@@ -37,31 +63,29 @@ pub trait Component {
     // placeholder
     fn to_(&self) {}
 
-    // returns the (id, Ports) of the component
+    /// returns the (id, Ports) of the component
     fn get_id_ports(&self) -> (String, Ports);
 
-    // evaluation function
-    fn evaluate(&self, _simulator: &Simulator, _sim_state: &mut SimState) {}
-
-    // create view vizia
-    fn view(&self, _cx: &mut Context, _simulator: Rc<Simulator>) {}
-
-    // egui
-    fn render(
-        &self,
-        _sim_state: &mut SimState,
-        _ui: &mut egui::Ui,
-        _simulator: Rc<Simulator>,
-        _start: egui::Vec2,
-        _scale: f32,
-    ) {
-    }
+    /// evaluation function
+    fn evaluate(&self, _simulator: &mut Simulator) {}
 }
 
-// Note: view uses the concrete type of the derived lens to allow object creation.
-// Perhaps we can find a better way (e.g., through type erasure).
+// Specific functionality for Vizia frontend
+#[cfg(feature = "gui-vizia")]
+#[typetag::serde(tag = "type")]
+pub trait ViziaComponent: Component {
+    /// create Vizia view
+    fn view(&self, _cx: &mut vizia::context::Context) {}
+}
 
-#[derive(Debug)]
+// Specific functionality for EGui frontend
+#[cfg(feature = "gui-egui")]
+#[typetag::serde(tag = "type")]
+pub trait EguiComponent: Component {
+    fn render(&self, _ui: &mut egui::Ui, _simulator: Simulator, _start: egui::Vec2, _scale: f32) {}
+}
+
+#[derive(Debug, Clone)]
 pub struct Ports {
     pub inputs: Vec<Input>,
     pub out_type: OutputType,
@@ -74,7 +98,16 @@ pub struct Input {
     pub index: usize,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+impl Input {
+    pub fn new(id: &str, index: usize) -> Self {
+        Input {
+            id: id.to_string(),
+            index,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum OutputType {
     // Will be evaluated as a combinatorial function from inputs to outputs
     Combinatorial,
@@ -82,17 +115,10 @@ pub enum OutputType {
     Sequential,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum Output {
     // Will be evaluated as a constant (function without inputs)
-    Constant(u32),
+    Constant(Signal),
     // Will be evaluated as a function
     Function,
-}
-
-pub fn offset_helper(xy: (f32, f32), scale: f32, offset: egui::Vec2) -> egui::Pos2 {
-    return egui::Pos2 {
-        x: xy.0 * scale,
-        y: xy.1 * scale,
-    } + offset;
 }

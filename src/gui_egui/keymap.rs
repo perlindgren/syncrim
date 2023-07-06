@@ -79,7 +79,7 @@ impl Shortcuts {
         }
     }
 
-    pub fn inputs(self, ctx: &egui::Context, gui: &mut crate::gui_egui::egui::Gui) {
+    pub fn inputs(self, ctx: &egui::Context, gui: &mut crate::gui_egui::gui::Gui) {
         //let ctx = &mut ui.ctx();
         ctx.input_mut(|i| {
             if i.scroll_delta.y > 0f32 {
@@ -124,16 +124,16 @@ impl Shortcuts {
     }
 }
 
-pub fn file_new_fn(gui: &mut crate::gui_egui::egui::Gui) {}
-pub fn file_open_fn(gui: &mut crate::gui_egui::egui::Gui) {}
-pub fn file_save_fn(gui: &mut crate::gui_egui::egui::Gui) {}
-pub fn file_save_as_fn(gui: &mut crate::gui_egui::egui::Gui) {}
-pub fn file_preferences_fn(gui: &mut crate::gui_egui::egui::Gui) {}
-pub fn file_quit_fn(gui: &mut crate::gui_egui::egui::Gui) {}
-pub fn edit_cut_fn(gui: &mut crate::gui_egui::egui::Gui) {}
-pub fn edit_copy_fn(gui: &mut crate::gui_egui::egui::Gui) {}
-pub fn edit_paste_fn(gui: &mut crate::gui_egui::egui::Gui) {}
-pub fn view_zoom_in_fn(gui: &mut crate::gui_egui::egui::Gui) {
+pub fn file_new_fn(gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_open_fn(gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_save_fn(gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_save_as_fn(gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_preferences_fn(gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_quit_fn(gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn edit_cut_fn(gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn edit_copy_fn(gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn edit_paste_fn(gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn view_zoom_in_fn(gui: &mut crate::gui_egui::gui::Gui) {
     match gui.scale {
         x if (0.0f32..0.2f32).contains(&x) => gui.scale = 0.25f32,
         x if (0.2f32..0.4f32).contains(&x) => gui.scale = 0.5f32,
@@ -143,7 +143,7 @@ pub fn view_zoom_in_fn(gui: &mut crate::gui_egui::egui::Gui) {
         _ => gui.scale = 2f32,
     }
 }
-pub fn view_zoom_out_fn(gui: &mut crate::gui_egui::egui::Gui) {
+pub fn view_zoom_out_fn(gui: &mut crate::gui_egui::gui::Gui) {
     match gui.scale {
         x if (0.2f32..0.4f32).contains(&x) => gui.scale = 0.1f32,
         x if (0.4f32..0.6f32).contains(&x) => gui.scale = 0.25f32,

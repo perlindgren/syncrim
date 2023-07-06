@@ -1,35 +1,40 @@
-use crate::common::{ComponentStore, SimState, Simulator};
-use crate::gui_egui::{menu::Menu, shortcuts::Shortcuts};
+use crate::common::{ComponentStore, Simulator};
+use crate::gui_egui::{keymap::Shortcuts, menu::Menu};
 use eframe::egui;
-use std::rc::Rc;
+use std::path::PathBuf;
 
 pub struct Gui {
-    pub simulator: Rc<Simulator>,
-    pub state: SimState,
+    pub simulator: Simulator,
+    pub path: PathBuf,
     // History, acts like a stack
     pub history: Vec<Vec<u32>>,
     pub scale: f32,
+    pub clock: usize,
     // When the ui elements change size
     pub ui_change: bool,
     pub offset: egui::Vec2,
     pub pan: egui::Vec2,
     pub shortcuts: Shortcuts,
+    pub pause: bool,
 }
 
-pub fn gui(cs: &ComponentStore) -> Result<(), eframe::Error> {
-    let (simulator, mut sim_state) = Simulator::new(cs);
-    let simulator = Rc::new(simulator);
-    simulator.clock(&mut sim_state);
+pub fn gui(cs: &ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
+    let mut clock = 0;
+    let simulator = Simulator::new(cs, &mut clock);
     let options = eframe::NativeOptions::default();
+    let path = path.to_owned();
+    simulator.save_dot(&path);
     let gui = Gui {
+        clock,
+        path,
         simulator: simulator.clone(),
-        state: sim_state,
         history: vec![],
         scale: 1.0f32,
         ui_change: true,
         offset: egui::Vec2 { x: 0f32, y: 0f32 },
         pan: egui::Vec2 { x: 0f32, y: 0f32 },
         shortcuts: Shortcuts::new(),
+        pause: true,
     };
     eframe::run_native("SyncRim", options, Box::new(|_cc| Box::new(gui)))
 }
@@ -106,7 +111,6 @@ impl Gui {
         let central_panel = egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
             for c in &self.simulator.ordered_components {
                 c.render(
-                    &mut self.state,
                     ui,
                     self.simulator.clone(),
                     self.offset + self.pan,

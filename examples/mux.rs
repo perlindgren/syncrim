@@ -1,8 +1,7 @@
-use std::rc::Rc;
+use std::{path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
-    gui_egui::egui::gui,
 };
 
 fn main() {
@@ -11,27 +10,12 @@ fn main() {
             Rc::new(Mux {
                 id: "mux".to_string(),
                 pos: (200.0, 200.0),
-                select: Input {
-                    id: "c0".to_string(),
-                    index: 0,
-                },
+                select: Input::new("c0", 0),
                 m_in: vec![
-                    Input {
-                        id: "c1".to_string(),
-                        index: 0,
-                    },
-                    Input {
-                        id: "c2".to_string(),
-                        index: 0,
-                    },
-                    Input {
-                        id: "c3".to_string(),
-                        index: 0,
-                    },
-                    Input {
-                        id: "c4".to_string(),
-                        index: 0,
-                    },
+                    Input::new("c1", 0),
+                    Input::new("c2", 0),
+                    Input::new("c3", 0),
+                    Input::new("c4", 0),
                 ],
             }),
             Rc::new(Constant {
@@ -42,7 +26,8 @@ fn main() {
             Rc::new(Wire {
                 id: "w0".to_string(),
                 pos: (190.0, 110.0),
-                size: (0.0, 40.0),
+                delta: (0.0, 40.0),
+                input: Input::new("c0", 0),
             }),
             Rc::new(Constant {
                 id: "c1".to_string(),
@@ -67,40 +52,47 @@ fn main() {
             Rc::new(Wire {
                 id: "w1".to_string(),
                 pos: (150.0, 170.0),
-                size: (30.0, 0.0),
+                delta: (30.0, 0.0),
+                input: Input::new("c1", 0),
             }),
             Rc::new(Wire {
                 id: "w2".to_string(),
                 pos: (150.0, 190.0),
-                size: (30.0, 0.0),
+                delta: (30.0, 0.0),
+                input: Input::new("c2", 0),
             }),
             Rc::new(Wire {
                 id: "w3".to_string(),
                 pos: (150.0, 210.0),
-                size: (30.0, 0.0),
+                delta: (30.0, 0.0),
+                input: Input::new("c3", 0),
             }),
             Rc::new(Wire {
                 id: "w4".to_string(),
                 pos: (150.0, 230.0),
-                size: (30.0, 0.0),
+                delta: (30.0, 0.0),
+                input: Input::new("c4", 0),
             }),
             Rc::new(Wire {
                 id: "w5".to_string(),
                 pos: (220.0, 200.0),
-                size: (30.0, 0.0),
+                delta: (30.0, 0.0),
+                input: Input::new("mux", 0),
             }),
             Rc::new(Probe {
-                id: "p1".to_string(),
+                id: "p_mux".to_string(),
                 pos: (260.0, 200.0),
-                input: Input {
-                    id: "mux".to_string(),
-                    index: 0,
-                },
+                input: Input::new("mux", 0),
             }),
         ],
     };
 
-    cs.save_file("model.json");
+    let path = PathBuf::from("add.json");
+    cs.save_file(&path);
 
-    gui(&cs);
+    #[cfg(feature = "gui-egui")]
+    syncrim::gui_egui::egui::gui(&cs);
+
+    #[cfg(feature = "gui-vizia")]
+    syncrim::gui_vizia::gui(&cs, &path);
 }

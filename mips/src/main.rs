@@ -1,8 +1,12 @@
 #[allow(unused_imports)]
 use mips::components::*;
-use syncrim::{common::ComponentStore, gui::gui};
+use std::path::PathBuf;
+use syncrim::common::ComponentStore;
 
 fn main() {
-    let cs = ComponentStore::load_file("mips.json");
-    gui(&cs);
+    let path = PathBuf::from("mips.json");
+    let _cs = ComponentStore::load_file(&path);
+
+    #[cfg(feature = "gui-vizia")]
+    syncrim::gui_vizia::gui(&_cs, &path);
 }
