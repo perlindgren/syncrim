@@ -13,6 +13,12 @@ pub struct Shortcuts {
     pub edit_paste: KeyboardShortcut,
     pub view_zoom_in: KeyboardShortcut,
     pub view_zoom_out: KeyboardShortcut,
+    pub control_play_toggle: KeyboardShortcut,
+    pub control_play: KeyboardShortcut,
+    pub control_pause: KeyboardShortcut,
+    pub control_reset: KeyboardShortcut,
+    pub control_step_forward: KeyboardShortcut,
+    pub control_step_back: KeyboardShortcut,
 }
 
 impl Shortcuts {
@@ -20,6 +26,20 @@ impl Shortcuts {
         let ctrl = Modifiers {
             alt: false,
             ctrl: true,
+            shift: false,
+            mac_cmd: false,
+            command: false,
+        };
+        let shift = Modifiers {
+            alt: false,
+            ctrl: false,
+            shift: true,
+            mac_cmd: false,
+            command: false,
+        };
+        let none = Modifiers {
+            alt: false,
+            ctrl: false,
             shift: false,
             mac_cmd: false,
             command: false,
@@ -76,6 +96,36 @@ impl Shortcuts {
                 modifiers: ctrl,
                 key: Key::Minus,
             },
+            control_play: KeyboardShortcut {
+                modifiers: none,
+                key: Key::F6,
+            },
+            control_play_toggle: KeyboardShortcut {
+                modifiers: none,
+                key: Key::F5,
+            },
+            control_pause: KeyboardShortcut {
+                modifiers: shift,
+                key: Key::F5,
+            },
+            control_reset: KeyboardShortcut {
+                modifiers: Modifiers {
+                    alt: false,
+                    ctrl: true,
+                    shift: true,
+                    mac_cmd: false,
+                    command: false,
+                },
+                key: Key::F5,
+            },
+            control_step_forward: KeyboardShortcut {
+                modifiers: none,
+                key: Key::F10,
+            },
+            control_step_back: KeyboardShortcut {
+                modifiers: shift,
+                key: Key::F10,
+            },
         }
     }
 
@@ -121,6 +171,24 @@ impl Shortcuts {
         if ctx.input_mut(|i| i.consume_shortcut(&self.view_zoom_out)) {
             view_zoom_out_fn(gui);
         }
+        if ctx.input_mut(|i| i.consume_shortcut(&self.control_play_toggle)) {
+            control_play_toggle(gui);
+        }
+        if ctx.input_mut(|i| i.consume_shortcut(&self.control_play)) {
+            control_play(gui);
+        }
+        if ctx.input_mut(|i| i.consume_shortcut(&self.control_pause)) {
+            control_pause(gui);
+        }
+        if ctx.input_mut(|i| i.consume_shortcut(&self.control_reset)) {
+            control_reset(gui);
+        }
+        if ctx.input_mut(|i| i.consume_shortcut(&self.control_step_forward)) {
+            control_step_forward(gui);
+        }
+        if ctx.input_mut(|i| i.consume_shortcut(&self.control_step_back)) {
+            control_step_back(gui);
+        }
     }
 }
 
@@ -152,4 +220,23 @@ pub fn view_zoom_out_fn(gui: &mut crate::gui_egui::gui::Gui) {
         x if (1.9f32..2.1f32).contains(&x) => gui.scale = 1.5f32,
         _ => gui.scale = 0.1f32,
     }
+}
+pub fn control_play_toggle(gui: &mut crate::gui_egui::gui::Gui) {
+    gui.pause = !gui.pause;
+}
+pub fn control_play(gui: &mut crate::gui_egui::gui::Gui) {
+    gui.pause = false;
+}
+pub fn control_pause(gui: &mut crate::gui_egui::gui::Gui) {
+    gui.pause = true;
+}
+pub fn control_reset(gui: &mut crate::gui_egui::gui::Gui) {
+    gui.simulator.reset(&mut gui.clock);
+    gui.pause = true;
+}
+pub fn control_step_forward(gui: &mut crate::gui_egui::gui::Gui) {
+    gui.simulator.clock(&mut gui.clock);
+}
+pub fn control_step_back(gui: &mut crate::gui_egui::gui::Gui) {
+    gui.simulator.un_clock(&mut gui.clock);
 }

@@ -94,20 +94,19 @@ impl Menu {
         });
         ui.horizontal(|ui| {
             if ui.button("⟲").clicked() {
-                gui.simulator.reset(&mut gui.clock);
-                gui.pause = true;
+                crate::gui_egui::keymap::control_reset(gui);
             }
             if ui.button("⏮").clicked() {
-                gui.simulator.un_clock(&mut gui.clock);
+                crate::gui_egui::keymap::control_step_back(gui);
             }
             if ui.button("⏭").clicked() {
-                gui.simulator.clock(&mut gui.clock);
+                crate::gui_egui::keymap::control_step_forward(gui);
             }
             if ui.button("▶").clicked() {
-                gui.pause = false;
+                crate::gui_egui::keymap::control_play(gui);
             }
             if ui.button("⏸").clicked() {
-                gui.pause = true;
+                crate::gui_egui::keymap::control_pause(gui);
             }
             ui.label(format!("Clock #{}", gui.clock));
         });
