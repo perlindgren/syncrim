@@ -13,13 +13,13 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let path = PathBuf::from(args.model);
+    let _path = PathBuf::from(args.model);
 
-    let _cs = ComponentStore::load_file(&path);
+    let _cs = ComponentStore::load_file(&_path);
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::egui::gui(&cs);
+    let _ = syncrim::gui_egui::gui(&_cs, &_path);
 
     #[cfg(feature = "gui-vizia")]
-    syncrim::gui_vizia::gui(&_cs, &path);
+    syncrim::gui_vizia::gui(&_cs, &_path);
 }
