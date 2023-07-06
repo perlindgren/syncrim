@@ -21,6 +21,12 @@ pub struct Shortcuts {
     pub control_step_back: KeyboardShortcut,
 }
 
+impl Default for Shortcuts {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Shortcuts {
     pub fn new() -> Self {
         let ctrl = Modifiers {
@@ -192,15 +198,15 @@ impl Shortcuts {
     }
 }
 
-pub fn file_new_fn(gui: &mut crate::gui_egui::gui::Gui) {}
-pub fn file_open_fn(gui: &mut crate::gui_egui::gui::Gui) {}
-pub fn file_save_fn(gui: &mut crate::gui_egui::gui::Gui) {}
-pub fn file_save_as_fn(gui: &mut crate::gui_egui::gui::Gui) {}
-pub fn file_preferences_fn(gui: &mut crate::gui_egui::gui::Gui) {}
-pub fn file_quit_fn(gui: &mut crate::gui_egui::gui::Gui) {}
-pub fn edit_cut_fn(gui: &mut crate::gui_egui::gui::Gui) {}
-pub fn edit_copy_fn(gui: &mut crate::gui_egui::gui::Gui) {}
-pub fn edit_paste_fn(gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_new_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_open_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_save_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_save_as_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_preferences_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_quit_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn edit_cut_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn edit_copy_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn edit_paste_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
 pub fn view_zoom_in_fn(gui: &mut crate::gui_egui::gui::Gui) {
     match gui.scale {
         x if (0.0f32..0.2f32).contains(&x) => gui.scale = 0.25f32,

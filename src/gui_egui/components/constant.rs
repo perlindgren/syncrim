@@ -4,7 +4,7 @@ use crate::components::Constant;
 #[typetag::serde]
 impl EguiComponent for Constant {
     fn render(&self, ui: &mut egui::Ui, _simulator: Simulator, offset: egui::Vec2, scale: f32) {
-        let mut offset = offset.clone();
+        let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
         let w = egui::Window::new(self.id.to_string())

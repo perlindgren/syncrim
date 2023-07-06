@@ -8,7 +8,7 @@ impl EguiComponent for Register {
         // 21x41
         // middle: 11x 21y (0 0)
         let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
-        let mut offset = offset.clone();
+        let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
         let s = scale;

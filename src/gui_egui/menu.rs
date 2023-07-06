@@ -1,6 +1,7 @@
 pub(crate) struct Menu {}
 
 impl Menu {
+    #[allow(clippy::new_ret_no_self)]
     pub(crate) fn new(ui: &mut egui::Ui, gui: &mut crate::gui_egui::gui::Gui) {
         fn btn(ui: &mut egui::Ui, name: &str, keys: egui::KeyboardShortcut) -> egui::Response {
             ui.add(egui::Button::new(name).shortcut_text(ui.ctx().format_shortcut(&keys)))
@@ -14,7 +15,7 @@ impl Menu {
                 if btn(ui, "Open", gui.shortcuts.file_open).clicked() {
                     // Open here
                 }
-                ui.menu_button("Open Recent", |ui| {
+                ui.menu_button("Open Recent", |_ui| {
                     // Recent here
                     //if ui.button("file1").clicked() {
                     //    // Open file

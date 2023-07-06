@@ -27,7 +27,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
     let gui = Gui {
         clock,
         path,
-        simulator: simulator.clone(),
+        simulator,
         history: vec![],
         scale: 1.0f32,
         ui_change: true,
@@ -87,24 +87,25 @@ impl Gui {
     fn should_area_update(&mut self, ctx: &egui::Context) -> bool {
         if self.ui_change {
             self.ui_change = false;
-            return true;
-        }
-        return (egui::containers::panel::PanelState::load(ctx, egui::Id::from("topBar"))
-            .unwrap()
-            .rect
-            .max
-            .y
-            - self.offset.y)
-            .abs()
-            > 0.1
-            || (egui::containers::panel::PanelState::load(ctx, egui::Id::from("leftGui"))
+            true
+        } else {
+            (egui::containers::panel::PanelState::load(ctx, egui::Id::from("topBar"))
                 .unwrap()
                 .rect
                 .max
-                .x
-                - self.offset.x)
+                .y
+                - self.offset.y)
                 .abs()
-                > 0.1;
+                > 0.1
+                || (egui::containers::panel::PanelState::load(ctx, egui::Id::from("leftGui"))
+                    .unwrap()
+                    .rect
+                    .max
+                    .x
+                    - self.offset.x)
+                    .abs()
+                    > 0.1
+        }
     }
 
     fn draw_area(&mut self, ctx: &egui::Context, frame: egui::Frame) {

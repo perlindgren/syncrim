@@ -18,20 +18,8 @@ type Components = Vec<Rc<dyn ViziaComponent>>;
 #[cfg(feature = "gui-egui")]
 type Components = Vec<Rc<dyn EguiComponent>>;
 
+#[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
-pub struct Simulator {
-    pub id_start_index: IdStartIndex,
-
-    // Components stored in topological evaluation order
-    pub ordered_components: Components,
-    pub sim_state: Vec<Signal>,
-    pub history: Vec<Vec<Signal>>,
-    pub component_ids: Vec<String>,
-    pub graph: Graph<String, ()>,
-}
-
-#[cfg(feature = "gui-vizia")]
-#[derive(Lens, Clone)]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,
 

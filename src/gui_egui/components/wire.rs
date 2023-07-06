@@ -6,7 +6,7 @@ use crate::gui_egui::helper::offset_helper;
 impl EguiComponent for Wire {
     fn render(&self, ui: &mut egui::Ui, _simulator: Simulator, offset: egui::Vec2, scale: f32) {
         let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
-        let mut offset = offset.clone();
+        let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
         let s = scale;
