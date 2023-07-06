@@ -15,10 +15,9 @@ type Components = Vec<Rc<dyn Component>>;
 #[cfg(feature = "gui-vizia")]
 type Components = Vec<Rc<dyn ViziaComponent>>;
 
-#[cfg(all(not(test), feature = "egui"))]
+#[cfg(feature = "gui-egui")]
 type Components = Vec<Rc<dyn EguiComponent>>;
 
-#[cfg(all(not(test), feature = "gui-egui"))]
 #[derive(Clone)]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,

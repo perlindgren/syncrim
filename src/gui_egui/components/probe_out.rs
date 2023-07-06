@@ -1,4 +1,4 @@
-use crate::common::{Component, EguiComponent, Input};
+use crate::common::EguiComponent;
 use crate::components::ProbeOut;
 
 #[typetag::serde]

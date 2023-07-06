@@ -1,6 +1,5 @@
-use crate::common::{Component, EguiComponent, Simulator};
+use crate::common::{EguiComponent, Simulator};
 use crate::components::Probe;
-use serde::{Deserialize, Serialize};
 
 #[typetag::serde]
 impl EguiComponent for Probe {

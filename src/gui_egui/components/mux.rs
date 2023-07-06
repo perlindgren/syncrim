@@ -1,7 +1,6 @@
-use crate::common::{Component, EguiComponent, Input, Simulator};
+use crate::common::{EguiComponent, Simulator};
 use crate::components::Mux;
 use crate::gui_egui::helper::offset_helper;
-use serde::{Deserialize, Serialize};
 
 #[typetag::serde]
 impl EguiComponent for Mux {

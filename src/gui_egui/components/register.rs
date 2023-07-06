@@ -1,11 +1,10 @@
-use crate::common::{Component, EguiComponent, Input, Simulator};
+use crate::common::{EguiComponent, Simulator};
 use crate::components::Register;
 use crate::gui_egui::helper::offset_helper;
-use serde::{Deserialize, Serialize};
 
 #[typetag::serde]
 impl EguiComponent for Register {
-    fn render(&self, ui: &mut egui::Ui, simulator: Simulator, offset: egui::Vec2, scale: f32) {
+    fn render(&self, ui: &mut egui::Ui, _simulator: Simulator, offset: egui::Vec2, scale: f32) {
         // 21x41
         // middle: 11x 21y (0 0)
         let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
