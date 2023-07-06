@@ -45,7 +45,6 @@ gui-egui = ["egui", "eframe", "epaint"]
 debug = 1 # faster build, still allows for stack back trace
 
 [profile.test]
-default = ["components"]
 
 [profile.release]
 incremental = true
