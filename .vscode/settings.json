@@ -35,7 +35,7 @@
   // "rust-analyzer.cargo.unsetTest": [
   //   "syncrim"
   // ],
-  // "rust-analyzer.cargo.noDefaultFeatures": true,  # examples will build/run without any gui selected
-  // "rust-analyzer.cargo.features" : ["gui-egui"],  # examples will build/run with egui (notice you need) both .noDefaultFeatures and .features 
+  "rust-analyzer.cargo.noDefaultFeatures": true,
+  "rust-analyzer.cargo.features": ["gui-egui"],
   // "rust-analyzer.check.noDefaultFeatures": true,
 }

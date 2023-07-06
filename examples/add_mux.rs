@@ -153,6 +153,9 @@ fn main() {
     let path = PathBuf::from("add_mux.json");
     cs.save_file(&path);
 
+    #[cfg(feature = "gui-egui")]
+    syncrim::gui_egui::gui(&cs, &path).ok();
+
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(&cs, &path);
 }

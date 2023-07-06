@@ -23,10 +23,22 @@ git = "https://github.com/vizia/vizia.git"
 optional = true
 # vizia = { path = "../vizia" } # using local vizia dependency
 
+[dependencies.egui]
+optional = true
+version = "0.22.0"
+
+[dependencies.eframe]
+optional = true
+version = "0.22.0"
+
+[dependencies.epaint]
+optional = true
+version = "0.22.0"
+
 [features]
 default = ["gui-vizia"]
 gui-vizia = ["vizia"]
-gui-egui = []
+gui-egui = ["egui", "eframe", "epaint"]
 
 [profile.dev]
 debug = 1 # faster build, still allows for stack back trace

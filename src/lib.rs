@@ -7,6 +7,10 @@ pub mod simulator;
 #[cfg(feature = "gui-vizia")]
 pub mod gui_vizia;
 
+// Egui frontend
+#[cfg(feature = "gui-egui")]
+pub mod gui_egui;
+
 // Re-export
 #[cfg(feature = "gui-vizia")]
 pub use vizia;

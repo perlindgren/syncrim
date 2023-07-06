@@ -9,30 +9,17 @@ use vizia::prelude::*;
 pub type Signal = u32;
 pub type SignedSignal = i32;
 
-#[cfg(not(feature = "gui-vizia"))]
+#[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
 type Components = Vec<Rc<dyn Component>>;
 
 #[cfg(feature = "gui-vizia")]
 type Components = Vec<Rc<dyn ViziaComponent>>;
 
-// #[cfg(all(not(test), feature = "egui"))]
-// type Components = Vec<Rc<dyn EguiComponent>>;
+#[cfg(feature = "gui-egui")]
+type Components = Vec<Rc<dyn EguiComponent>>;
 
-#[cfg(not(feature = "gui-vizia"))]
+#[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
-pub struct Simulator {
-    pub id_start_index: IdStartIndex,
-
-    // Components stored in topological evaluation order
-    pub ordered_components: Components,
-    pub sim_state: Vec<Signal>,
-    pub history: Vec<Vec<Signal>>,
-    pub component_ids: Vec<String>,
-    pub graph: Graph<String, ()>,
-}
-
-#[cfg(feature = "gui-vizia")]
-#[derive(Lens, Clone)]
 pub struct Simulator {
     pub id_start_index: IdStartIndex,
 
@@ -79,11 +66,10 @@ pub trait ViziaComponent: Component {
 }
 
 // Specific functionality for EGui frontend
-#[cfg(feature = "egui")]
+#[cfg(feature = "gui-egui")]
 #[typetag::serde(tag = "type")]
 pub trait EguiComponent: Component {
-    /// TBD
-    fn tbd(&self) {}
+    fn render(&self, _ui: &mut egui::Ui, _simulator: Simulator, _start: egui::Vec2, _scale: f32) {}
 }
 
 #[derive(Debug, Clone)]
