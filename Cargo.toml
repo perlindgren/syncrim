@@ -44,6 +44,37 @@ gui-egui = ["egui", "eframe", "epaint"]
 [profile.dev]
 debug = 1 # faster build, still allows for stack back trace
 
+[profile.test]
+default = ["components"]
+
 [profile.release]
 incremental = true
 debug = 1          # faster build, still allows for stack back trace
+
+[[test]]
+name = "component_tests"
+required-features = ["components"]
+
+[[example]]
+name = "add"
+required-features = ["components"]
+
+[[example]]
+name = "add_mux"
+required-features = ["components"]
+
+[[example]]
+name = "add_reg"
+required-features = ["components"]
+
+[[example]]
+name = "mux"
+required-features = ["components"]
+
+[[example]]
+name = "reg"
+required-features = ["components"]
+
+[[example]]
+name = "sext"
+required-features = ["components"]
