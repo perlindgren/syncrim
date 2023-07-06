@@ -115,10 +115,7 @@ impl Simulator {
         simulator.clock(clock);
         simulator
     }
-}
 
-// Simulator implementation
-impl Simulator {
     /// get input by index
     pub fn get(&self, index: usize) -> Signal {
         self.sim_state[index]
