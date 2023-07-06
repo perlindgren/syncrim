@@ -184,7 +184,7 @@ cargo test
 
 This runs a number of tests, including the integration test. At this point all tests should pass.
 
-We can now willingly make it fail (for educational purpose). Change the ` simulator.set_id_index("po1", 0, 42);` to `simulator.set_id_index("po1", 0, 666);` and re-run the command. (Either from terminal or clicking on the test button above `fn test_add()...`).
+We can now willingly make it fail (for educational purpose). Change the `simulator.set_id_index("po1", 0, 42);` to `simulator.set_id_index("po1", 0, 666);` and re-run the command. (Either from terminal or clicking on the test button above `fn test_add()...`).
 
 As expected the test fails:
 
