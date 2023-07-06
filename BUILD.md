@@ -311,6 +311,27 @@ impl ViziaComponent for RegFile {
 
 ---
 
+## Selecting frontend (GUI)
+
+By default the `vizia` frontend will be selected. If you want to select another frontend:
+
+```shell
+cargo run --example <model> --no-default-features --features gui-egui
+```
+
+Notice, you need to pass both `--no-default-features` (to disable `vizia`) and `--features gui-egui` to select EGui.
+
+## VSCode integration
+
+The `.vscode/settings.json` control the workspace build options, e.g. to run with EGui:
+
+```json
+    ...
+    "rust-analyzer.cargo.noDefaultFeatures": true,  # examples will build/run without any gui selected
+    "rust-analyzer.cargo.features" : ["gui-egui"],  # examples will build/run with egui (notice you need) both .noDefaultFeatures and .features 
+    ...
+```
+
 ## Summary
 
-In this document we covered features, feature propagation, test and workspace member integration for the `SyncRim` project. This is of course not the only possible solution, and breaking changes might be introduced.
+In this document we covered features, feature propagation, test and workspace member integration for the `SyncRim` project. This is of course not the only possible solution and breaking changes might be introduced.
