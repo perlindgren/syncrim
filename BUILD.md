@@ -11,7 +11,7 @@ The (root) `SyncRim` `Cargo.toml` looks something like this:
 [features]
 default = ["gui-vizia"]
 gui-vizia = ["vizia"]
-gui-egui = []
+gui-egui = ["egui", "eframe", "epaint"]
 ...
 ```
 
