@@ -10,14 +10,15 @@ The (root) `SyncRim` `Cargo.toml` looks something like this:
 ...
 [features]
 default = ["gui-vizia"]
-gui-vizia = ["vizia"]
-gui-egui = ["egui", "eframe", "epaint"]
+components = []
+gui-vizia = ["vizia", "components"]
+gui-egui = ["egui", "eframe", "epaint", "components"]
 ...
 ```
 
 This implies when compiled or used as a library `gui-vizia` will de enabled by default. (Currently we pull `vizia` from git, but later when released on crates we will like use the official release.)
 
-The `gui-egui` feature is currently a placeholder for an alternative `egui` based frontend. Wheres both `vizia` and `egui` brings in a lot of dependencies (several hundred under Linux), we don't want to carry the extra weight of both being pulled in at the same time. Without changing the `Cargo.toml` file you may disable and/or change front-end, e.g.:
+The `gui-egui` feature is used for the `egui` based frontend. Where as both `vizia` and `egui` brings in a lot of dependencies (several hundred under Linux), we don't want to carry the extra weight of both being pulled in at the same time. Without changing the `Cargo.toml` file you may disable and/or change front-end, e.g.:
 
 ```shell
 cargo run --example add --no-default-features
@@ -207,12 +208,12 @@ As we now already know we can control compilation and execution by cargo feature
 
 ```shell
 cargo clean
-cargo test --no-default-features
+cargo test --no-default-features --features components
 cargo clean
 cargo test
 ```
 
-Also here you should observe that `--no-default-features` reduces the number of brought in crates, thus useful to reduce CI testing.
+Also here you should observe that `--no-default-features` reduces the number of brought in crates, thus useful to reduce CI testing. Notice, `--features components` is needed in order for the components to be tested. This is enabled by default, so typically we don't need to worry (unless explicit `--no-default-features` is used.)
 
 ## Cargo workspace
 
@@ -230,7 +231,11 @@ To test the complete workspace (`SyncRim` and all workspace members):
 cargo test --workspace
 ```
 
-Also here you can add `--no-default-features` to reduce the dependencies and thus testing time.
+Also here you can add `--no-default-features` to reduce the dependencies and thus testing time, e.g., like this for also testing the components:
+
+```shell
+cargo test --workspace --no-default-features --features components
+```
 
 ---
 
@@ -251,15 +256,17 @@ default-features = false
 
 [features]
 default = ["gui-vizia"]
-gui-vizia = ["syncrim/gui-vizia"]
-gui-egui = ["syncrim/gui-egui"]
+
+components = ["syncrim/components"]
+gui-vizia = ["syncrim/gui-vizia", "components"]
+gui-egui = ["syncrim/gui-egui", "components"]
 ```
 
-Here we define a set of features (`gui-vizia`, `gui-egui`)and their propagation. (For convenience we use the same names as in the root crate, but it is not required.)
+Here we define a set of features (`gui-vizia`, `gui-egui`) and their propagation. (For convenience we use the same names as in the root crate, but it is not required.)
 
 Both features are propagated to the `syncrim` (root) crate. Features in Rust are additive (you can include a feature but not exclude a feature). By setting `default-features = false` on the `syncrim` crate we start from a clean slate (independent on `default` features set in the `syncrim` (root) crate).
 
-As the `mips` crate has `default = ["gui-vizia"]` this means that both the `mips` and `syncrim` crates will be compiled with `gui-vizia` set, whereas `--no-default-features` will compile both crates without any features set (in this case overriding the `default = ["gui-vizia]` set in the `syncrim` crate).
+As the `mips` crate has `default = ["gui-vizia"]` this means that both the `mips` and `syncrim` crates will be compiled with `gui-vizia` set, whereas `--no-default-features` will compile both crates without any features set (in this case overriding the `default = ["gui-vizia]` set in the `syncrim` crate). For convenience both `gui-vizia` and `gui-egui` sets the `components` feature, so we will automatically have access to the default components of `SyncRim`.
 
 Now, take a breather - read this section again, and make sure you understand the features interplay between these two crates.
 
@@ -316,7 +323,7 @@ impl ViziaComponent for RegFile {
 By default the `vizia` frontend will be selected. If you want to select another frontend:
 
 ```shell
-cargo run --example <model> --no-default-features --features gui-egui
+cargo run --example <example> --no-default-features --features gui-egui
 ```
 
 Notice, you need to pass both `--no-default-features` (to disable `vizia`) and `--features gui-egui` to select EGui.
@@ -328,7 +335,7 @@ The `.vscode/settings.json` control the workspace build options, e.g. to run wit
 ```json
     ...
     "rust-analyzer.cargo.noDefaultFeatures": true,  # examples will build/run without any gui selected
-    "rust-analyzer.cargo.features" : ["gui-egui"],  # examples will build/run with egui (notice you need) both .noDefaultFeatures and .features 
+    "rust-analyzer.cargo.features" : ["gui-egui"],  # examples will build/run with egui (notice you need both `.noDefaultFeatures` and `.features)` 
     ...
 ```
 

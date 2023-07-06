@@ -36,10 +36,10 @@ optional = true
 version = "0.22.0"
 
 [features]
-default = ["gui-vizia", "components"]
+default = ["gui-vizia"]
 components = []
-gui-vizia = ["vizia"]
-gui-egui = ["egui", "eframe", "epaint"]
+gui-vizia = ["vizia", "components"]
+gui-egui = ["egui", "eframe", "epaint", "components"]
 
 [profile.dev]
 debug = 1 # faster build, still allows for stack back trace
