@@ -21,6 +21,7 @@
     "petgraph",
     "println",
     "regfile",
+    "repr",
     "rgbaf",
     "rgbf",
     "serde",
@@ -38,6 +39,6 @@
   //   "syncrim"
   // ],
   "rust-analyzer.cargo.noDefaultFeatures": true,
-  "rust-analyzer.cargo.features": ["gui-egui"],
+  "rust-analyzer.cargo.features": ["components"],
   // "rust-analyzer.check.noDefaultFeatures": true,
 }
