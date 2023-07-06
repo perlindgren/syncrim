@@ -36,7 +36,8 @@ optional = true
 version = "0.22.0"
 
 [features]
-default = ["gui-vizia"]
+default = ["gui-vizia", "components"]
+components = []
 gui-vizia = ["vizia"]
 gui-egui = ["egui", "eframe", "epaint"]
 

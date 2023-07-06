@@ -1,7 +1,10 @@
 pub mod common;
 pub mod component_store;
-pub mod components;
 pub mod simulator;
+
+// Default provided components
+#[cfg(feature = "components")]
+pub mod components;
 
 // Vizia frontend
 #[cfg(feature = "gui-vizia")]
