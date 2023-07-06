@@ -5,6 +5,7 @@ impl Menu {
         fn btn(ui: &mut egui::Ui, name: &str, keys: egui::KeyboardShortcut) -> egui::Response {
             ui.add(egui::Button::new(name).shortcut_text(ui.ctx().format_shortcut(&keys)))
         }
+
         egui::menu::bar(ui, |ui| {
             ui.menu_button("File", |ui| {
                 if btn(ui, "File", gui.shortcuts.file_new).clicked() {
