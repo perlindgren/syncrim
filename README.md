@@ -566,17 +566,9 @@ There is currently no automatic interaction tests of the GUI components.
 
 Recommended plugins:
 
-- `rust analyzer`.
-  By default RA sets the `cfg(test)` (which allows for RA to access testing code). However, GUI dependencies are optional (for performance reasons only pulled in when needed). In particular tests in `SyncRim` assert only the logical part (not GUI related behavior), thus no front-ends are pulled in during test. For RA to correctly handle front-end (GUI) dependencies, we need to unset `cfg(test)`. In the `.vscode/settings.json`, you find:
+- `rust analyzer`, for Rust development support.
 
-  ```toml
-   ...
-   "rust-analyzer.cargo.unsetTest": [
-    "syncrim"
-  ],
-  ```
-
-  This is not a perfect solution as RA will not correctly handle tests with `#[should_panic]`, (they will actually panic if run from within `vscode`). A better solution would be preferable.
+- `Even Better TOML`, for Rust toml support.
 
 - `crates`, for checking cargo versioning.
 
@@ -585,6 +577,12 @@ Recommended plugins:
 - `Graphviz Preview`, (or some other `.gv`/`.dot` integration).
 
 It can be convenient to use `json` formatter tied to format on save, this way we can keep models in easy readable and editable shape.
+
+---
+
+### Features handling
+
+Look in [BUILD.md](BUILD.md) for a breakdown of the `SyncRim` feature handling and workspace setup.
 
 ---
 
