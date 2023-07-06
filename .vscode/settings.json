@@ -37,7 +37,6 @@
   // "rust-analyzer.cargo.unsetTest": [
   //   "syncrim"
   // ],
-  "rust-analyzer.cargo.noDefaultFeatures": true,
-  "rust-analyzer.cargo.features": ["gui-egui"],
-  // "rust-analyzer.check.noDefaultFeatures": true,
+  // "rust-analyzer.cargo.noDefaultFeatures": true,
+  // "rust-analyzer.cargo.features": ["gui-egui"],
 }
