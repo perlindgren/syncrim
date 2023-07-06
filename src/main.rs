@@ -18,7 +18,7 @@ fn main() {
     let _cs = ComponentStore::load_file(&_path);
 
     #[cfg(feature = "gui-egui")]
-    let _ = syncrim::gui_egui::gui(&_cs, &_path);
+    syncrim::gui_egui::gui(&_cs, &_path).ok();
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(&_cs, &_path);
