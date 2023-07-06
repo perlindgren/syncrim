@@ -1,0 +1,22 @@
+/* * {
+    border-width: 1px;
+    border-color: red;
+} */
+
+.tt_shortcut {
+    color: #c4c4c4;
+}
+
+
+submenu.file_menu > popup {
+    width: 200px;
+}
+
+popup.modal {
+    width: auto;
+}
+
+popup.modal vstack {
+    size: auto;
+    child-space: 20px;
+}

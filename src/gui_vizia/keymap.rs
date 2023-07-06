@@ -7,7 +7,7 @@ enum Action {
     Dummy,
 }
 
-pub fn new(cx: &mut Context) {
+pub fn init_keymap(cx: &mut Context) {
     Keymap::from(vec![
         (
             KeyChord::new(Modifiers::empty(), Code::F5),
