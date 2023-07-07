@@ -373,6 +373,29 @@ mod test {
         simulator.clock(&mut clock);
         assert_eq!(clock, 12);
         assert_eq!(simulator.get_input_val(err), false as Signal);
+
+        println!("<setup for write half-word at add 10>");
+        simulator.set_id_index("addr", 0, 10); // b
+        simulator.set_id_index("data", 0, 0x1234);
+        simulator.set_id_index("ctrl", 0, MemCtrl::Write as Signal);
+        simulator.clock(&mut clock);
+        assert_eq!(clock, 13);
+        assert_eq!(simulator.get_input_val(err), false as Signal);
+
+        println!("<setup for read byte at add 10>");
+        simulator.set_id_index("ctrl", 0, MemCtrl::Read as Signal);
+        simulator.set_id_index("size", 0, 1);
+        simulator.clock(&mut clock);
+        assert_eq!(clock, 14);
+        assert_eq!(simulator.get_input_val(out), 0x12 as Signal);
+
+        println!("<setup for read byte at add 11>");
+        simulator.set_id_index("addr", 0, 11);
+        simulator.clock(&mut clock);
+        assert_eq!(clock, 15);
+        assert_eq!(simulator.get_input_val(out), 0x34 as Signal);
+
+        println!("test done")
     }
 
     #[test]
@@ -471,10 +494,32 @@ mod test {
         println!("<setup for read word from addr 4>");
         simulator.set_id_index("size", 0, 4); // b
         simulator.set_id_index("sign_extend", 0, true as Signal);
-
         simulator.clock(&mut clock);
         assert_eq!(clock, 6);
         assert_eq!(simulator.get_input_val(out), 0x0000_00f0);
         assert_eq!(simulator.get_input_val(err), false as Signal);
+
+        println!("<setup for write half-word at add 10>");
+        simulator.set_id_index("addr", 0, 10); // b
+        simulator.set_id_index("data", 0, 0x1234);
+        simulator.set_id_index("ctrl", 0, MemCtrl::Write as Signal);
+        simulator.set_id_index("size", 0, 2);
+
+        simulator.clock(&mut clock);
+        assert_eq!(clock, 7);
+        assert_eq!(simulator.get_input_val(err), false as Signal);
+
+        println!("<setup for read byte at add 10>");
+        simulator.set_id_index("ctrl", 0, MemCtrl::Read as Signal);
+        simulator.set_id_index("size", 0, 1);
+        simulator.clock(&mut clock);
+        assert_eq!(clock, 8);
+        assert_eq!(simulator.get_input_val(out), 0x34 as Signal);
+
+        println!("<setup for read byte at add 11>");
+        simulator.set_id_index("addr", 0, 11);
+        simulator.clock(&mut clock);
+        assert_eq!(clock, 9);
+        assert_eq!(simulator.get_input_val(out), 0x12 as Signal);
     }
 }
