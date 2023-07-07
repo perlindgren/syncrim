@@ -136,8 +136,6 @@ impl Memory {
                 panic!("illegal sized memory operation")
             }
         };
-
-        unimplemented!()
     }
 }
 
@@ -170,26 +168,26 @@ impl Component for Mem {
 
     fn evaluate(&self, simulator: &mut Simulator) {
         let data = simulator.get_input_val(&self.data);
-        let addr = simulator.get_input_val(&self.addr);
-        let ctrl = simulator.get_input_val(&self.ctrl);
-        let ctrl = MemCtrl::try_from(ctrl as u8).unwrap();
-        let size = simulator.get_input_val(&self.size);
+        let addr = simulator.get_input_val(&self.addr) as usize;
+        let ctrl = MemCtrl::try_from(simulator.get_input_val(&self.ctrl) as u8).unwrap();
+        let size = simulator.get_input_val(&self.size) as usize;
+        let sign_extend = simulator.get_input_val(&self.sign_extend) != 0;
 
-        // match ctrl {
-        //     MemCtrl::Read => {
-        //         println!("read addr {:?} size {:?}", addr, size);
-        //         let data = *self.memory.borrow().get(&(addr as usize)).unwrap_or(&0);
-        //         simulator.set_id_index(&self.id, 0, data as Signal)
-        //     }
-        //     MemCtrl::Write => {
-        //         println!("write addr {:?} size {:?}", addr, size);
-        //         self.memory.borrow_mut().insert(addr as usize, data as u8);
-        //     }
-        //     MemCtrl::None => {
-        //         println!("no read/write");
-        //     }
-        // }
-        // println!("memory {:?}", self.memory);
+        match ctrl {
+            MemCtrl::Read => {
+                println!("read addr {:?} size {:?}", addr, size);
+                let value = self.memory.read(addr, size, sign_extend, self.big_endian);
+                simulator.set_id_index(&self.id, 0, value)
+            }
+            MemCtrl::Write => {
+                println!("write addr {:?} size {:?}", addr, size);
+                self.memory.write(addr, size, self.big_endian, data)
+            }
+            MemCtrl::None => {
+                println!("no read/write");
+            }
+        }
+        println!("memory {:?}", self.memory);
     }
 }
 
