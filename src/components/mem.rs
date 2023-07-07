@@ -39,7 +39,6 @@ impl Memory {
 
     fn read(&self, addr: usize, size: usize, sign_extend: bool, big_endian: bool) -> Signal {
         let data: Vec<u8> = (0..size)
-            .into_iter()
             .map(|i| *self.bytes.borrow().get(&(addr + i)).unwrap_or(&0))
             .collect();
 
@@ -51,7 +50,7 @@ impl Memory {
                 if sign_extend {
                     data[0] as i8 as Signal
                 } else {
-                    data[0] as u8 as Signal
+                    data[0] as Signal
                 }
             }
             2 => {
@@ -71,22 +70,20 @@ impl Memory {
                         println!("i_32 {:x?}", i_32);
                         i_32 as Signal
                     }
+                } else if big_endian {
+                    println!("read unsigned half word be");
+                    let u_16 = u16::from_be_bytes(data.try_into().unwrap());
+                    println!("u_16 {:x?}", u_16);
+                    let u_32 = u_16 as u32;
+                    println!("u_32 {:x?}", u_32);
+                    u_32 as Signal
                 } else {
-                    if big_endian {
-                        println!("read unsigned half word be");
-                        let u_16 = u16::from_be_bytes(data.try_into().unwrap());
-                        println!("u_16 {:x?}", u_16);
-                        let u_32 = u_16 as u32;
-                        println!("u_32 {:x?}", u_32);
-                        u_32 as Signal
-                    } else {
-                        println!("read unsigned half word le");
-                        let u_16 = u16::from_le_bytes(data.try_into().unwrap());
-                        println!("u_16 {:x?}", u_16);
-                        let u_32 = u_16 as u32;
-                        println!("u_32 {:x?}", u_32);
-                        u_32 as Signal
-                    }
+                    println!("read unsigned half word le");
+                    let u_16 = u16::from_le_bytes(data.try_into().unwrap());
+                    println!("u_16 {:x?}", u_16);
+                    let u_32 = u_16 as u32;
+                    println!("u_32 {:x?}", u_32);
+                    u_32 as Signal
                 }
             }
             4 => {
@@ -96,12 +93,10 @@ impl Memory {
                     } else {
                         i32::from_le_bytes(data.try_into().unwrap()) as Signal
                     }
+                } else if big_endian {
+                    u32::from_be_bytes(data.try_into().unwrap()) as Signal
                 } else {
-                    if big_endian {
-                        u32::from_be_bytes(data.try_into().unwrap()) as Signal
-                    } else {
-                        u32::from_le_bytes(data.try_into().unwrap()) as Signal
-                    }
+                    u32::from_le_bytes(data.try_into().unwrap()) as Signal
                 }
             }
             _ => panic!("illegal sized memory operation"),
@@ -139,8 +134,7 @@ impl Memory {
             4 => {
                 if big_endian {
                     println!("write word be");
-                    (data as u32)
-                        .to_be_bytes()
+                    data.to_be_bytes()
                         .iter()
                         .enumerate()
                         .for_each(|(i, bytes)| {
@@ -148,8 +142,7 @@ impl Memory {
                         })
                 } else {
                     println!("write word le");
-                    (data as u32)
-                        .to_le_bytes()
+                    data.to_le_bytes()
                         .iter()
                         .enumerate()
                         .for_each(|(i, bytes)| {
