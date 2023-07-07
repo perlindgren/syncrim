@@ -1,5 +1,5 @@
 use crate::common::{ComponentStore, Simulator};
-use crate::gui_vizia::{grid::Grid, menu::Menu, transport::Transport};
+use crate::gui_vizia::{grid::Grid, menu::Menu, transport::Transport, keymap::init_keymap};
 use rfd::FileDialog;
 use std::path::PathBuf;
 use vizia::prelude::*;
@@ -86,29 +86,6 @@ impl GuiData {
     }
 }
 
-const STYLE: &str = r#"
-    .tt_shortcut {
-        color: #c4c4c4;
-    }
-
-
-    submenu.file_menu > popup {
-        width: 200px;
-    }
-    
-"#;
-// * {
-//     border-width: 1px;
-//     border-color: red;
-//   }
-// .menubar {
-//     top: 100px
-// }
-
-// .menubutton {
-//     top: 200px
-// }
-
 pub fn gui(cs: &ComponentStore, path: &PathBuf) {
     let mut clock = 0;
     let simulator = Simulator::new(cs, &mut clock);
@@ -116,10 +93,11 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
     simulator.save_dot(&path);
 
     Application::new(move |cx| {
-        // Styling
-        cx.add_stylesheet(STYLE).expect("Failed to add stylesheet");
+
+        cx.add_stylesheet(include_style!("src/gui_vizia/style.css")).expect("Failed to add stylesheet");
+        
         // Create keymap
-        crate::gui_vizia::keymap::new(cx);
+        init_keymap(cx);
 
         GuiData {
             path,

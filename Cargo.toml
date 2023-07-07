@@ -21,8 +21,8 @@ typetag = "0.2.8"
 
 [dependencies.vizia]
 git = "https://github.com/vizia/vizia.git"
+# path = "../vizia"
 optional = true
-# vizia = { path = "../vizia" } # using local vizia dependency
 
 [dependencies.egui]
 optional = true
@@ -45,7 +45,8 @@ gui-egui = ["egui", "eframe", "epaint", "components"]
 [profile.dev]
 debug = 1 # faster build, still allows for stack back trace
 
-[profile.test]
+[profile.dev.package."*"]
+opt-level = 3
 
 [profile.release]
 incremental = true
