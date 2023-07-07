@@ -3,7 +3,6 @@ use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 
-use std::borrow::BorrowMut;
 use std::{cell::RefCell, collections::HashMap, convert::TryFrom};
 
 #[derive(Serialize, Deserialize)]
@@ -35,7 +34,7 @@ pub struct Memory {
 
 impl Memory {
     fn align(&self, addr: usize, size: usize) -> Signal {
-        (addr % size == 0) as Signal
+        (addr % size != 0) as Signal
     }
 
     fn read(&self, addr: usize, size: usize, sign_extend: bool, big_endian: bool) -> Signal {
@@ -177,16 +176,21 @@ impl Component for Mem {
             MemCtrl::Read => {
                 println!("read addr {:?} size {:?}", addr, size);
                 let value = self.memory.read(addr, size, sign_extend, self.big_endian);
-                simulator.set_id_index(&self.id, 0, value)
+                simulator.set_id_index(&self.id, 0, value);
+                let value = self.memory.align(addr, size);
+                simulator.set_id_index(&self.id, 1, value); // align
             }
             MemCtrl::Write => {
                 println!("write addr {:?} size {:?}", addr, size);
-                self.memory.write(addr, size, self.big_endian, data)
+                self.memory.write(addr, size, self.big_endian, data);
+                let value = self.memory.align(addr, size);
+                simulator.set_id_index(&self.id, 1, value); // align
             }
             MemCtrl::None => {
                 println!("no read/write");
             }
         }
+
         println!("memory {:?}", self.memory);
     }
 }
@@ -214,7 +218,7 @@ mod test {
                     height: 0.0,
 
                     // configuration
-                    big_endian: false,
+                    big_endian: false, // i.e., little endian
 
                     // ports
                     data: Input::new("data", 0),
@@ -247,7 +251,7 @@ mod test {
 
         println!("<setup for write 42 to addr 4>");
 
-        simulator.set_id_index("data", 0, 42);
+        simulator.set_id_index("data", 0, 0xf0);
         simulator.set_id_index("addr", 0, 4);
         simulator.set_id_index("ctrl", 0, MemCtrl::Write as Signal);
         simulator.set_id_index("size", 0, 1); // byte
@@ -270,7 +274,16 @@ mod test {
         simulator.clock(&mut clock);
 
         assert_eq!(clock, 3);
-        assert_eq!(simulator.get_input_val(out), 42);
+        assert_eq!(simulator.get_input_val(out), 0xf0);
+        assert_eq!(simulator.get_input_val(err), false as Signal);
+
+        println!("<setup for read byte from addr 4>");
+        simulator.set_id_index("size", 0, 1); // b
+        simulator.set_id_index("sign_extend", 0, true as Signal);
+
+        simulator.clock(&mut clock);
+        assert_eq!(clock, 4);
+        assert_eq!(simulator.get_input_val(out), 0xffff_fff0);
         assert_eq!(simulator.get_input_val(err), false as Signal);
     }
 }
