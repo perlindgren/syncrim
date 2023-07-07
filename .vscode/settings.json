@@ -39,7 +39,8 @@
   // "rust-analyzer.cargo.unsetTest": [
   //   "syncrim"
   // ],
-  "rust-analyzer.cargo.noDefaultFeatures": true,
-  "rust-analyzer.cargo.features": ["components"]
+  // "rust-analyzer.cargo.noDefaultFeatures": true,
+  // "rust-analyzer.cargo.features": ["gui-egui"]
+  // "rust-analyzer.cargo.features": ["components"] # use with nDefaultFeatures to just test 
   // "rust-analyzer.check.noDefaultFeatures": true,
 }
