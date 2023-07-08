@@ -32,6 +32,12 @@ pub struct Memory {
     bytes: RefCell<HashMap<usize, u8>>,
 }
 
+impl Default for Memory {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Memory {
     pub fn new() -> Self {
         Memory {
