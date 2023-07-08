@@ -42,5 +42,7 @@
   // ],
   // "rust-analyzer.cargo.noDefaultFeatures": true,
   // "rust-analyzer.cargo.features": ["gui-egui"]
-  // "rust-analyzer.cargo.features": ["components"] # use with nDefaultFeatures to just test 
+  // "rust-analyzer.cargo.features": [
+  //   "components",
+  // ],
 }
