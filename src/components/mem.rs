@@ -32,7 +32,19 @@ pub struct Memory {
     bytes: RefCell<HashMap<usize, u8>>,
 }
 
+impl Default for Memory {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Memory {
+    pub fn new() -> Self {
+        Memory {
+            bytes: RefCell::new(HashMap::new()),
+        }
+    }
+
     fn align(&self, addr: usize, size: usize) -> Signal {
         (addr % size != 0) as Signal
     }
@@ -151,7 +163,7 @@ impl Memory {
                 }
             }
             _ => {
-                panic!("illegal sized memory operation")
+                panic!("illegal sized memory operation, size = {}", size)
             }
         };
     }
