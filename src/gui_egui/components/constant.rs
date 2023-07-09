@@ -15,7 +15,7 @@ impl EguiComponent for Constant {
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
-        let a = Area::new(self.id.to_string())
+        Area::new(self.id.to_string())
             .order(Order::Middle)
             .current_pos(offset.to_pos2())
             .movable(false)
