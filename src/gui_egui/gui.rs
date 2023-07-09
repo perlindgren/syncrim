@@ -1,5 +1,5 @@
 use crate::common::{ComponentStore, Simulator};
-use crate::gui_egui::{keymap::Shortcuts, menu::Menu};
+use crate::gui_egui::{keymap, keymap::Shortcuts, menu::Menu};
 use eframe::egui;
 use std::path::PathBuf;
 
@@ -14,6 +14,7 @@ pub struct Gui {
     pub ui_change: bool,
     pub offset: egui::Vec2,
     pub pan: egui::Vec2,
+    clip_rect: egui::Rect,
     pub shortcuts: Shortcuts,
     pub pause: bool,
 }
@@ -33,6 +34,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
         ui_change: true,
         offset: egui::Vec2 { x: 0f32, y: 0f32 },
         pan: egui::Vec2 { x: 0f32, y: 0f32 },
+        clip_rect: egui::Rect::NOTHING,
         shortcuts: Shortcuts::new(),
         pause: true,
     };
@@ -57,8 +59,19 @@ impl eframe::App for Gui {
                 x: side.rect.max.x,
                 y: top.rect.max.y,
             };
+            self.clip_rect = egui::Rect {
+                min: self.offset.to_pos2(),
+                max: egui::Pos2 {
+                    x: f32::INFINITY,
+                    y: f32::INFINITY,
+                },
+            };
             egui::Context::request_repaint(ctx);
             return;
+        } else {
+            self.top_bar(ctx);
+            self.side_panel(ctx);
+            self.draw_area(ctx, frame);
         }
 
         /*
@@ -76,10 +89,6 @@ impl eframe::App for Gui {
                 .x
         );
         */
-
-        self.draw_area(ctx, frame);
-        self.top_bar(ctx);
-        self.side_panel(ctx);
     }
 }
 
@@ -110,18 +119,30 @@ impl Gui {
 
     fn draw_area(&mut self, ctx: &egui::Context, frame: egui::Frame) {
         let central_panel = egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
+            ui.set_clip_rect(self.clip_rect);
+            // Don't draw over the rest of the ui
             for c in &self.simulator.ordered_components {
                 c.render(
                     ui,
                     self.simulator.clone(),
                     self.offset + self.pan,
                     self.scale,
+                    self.clip_rect,
                 );
             }
         });
         let cpr = central_panel.response.interact(egui::Sense::drag());
         if cpr.dragged_by(egui::PointerButton::Middle) {
             self.pan += cpr.drag_delta();
+        }
+        if central_panel.response.hovered() {
+            ctx.input_mut(|i| {
+                if i.scroll_delta.y > 0f32 {
+                    keymap::view_zoom_in_fn(self);
+                } else if i.scroll_delta.y < 0f32 {
+                    keymap::view_zoom_out_fn(self);
+                }
+            });
         }
     }
 
