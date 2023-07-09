@@ -67,7 +67,6 @@ impl eframe::App for Gui {
                 },
             };
             egui::Context::request_repaint(ctx);
-            return;
         } else {
             self.top_bar(ctx);
             self.side_panel(ctx);
