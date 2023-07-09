@@ -137,13 +137,7 @@ impl Shortcuts {
 
     pub fn inputs(self, ctx: &egui::Context, gui: &mut crate::gui_egui::gui::Gui) {
         //let ctx = &mut ui.ctx();
-        ctx.input_mut(|i| {
-            if i.scroll_delta.y > 0f32 {
-                view_zoom_in_fn(gui);
-            } else if i.scroll_delta.y < 0f32 {
-                view_zoom_out_fn(gui);
-            }
-        });
+        ctx.input_mut(|i| {});
         if ctx.input_mut(|i| i.consume_shortcut(&self.file_new)) {
             file_new_fn(gui);
         }
