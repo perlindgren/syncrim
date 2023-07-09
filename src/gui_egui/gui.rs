@@ -14,7 +14,7 @@ pub struct Gui {
     pub ui_change: bool,
     pub offset: egui::Vec2,
     pub pan: egui::Vec2,
-    clip_rect: egui::Rect,
+    pub clip_rect: egui::Rect,
     pub shortcuts: Shortcuts,
     pub pause: bool,
 }
@@ -73,22 +73,6 @@ impl eframe::App for Gui {
             self.side_panel(ctx);
             self.draw_area(ctx, frame);
         }
-
-        /*
-        println!(
-            "size: y: {}, x: {}",
-            egui::containers::panel::PanelState::load(ctx, egui::Id::from("topBar"))
-                .unwrap()
-                .rect
-                .max
-                .y,
-            egui::containers::panel::PanelState::load(ctx, egui::Id::from("leftGui"))
-                .unwrap()
-                .rect
-                .max
-                .x
-        );
-        */
     }
 }
 

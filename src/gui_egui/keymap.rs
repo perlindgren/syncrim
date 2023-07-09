@@ -136,8 +136,6 @@ impl Shortcuts {
     }
 
     pub fn inputs(self, ctx: &egui::Context, gui: &mut crate::gui_egui::gui::Gui) {
-        //let ctx = &mut ui.ctx();
-        ctx.input_mut(|i| {});
         if ctx.input_mut(|i| i.consume_shortcut(&self.file_new)) {
             file_new_fn(gui);
         }
