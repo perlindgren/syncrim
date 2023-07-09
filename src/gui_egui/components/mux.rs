@@ -4,7 +4,14 @@ use crate::gui_egui::helper::offset_helper;
 
 #[typetag::serde]
 impl EguiComponent for Mux {
-    fn render(&self, ui: &mut egui::Ui, simulator: Simulator, offset: egui::Vec2, scale: f32) {
+    fn render(
+        &self,
+        ui: &mut egui::Ui,
+        simulator: Simulator,
+        offset: egui::Vec2,
+        scale: f32,
+        _clip_rect: egui::Rect,
+    ) {
         // 41x(20*ports + 11)
         // middle: 21x ((20*ports + 10)/2+1)y (0 0)
         let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;

@@ -69,7 +69,15 @@ pub trait ViziaComponent: Component {
 #[cfg(feature = "gui-egui")]
 #[typetag::serde(tag = "type")]
 pub trait EguiComponent: Component {
-    fn render(&self, _ui: &mut egui::Ui, _simulator: Simulator, _start: egui::Vec2, _scale: f32) {}
+    fn render(
+        &self,
+        _ui: &mut egui::Ui,
+        _simulator: Simulator,
+        _start: egui::Vec2,
+        _scale: f32,
+        _clip_rect: egui::Rect,
+    ) {
+    }
 }
 
 #[derive(Debug, Clone)]
