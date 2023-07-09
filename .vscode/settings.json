@@ -5,6 +5,7 @@
     ".\\mips\\Cargo.toml"    
   ],
   "cSpell.ignoreWords": [
+    // MIPS Assembly
     "Addi",
     "Addiu",
     "Addu",
@@ -86,7 +87,7 @@
     "vizia",
     "winit",
     "xffff"
-  ],
+  ]
   //,
 
   // "rust-analyzer.cargo.unsetTest": [

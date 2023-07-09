@@ -1,5 +1,5 @@
 use crate::common::{ComponentStore, Simulator};
-use crate::gui_vizia::{grid::Grid, menu::Menu, transport::Transport, keymap::init_keymap};
+use crate::gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::Transport};
 use rfd::FileDialog;
 use std::path::PathBuf;
 use vizia::prelude::*;
@@ -93,9 +93,9 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
     simulator.save_dot(&path);
 
     Application::new(move |cx| {
+        cx.add_stylesheet(include_style!("src/gui_vizia/style.css"))
+            .expect("Failed to add stylesheet");
 
-        cx.add_stylesheet(include_style!("src/gui_vizia/style.css")).expect("Failed to add stylesheet");
-        
         // Create keymap
         init_keymap(cx);
 
