@@ -26,7 +26,7 @@ impl EguiComponent for Probe {
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);
                 ui.label(
-                    egui::RichText::new(format!("{:?}", value))
+                    RichText::new(format!("{:?}", value))
                         .size(scale * 12f32)
                         .background_color(Color32::LIGHT_BLUE),
                 )
