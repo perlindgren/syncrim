@@ -1,0 +1,784 @@
+{
+    "store": [
+        {
+            "type": "Add",
+            "id": "add",
+            "pos": [
+                300.0,
+                220.0
+            ],
+            "a_in": {
+                "id": "4",
+                "index": 0
+            },
+            "b_in": {
+                "id": "pc_reg",
+                "index": 0
+            }
+        },
+        {
+            "type": "Constant",
+            "id": "4",
+            "pos": [
+                250.0,
+                200.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Register",
+            "id": "pc_reg",
+            "pos": [
+                200.0,
+                240.0
+            ],
+            "r_in": {
+                "id": "pc_mux",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "4_to_add_a",
+            "pos": [
+                260.0,
+                200.0
+            ],
+            "delta": [
+                20.0,
+                0.0
+            ],
+            "input": {
+                "id": "4",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "pc_reg_to_add_b",
+            "pos": [
+                210.0,
+                240.0
+            ],
+            "delta": [
+                70.0,
+                0.0
+            ],
+            "input": {
+                "id": "pc_reg",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "add_to_right",
+            "pos": [
+                310.0,
+                220.0
+            ],
+            "delta": [
+                50.0,
+                0.0
+            ],
+            "input": {
+                "id": "add",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "add_to_up",
+            "pos": [
+                360.0,
+                160.0
+            ],
+            "delta": [
+                0.0,
+                60.0
+            ],
+            "input": {
+                "id": "add",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "add_to_left",
+            "pos": [
+                100.0,
+                160.0
+            ],
+            "delta": [
+                260.0,
+                0.0
+            ],
+            "input": {
+                "id": "add",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "add_to_down",
+            "pos": [
+                100.0,
+                160.0
+            ],
+            "delta": [
+                0.0,
+                50.0
+            ],
+            "input": {
+                "id": "add",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "pc_reg_in",
+            "pos": [
+                160.0,
+                240.0
+            ],
+            "delta": [
+                30.0,
+                0.0
+            ],
+            "input": {
+                "id": "pc_mux",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "pc_to_down",
+            "pos": [
+                240.0,
+                240.0
+            ],
+            "delta": [
+                0.0,
+                340.0
+            ],
+            "input": {
+                "id": "pc_reg",
+                "index": 0
+            }
+        },
+        {
+            "type": "InstrMem",
+            "id": "instr_mem",
+            "pos": [
+                300.0,
+                600.0
+            ],
+            "width": 200.0,
+            "height": 40.0,
+            "instr": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+            ],
+            "pc": {
+                "id": "pc_reg",
+                "index": 0
+            }
+        },
+        {
+            "type": "Probe",
+            "id": "addr",
+            "pos": [
+                270.0,
+                540.0
+            ],
+            "input": {
+                "id": "pc_reg",
+                "index": 0
+            }
+        },
+        {
+            "type": "Probe",
+            "id": "instr",
+            "pos": [
+                390.0,
+                540.0
+            ],
+            "input": {
+                "id": "instr_mem",
+                "index": 0
+            }
+        },
+        {
+            "type": "InstrSplit",
+            "id": "instr_split",
+            "pos": [
+                400.0,
+                300.0
+            ],
+            "width": 10.0,
+            "height": 440.0,
+            "instr": {
+                "id": "instr_mem",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "instr_to_split",
+            "pos": [
+                350.0,
+                220.0
+            ],
+            "delta": [
+                0.0,
+                300.0
+            ],
+            "input": {
+                "id": "instr_mem",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "instr_to_split",
+            "pos": [
+                360.0,
+                300.0
+            ],
+            "delta": [
+                0.0,
+                280.0
+            ],
+            "input": {
+                "id": "instr_mem",
+                "index": 0
+            }
+        },
+        {
+            "type": "Mux",
+            "id": "pc_mux",
+            "pos": [
+                150.0,
+                240.0
+            ],
+            "select": {
+                "id": "c0",
+                "index": 0
+            },
+            "m_in": [
+                {
+                    "id": "c1",
+                    "index": 0
+                },
+                {
+                    "id": "c2",
+                    "index": 0
+                },
+                {
+                    "id": "c3",
+                    "index": 0
+                },
+                {
+                    "id": "c4",
+                    "index": 0
+                }
+            ]
+        },
+        {
+            "type": "Constant",
+            "id": "c0",
+            "pos": [
+                140.0,
+                140.0
+            ],
+            "value": 3
+        },
+        {
+            "type": "Wire",
+            "id": "w0",
+            "pos": [
+                140.0,
+                150.0
+            ],
+            "delta": [
+                0.0,
+                50.0
+            ],
+            "input": {
+                "id": "c0",
+                "index": 0
+            }
+        },
+        {
+            "type": "Constant",
+            "id": "c1",
+            "pos": [
+                100.0,
+                210.0
+            ],
+            "value": 0
+        },
+        {
+            "type": "Constant",
+            "id": "c2",
+            "pos": [
+                100.0,
+                230.0
+            ],
+            "value": 1
+        },
+        {
+            "type": "Constant",
+            "id": "c3",
+            "pos": [
+                100.0,
+                250.0
+            ],
+            "value": 2
+        },
+        {
+            "type": "Constant",
+            "id": "c4",
+            "pos": [
+                100.0,
+                270.0
+            ],
+            "value": 3
+        },
+        {
+            "type": "Wire",
+            "id": "w1",
+            "pos": [
+                110.0,
+                210.0
+            ],
+            "delta": [
+                20.0,
+                0.0
+            ],
+            "input": {
+                "id": "c1",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w2",
+            "pos": [
+                110.0,
+                230.0
+            ],
+            "delta": [
+                20.0,
+                0.0
+            ],
+            "input": {
+                "id": "c2",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w3",
+            "pos": [
+                110.0,
+                250.0
+            ],
+            "delta": [
+                20.0,
+                0.0
+            ],
+            "input": {
+                "id": "c3",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w4",
+            "pos": [
+                110.0,
+                270.0
+            ],
+            "delta": [
+                20.0,
+                0.0
+            ],
+            "input": {
+                "id": "c4",
+                "index": 0
+            }
+        },
+        {
+            "type": "Constant",
+            "id": "c_read_reg_1",
+            "pos": [
+                100.0,
+                100.0
+            ],
+            "value": 3
+        },
+        {
+            "type": "Constant",
+            "id": "c_read_reg_2",
+            "pos": [
+                100.0,
+                200.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Constant",
+            "id": "c_write_data",
+            "pos": [
+                100.0,
+                140.0
+            ],
+            "value": 42
+        },
+        {
+            "type": "Constant",
+            "id": "c_write_addr",
+            "pos": [
+                100.0,
+                160.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Constant",
+            "id": "c_write_enable",
+            "pos": [
+                100.0,
+                180.0
+            ],
+            "value": 1
+        },
+        {
+            "type": "RegFile",
+            "id": "reg_file",
+            "pos": [
+                550.0,
+                300.0
+            ],
+            "width": 200.0,
+            "height": 360.0,
+            "read_addr1": {
+                "id": "c_read_reg_1",
+                "index": 0
+            },
+            "read_addr2": {
+                "id": "c_read_reg_2",
+                "index": 0
+            },
+            "write_data": {
+                "id": "c_write_data",
+                "index": 0
+            },
+            "write_addr": {
+                "id": "c_write_addr",
+                "index": 0
+            },
+            "write_enable": {
+                "id": "c_write_enable",
+                "index": 0
+            },
+            "registers": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "type": "Alu",
+            "id": "alu",
+            "pos": [
+                1000.0,
+                300.0
+            ],
+            "a_in": {
+                "id": "alu_in_a",
+                "index": 0
+            },
+            "b_in": {
+                "id": "alu_in_b",
+                "index": 0
+            },
+            "op": {
+                "id": "alu_op",
+                "index": 0
+            }
+        },
+        {
+            "type": "Constant",
+            "id": "alu_in_a",
+            "pos": [
+                700.0,
+                140.0
+            ],
+            "value": 3
+        },
+        {
+            "type": "Constant",
+            "id": "alu_in_b",
+            "pos": [
+                700.0,
+                260.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Constant",
+            "id": "alu_op",
+            "pos": [
+                670.0,
+                80.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Wire",
+            "id": "w1",
+            "pos": [
+                610.0,
+                140.0
+            ],
+            "delta": [
+                50.0,
+                0.0
+            ],
+            "input": {
+                "id": "alu_in_a",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w2",
+            "pos": [
+                610.0,
+                260.0
+            ],
+            "delta": [
+                50.0,
+                0.0
+            ],
+            "input": {
+                "id": "alu_in_b",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w3",
+            "pos": [
+                640.0,
+                200.0
+            ],
+            "delta": [
+                50.0,
+                0.0
+            ],
+            "input": {
+                "id": "alu_op",
+                "index": 0
+            }
+        },
+        {
+            "type": "Probe",
+            "id": "alu_out",
+            "pos": [
+                1000.0,
+                200.0
+            ],
+            "input": {
+                "id": "alu",
+                "index": 0
+            }
+        },
+        {
+            "type": "Probe",
+            "id": "z",
+            "pos": [
+                890.0,
+                80.0
+            ],
+            "input": {
+                "id": "alu",
+                "index": 1
+            }
+        },
+        {
+            "type": "Probe",
+            "id": "v",
+            "pos": [
+                910.0,
+                80.0
+            ],
+            "input": {
+                "id": "alu",
+                "index": 1
+            }
+        },
+        {
+            "type": "Mux",
+            "id": "alu_a_mux",
+            "pos": [
+                910.0,
+                240.0
+            ],
+            "select": {
+                "id": "alu_a_sel",
+                "index": 0
+            },
+            "m_in": [
+                {
+                    "id": "ca1",
+                    "index": 0
+                },
+                {
+                    "id": "ca2",
+                    "index": 0
+                },
+                {
+                    "id": "ca3",
+                    "index": 0
+                }
+            ]
+        },
+        {
+            "type": "Constant",
+            "id": "alu_a_sel",
+            "pos": [
+                670.0,
+                80.0
+            ],
+            "value": 1
+        },
+        {
+            "type": "Constant",
+            "id": "ca1",
+            "pos": [
+                670.0,
+                80.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Constant",
+            "id": "ca2",
+            "pos": [
+                670.0,
+                80.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Constant",
+            "id": "ca3",
+            "pos": [
+                670.0,
+                80.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Mux",
+            "id": "alu_b_mux",
+            "pos": [
+                910.0,
+                360.0
+            ],
+            "select": {
+                "id": "alu_b_sel",
+                "index": 0
+            },
+            "m_in": [
+                {
+                    "id": "cb1",
+                    "index": 0
+                },
+                {
+                    "id": "cb2",
+                    "index": 0
+                },
+                {
+                    "id": "cb3",
+                    "index": 0
+                }
+            ]
+        },
+        {
+            "type": "Constant",
+            "id": "alu_b_sel",
+            "pos": [
+                670.0,
+                80.0
+            ],
+            "value": 1
+        },
+        {
+            "type": "Constant",
+            "id": "cb1",
+            "pos": [
+                670.0,
+                80.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Constant",
+            "id": "cb2",
+            "pos": [
+                670.0,
+                80.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Constant",
+            "id": "cb3",
+            "pos": [
+                670.0,
+                80.0
+            ],
+            "value": 4
+        }
+    ]
+}
