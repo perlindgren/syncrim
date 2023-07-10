@@ -8,12 +8,14 @@ pub enum AluOp {
     High16 = 6,
 }
 
+#[allow(dead_code)]
 pub enum AinMux {
     Shamt = 0,
     PcOffset = 1,
     RegOutA = 2,
 }
 
+#[allow(dead_code)]
 pub enum BinMux {
     RegOutA = 0,
     Pc = 1,
@@ -26,13 +28,16 @@ pub enum PcMux {
     Branch = 2,
 }
 
+#[allow(dead_code)]
 pub enum ImmExtend {
     Zero,
     Sign,
 }
 
+#[allow(dead_code)]
 enum WbDataMux {}
 
+#[allow(dead_code)]
 enum WbRegMux {
     Rt,
     Rd,

@@ -1,4 +1,5 @@
 {
+  "json.schemaDownload.enable": true, // dummy fix for buggy vscode
   "rust-analyzer.linkedProjects": [
     "./mips/Cargo.toml",
     "./Cargo.toml",
