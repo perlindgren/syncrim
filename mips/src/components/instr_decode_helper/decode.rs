@@ -1,4 +1,4 @@
-use crate::components::ctrl::{AinMux, AluOp, BinMux, ImmExtend, PcMux};
+//use crate::components::ctrl::{AinMux, AluOp, BinMux, ImmExtend, PcMux};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 
 // instruction encoding
@@ -126,52 +126,52 @@ pub enum Type {
     J,
 }
 
-pub enum AluBMux {}
-impl Op {
-    pub fn ctrl(&self) -> (AluOp, PcMux) {
-        let mut alu_op = AluOp::Nop;
-        // AluOp
-        match self {
-            // branches
-            Op::beq | Op::bne | Op::blez | Op::bgtz |
-            Op::beql | Op::bnel | Op::blezl | Op::bgtzl |
-            // immediate arithmetic
-            Op::addi | Op::addiu |
-            // memory operations
-            Op::lb | Op::lh | Op::lwl | Op::lw |
-            Op::lbu | Op::lhu | Op::lwr | Op::sb |
-            Op::sh | Op::swl | Op::sw | Op::swr => alu_op = AluOp::Add,
-            // comparisons
-            Op::slti | Op::sltiu => alu_op = AluOp::Sub,
-            // immediate logic
-            Op::andi => alu_op = AluOp::And,
-            Op::ori => alu_op = AluOp::Or,
-            Op::xori => alu_op = AluOp::Xor,
-            // lui
-            Op::lui => alu_op = AluOp::High16,
-            _ => panic!(),
-        };
+// pub enum AluBMux {}
+// impl Op {
+//     pub fn ctrl(&self) -> (AluOp, PcMux) {
+//         let mut alu_op = AluOp::Nop;
+//         // AluOp
+//         match self {
+//             // branches
+//             Op::beq | Op::bne | Op::blez | Op::bgtz |
+//             Op::beql | Op::bnel | Op::blezl | Op::bgtzl |
+//             // immediate arithmetic
+//             Op::addi | Op::addiu |
+//             // memory operations
+//             Op::lb | Op::lh | Op::lwl | Op::lw |
+//             Op::lbu | Op::lhu | Op::lwr | Op::sb |
+//             Op::sh | Op::swl | Op::sw | Op::swr => alu_op = AluOp::Add,
+//             // comparisons
+//             Op::slti | Op::sltiu => alu_op = AluOp::Sub,
+//             // immediate logic
+//             Op::andi => alu_op = AluOp::And,
+//             Op::ori => alu_op = AluOp::Or,
+//             Op::xori => alu_op = AluOp::Xor,
+//             // lui
+//             Op::lui => alu_op = AluOp::High16,
+//             _ => panic!(),
+//         };
 
-        // ImmExt
-        let mut imm_ext = ImmExtend::Sign;
-        match self {
-            Op::andi | Op::ori | Op::xori | Op::lui => imm_ext = ImmExtend::Zero,
-            _ => panic!(),
-        };
+//         // ImmExt
+//         let mut imm_ext = ImmExtend::Sign;
+//         match self {
+//             Op::andi | Op::ori | Op::xori | Op::lui => imm_ext = ImmExtend::Zero,
+//             _ => panic!(),
+//         };
 
-        let mut pc_mux = PcMux::Pc4;
-        // PcMux
-        match self {
-            Op::j | Op::jal => pc_mux = PcMux::Jump,
-            // branches
-            Op::beq | Op::bne | Op::blez | Op::bgtz |
-            // branches likely
-            Op::beql | Op::bnel | Op::blezl | Op::bgtzl => pc_mux = PcMux::Branch,
-            _ => panic!(),
-        };
-        (alu_op, pc_mux)
-    }
-}
+//         let mut pc_mux = PcMux::Pc4;
+//         // PcMux
+//         match self {
+//             Op::j | Op::jal => pc_mux = PcMux::Jump,
+//             // branches
+//             Op::beq | Op::bne | Op::blez | Op::bgtz |
+//             // branches likely
+//             Op::beql | Op::bnel | Op::blezl | Op::bgtzl => pc_mux = PcMux::Branch,
+//             _ => panic!(),
+//         };
+//         (alu_op, pc_mux)
+//     }
+// }
 
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]

@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 pub enum AluOp {
     Nop = 0,
     Add = 1,
@@ -22,6 +23,7 @@ pub enum BinMux {
     ImmExt = 2,
 }
 
+#[allow(dead_code)]
 pub enum PcMux {
     Pc4 = 0,
     Jump = 1,

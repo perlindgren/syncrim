@@ -8,7 +8,7 @@ impl ViziaComponent for InstrSplit {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create InsrMem View");
-        View::build(InstrSplitView {}, cx, |cx| {})
+        View::build(InstrSplitView {}, cx, |_cx| {})
             .position_type(PositionType::SelfDirected)
             .left(Pixels(self.pos.0 - self.width / 2.0))
             .top(Pixels(self.pos.1 - self.height / 2.0))
