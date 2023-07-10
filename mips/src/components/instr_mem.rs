@@ -5,6 +5,8 @@ use syncrim::common::{Component, Input, Output, OutputType, Ports, Simulator};
 pub struct InstrMem {
     pub id: String,
     pub pos: (f32, f32),
+    pub width: f32,
+    pub height: f32,
     pub instr: Vec<u32>,
     pub pc: Input,
 }

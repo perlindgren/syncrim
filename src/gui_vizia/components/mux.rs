@@ -26,9 +26,9 @@ impl ViziaComponent for Mux {
         )
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 20.0))
-        .top(Pixels(self.pos.1 - 10.0 * self.m_in.len() as f32 - 10.0))
-        .width(Pixels(40.0))
-        .height(Pixels(20.0 * self.m_in.len() as f32 + 20.0))
+        .top(Pixels(self.pos.1 - 10.0 * self.m_in.len() as f32))
+        .width(Pixels(30.0))
+        .height(Pixels(20.0 * self.m_in.len() as f32))
         .on_press(|ex| ex.emit(PopupEvent::Switch))
         .tooltip(|cx| new_component_tooltip(cx, self));
     }
@@ -87,7 +87,7 @@ impl View for MuxView {
 
         path.move_to(
             left + 0.5,
-            top + 0.5 + (20.0 + select as f32 * 20.0) * scale,
+            top + 0.5 + (10.0 + select as f32 * 20.0) * scale,
         );
         path.line_to(right + 0.5, top + height * 0.5 + 0.5);
         canvas.stroke_path(&path, &paint);

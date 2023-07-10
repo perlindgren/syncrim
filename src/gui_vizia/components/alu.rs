@@ -1,6 +1,6 @@
 use crate::{
     common::{Component, ViziaComponent},
-    components::Add,
+    components::Alu,
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
 
@@ -10,13 +10,13 @@ use vizia::{
 };
 
 #[typetag::serde]
-impl ViziaComponent for Add {
+impl ViziaComponent for Alu {
     // create view
     fn view(&self, cx: &mut Context) {
         println!("---- Create Add View");
 
-        View::build(AddView {}, cx, move |cx| {
-            Label::new(cx, "+")
+        View::build(AluView {}, cx, move |cx| {
+            Label::new(cx, "ALU")
                 .right(Stretch(1.0))
                 .left(Stretch(1.0))
                 .top(Stretch(1.0))
@@ -26,20 +26,20 @@ impl ViziaComponent for Add {
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
         .position_type(PositionType::SelfDirected)
-        .left(Pixels(self.pos.0 - 20.0))
-        .top(Pixels(self.pos.1 - 30.0))
-        .width(Pixels(30.0))
-        .height(Pixels(60.0))
+        .left(Pixels(self.pos.0 - 40.0))
+        .top(Pixels(self.pos.1 - 80.0))
+        .width(Pixels(80.0))
+        .height(Pixels(160.0))
         .on_press(|ex| ex.emit(PopupEvent::Switch))
         .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 
-pub struct AddView {}
+pub struct AluView {}
 
-impl View for AddView {
+impl View for AluView {
     fn element(&self) -> Option<&'static str> {
-        Some("Add")
+        Some("Alu")
     }
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
@@ -61,12 +61,12 @@ impl View for AddView {
         path.move_to(left + 0.5, top + 0.5);
 
         // top right corner
-        path.line_to(left + width * 0.5 + 0.5, top + 0.5);
+        path.line_to(left + width * 3.0 / 4.0 + 0.5, top + 0.5);
         path.line_to(right + 0.5, top + height * 0.25 + 0.5);
 
         // bottom right corner
         path.line_to(right + 0.5, bottom - height * 0.25 + 0.5);
-        path.line_to(left + width * 0.5 + 0.5, bottom + 0.5);
+        path.line_to(left + width * 3.0 / 4.0 + 0.5, bottom + 0.5);
         path.line_to(left + 0.5, bottom + 0.5);
 
         // left outtake

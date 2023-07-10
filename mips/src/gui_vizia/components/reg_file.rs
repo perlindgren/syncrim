@@ -3,8 +3,9 @@ use syncrim::{
     common::ViziaComponent,
     gui_vizia::tooltip::new_component_tooltip,
     vizia::{
+        self,
         prelude::*,
-        vg::{Color, Paint, Path},
+        vg::{Paint, Path},
     },
 };
 
@@ -21,6 +22,8 @@ impl ViziaComponent for RegFile {
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - self.width / 2.0))
         .top(Pixels(self.pos.1 - self.height / 2.0))
+        .background_color(Color::lightgrey())
+        .border_width(Pixels(1.0))
         .width(Pixels(self.width))
         .height(Pixels(self.height))
         .tooltip(|cx| new_component_tooltip(cx, self));
@@ -39,7 +42,7 @@ impl View for RegFileView {
         // println!("InstMem draw {:?}", bounds);
 
         let mut path = Path::new();
-        let mut paint = Paint::color(Color::rgbf(0.0, 1.0, 1.0));
+        let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 1.0, 1.0));
         paint.set_line_width(cx.logical_to_physical(1.0));
 
         path.move_to(bounds.left() + 0.5, bounds.top() + 0.5);

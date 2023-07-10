@@ -1,4 +1,5 @@
 mod add;
+mod alu;
 mod constant;
 mod mem;
 mod mux;
@@ -9,6 +10,7 @@ mod sext;
 mod wire;
 
 pub use add::*;
+pub use alu::*;
 pub use constant::*;
 pub use mem::*;
 pub use mux::*;

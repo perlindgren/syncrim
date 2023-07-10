@@ -87,7 +87,7 @@ fn main() {
         ],
     };
 
-    let path = PathBuf::from("add.json");
+    let path = PathBuf::from("mux.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]

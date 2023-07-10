@@ -167,5 +167,6 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
         });
     })
     .title("SyncRim")
+    .inner_size((1920, 1080))
     .run();
 }

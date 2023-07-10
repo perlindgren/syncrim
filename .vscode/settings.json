@@ -5,7 +5,6 @@
     ".\\mips\\Cargo.toml"    
   ],
   "cSpell.ignoreWords": [
-    // MIPS Assembly
     "Addi",
     "Addiu",
     "Addu",
@@ -44,6 +43,7 @@
     "Mtlo",
     "Mult",
     "Multu",
+    "Shamt",
     "Sllv",
     "Slti",
     "Sltiu",

@@ -1,4 +1,5 @@
 mod add;
+mod alu;
 mod constant;
 mod mem;
 mod mux;
