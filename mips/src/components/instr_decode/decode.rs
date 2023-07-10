@@ -119,7 +119,7 @@ pub enum Op {
     scd2    = 62,
 }
 
-enum Type {
+pub enum Type {
     R,
     I,
     J,
@@ -251,7 +251,7 @@ pub enum Funct {
     tne,
 }
 
-fn decode(binary: u32) {
+pub fn decode(binary: u32) {
     if let Ok(op) = Op::try_from((binary >> 26) as u8) {
         println!("op {:?}", op);
     } else {
@@ -266,6 +266,6 @@ mod test_decode {
     #[test]
     fn test_lui() {
         let binary = 0x3c08_0000; // lui	t0,0x0
-        let x = decode(binary);
+        let _x = decode(binary);
     }
 }
