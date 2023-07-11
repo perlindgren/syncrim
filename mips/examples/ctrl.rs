@@ -1,7 +1,8 @@
 use mips::components::*;
+use std::cell::Cell;
 use std::{path::PathBuf, rc::Rc};
 use syncrim::{
-    common::{ComponentStore, Input},
+    common::{ComponentStore, Input, Signal},
     components::*,
 };
 

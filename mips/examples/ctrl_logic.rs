@@ -1,4 +1,4 @@
-use mips::components::*;
+use mips::components::CtrlLogic;
 use std::{path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input},
@@ -10,31 +10,31 @@ fn main() {
     let cs = ComponentStore {
         store: vec![
             Rc::new(Constant {
-                id: "c_reg_a".to_string(),
-                pos: (100.0, 100.0),
+                id: "c_op".to_string(),
+                pos: (100.0, 80.0),
                 value: 3,
             }),
             Rc::new(Constant {
-                id: "c_reg_b".to_string(),
-                pos: (100.0, 200.0),
-                value: 4,
+                id: "c_shamt".to_string(),
+                pos: (100.0, 100.0),
+                value: 42,
             }),
             Rc::new(Constant {
-                id: "c_ctrl".to_string(),
-                pos: (100.0, 140.0),
+                id: "c_funct".to_string(),
+                pos: (100.0, 120.0),
                 value: 42,
             }),
             // regfile
-            Rc::new(BranchLogic {
-                id: "branch".to_string(),
-                pos: (200.0, 150.0),
-                width: 100.0,
-                height: 150.0,
+            Rc::new(CtrlLogic {
+                id: "ctrl_logic".to_string(),
+                pos: (660.0, 100.0),
+                width: 800.0,
+                height: 70.0,
 
                 // ports
-                reg_a: Input::new("c_reg_a", 0),
-                reg_b: Input::new("c_reg_b", 0),
-                ctrl: Input::new("c_ctrl", 0),
+                op: Input::new("c_op", 0),
+                shamt: Input::new("c_shamt", 0),
+                funct: Input::new("c_funct", 0),
             }),
         ],
     };
