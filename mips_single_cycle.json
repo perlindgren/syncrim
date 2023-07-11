@@ -526,6 +526,38 @@
             ]
         },
         {
+            "type": "Wire",
+            "id": "w_reg_a",
+            "pos": [
+                650.0,
+                260.0
+            ],
+            "delta": [
+                240.0,
+                0.0
+            ],
+            "input": {
+                "id": "reg_file",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w_reg_b",
+            "pos": [
+                650.0,
+                340.0
+            ],
+            "delta": [
+                240.0,
+                0.0
+            ],
+            "input": {
+                "id": "reg_file",
+                "index": 1
+            }
+        },
+        {
             "type": "Alu",
             "id": "alu",
             "pos": [
@@ -574,13 +606,13 @@
         },
         {
             "type": "Wire",
-            "id": "w1",
+            "id": "w_alu_in_a",
             "pos": [
-                610.0,
-                140.0
+                920.0,
+                240.0
             ],
             "delta": [
-                50.0,
+                40.0,
                 0.0
             ],
             "input": {
@@ -590,13 +622,13 @@
         },
         {
             "type": "Wire",
-            "id": "w2",
+            "id": "w_alu_in_b",
             "pos": [
-                610.0,
-                260.0
+                920.0,
+                360.0
             ],
             "delta": [
-                50.0,
+                40.0,
                 0.0
             ],
             "input": {
@@ -993,6 +1025,55 @@
             "input": {
                 "id": "data_mem",
                 "index": 1
+            }
+        },
+        {
+            "type": "Constant",
+            "id": "c_reg_a",
+            "pos": [
+                100.0,
+                100.0
+            ],
+            "value": 3
+        },
+        {
+            "type": "Constant",
+            "id": "c_reg_b",
+            "pos": [
+                100.0,
+                200.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Constant",
+            "id": "c_ctrl",
+            "pos": [
+                100.0,
+                140.0
+            ],
+            "value": 42
+        },
+        {
+            "type": "BranchLogic",
+            "id": "branch",
+            "pos": [
+                820.0,
+                300.0
+            ],
+            "width": 60.0,
+            "height": 40.0,
+            "reg_a": {
+                "id": "c_reg_a",
+                "index": 0
+            },
+            "reg_b": {
+                "id": "c_reg_b",
+                "index": 0
+            },
+            "ctrl": {
+                "id": "c_ctrl",
+                "index": 0
             }
         }
     ]
