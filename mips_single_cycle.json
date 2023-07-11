@@ -549,8 +549,8 @@
             "type": "Constant",
             "id": "alu_in_a",
             "pos": [
-                700.0,
-                140.0
+                900.0,
+                180.0
             ],
             "value": 3
         },
@@ -558,8 +558,8 @@
             "type": "Constant",
             "id": "alu_in_b",
             "pos": [
-                700.0,
-                260.0
+                900.0,
+                300.0
             ],
             "value": 4
         },
@@ -567,8 +567,8 @@
             "type": "Constant",
             "id": "alu_op",
             "pos": [
-                670.0,
-                80.0
+                970.0,
+                190.0
             ],
             "value": 4
         },
@@ -624,8 +624,8 @@
             "type": "Probe",
             "id": "alu_out",
             "pos": [
-                1000.0,
-                200.0
+                1070.0,
+                270.0
             ],
             "input": {
                 "id": "alu",
@@ -636,8 +636,8 @@
             "type": "Probe",
             "id": "z",
             "pos": [
-                890.0,
-                80.0
+                990.0,
+                190.0
             ],
             "input": {
                 "id": "alu",
@@ -648,8 +648,8 @@
             "type": "Probe",
             "id": "v",
             "pos": [
-                910.0,
-                80.0
+                1010.0,
+                190.0
             ],
             "input": {
                 "id": "alu",
@@ -779,6 +779,221 @@
                 80.0
             ],
             "value": 4
+        },
+        {
+            "type": "Mem",
+            "id": "data_mem",
+            "pos": [
+                1160.0,
+                600.0
+            ],
+            "width": 200.0,
+            "height": 40.0,
+            "big_endian": true,
+            "data": {
+                "id": "data",
+                "index": 0
+            },
+            "addr": {
+                "id": "addr",
+                "index": 0
+            },
+            "ctrl": {
+                "id": "ctrl",
+                "index": 0
+            },
+            "sign_extend": {
+                "id": "sext",
+                "index": 0
+            },
+            "size": {
+                "id": "size",
+                "index": 0
+            },
+            "memory": {
+                "bytes": {}
+            }
+        },
+        {
+            "type": "Constant",
+            "id": "data",
+            "pos": [
+                1080.0,
+                540.0
+            ],
+            "value": 3
+        },
+        {
+            "type": "Constant",
+            "id": "addr",
+            "pos": [
+                1100.0,
+                540.0
+            ],
+            "value": 4
+        },
+        {
+            "type": "Constant",
+            "id": "ctrl",
+            "pos": [
+                1120.0,
+                540.0
+            ],
+            "value": 2
+        },
+        {
+            "type": "Constant",
+            "id": "sext",
+            "pos": [
+                1140.0,
+                540.0
+            ],
+            "value": 0
+        },
+        {
+            "type": "Constant",
+            "id": "size",
+            "pos": [
+                1160.0,
+                540.0
+            ],
+            "value": 1
+        },
+        {
+            "type": "Wire",
+            "id": "w_data",
+            "pos": [
+                1080.0,
+                550.0
+            ],
+            "delta": [
+                0.0,
+                30.0
+            ],
+            "input": {
+                "id": "data",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w_addr",
+            "pos": [
+                1100.0,
+                550.0
+            ],
+            "delta": [
+                0.0,
+                30.0
+            ],
+            "input": {
+                "id": "addr",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w_ctrl",
+            "pos": [
+                1120.0,
+                550.0
+            ],
+            "delta": [
+                0.0,
+                30.0
+            ],
+            "input": {
+                "id": "ctrl",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w_sext",
+            "pos": [
+                1140.0,
+                550.0
+            ],
+            "delta": [
+                0.0,
+                30.0
+            ],
+            "input": {
+                "id": "sext",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w_size",
+            "pos": [
+                1160.0,
+                550.0
+            ],
+            "delta": [
+                0.0,
+                30.0
+            ],
+            "input": {
+                "id": "size",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w_mem_out",
+            "pos": [
+                1220.0,
+                550.0
+            ],
+            "delta": [
+                0.0,
+                30.0
+            ],
+            "input": {
+                "id": "data_mem",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w_mem_err",
+            "pos": [
+                1240.0,
+                550.0
+            ],
+            "delta": [
+                0.0,
+                30.0
+            ],
+            "input": {
+                "id": "data_mem",
+                "index": 1
+            }
+        },
+        {
+            "type": "Probe",
+            "id": "p_mem_out",
+            "pos": [
+                1220.0,
+                540.0
+            ],
+            "input": {
+                "id": "data_mem",
+                "index": 0
+            }
+        },
+        {
+            "type": "Probe",
+            "id": "p_mem_err",
+            "pos": [
+                1240.0,
+                540.0
+            ],
+            "input": {
+                "id": "data_mem",
+                "index": 1
+            }
         }
     ]
 }
