@@ -20,7 +20,7 @@ impl Component for Alu {
         (
             self.id.clone(),
             Ports {
-                inputs: vec![self.a_in.clone(), self.b_in.clone()],
+                inputs: vec![self.a_in.clone(), self.b_in.clone(), self.op.clone()],
                 out_type: OutputType::Combinatorial,
                 outputs: vec![Output::Function; 2],
             },
