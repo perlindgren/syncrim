@@ -39,7 +39,7 @@ fn main() {
         ],
     };
 
-    let path = PathBuf::from("branch_logic.json");
+    let path = PathBuf::from("ctrl_logic.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]

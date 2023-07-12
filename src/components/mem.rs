@@ -163,7 +163,7 @@ impl Memory {
                 }
             }
             _ => {
-                panic!("illegal sized memory operation, size = {}", size)
+                println!("critical: illegal sized memory operation, size = {}", size)
             }
         };
     }

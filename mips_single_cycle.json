@@ -222,8 +222,8 @@
                 400.0,
                 300.0
             ],
-            "width": 10.0,
-            "height": 440.0,
+            "width": 20.0,
+            "height": 520.0,
             "instr": {
                 "id": "instr_mem",
                 "index": 0
@@ -231,10 +231,10 @@
         },
         {
             "type": "Wire",
-            "id": "instr_to_split",
+            "id": "w_instr_to_split",
             "pos": [
-                350.0,
-                220.0
+                360.0,
+                280.0
             ],
             "delta": [
                 0.0,
@@ -247,14 +247,14 @@
         },
         {
             "type": "Wire",
-            "id": "instr_to_split",
+            "id": "w_instr_to_split2",
             "pos": [
                 360.0,
-                300.0
+                280.0
             ],
             "delta": [
-                0.0,
-                280.0
+                30.0,
+                0.0
             ],
             "input": {
                 "id": "instr_mem",
@@ -466,7 +466,7 @@
             "id": "reg_file",
             "pos": [
                 550.0,
-                300.0
+                340.0
             ],
             "width": 200.0,
             "height": 360.0,
@@ -1075,6 +1075,134 @@
                 "id": "c_ctrl",
                 "index": 0
             }
+        },
+        {
+            "type": "Constant",
+            "id": "c_op",
+            "pos": [
+                100.0,
+                80.0
+            ],
+            "value": 3
+        },
+        {
+            "type": "Constant",
+            "id": "c_shamt",
+            "pos": [
+                100.0,
+                100.0
+            ],
+            "value": 42
+        },
+        {
+            "type": "Constant",
+            "id": "c_funct",
+            "pos": [
+                100.0,
+                120.0
+            ],
+            "value": 42
+        },
+        {
+            "type": "CtrlLogic",
+            "id": "ctrl_logic",
+            "pos": [
+                830.0,
+                80.0
+            ],
+            "width": 760.0,
+            "height": 80.0,
+            "op": {
+                "id": "c_op",
+                "index": 0
+            },
+            "shamt": {
+                "id": "c_shamt",
+                "index": 0
+            },
+            "funct": {
+                "id": "c_funct",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w_split_op",
+            "pos": [
+                410.0,
+                60.0
+            ],
+            "delta": [
+                40.0,
+                0.0
+            ],
+            "input": {
+                "id": "instr_split",
+                "index": 0
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w_split_shamt",
+            "pos": [
+                410.0,
+                80.0
+            ],
+            "delta": [
+                40.0,
+                0.0
+            ],
+            "input": {
+                "id": "instr_split",
+                "index": 1
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w_split_funct",
+            "pos": [
+                410.0,
+                100.0
+            ],
+            "delta": [
+                40.0,
+                0.0
+            ],
+            "input": {
+                "id": "instr_split",
+                "index": 2
+            }
+        },
+        {
+            "type": "Mux",
+            "id": "wb_data_mux",
+            "pos": [
+                1350.0,
+                240.0
+            ],
+            "select": {
+                "id": "c_wb_data_mux",
+                "index": 0
+            },
+            "m_in": [
+                {
+                    "id": "alu",
+                    "index": 0
+                },
+                {
+                    "id": "data_mem",
+                    "index": 0
+                }
+            ]
+        },
+        {
+            "type": "Constant",
+            "id": "c_wb_data_mux",
+            "pos": [
+                1000.0,
+                700.0
+            ],
+            "value": 0
         }
     ]
 }
