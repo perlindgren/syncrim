@@ -49,8 +49,6 @@ impl eframe::App for Gui {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         self.shortcuts.inputs(ctx, self);
         if self.editor_use {
-            //let a = self.editor.as_mut().unwrap();
-            //a.update(ctx, frame, self);
             crate::gui_egui::editor::Editor::update(ctx, frame, self);
             return;
         }
