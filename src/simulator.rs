@@ -131,8 +131,16 @@ impl Simulator {
 
     /// get input value
     pub fn get_input_val(&self, input: &Input) -> Signal {
-        let start_index = *self.id_start_index.get(&input.id).unwrap();
-        self.get(start_index + input.index)
+        let nr_out = *self.id_nr_outputs.get(&input.id).unwrap();
+        if input.index < nr_out {
+            let start_index = *self.id_start_index.get(&input.id).unwrap();
+            self.get(start_index + input.index)
+        } else {
+            panic!(
+                "Attempt to read {} at index {}, where {} has only {} outputs.",
+                input.id, input.index, input.id, nr_out
+            )
+        }
     }
 
     /// get start index by id
@@ -257,5 +265,32 @@ mod test {
 
         assert_eq!(clock, 1);
         simulator.set_id_index("po1", 1, 7);
+    }
+
+    #[test]
+    fn test_get_input_val() {
+        let cs = ComponentStore {
+            store: vec![Rc::new(ProbeOut::new("po1"))],
+        };
+
+        let mut clock = 0;
+        let simulator = Simulator::new(&cs, &mut clock);
+
+        assert_eq!(clock, 1);
+        let _ = simulator.get_input_val(&Input::new("po1", 0));
+    }
+
+    #[test]
+    #[should_panic(expected = "Attempt to read po1 at index 1, where po1 has only 1 outputs.")]
+    fn test_get_input_out_of_range() {
+        let cs = ComponentStore {
+            store: vec![Rc::new(ProbeOut::new("po1"))],
+        };
+
+        let mut clock = 0;
+        let simulator = Simulator::new(&cs, &mut clock);
+
+        assert_eq!(clock, 1);
+        let _ = simulator.get_input_val(&Input::new("po1", 1));
     }
 }
