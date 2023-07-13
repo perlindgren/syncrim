@@ -4,7 +4,7 @@ Tracking changes per date:
 
 ## 230714
 
-- Added bounds checking for `Simulator` (`set_id_index`), panics on out of bounds.
+- Added bounds checking for `Simulator` (`set_id_index`, `get_input_val`), panics on out of bounds.
 - Added re-definition check for `Simulator`, panics on re-definition.
 - Added units tests to the above.
 
