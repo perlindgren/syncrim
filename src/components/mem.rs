@@ -46,7 +46,12 @@ impl Memory {
     }
 
     fn align(&self, addr: usize, size: usize) -> Signal {
-        (addr % size != 0) as Signal
+        if size == 0 {
+            println!("critical, illegal sized memory operation");
+            0 as Signal
+        } else {
+            (addr % size != 0) as Signal
+        }
     }
 
     fn read(&self, addr: usize, size: usize, sign_extend: bool, big_endian: bool) -> Signal {
@@ -111,7 +116,10 @@ impl Memory {
                     u32::from_le_bytes(data.try_into().unwrap()) as Signal
                 }
             }
-            _ => panic!("illegal sized memory operation"),
+            _ => {
+                println!("critical, illegal sized memory operation");
+                0 // well what can you do, need to return something, but this is wrong.
+            }
         }
     }
 

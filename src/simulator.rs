@@ -145,6 +145,7 @@ impl Simulator {
 
     /// iterate over the evaluators and increase clock by one
     pub fn clock(&mut self, clock: &mut usize) {
+        println!("\n -- -- -- clock -- -- --\n");
         // push current state
         self.history.push(self.sim_state.clone());
         let ordered_components = self.ordered_components.clone();
