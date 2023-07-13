@@ -24,6 +24,7 @@ impl Simulator {
         let mut id_start_index = HashMap::new();
         let mut id_component = HashMap::new(); // IdComponent(HashMap::new());
 
+        let mut id_nr_outputs = HashMap::new();
         // allocate storage for lensed outputs
 
         println!("-- allocate storage for lensed outputs");
@@ -32,16 +33,22 @@ impl Simulator {
 
             println!("id {}, ports {:?}", id, ports);
             // start index for outputs related to component
-            id_start_index.insert(id.clone(), lens_values.len());
+            if id_start_index
+                .insert(id.clone(), lens_values.len())
+                .is_some()
+            {
+                panic!("Component identifier {} is defined twice", id);
+            }
 
-            id_component.insert(id, c);
+            id_component.insert(id.clone(), c);
 
             // create placeholder for output
             #[allow(clippy::same_item_push)]
-            for _ in ports.outputs {
+            for _ in ports.outputs.clone() {
                 // create the value with a default to 0
                 lens_values.push(0);
             }
+            id_nr_outputs.insert(id.clone(), ports.outputs.len());
         }
 
         let mut graph = Graph::<_, (), petgraph::Directed>::new();
@@ -105,6 +112,7 @@ impl Simulator {
             id_start_index,
             ordered_components,
             sim_state: lens_values,
+            id_nr_outputs,
             history: vec![],
             component_ids,
             graph,
@@ -139,8 +147,16 @@ impl Simulator {
 
     /// set value by id and offset (index)
     pub fn set_id_index(&mut self, id: &str, index: usize, value: Signal) {
-        let start_index = self.get_id_start_index(id);
-        self.set(start_index + index, value);
+        let nr_out = *self.id_nr_outputs.get(id).unwrap();
+        if index < nr_out {
+            let start_index = self.get_id_start_index(id);
+            self.set(start_index + index, value);
+        } else {
+            panic!(
+                "Attempt to write to {} at index {}, where {} has only {} outputs.",
+                id, index, id, nr_out
+            )
+        }
     }
 
     /// iterate over the evaluators and increase clock by one
@@ -182,5 +198,64 @@ impl Simulator {
             Dot::with_config(&self.graph, &[Config::EdgeNoLabel])
         );
         file.write_all(dot_string.as_bytes()).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::components::*;
+    use std::rc::Rc;
+
+    #[test]
+    fn test_define() {
+        let cs = ComponentStore {
+            store: vec![Rc::new(ProbeOut::new("po1"))],
+        };
+
+        let mut clock = 0;
+        let _simulator = Simulator::new(&cs, &mut clock);
+
+        assert_eq!(clock, 1);
+    }
+
+    #[test]
+    #[should_panic(expected = "Component identifier po1 is defined twice")]
+    fn test_redefined() {
+        let cs = ComponentStore {
+            store: vec![Rc::new(ProbeOut::new("po1")), Rc::new(ProbeOut::new("po1"))],
+        };
+
+        let mut clock = 0;
+        let _simulator = Simulator::new(&cs, &mut clock);
+
+        assert_eq!(clock, 1);
+    }
+
+    #[test]
+    fn test_set_id_out() {
+        let cs = ComponentStore {
+            store: vec![Rc::new(ProbeOut::new("po1"))],
+        };
+
+        let mut clock = 0;
+        let mut simulator = Simulator::new(&cs, &mut clock);
+
+        assert_eq!(clock, 1);
+        simulator.set_id_index("po1", 0, 7);
+    }
+
+    #[test]
+    #[should_panic(expected = "Attempt to write to po1 at index 1, where po1 has only 1 outputs.")]
+    fn test_set_id_out_of_range() {
+        let cs = ComponentStore {
+            store: vec![Rc::new(ProbeOut::new("po1"))],
+        };
+
+        let mut clock = 0;
+        let mut simulator = Simulator::new(&cs, &mut clock);
+
+        assert_eq!(clock, 1);
+        simulator.set_id_index("po1", 1, 7);
     }
 }

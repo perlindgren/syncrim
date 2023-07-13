@@ -26,6 +26,7 @@ pub struct Simulator {
     // Components stored in topological evaluation order
     pub ordered_components: Components,
     pub sim_state: Vec<Signal>,
+    pub id_nr_outputs: IdNrOutputs,
     pub history: Vec<Vec<Signal>>,
     pub component_ids: Vec<String>,
     pub graph: Graph<String, ()>,
@@ -43,6 +44,8 @@ pub struct ComponentStore {
 // the first input is index 16
 // the second input is index 17, etc.
 pub type IdStartIndex = HashMap<String, usize>;
+
+pub type IdNrOutputs = HashMap<String, usize>;
 
 // Common functionality for all components
 #[typetag::serde(tag = "type")]

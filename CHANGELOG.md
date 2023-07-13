@@ -2,6 +2,12 @@
 
 Tracking changes per date:
 
+## 230714
+
+- Added bounds checking for `Simulator` (`set_id_index`), panics on out of bounds.
+- Added re-definition check for `Simulator`, panics on re-definition.
+- Added units tests to the above.
+
 ## 230705
 
 - Refactoring of `Component` trait such that logic part is separated from GUI part.
@@ -15,7 +21,6 @@ Tracking changes per date:
 - `.gitignore` to exclude `.gv` and `.json` files.
 
 - `SignExtension` component.
-
 
 Compilation times might be annoying. It seems that under Linux there is a lot more dependencies than under Windows, so building `SyncRim` is faster on Win10 than under Linux (stock settings). There are a number of things to try out to reduce compilation times (and in particular `hot` iterations).
 
