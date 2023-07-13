@@ -7,7 +7,7 @@ impl EguiComponent for Mux {
     fn render(
         &self,
         ui: &mut egui::Ui,
-        simulator: Simulator,
+        simulator: Option<Simulator>,
         offset: egui::Vec2,
         scale: f32,
         _clip_rect: egui::Rect,
@@ -23,7 +23,10 @@ impl EguiComponent for Mux {
         let pa = self.m_in.len() as f32;
 
         // selector
-        let select = simulator.get_input_val(&self.select);
+        let select = match simulator {
+            Some(s) => s.get_input_val(&self.select),
+            None => 0,
+        };
 
         // The shape
         ui.painter().add(egui::Shape::closed_line(

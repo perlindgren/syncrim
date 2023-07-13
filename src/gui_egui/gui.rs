@@ -1,5 +1,5 @@
 use crate::common::{ComponentStore, Simulator};
-use crate::gui_egui::{keymap, keymap::Shortcuts, menu::Menu};
+use crate::gui_egui::{editor::Editor, keymap, keymap::Shortcuts, menu::Menu};
 use eframe::egui;
 use std::path::PathBuf;
 
@@ -17,6 +17,8 @@ pub struct Gui {
     pub clip_rect: egui::Rect,
     pub shortcuts: Shortcuts,
     pub pause: bool,
+    pub editor: Option<Editor>,
+    pub editor_use: bool,
 }
 
 pub fn gui(cs: &ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
@@ -37,18 +39,31 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
         clip_rect: egui::Rect::NOTHING,
         shortcuts: Shortcuts::new(),
         pause: true,
+        editor: None,
+        editor_use: false,
     };
     eframe::run_native("SyncRim", options, Box::new(|_cc| Box::new(gui)))
 }
 
 impl eframe::App for Gui {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         self.shortcuts.inputs(ctx, self);
+        if self.editor_use {
+            //let a = self.editor.as_mut().unwrap();
+            //a.update(ctx, frame, self);
+            crate::gui_egui::editor::Editor::update(ctx, frame, self);
+            return;
+        }
         let frame = egui::Frame::none().fill(egui::Color32::WHITE);
+        //let frame = egui::Frame::canvas(&(*ctx.style()).clone());
 
         // For getting the correct offset for our drawing we need to get the top bar
         // and side panel of the ui once before we draw
         if self.should_area_update(ctx) {
+            // todo: Implement proper light and dark mode?
+            // for testing light and dark mode
+            //ctx.set_visuals(egui::Visuals::dark());
+            //ctx.set_visuals(egui::Visuals::light());
             self.top_bar(ctx);
             self.side_panel(ctx);
             let top =
@@ -107,7 +122,7 @@ impl Gui {
             for c in &self.simulator.ordered_components {
                 c.render(
                     ui,
-                    self.simulator.clone(),
+                    Some(self.simulator.clone()),
                     self.offset + self.pan,
                     self.scale,
                     self.clip_rect,

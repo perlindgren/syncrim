@@ -72,8 +72,8 @@ pub trait EguiComponent: Component {
     fn render(
         &self,
         _ui: &mut egui::Ui,
-        _simulator: Simulator,
-        _start: egui::Vec2,
+        _simulator: Option<Simulator>,
+        _offset: egui::Vec2,
         _scale: f32,
         _clip_rect: egui::Rect,
     ) {

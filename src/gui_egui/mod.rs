@@ -1,4 +1,4 @@
-
+mod editor;
 mod gui;
 mod helper;
 mod keymap;

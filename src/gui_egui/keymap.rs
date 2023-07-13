@@ -1,3 +1,4 @@
+use crate::common::ComponentStore;
 use egui::{Key, KeyboardShortcut, Modifiers};
 
 #[derive(Copy, Clone)]
@@ -6,6 +7,7 @@ pub struct Shortcuts {
     pub file_open: KeyboardShortcut,
     pub file_save: KeyboardShortcut,
     pub file_save_as: KeyboardShortcut,
+    pub file_editor_toggle: KeyboardShortcut,
     pub file_preferences: KeyboardShortcut,
     pub file_quit: KeyboardShortcut,
     pub edit_cut: KeyboardShortcut,
@@ -73,6 +75,10 @@ impl Shortcuts {
                     command: false,
                 },
                 key: Key::S,
+            },
+            file_editor_toggle: KeyboardShortcut {
+                modifiers: ctrl,
+                key: Key::E,
             },
             file_preferences: KeyboardShortcut {
                 modifiers: ctrl,
@@ -148,6 +154,9 @@ impl Shortcuts {
         if ctx.input_mut(|i| i.consume_shortcut(&self.file_save_as)) {
             file_save_as_fn(gui);
         }
+        if ctx.input_mut(|i| i.consume_shortcut(&self.file_editor_toggle)) {
+            file_editor_toggle_fn(gui);
+        }
         if ctx.input_mut(|i| i.consume_shortcut(&self.file_preferences)) {
             file_preferences_fn(gui);
         }
@@ -194,47 +203,86 @@ pub fn file_new_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
 pub fn file_open_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
 pub fn file_save_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
 pub fn file_save_as_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
+pub fn file_editor_toggle_fn(gui: &mut crate::gui_egui::gui::Gui) {
+    match gui.editor_use {
+        true => {
+            gui.editor_use = false;
+            // todo: Make us swap back into simulator mode (create new simulator)
+        }
+        false => {
+            gui.editor
+                .get_or_insert(crate::gui_egui::editor::Editor::gui(
+                    ComponentStore {
+                        store: gui.simulator.ordered_components.clone(),
+                    },
+                    &gui.path,
+                ));
+
+            gui.editor_use = true;
+        }
+    }
+}
 pub fn file_preferences_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
 pub fn file_quit_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
 pub fn edit_cut_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
 pub fn edit_copy_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
 pub fn edit_paste_fn(_gui: &mut crate::gui_egui::gui::Gui) {}
 pub fn view_zoom_in_fn(gui: &mut crate::gui_egui::gui::Gui) {
-    match gui.scale {
-        x if (0.0f32..0.2f32).contains(&x) => gui.scale = 0.25f32,
-        x if (0.2f32..0.4f32).contains(&x) => gui.scale = 0.5f32,
-        x if (0.4f32..0.6f32).contains(&x) => gui.scale = 1f32,
-        x if (0.9f32..1.1f32).contains(&x) => gui.scale = 1.5f32,
-        x if (1.4f32..1.6f32).contains(&x) => gui.scale = 2f32,
-        _ => gui.scale = 2f32,
+    let scale: &mut f32 = match gui.editor_use {
+        true => &mut gui.editor.as_mut().unwrap().scale,
+        false => &mut gui.scale,
+    };
+    match *scale {
+        x if (0.0f32..0.2f32).contains(&x) => *scale = 0.25f32,
+        x if (0.2f32..0.4f32).contains(&x) => *scale = 0.5f32,
+        x if (0.4f32..0.6f32).contains(&x) => *scale = 1f32,
+        x if (0.9f32..1.1f32).contains(&x) => *scale = 1.5f32,
+        x if (1.4f32..1.6f32).contains(&x) => *scale = 2f32,
+        _ => *scale = 2f32,
     }
 }
 pub fn view_zoom_out_fn(gui: &mut crate::gui_egui::gui::Gui) {
-    match gui.scale {
-        x if (0.2f32..0.4f32).contains(&x) => gui.scale = 0.1f32,
-        x if (0.4f32..0.6f32).contains(&x) => gui.scale = 0.25f32,
-        x if (0.9f32..1.1f32).contains(&x) => gui.scale = 0.5f32,
-        x if (1.4f32..1.6f32).contains(&x) => gui.scale = 1f32,
-        x if (1.9f32..2.1f32).contains(&x) => gui.scale = 1.5f32,
-        _ => gui.scale = 0.1f32,
+    let scale: &mut f32 = match gui.editor_use {
+        true => &mut gui.editor.as_mut().unwrap().scale,
+        false => &mut gui.scale,
+    };
+    match *scale {
+        x if (0.2f32..0.4f32).contains(&x) => *scale = 0.1f32,
+        x if (0.4f32..0.6f32).contains(&x) => *scale = 0.25f32,
+        x if (0.9f32..1.1f32).contains(&x) => *scale = 0.5f32,
+        x if (1.4f32..1.6f32).contains(&x) => *scale = 1f32,
+        x if (1.9f32..2.1f32).contains(&x) => *scale = 1.5f32,
+        _ => *scale = 0.1f32,
     }
 }
 pub fn control_play_toggle(gui: &mut crate::gui_egui::gui::Gui) {
-    gui.pause = !gui.pause;
+    if !gui.editor_use {
+        gui.pause = !gui.pause;
+    }
 }
 pub fn control_play(gui: &mut crate::gui_egui::gui::Gui) {
-    gui.pause = false;
+    if !gui.editor_use {
+        gui.pause = false;
+    }
 }
 pub fn control_pause(gui: &mut crate::gui_egui::gui::Gui) {
-    gui.pause = true;
+    if !gui.editor_use {
+        gui.pause = true;
+    }
 }
 pub fn control_reset(gui: &mut crate::gui_egui::gui::Gui) {
-    gui.simulator.reset(&mut gui.clock);
-    gui.pause = true;
+    if !gui.editor_use {
+        gui.simulator.reset(&mut gui.clock);
+        gui.pause = true;
+    }
 }
 pub fn control_step_forward(gui: &mut crate::gui_egui::gui::Gui) {
-    gui.simulator.clock(&mut gui.clock);
+    if !gui.editor_use {
+        gui.simulator.clock(&mut gui.clock);
+    }
 }
 pub fn control_step_back(gui: &mut crate::gui_egui::gui::Gui) {
-    gui.simulator.un_clock(&mut gui.clock);
+    if !gui.editor_use {
+        gui.simulator.un_clock(&mut gui.clock);
+    }
 }

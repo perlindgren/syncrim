@@ -7,7 +7,7 @@ impl EguiComponent for Constant {
     fn render(
         &self,
         ui: &mut egui::Ui,
-        _simulator: Simulator,
+        _simulator: Option<Simulator>,
         offset: egui::Vec2,
         scale: f32,
         clip_rect: Rect,

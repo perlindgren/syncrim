@@ -7,7 +7,7 @@ impl EguiComponent for Probe {
     fn render(
         &self,
         ui: &mut egui::Ui,
-        simulator: Simulator,
+        simulator: Option<Simulator>,
         offset: egui::Vec2,
         scale: f32,
         clip_rect: Rect,
@@ -16,7 +16,10 @@ impl EguiComponent for Probe {
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
         let input = self.input.clone();
-        let value = simulator.get_input_val(&input);
+        let value = match simulator {
+            Some(s) => s.get_input_val(&input),
+            None => 0,
+        };
         Area::new(self.id.to_string())
             .order(Order::Middle)
             .current_pos(offset.to_pos2())

@@ -9,7 +9,7 @@ impl EguiComponent for Add {
     fn render(
         &self,
         ui: &mut egui::Ui,
-        _simulator: Simulator,
+        _simulator: Option<Simulator>,
         offset: egui::Vec2,
         scale: f32,
         _clip_rect: egui::Rect,
