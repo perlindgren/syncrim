@@ -13,8 +13,8 @@ fn test_add() {
             Rc::new(Add {
                 id: "add".to_string(),
                 pos: (0.0, 0.0),
-                a_in: Input::new("po1", 0),
-                b_in: Input::new("po2", 0),
+                a_in: Input::new("po1", "out"),
+                b_in: Input::new("po2", "out"),
             }),
         ],
     };
@@ -24,8 +24,8 @@ fn test_add() {
     assert_eq!(clock, 1);
 
     // outputs
-    let add_val = &Input::new("add", 0);
-    let add_overflow = &Input::new("add", 1);
+    let add_val = &Input::new("add", "out");
+    let add_overflow = &Input::new("add", "overflow");
 
     // reset
     assert_eq!(simulator.get_input_val(add_val), 0 + 0);

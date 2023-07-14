@@ -43,11 +43,11 @@ fn main() {
                 height: 150.0,
 
                 // ports
-                read_addr1: Input::new("c_read_reg_1", 0),
-                read_addr2: Input::new("c_read_reg_2", 0),
-                write_data: Input::new("c_write_data", 0),
-                write_addr: Input::new("c_write_addr", 0),
-                write_enable: Input::new("c_write_enable", 0),
+                read_addr1: Input::new("c_read_reg_1", "out"),
+                read_addr2: Input::new("c_read_reg_2", "out"),
+                write_data: Input::new("c_write_data", "out"),
+                write_addr: Input::new("c_write_addr", "out"),
+                write_enable: Input::new("c_write_enable", "out"),
 
                 // data
                 registers: vec![Cell::new(0); 32],

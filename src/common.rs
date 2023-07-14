@@ -107,14 +107,14 @@ impl Ports {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Input {
     pub id: Id,
-    pub index: usize,
+    pub field: Id,
 }
 
 impl Input {
-    pub fn new(id: &str, index: usize) -> Self {
+    pub fn new(id: &str, field: &str) -> Self {
         Input {
             id: id.into(),
-            index,
+            field: field.into(),
         }
     }
 }

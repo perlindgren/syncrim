@@ -19,7 +19,7 @@ pub struct Mem {
     pub data: Input,
     pub addr: Input,
     pub ctrl: Input,
-    pub sign_extend: Input,
+    pub sign: Input,
     pub size: Input,
 
     // memory
@@ -49,7 +49,7 @@ impl Memory {
         (addr % size != 0) as Signal
     }
 
-    fn read(&self, addr: usize, size: usize, sign_extend: bool, big_endian: bool) -> Signal {
+    fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> Signal {
         let data: Vec<u8> = (0..size)
             .map(|i| *self.bytes.borrow().get(&(addr + i)).unwrap_or(&0))
             .collect();
@@ -59,14 +59,14 @@ impl Memory {
         println!("{:x?}", data);
         match size {
             1 => {
-                if sign_extend {
+                if sign {
                     data[0] as i8 as Signal
                 } else {
                     data[0] as Signal
                 }
             }
             2 => {
-                if sign_extend {
+                if sign {
                     if big_endian {
                         println!("read signed half word be");
                         let i_16 = i16::from_be_bytes(data.try_into().unwrap());
@@ -99,7 +99,7 @@ impl Memory {
                 }
             }
             4 => {
-                if sign_extend {
+                if sign {
                     if big_endian {
                         i32::from_be_bytes(data.try_into().unwrap()) as Signal
                     } else {
@@ -199,12 +199,12 @@ impl Component for Mem {
         let addr = simulator.get_input_val(&self.addr) as usize;
         let ctrl = MemCtrl::try_from(simulator.get_input_val(&self.ctrl) as u8).unwrap();
         let size = simulator.get_input_val(&self.size) as usize;
-        let sign_extend = simulator.get_input_val(&self.sign_extend) != 0;
+        let sign = simulator.get_input_val(&self.sign) != 0;
 
         match ctrl {
             MemCtrl::Read => {
                 println!("read addr {:?} size {:?}", addr, size);
-                let value = self.memory.read(addr, size, sign_extend, self.big_endian);
+                let value = self.memory.read(addr, size, sign, self.big_endian);
                 simulator.set_out_val(&self.id, "data", value);
                 let value = self.memory.align(addr, size);
                 println!("align {}", value);
@@ -241,7 +241,7 @@ mod test {
                 Rc::new(ProbeOut::new("addr")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("size")),
-                Rc::new(ProbeOut::new("sign_extend")),
+                Rc::new(ProbeOut::new("sign")),
                 Rc::new(Mem {
                     id: "mem".into(),
                     pos: (0.0, 0.0),
@@ -252,11 +252,11 @@ mod test {
                     big_endian: true, // i.e., big endian
 
                     // ports
-                    data: Input::new("data", 0),
-                    addr: Input::new("addr", 0),
-                    ctrl: Input::new("ctrl", 0),
-                    size: Input::new("size", 0),
-                    sign_extend: Input::new("sign_extend", 0),
+                    data: Input::new("data", "out"),
+                    addr: Input::new("addr", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    size: Input::new("size", "out"),
+                    sign: Input::new("sign", "out"),
 
                     // memory
                     memory: Memory {
@@ -272,8 +272,8 @@ mod test {
         assert_eq!(clock, 1);
 
         // outputs
-        let out = &Input::new("mem", 0);
-        let err = &Input::new("mem", 1);
+        let out = &Input::new("mem", "data");
+        let err = &Input::new("mem", "err");
 
         // reset
         assert_eq!(simulator.get_input_val(out), 0);
@@ -308,7 +308,7 @@ mod test {
 
         println!("<setup for read byte from addr 4>");
         simulator.set_out_val("size", "out", 1);
-        simulator.set_out_val("sign_extend", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true as Signal);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 4);
@@ -317,7 +317,7 @@ mod test {
 
         println!("<setup for read half-word from addr 4>");
         simulator.set_out_val("size", "out", 2);
-        simulator.set_out_val("sign_extend", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true as Signal);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 5);
@@ -326,7 +326,7 @@ mod test {
 
         println!("<setup for read word from addr 4>");
         simulator.set_out_val("size", "out", 4);
-        simulator.set_out_val("sign_extend", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true as Signal);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 6);
@@ -407,7 +407,7 @@ mod test {
                 Rc::new(ProbeOut::new("addr")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("size")),
-                Rc::new(ProbeOut::new("sign_extend")),
+                Rc::new(ProbeOut::new("sign")),
                 Rc::new(Mem {
                     id: "mem".into(),
                     pos: (0.0, 0.0),
@@ -418,11 +418,11 @@ mod test {
                     big_endian: false, // i.e., little endian
 
                     // ports
-                    data: Input::new("data", 0),
-                    addr: Input::new("addr", 0),
-                    ctrl: Input::new("ctrl", 0),
-                    size: Input::new("size", 0),
-                    sign_extend: Input::new("sign_extend", 0),
+                    data: Input::new("data", "out"),
+                    addr: Input::new("addr", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    size: Input::new("size", "out"),
+                    sign: Input::new("sign", "out"),
 
                     // memory
                     memory: Memory {
@@ -439,8 +439,8 @@ mod test {
         assert_eq!(clock, 1);
 
         // outputs
-        let out = &Input::new("mem", 0);
-        let err = &Input::new("mem", 1);
+        let out = &Input::new("mem", "data");
+        let err = &Input::new("mem", "err");
 
         // reset
         assert_eq!(simulator.get_input_val(out), 0);
@@ -476,7 +476,7 @@ mod test {
 
         println!("<setup for read byte from addr 4>");
         simulator.set_out_val("size", "out", 1);
-        simulator.set_out_val("sign_extend", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true as Signal);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 4);
@@ -485,7 +485,7 @@ mod test {
 
         println!("<setup for read half-word from addr 4>");
         simulator.set_out_val("size", "out", 2);
-        simulator.set_out_val("sign_extend", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true as Signal);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 5);
@@ -494,7 +494,7 @@ mod test {
 
         println!("<setup for read word from addr 4>");
         simulator.set_out_val("size", "out", 4);
-        simulator.set_out_val("sign_extend", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true as Signal);
         simulator.clock(&mut clock);
         assert_eq!(clock, 6);
         assert_eq!(simulator.get_input_val(out), 0x0000_00f0);
