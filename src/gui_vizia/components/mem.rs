@@ -9,11 +9,13 @@ use vizia::{
     vg::{Paint, Path},
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for Mem {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Mem View ");
+        trace!("---- Create Mem View ");
 
         View::build(MemView {}, cx, |cx| {
             Label::new(cx, "DataMemory")
@@ -42,7 +44,7 @@ impl View for MemView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        // println!("Memory draw {:?}", bounds);
+        // trace!("Memory draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 0.0, 0.0));

@@ -5,6 +5,7 @@ use petgraph::{
     Graph,
 };
 
+use log::*;
 use std::collections::HashMap;
 use std::{fs::File, io::prelude::*, path::PathBuf};
 
@@ -28,11 +29,11 @@ impl Simulator {
         let mut id_field_index = HashMap::new();
         // allocate storage for lensed outputs
 
-        println!("-- allocate storage for lensed outputs");
+        trace!("-- allocate storage for lensed outputs");
         for c in &component_store.store {
             let (id, ports) = c.get_id_ports();
 
-            println!("id {}, ports {:?}", id, ports);
+            trace!("id {}, ports {:?}", id, ports);
             // start index for outputs related to component
             if id_start_index
                 .insert(id.clone(), lens_values.len())
@@ -69,10 +70,10 @@ impl Simulator {
             node_comp.insert(node, c);
         }
 
-        println!("\nid_node {:?}", id_node);
+        trace!("\nid_node {:?}", id_node);
 
         for (node, c) in &node_comp {
-            println!("node {:?}, comp_id {:?}", node, c.get_id_ports());
+            trace!("node {:?}, comp_id {:?}", node, c.get_id_ports());
         }
 
         // insert edges
@@ -80,7 +81,7 @@ impl Simulator {
             let to_component = id_component.get(to_id).unwrap();
             let (_, ports) = to_component.get_id_ports();
 
-            println!("to_id :{}, ports: {:?}", to_id, ports);
+            trace!("to_id :{}, ports: {:?}", to_id, ports);
 
             if ports.out_type == OutputType::Combinatorial {
                 let to_node = id_node.get(to_id).unwrap();
@@ -90,9 +91,12 @@ impl Simulator {
 
                     let from_node = id_node.get(from_id).unwrap();
                     graph.add_edge(*from_node, *to_node, ());
-                    println!(
+                    trace!(
                         "add_edge {}:{:?} -> {}:{:?}",
-                        from_id, from_node, to_id, to_node
+                        from_id,
+                        from_node,
+                        to_id,
+                        to_node
                     );
                 }
             }
@@ -100,7 +104,7 @@ impl Simulator {
 
         // topological order
         let top = toposort(&graph, None).unwrap();
-        println!("--- top \n{:?}", top);
+        trace!("--- top \n{:?}", top);
 
         let mut ordered_components = vec![];
         for node in &top {
@@ -115,8 +119,6 @@ impl Simulator {
             .map(|c| c.get_id_ports().0)
             .collect();
 
-        // unimplemented!();
-
         let mut simulator = Simulator {
             id_start_index,
             ordered_components,
@@ -128,7 +130,7 @@ impl Simulator {
             graph,
         };
 
-        println!("sim_state {:?}", simulator.sim_state);
+        trace!("sim_state {:?}", simulator.sim_state);
 
         simulator.clock(clock);
         simulator

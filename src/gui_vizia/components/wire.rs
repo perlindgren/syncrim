@@ -9,11 +9,13 @@ use vizia::{
     vg::{Paint, Path},
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for Wire {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Wire View");
+        trace!("---- Create Wire View");
         let surround = 5.0;
         View::build(WireView { surround }, cx, |cx| {
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
@@ -39,7 +41,7 @@ impl View for WireView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        // println!("Wire draw {:?}", bounds);
+        // trace!("Wire draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbaf(0.0, 0.0, 0.1, 0.5));

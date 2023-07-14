@@ -1,6 +1,6 @@
 use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
+use log::*;
 use serde::{Deserialize, Serialize};
-
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
     pub id: Id,
@@ -11,7 +11,7 @@ pub struct Constant {
 #[typetag::serde]
 impl Component for Constant {
     fn to_(&self) {
-        println!("constant {:?}", self.value);
+        trace!("constant {:?}", self.value);
     }
 
     fn get_id_ports(&self) -> (Id, Ports) {

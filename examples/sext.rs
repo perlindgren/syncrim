@@ -2,9 +2,11 @@ use std::{path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
+    fern::fern_setup,
 };
 
 fn main() {
+    fern_setup();
     let cs = ComponentStore {
         store: vec![
             Rc::new(Constant {

@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::path::PathBuf;
-use syncrim::common::ComponentStore;
+use syncrim::{common::ComponentStore, fern::fern_setup};
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -12,6 +12,7 @@ struct Args {
 }
 
 fn main() {
+    fern_setup();
     let args = Args::parse();
     let _path = PathBuf::from(args.model);
 

@@ -1,6 +1,6 @@
 use crate::common::{Component, Id, Input, OutputType, Ports};
+use log::*;
 use serde::{Deserialize, Serialize};
-
 #[derive(Serialize, Deserialize)]
 pub struct Probe {
     pub id: Id,
@@ -11,7 +11,7 @@ pub struct Probe {
 #[typetag::serde]
 impl Component for Probe {
     fn to_(&self) {
-        println!("Probe");
+        trace!("Probe");
     }
 
     fn get_id_ports(&self) -> (Id, Ports) {

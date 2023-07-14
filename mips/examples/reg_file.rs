@@ -4,10 +4,12 @@ use std::{path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input, Signal},
     components::*,
+    fern::fern_setup,
 };
 
 // TODO: fix wires and layout
 fn main() {
+    fern_setup();
     let cs = ComponentStore {
         store: vec![
             Rc::new(Constant {
