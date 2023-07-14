@@ -3,6 +3,7 @@ use crate::common::ComponentStore;
 use std::{fs::File, io::prelude::*, path::PathBuf};
 
 impl ComponentStore {
+    /*
     pub fn load(json: &str) -> Self {
         serde_json::from_str(json).unwrap()
     }
@@ -24,6 +25,7 @@ impl ComponentStore {
     }
 
     pub fn to_(&self) {
-        self.store.iter().for_each(|c| c.to_());
+        self.store.iter().for_each(|c| c.borrow().to_());
     }
+    */
 }

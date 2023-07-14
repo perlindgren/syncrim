@@ -1,8 +1,9 @@
-use crate::gui_egui::helper::offset_helper;
+use crate::gui_egui::helper::{offset_helper, out_of_bounds};
 use crate::{
     common::{EguiComponent, Simulator},
     components::Add,
 };
+use egui::{PointerButton, Sense, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Add {
@@ -12,11 +13,11 @@ impl EguiComponent for Add {
         _simulator: Option<Simulator>,
         offset: egui::Vec2,
         scale: f32,
-        _clip_rect: egui::Rect,
-    ) {
+        clip_rect: egui::Rect,
+    ) -> Option<egui::Response> {
         // 41x81
         // middle: 21x 41y (0 0)
-        let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
+        let oh: fn((f32, f32), f32, Vec2) -> egui::Pos2 = offset_helper;
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
@@ -57,5 +58,44 @@ impl EguiComponent for Add {
                 color: egui::Color32::BLACK,
             },
         ));
+        let rect = egui::Rect {
+            min: oh((-20f32, -40f32), s, o),
+            max: oh((20f32, 40f32), s, o),
+        };
+        let rect = out_of_bounds(rect, clip_rect);
+        let r = ui.allocate_rect(
+            rect,
+            Sense {
+                click: true,
+                drag: true,
+                focusable: true,
+            },
+        );
+        if r.hovered() && !r.dragged() {
+            egui::containers::popup::show_tooltip_for(
+                ui.ctx(),
+                egui::Id::new(self.id.clone()),
+                &rect,
+                |ui| {
+                    ui.label("test");
+                },
+            );
+        }
+        Some(r)
+    }
+
+    fn render_editor(
+        &mut self,
+        ui: &mut egui::Ui,
+        simulator: Option<Simulator>,
+        offset: egui::Vec2,
+        scale: f32,
+        clip_rect: egui::Rect,
+    ) {
+        let resp = Add::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
+        if resp.dragged_by(PointerButton::Primary) {
+            let delta = resp.drag_delta();
+            self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
+        }
     }
 }

@@ -11,7 +11,7 @@ impl EguiComponent for Register {
         offset: egui::Vec2,
         scale: f32,
         _clip_rect: egui::Rect,
-    ) {
+    ) -> Option<egui::Response> {
         // 21x41
         // middle: 11x 21y (0 0)
         let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
@@ -37,5 +37,23 @@ impl EguiComponent for Register {
                 color: egui::Color32::BLACK,
             },
         ));
+        None
     }
+
+    /*
+    fn interactive_rect(&self, ui: &mut egui::Ui, offset: egui::Vec2, scale: f32) -> egui::Rect {
+        // 21x41
+        // middle: 11x 21y (0 0)
+        let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
+        let mut offset = offset;
+        offset.x += self.pos.0 * scale;
+        offset.y += self.pos.1 * scale;
+        let s = scale;
+        let o = offset;
+        egui::Rect {
+            min: oh((-10f32, -20f32), s, o),
+            max: oh((10f32, 20f32), s, o),
+        }
+    }
+    */
 }

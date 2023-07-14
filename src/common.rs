@@ -1,5 +1,6 @@
 use petgraph::Graph;
 use serde::{Deserialize, Serialize};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -10,13 +11,15 @@ pub type Signal = u32;
 pub type SignedSignal = i32;
 
 #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
-type Components = Vec<Rc<dyn Component>>;
+type Components = Vec<Rc<RefCell<dyn Component>>>;
 
 #[cfg(feature = "gui-vizia")]
-type Components = Vec<Rc<dyn ViziaComponent>>;
+type Components = Vec<Rc<RefCell<dyn ViziaComponent>>>;
 
+// todo: Probably make a separate ComponentsEditor type
+// so we don't have to use refcell everywhere
 #[cfg(feature = "gui-egui")]
-type Components = Vec<Rc<dyn EguiComponent>>;
+type Components = Vec<Rc<RefCell<dyn EguiComponent>>>;
 
 #[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
@@ -31,7 +34,7 @@ pub struct Simulator {
     pub graph: Graph<String, ()>,
 }
 
-#[derive(Serialize, Deserialize)]
+//#[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
     pub store: Components,
 }
@@ -71,6 +74,16 @@ pub trait ViziaComponent: Component {
 pub trait EguiComponent: Component {
     fn render(
         &self,
+        _ui: &mut egui::Ui,
+        _simulator: Option<Simulator>,
+        _offset: egui::Vec2,
+        _scale: f32,
+        _clip_rect: egui::Rect,
+    ) -> Option<egui::Response> {
+        None
+    }
+    fn render_editor(
+        &mut self,
         _ui: &mut egui::Ui,
         _simulator: Option<Simulator>,
         _offset: egui::Vec2,

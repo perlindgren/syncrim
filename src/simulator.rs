@@ -28,7 +28,7 @@ impl Simulator {
 
         println!("-- allocate storage for lensed outputs");
         for c in &component_store.store {
-            let (id, ports) = c.get_id_ports();
+            let (id, ports) = c.borrow().get_id_ports();
 
             println!("id {}, ports {:?}", id, ports);
             // start index for outputs related to component
@@ -58,19 +58,19 @@ impl Simulator {
         println!("\nid_node {:?}", id_node);
 
         for (node, c) in &node_comp {
-            println!("node {:?}, comp_id {:?}", node, c.get_id_ports());
+            println!("node {:?}, comp_id {:?}", node, c.borrow().get_id_ports());
         }
 
         // insert edges
         for (to_id, c) in &id_component {
             let to_component = id_component.get(to_id).unwrap();
-            let (_, ports) = to_component.get_id_ports();
+            let (_, ports) = to_component.borrow().get_id_ports();
 
             println!("to_id :{}, ports: {:?}", to_id, ports);
 
             if ports.out_type == OutputType::Combinatorial {
                 let to_node = id_node.get(to_id).unwrap();
-                let (_, ports) = c.get_id_ports();
+                let (_, ports) = c.borrow().get_id_ports();
                 for in_port in &ports.inputs {
                     let from_id = &in_port.id;
 
@@ -98,7 +98,7 @@ impl Simulator {
 
         let component_ids: Vec<String> = ordered_components
             .iter()
-            .map(|c| c.get_id_ports().0)
+            .map(|c| c.borrow().get_id_ports().0)
             .collect();
 
         let mut simulator = Simulator {
@@ -150,7 +150,7 @@ impl Simulator {
         let ordered_components = self.ordered_components.clone();
 
         for component in ordered_components {
-            component.evaluate(self);
+            component.borrow().evaluate(self);
         }
         *clock = self.history.len();
     }

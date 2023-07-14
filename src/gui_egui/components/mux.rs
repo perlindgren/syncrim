@@ -11,7 +11,7 @@ impl EguiComponent for Mux {
         offset: egui::Vec2,
         scale: f32,
         _clip_rect: egui::Rect,
-    ) {
+    ) -> Option<egui::Response> {
         // 41x(20*ports + 11)
         // middle: 21x ((20*ports + 10)/2+1)y (0 0)
         let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
@@ -58,5 +58,24 @@ impl EguiComponent for Mux {
                 color: egui::Color32::RED,
             },
         ));
+        None
     }
+
+    /*
+    fn interactive_rect(&self, ui: &mut egui::Ui, offset: egui::Vec2, scale: f32) -> egui::Rect {
+        // 41x(20*ports + 11)
+        // middle: 21x ((20*ports + 10)/2+1)y (0 0)
+        let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
+        let mut offset = offset;
+        offset.x += self.pos.0 * scale;
+        offset.y += self.pos.1 * scale;
+        let s = scale;
+        let o = offset;
+        let pa = self.m_in.len() as f32;
+        egui::Rect {
+            min: oh((-20f32, pa * (-10f32) - 10f32), s, o),
+            max: oh((20f32, pa * (10f32) + 10f32), s, o),
+        }
+    }
+    */
 }

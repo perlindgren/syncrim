@@ -118,7 +118,7 @@ impl Gui {
             ui.set_clip_rect(self.clip_rect);
             // Don't draw over the rest of the ui
             for c in &self.simulator.ordered_components {
-                c.render(
+                c.borrow().render(
                     ui,
                     Some(self.simulator.clone()),
                     self.offset + self.pan,
