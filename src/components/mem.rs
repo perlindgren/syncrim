@@ -1,8 +1,8 @@
 use crate::common::{Component, Id, Input, OutputType, Ports, Signal, Simulator};
+use log::*;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
-
 use std::{cell::RefCell, collections::HashMap, convert::TryFrom};
 
 #[derive(Serialize, Deserialize)]
@@ -56,7 +56,7 @@ impl Memory {
 
         let data = data.as_slice();
 
-        println!("{:x?}", data);
+        trace!("{:x?}", data);
         match size {
             1 => {
                 if sign {
@@ -68,33 +68,33 @@ impl Memory {
             2 => {
                 if sign {
                     if big_endian {
-                        println!("read signed half word be");
+                        trace!("read signed half word be");
                         let i_16 = i16::from_be_bytes(data.try_into().unwrap());
-                        println!("i_16 {:x?}", i_16);
+                        trace!("i_16 {:x?}", i_16);
                         let i_32 = i_16 as i32;
-                        println!("i_32 {:x?}", i_32);
+                        trace!("i_32 {:x?}", i_32);
                         i_32 as Signal
                     } else {
-                        println!("read signed half word le");
+                        trace!("read signed half word le");
                         let i_16 = i16::from_le_bytes(data.try_into().unwrap());
-                        println!("i_16 {:x?}", i_16);
+                        trace!("i_16 {:x?}", i_16);
                         let i_32 = i_16 as i32;
-                        println!("i_32 {:x?}", i_32);
+                        trace!("i_32 {:x?}", i_32);
                         i_32 as Signal
                     }
                 } else if big_endian {
-                    println!("read unsigned half word be");
+                    trace!("read unsigned half word be");
                     let u_16 = u16::from_be_bytes(data.try_into().unwrap());
-                    println!("u_16 {:x?}", u_16);
+                    trace!("u_16 {:x?}", u_16);
                     let u_32 = u_16 as u32;
-                    println!("u_32 {:x?}", u_32);
+                    trace!("u_32 {:x?}", u_32);
                     u_32 as Signal
                 } else {
-                    println!("read unsigned half word le");
+                    trace!("read unsigned half word le");
                     let u_16 = u16::from_le_bytes(data.try_into().unwrap());
-                    println!("u_16 {:x?}", u_16);
+                    trace!("u_16 {:x?}", u_16);
                     let u_32 = u_16 as u32;
-                    println!("u_32 {:x?}", u_32);
+                    trace!("u_32 {:x?}", u_32);
                     u_32 as Signal
                 }
             }
@@ -118,12 +118,12 @@ impl Memory {
     fn write(&self, addr: usize, size: usize, big_endian: bool, data: Signal) {
         match size {
             1 => {
-                println!("write byte");
+                trace!("write byte");
                 self.bytes.borrow_mut().insert(addr, data as u8);
             }
             2 => {
                 if big_endian {
-                    println!("write half word be");
+                    trace!("write half word be");
                     (data as u16)
                         .to_be_bytes()
                         .iter()
@@ -132,7 +132,7 @@ impl Memory {
                             self.bytes.borrow_mut().insert(addr + i, *bytes);
                         })
                 } else {
-                    println!("write half word le");
+                    trace!("write half word le");
                     (data as u16)
                         .to_le_bytes()
                         .iter()
@@ -145,7 +145,7 @@ impl Memory {
 
             4 => {
                 if big_endian {
-                    println!("write word be");
+                    trace!("write word be");
                     data.to_be_bytes()
                         .iter()
                         .enumerate()
@@ -153,7 +153,7 @@ impl Memory {
                             self.bytes.borrow_mut().insert(addr + i, *bytes);
                         })
                 } else {
-                    println!("write word le");
+                    trace!("write word le");
                     data.to_le_bytes()
                         .iter()
                         .enumerate()
@@ -180,7 +180,7 @@ pub enum MemCtrl {
 #[typetag::serde()]
 impl Component for Mem {
     fn to_(&self) {
-        println!("Mem");
+        trace!("Mem");
     }
 
     fn get_id_ports(&self) -> (Id, Ports) {
@@ -203,26 +203,26 @@ impl Component for Mem {
 
         match ctrl {
             MemCtrl::Read => {
-                println!("read addr {:?} size {:?}", addr, size);
+                trace!("read addr {:?} size {:?}", addr, size);
                 let value = self.memory.read(addr, size, sign, self.big_endian);
                 simulator.set_out_val(&self.id, "data", value);
                 let value = self.memory.align(addr, size);
-                println!("align {}", value);
+                trace!("align {}", value);
                 simulator.set_out_val(&self.id, "err", value); // align
             }
             MemCtrl::Write => {
-                println!("write addr {:?} size {:?}", addr, size);
+                trace!("write addr {:?} size {:?}", addr, size);
                 self.memory.write(addr, size, self.big_endian, data);
                 let value = self.memory.align(addr, size);
-                println!("align {}", value);
+                trace!("align {}", value);
                 simulator.set_out_val(&self.id, "err", value); // align
             }
             MemCtrl::None => {
-                println!("no read/write");
+                trace!("no read/write");
             }
         }
 
-        println!("memory {:?}", self.memory);
+        trace!("memory {:?}", self.memory);
     }
 }
 

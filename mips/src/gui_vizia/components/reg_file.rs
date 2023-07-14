@@ -8,11 +8,13 @@ use syncrim::{
     },
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for RegFile {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create RegFile View");
+        trace!("---- Create RegFile View");
         View::build(RegFileView {}, cx, |cx| {
             Label::new(cx, "Register File")
                 .left(Pixels(10.0))
@@ -36,7 +38,7 @@ impl View for RegFileView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        // println!("InstMem draw {:?}", bounds);
+        // trace!("InstMem draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(Color::rgbf(0.0, 1.0, 1.0));

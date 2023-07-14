@@ -1,4 +1,5 @@
 use crate::common::{Component, Id, Input, OutputType, Ports, Signal, SignedSignal, Simulator};
+use log::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -12,7 +13,7 @@ pub struct Add {
 #[typetag::serde]
 impl Component for Add {
     fn to_(&self) {
-        println!("Add");
+        trace!("Add");
     }
 
     fn get_id_ports(&self) -> (Id, Ports) {
@@ -36,9 +37,12 @@ impl Component for Add {
         let (value, overflow) =
             SignedSignal::overflowing_add(a_in as SignedSignal, b_in as SignedSignal);
 
-        println!(
+        trace!(
             "eval Add a_in {}, b_in {}, value = {}, overflow = {}",
-            a_in, b_in, value, overflow
+            a_in,
+            b_in,
+            value,
+            overflow
         );
 
         // set output

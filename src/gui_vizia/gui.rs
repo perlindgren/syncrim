@@ -1,8 +1,10 @@
 use crate::common::{ComponentStore, Simulator};
-use crate::gui_vizia::{grid::Grid, menu::Menu, transport::Transport, keymap::init_keymap};
+use crate::gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::Transport};
 use rfd::FileDialog;
 use std::path::PathBuf;
 use vizia::prelude::*;
+
+use log::*;
 
 #[derive(Lens, Clone)]
 pub struct GuiData {
@@ -49,7 +51,7 @@ impl Model for GuiData {
         event.map(|app_event, _meta| match app_event {
             GuiEvent::Open => {
                 let files = FileDialog::new().add_filter("json", &["json"]).pick_file();
-                println!("files {:?}", files);
+                trace!("files {:?}", files);
                 if let Some(path_buf) = files {
                     self.path = path_buf;
                     self.open();
@@ -65,7 +67,7 @@ impl Model for GuiData {
             GuiEvent::Play => self.pause = false,
             GuiEvent::Pause => self.pause = true,
             GuiEvent::PlayToggle => self.pause = !self.pause,
-            GuiEvent::Preferences => println!("Preferences"),
+            GuiEvent::Preferences => trace!("Preferences"),
             GuiEvent::ShowAbout => self.show_about = true,
             GuiEvent::HideAbout => self.show_about = false,
             // GuiEvent::SelectComponent(index) => self.selected_id = *index,
@@ -76,13 +78,13 @@ impl Model for GuiData {
 impl GuiData {
     fn open(&mut self) {
         // Re-Open model
-        println!("open path {:?}", self.path);
+        trace!("open path {:?}", self.path);
         let cs = Box::new(ComponentStore::load_file(&self.path));
         let simulator = Simulator::new(&cs, &mut self.clock);
 
         self.simulator = simulator;
 
-        println!("opened");
+        trace!("opened");
     }
 }
 
@@ -93,9 +95,9 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
     simulator.save_dot(&path);
 
     Application::new(move |cx| {
+        cx.add_stylesheet(include_style!("src/gui_vizia/style.css"))
+            .expect("Failed to add stylesheet");
 
-        cx.add_stylesheet(include_style!("src/gui_vizia/style.css")).expect("Failed to add stylesheet");
-        
         // Create keymap
         init_keymap(cx);
 

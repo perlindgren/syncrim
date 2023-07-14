@@ -9,11 +9,13 @@ use vizia::{
     vg::{Paint, Path},
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for Mux {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Add View");
+        trace!("---- Create Add View");
 
         View::build(
             MuxView {
@@ -46,7 +48,7 @@ impl View for MuxView {
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
         let scale = cx.scale_factor();
-        // println!("Mux draw {:?}", bounds);
+        // trace!("Mux draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 0.0, 0.0));
@@ -81,7 +83,7 @@ impl View for MuxView {
 
         let select = simulator.get_input_val(&self.select);
 
-        // println!("----- select = {}", select);
+        // trace!("----- select = {}", select);
         paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));
         let mut path = Path::new();
 

@@ -9,11 +9,13 @@ use vizia::{
     vg::{Paint, Path},
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for Constant {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Constant View");
+        trace!("---- Create Constant View");
         View::build(ConstantView {}, cx, |cx| {
             Label::new(cx, &format!("{:?}", self.value)).hoverable(false);
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
@@ -37,7 +39,7 @@ impl View for ConstantView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        // println!("Constant draw {:?}", bounds);
+        // trace!("Constant draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 1.0, 0.0));

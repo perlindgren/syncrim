@@ -5,9 +5,11 @@ pub struct Hover {
     pinned: bool,
 }
 
+use log::*;
+
 impl Hover {
     pub fn new(cx: &mut Context, pinned: impl Lens<Target = bool>) -> Handle<Self> {
-        println!("---- Create Hover View");
+        trace!("---- Create Hover View");
         View::build(Hover { pinned: false }, cx, |cx| {
             Element::new(cx)
                 .size(Pixels(20.0))

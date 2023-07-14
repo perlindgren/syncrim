@@ -1,7 +1,7 @@
 // use std::fmt::Alignment;
 use crate::common::{Component, Id, Input, OutputType, Ports, Signal, Simulator};
+use log::*;
 use serde::{Deserialize, Serialize};
-
 #[derive(Serialize, Deserialize)]
 pub struct Sext {
     pub id: Id,
@@ -14,7 +14,7 @@ pub struct Sext {
 #[typetag::serde]
 impl Component for Sext {
     fn to_(&self) {
-        println!("Sign Extension");
+        trace!("Sign Extension");
     }
 
     fn get_id_ports(&self) -> (Id, Ports) {
@@ -41,7 +41,7 @@ impl Component for Sext {
             value |= (1 << self.out_size as Signal) - (1 << self.in_size as Signal)
         }
 
-        println!(
+        trace!(
             "{}, {}, {}",
             value,
             1 << (self.out_size as Signal),
