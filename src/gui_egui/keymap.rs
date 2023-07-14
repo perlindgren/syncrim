@@ -1,4 +1,4 @@
-use crate::common::ComponentStore;
+use crate::common::{ComponentStore, Simulator};
 use egui::{Key, KeyboardShortcut, Modifiers};
 
 #[derive(Copy, Clone)]
@@ -207,6 +207,12 @@ pub fn file_editor_toggle_fn(gui: &mut crate::gui_egui::gui::Gui) {
     match gui.editor_use {
         true => {
             gui.editor_use = false;
+            match gui.editor.as_mut() {
+                Some(e) => {
+                    gui.simulator = Simulator::new(&e.component_store, &mut 0);
+                }
+                _ => (),
+            }
             // todo: Make us swap back into simulator mode (create new simulator)
         }
         false => {

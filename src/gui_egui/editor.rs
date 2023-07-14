@@ -1,8 +1,9 @@
-use crate::common::ComponentStore;
+use crate::common::{ComponentStore, Input};
+use crate::components::*;
 use crate::gui_egui::{gui::Gui, helper::offset_helper, menu::Menu};
 use eframe::{egui, Frame};
-use egui::{Color32, Context, Pos2, Rect, Style, Ui, Vec2};
-use std::path::PathBuf;
+use egui::{Color32, Context, PointerButton, Pos2, Rect, Style, Ui, Vec2};
+use std::{cell::RefCell, path::PathBuf, rc::Rc};
 
 pub struct Editor {
     pub component_store: ComponentStore,
@@ -12,6 +13,7 @@ pub struct Editor {
     pub clip_rect: Rect,
     pub side_panel_width: f32,
     pub ui_change: bool,
+    pub library: ComponentStore,
 }
 
 impl Editor {
@@ -30,6 +32,32 @@ impl Editor {
             },
             side_panel_width: 400f32,
             ui_change: true,
+            library: ComponentStore {
+                store: vec![
+                    Rc::new(RefCell::new(Add {
+                        id: "add".to_string(),
+                        pos: (0.0, 0.0),
+                        a_in: Input::new("c1", 0),
+                        b_in: Input::new("c2", 0),
+                    })),
+                    Rc::new(RefCell::new(Constant {
+                        id: "c1".to_string(),
+                        pos: (0.0, 0.0),
+                        value: 3,
+                    })),
+                    Rc::new(RefCell::new(Wire {
+                        id: "w1".to_string(),
+                        pos: (0.0, 0.0),
+                        delta: (70.0, 0.0),
+                        input: Input::new("c1", 0),
+                    })),
+                    Rc::new(RefCell::new(Probe {
+                        id: "p1".to_string(),
+                        pos: (0.0, 0.0),
+                        input: Input::new("add", 0),
+                    })),
+                ],
+            },
         }
     }
 
@@ -52,7 +80,10 @@ impl Editor {
                 y: top.rect.max.y,
             };
             Editor::gui_to_editor(gui).clip_rect = egui::Rect {
-                min: Editor::gui_to_editor(gui).offset.to_pos2(),
+                min: egui::Pos2 {
+                    x: 0f32,
+                    y: Editor::gui_to_editor(gui).offset.to_pos2().y,
+                },
                 max: egui::Pos2 {
                     x: f32::INFINITY,
                     y: f32::INFINITY,
@@ -92,6 +123,7 @@ impl Editor {
         }
     }
 
+    // Clicking library items will create a clone of them and insert them into the component store
     fn library(ctx: &Context, gui: &mut Gui) {
         egui::SidePanel::left("leftLibrary")
             .default_width(gui.editor.as_mut().unwrap().side_panel_width)
@@ -99,8 +131,39 @@ impl Editor {
             .show(ctx, |ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     ui.horizontal(|ui| {
-
-                        //
+                        let s = Editor::gui_to_editor(gui);
+                        let mut padding = Vec2 {
+                            x: s.offset.x / 2f32,
+                            y: s.offset.y + 10f32,
+                        };
+                        let clip_rect = Rect {
+                            min: Pos2 {
+                                x: 0f32,
+                                y: s.offset.y,
+                            },
+                            max: Pos2 {
+                                x: s.offset.x,
+                                y: f32::INFINITY,
+                            },
+                        };
+                        for c in s.library.store.iter() {
+                            let size = c.borrow_mut().size();
+                            padding.y = padding.y - s.scale * size.min.y;
+                            let resp = c
+                                .borrow_mut()
+                                .render(ui, None, padding, s.scale, clip_rect)
+                                .unwrap();
+                            // Create new component
+                            if resp.drag_started_by(PointerButton::Primary) {
+                                s.component_store.store.push(Rc::new(RefCell::new(Add {
+                                    id: "add".to_string(),
+                                    pos: (0.0, 0.0),
+                                    a_in: Input::new("c1", 0),
+                                    b_in: Input::new("c2", 0),
+                                })));
+                            }
+                            padding.y = resp.rect.max.y + 10f32;
+                        }
                     });
                 });
             });
@@ -128,18 +191,12 @@ impl Editor {
             }
 
             let s = Editor::gui_to_editor(gui);
-            for c in s.component_store.store.clone() {
-                let resp =
+            s.component_store.store.retain(|c| {
+                let delete =
                     c.borrow_mut()
                         .render_editor(ui, None, s.offset + s.pan, s.scale, s.clip_rect);
-                //println!("{:?}", r);
-                //println!("is: {}", ctx.is_pointer_over_area());
-                /*
-                egui::containers::popup::show_tooltip_for(ctx, id, &r, |ui| {
-                    ui.label("asd");
-                });
-                */
-            }
+                !delete
+            });
         });
 
         let cpr = central_panel.response.interact(egui::Sense::drag());

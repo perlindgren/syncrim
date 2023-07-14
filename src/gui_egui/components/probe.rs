@@ -1,7 +1,7 @@
 use crate::common::{EguiComponent, Simulator};
 use crate::components::Probe;
 use crate::gui_egui::helper::out_of_bounds;
-use egui::{Align2, Area, Color32, Order, Rect, RichText, Sense};
+use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, RichText, Sense};
 
 #[typetag::serde]
 impl EguiComponent for Probe {
@@ -54,6 +54,7 @@ impl EguiComponent for Probe {
                 egui::Id::new(self.id.clone()),
                 &rect,
                 |ui| {
+                    ui.label(format!("Id: {}", self.id.clone()));
                     ui.label(format!("{:?}", value));
                 },
             );
@@ -68,11 +69,29 @@ impl EguiComponent for Probe {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
-    ) {
+    ) -> bool {
+        let mut delete = false;
         let resp = Probe::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
         if resp.dragged_by(egui::PointerButton::Primary) {
             let delta = resp.drag_delta();
             self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
+        }
+        if resp.drag_released_by(PointerButton::Primary) {
+            if self.pos.0 < offset.x {
+                println!("delete!");
+                delete = true;
+            }
+        }
+        delete
+    }
+
+    fn size(&self) -> Rect {
+        Rect {
+            min: Pos2 {
+                x: -10f32,
+                y: -10f32,
+            },
+            max: Pos2 { x: 10f32, y: 10f32 },
         }
     }
 }

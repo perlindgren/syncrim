@@ -3,7 +3,7 @@ use crate::{
     common::{EguiComponent, Simulator},
     components::Add,
 };
-use egui::{PointerButton, Sense, Vec2};
+use egui::{PointerButton, Pos2, Rect, Sense, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Add {
@@ -77,7 +77,8 @@ impl EguiComponent for Add {
                 egui::Id::new(self.id.clone()),
                 &rect,
                 |ui| {
-                    ui.label("test");
+                    ui.label(format!("Id: {}", self.id.clone()));
+                    ui.label("ALU");
                 },
             );
         }
@@ -91,11 +92,29 @@ impl EguiComponent for Add {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
-    ) {
+    ) -> bool {
+        let mut delete = false;
         let resp = Add::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
         if resp.dragged_by(PointerButton::Primary) {
             let delta = resp.drag_delta();
             self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
+        }
+        if resp.drag_released_by(PointerButton::Primary) {
+            if self.pos.0 < offset.x {
+                println!("delete!");
+                delete = true;
+            }
+        }
+        delete
+    }
+
+    fn size(&self) -> Rect {
+        Rect {
+            min: Pos2 {
+                x: -20f32,
+                y: -40f32,
+            },
+            max: Pos2 { x: 20f32, y: 40f32 },
         }
     }
 }

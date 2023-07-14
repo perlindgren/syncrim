@@ -89,7 +89,11 @@ pub trait EguiComponent: Component {
         _offset: egui::Vec2,
         _scale: f32,
         _clip_rect: egui::Rect,
-    ) {
+    ) -> bool {
+        false
+    }
+    fn size(&self) -> egui::Rect {
+        egui::Rect::NOTHING
     }
 }
 
