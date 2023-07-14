@@ -22,7 +22,6 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
-      - run: rustup component add clippy
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
