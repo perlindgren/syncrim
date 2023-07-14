@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, Output, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct InstrMem {
@@ -21,7 +21,7 @@ impl Component for InstrMem {
             Ports {
                 inputs: vec![self.pc.clone()],
                 out_type: OutputType::Combinatorial,
-                outputs: vec![Output::Function],
+                outputs: vec!["out".into()],
             },
         )
     }
@@ -34,6 +34,6 @@ impl Component for InstrMem {
         let instr = self.instr[(pc / 4) as usize];
         // set output
         println!("--- output {}", instr);
-        simulator.set_id_index(&self.id, 0, instr);
+        simulator.set_out_val(&self.id, "out", instr);
     }
 }

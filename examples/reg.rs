@@ -15,24 +15,24 @@ fn main() {
             Rc::new(Register {
                 id: "reg".to_string(),
                 pos: (200.0, 100.0),
-                r_in: Input::new("c", 0),
+                r_in: Input::new("c", "out"),
             }),
             Rc::new(Wire {
                 id: "w1".to_string(),
                 pos: (160.0, 100.0),
                 delta: (30.0, 0.0),
-                input: Input::new("c", 0),
+                input: Input::new("c", "out"),
             }),
             Rc::new(Wire {
                 id: "w2".to_string(),
                 pos: (210.0, 100.0),
                 delta: (30.0, 0.0),
-                input: Input::new("reg", 0),
+                input: Input::new("reg", "out"),
             }),
             Rc::new(Probe {
                 id: "p_reg".to_string(),
                 pos: (250.0, 100.0),
-                input: Input::new("reg", 0),
+                input: Input::new("reg", "out"),
             }),
         ],
     };

@@ -1,9 +1,9 @@
-use crate::common::{Component, Input, Output, OutputType, Ports, Signal, SignedSignal, Simulator};
+use crate::common::{Component, Id, Input, OutputType, Ports, Signal, SignedSignal, Simulator};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Add {
-    pub id: String,
+    pub id: Id,
     pub pos: (f32, f32),
     pub a_in: Input,
     pub b_in: Input,
@@ -15,14 +15,14 @@ impl Component for Add {
         println!("Add");
     }
 
-    fn get_id_ports(&self) -> (String, Ports) {
+    fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![self.a_in.clone(), self.b_in.clone()],
-                out_type: OutputType::Combinatorial,
-                outputs: vec![Output::Function; 2],
-            },
+            Ports::new(
+                vec![&self.a_in, &self.b_in],
+                OutputType::Combinatorial,
+                vec!["out", "overflow"],
+            ),
         )
     }
 
@@ -42,7 +42,7 @@ impl Component for Add {
         );
 
         // set output
-        simulator.set_id_index(&self.id, 0, value as Signal);
-        simulator.set_id_index(&self.id, 1, Signal::from(overflow));
+        simulator.set_out_val(&self.id, "out", value as Signal);
+        simulator.set_out_val(&self.id, "overflow", Signal::from(overflow));
     }
 }

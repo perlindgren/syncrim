@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
-use syncrim::common::{Component, Input, Output, OutputType, Ports, Signal, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct RegFile {
@@ -46,7 +46,7 @@ impl Component for RegFile {
             Ports {
                 inputs: vec![self.read_addr1.clone(), self.read_addr2.clone()],
                 out_type: OutputType::Combinatorial,
-                outputs: vec![Output::Function; 2],
+                outputs: vec!["reg_a".into(), "reg_b".into()],
             },
         )
     }
@@ -60,16 +60,13 @@ impl Component for RegFile {
             self.registers[write_addr].set(data);
         }
 
-        let base = simulator.get_id_start_index(&self.id);
-        println!("base {}", base);
-        println!("sim_state {:?}", simulator.sim_state);
+        // read after write
+        let reg_value_a = self.read_reg(simulator, &self.read_addr1);
+        println!("reg_value {}", reg_value_a);
+        simulator.set_out_val(&self.id, "reg_a", reg_value_a);
 
-        let reg_value = self.read_reg(simulator, &self.read_addr1);
-        println!("reg_value {}", reg_value);
-        simulator.set(base, reg_value);
-
-        let reg_value = self.read_reg(simulator, &self.read_addr2);
-        println!("reg_value {}", reg_value);
-        simulator.set(base + 1, reg_value);
+        let reg_value_b = self.read_reg(simulator, &self.read_addr2);
+        println!("reg_value {}", reg_value_b);
+        simulator.set_out_val(&self.id, "reg_b", reg_value_b);
     }
 }
