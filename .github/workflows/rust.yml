@@ -2,7 +2,7 @@ name: Rust
 
 on:
   push:
-    branches: ["master"]
+    branches: ["master", "actions"]
   pull_request:
     branches: ["master"]
 
@@ -12,12 +12,14 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
+      - uses: actions/checkout@v3
       - name: Install dependencies
         run: sudo apt-get install librust-atk-dev librust-gdk-dev
+      - name: Install Rust
+        run: rustup toolchain install stable --profile minimal
       - uses: rui314/setup-mold@v1
-      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
       - run: rustup component add clippy
