@@ -8,6 +8,8 @@ Tracking changes per date:
 
 - WIP support for named outputs.
 
+- Added caching to the Github workflow to improve job times.
+
 ## 230713
 
 - Added bounds checking for `Simulator` (`set_id_index`, `get_input_val`), panics on out of bounds.
