@@ -104,8 +104,8 @@ impl Simulator {
 
         let mut ordered_components = vec![];
         for node in &top {
-            // #[allow(suspicious_double_ref_op)] // changed in nightly
-            #[allow(clippy::clone_double_ref)]
+            // #[allow(clippy::clone_double_ref)] // old lint
+            #[allow(suspicious_double_ref_op)] // changed in Rust 1.71
             let c = (**node_comp.get(node).unwrap()).clone();
             ordered_components.push(c);
         }

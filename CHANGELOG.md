@@ -4,6 +4,8 @@ Tracking changes per date:
 
 ## 230714
 
+- Fixed clippy lint for Rust 1.71
+
 - WIP support for named outputs.
 
 ## 230713
