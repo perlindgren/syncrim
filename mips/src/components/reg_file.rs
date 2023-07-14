@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
-use syncrim::common::{Component, Input, Output, OutputType, Ports, Signal, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct RegFile {
@@ -46,7 +46,7 @@ impl Component for RegFile {
             Ports {
                 inputs: vec![self.read_addr1.clone(), self.read_addr2.clone()],
                 out_type: OutputType::Combinatorial,
-                outputs: vec![Output::Function; 2],
+                outputs: vec!["reg_a".into(), "reg_b".into()],
             },
         )
     }

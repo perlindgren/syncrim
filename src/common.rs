@@ -8,6 +8,7 @@ use vizia::prelude::*;
 
 pub type Signal = u32;
 pub type SignedSignal = i32;
+pub type Id = String;
 
 #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
 type Components = Vec<Rc<dyn Component>>;
@@ -27,9 +28,10 @@ pub struct Simulator {
     pub ordered_components: Components,
     pub sim_state: Vec<Signal>,
     pub id_nr_outputs: IdNrOutputs,
+    pub id_field_index: IdFieldIndex,
     pub history: Vec<Vec<Signal>>,
-    pub component_ids: Vec<String>,
-    pub graph: Graph<String, ()>,
+    pub component_ids: Vec<Id>,
+    pub graph: Graph<Id, ()>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -43,9 +45,11 @@ pub struct ComponentStore {
 // select input is index 15
 // the first input is index 16
 // the second input is index 17, etc.
-pub type IdStartIndex = HashMap<String, usize>;
+pub type IdStartIndex = HashMap<Id, usize>;
 
-pub type IdNrOutputs = HashMap<String, usize>;
+pub type IdNrOutputs = HashMap<Id, usize>;
+
+pub type IdFieldIndex = HashMap<(Id, Id), usize>;
 
 // Common functionality for all components
 #[typetag::serde(tag = "type")]
@@ -54,7 +58,7 @@ pub trait Component {
     fn to_(&self) {}
 
     /// returns the (id, Ports) of the component
-    fn get_id_ports(&self) -> (String, Ports);
+    fn get_id_ports(&self) -> (Id, Ports);
 
     /// evaluation function
     fn evaluate(&self, _simulator: &mut Simulator) {}
@@ -87,19 +91,29 @@ pub trait EguiComponent: Component {
 pub struct Ports {
     pub inputs: Vec<Input>,
     pub out_type: OutputType,
-    pub outputs: Vec<Output>,
+    pub outputs: Vec<Id>,
+}
+
+impl Ports {
+    pub fn new(inputs: Vec<&Input>, out_type: OutputType, outputs: Vec<&str>) -> Self {
+        Ports {
+            inputs: inputs.into_iter().cloned().collect(),
+            out_type,
+            outputs: outputs.into_iter().map(|s| s.into()).collect(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Input {
-    pub id: String,
+    pub id: Id,
     pub index: usize,
 }
 
 impl Input {
     pub fn new(id: &str, index: usize) -> Self {
         Input {
-            id: id.to_string(),
+            id: id.into(),
             index,
         }
     }

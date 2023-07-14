@@ -32,8 +32,8 @@ fn test_add() {
     assert_eq!(simulator.get_input_val(add_overflow), false as Signal);
 
     println!("<setup for clock 2>");
-    simulator.set_id_index("po1", 0, 42);
-    simulator.set_id_index("po2", 0, 1337);
+    simulator.set_out_val("po1", "out", 42);
+    simulator.set_out_val("po2", "out", 1337);
     println!("sim_state {:?}", simulator.sim_state);
     println!("<clock>");
     simulator.clock(&mut clock);
@@ -44,8 +44,8 @@ fn test_add() {
 
     // trigger positive overflow
     println!("<setup for clock 3>");
-    simulator.set_id_index("po1", 0, Signal::MAX / 2);
-    simulator.set_id_index("po2", 0, 1);
+    simulator.set_out_val("po1", "out", Signal::MAX / 2);
+    simulator.set_out_val("po2", "out", 1);
     println!("sim_state {:?}", simulator.sim_state);
     println!("<clock>");
     simulator.clock(&mut clock);
