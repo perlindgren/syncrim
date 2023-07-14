@@ -1,4 +1,4 @@
-use crate::common::{Component, ComponentStore, Input, OutputType, Signal, Simulator};
+use crate::common::{Component, ComponentStore, Id, Input, OutputType, Signal, Simulator};
 use petgraph::{
     algo::toposort,
     dot::{Config, Dot},
@@ -25,6 +25,7 @@ impl Simulator {
         let mut id_component = HashMap::new(); // IdComponent(HashMap::new());
 
         let mut id_nr_outputs = HashMap::new();
+        let mut id_field_index = HashMap::new();
         // allocate storage for lensed outputs
 
         println!("-- allocate storage for lensed outputs");
@@ -37,16 +38,22 @@ impl Simulator {
                 .insert(id.clone(), lens_values.len())
                 .is_some()
             {
-                panic!("Component identifier {} is defined twice", id);
+                panic!("Component identifier {:?} is defined twice", id);
             }
 
             id_component.insert(id.clone(), c);
 
             // create placeholder for output
             #[allow(clippy::same_item_push)]
-            for _ in ports.outputs.clone() {
+            for (index, field_id) in ports.outputs.iter().enumerate() {
                 // create the value with a default to 0
                 lens_values.push(0);
+                if id_field_index
+                    .insert((id.clone(), field_id.into()), index)
+                    .is_some()
+                {
+                    panic!("Component {:?} field {:?} is defined twice", id, field_id)
+                };
             }
             id_nr_outputs.insert(id.clone(), ports.outputs.len());
         }
@@ -103,16 +110,19 @@ impl Simulator {
             ordered_components.push(c);
         }
 
-        let component_ids: Vec<String> = ordered_components
+        let component_ids: Vec<Id> = ordered_components
             .iter()
             .map(|c| c.get_id_ports().0)
             .collect();
 
+        // unimplemented!();
+
         let mut simulator = Simulator {
             id_start_index,
             ordered_components,
-            sim_state: lens_values,
             id_nr_outputs,
+            id_field_index,
+            sim_state: lens_values,
             history: vec![],
             component_ids,
             graph,
@@ -125,46 +135,51 @@ impl Simulator {
     }
 
     /// get input by index
-    pub fn get(&self, index: usize) -> Signal {
+    pub(crate) fn get(&self, index: usize) -> Signal {
         self.sim_state[index]
     }
 
     /// get input value
     pub fn get_input_val(&self, input: &Input) -> Signal {
         let nr_out = *self.id_nr_outputs.get(&input.id).unwrap();
-        if input.index < nr_out {
+        let index = *self
+            .id_field_index
+            .get(&(input.id.clone(), input.field.clone()))
+            .unwrap_or_else(|| {
+                panic!(
+                    "Component {:?}, field {:?} not found.",
+                    input.id, input.field
+                )
+            });
+        if index < nr_out {
             let start_index = *self.id_start_index.get(&input.id).unwrap();
-            self.get(start_index + input.index)
+            self.get(start_index + index)
         } else {
             panic!(
-                "Attempt to read {} at index {}, where {} has only {} outputs.",
-                input.id, input.index, input.id, nr_out
+                "ICE: Attempt to read {:?} at index {}, where {:?} has only {} outputs.",
+                input.id, index, input.id, nr_out
             )
         }
     }
 
     /// get start index by id
-    pub fn get_id_start_index(&self, id: &str) -> usize {
+    pub(crate) fn get_id_start_index(&self, id: &str) -> usize {
         *self.id_start_index.get(id).unwrap()
     }
 
-    /// set value by index
-    pub fn set(&mut self, index: usize, value: Signal) {
+    // set value by index
+    fn set(&mut self, index: usize, value: Signal) {
         self.sim_state[index] = value;
     }
 
-    /// set value by id and offset (index)
-    pub fn set_id_index(&mut self, id: &str, index: usize, value: Signal) {
-        let nr_out = *self.id_nr_outputs.get(id).unwrap();
-        if index < nr_out {
-            let start_index = self.get_id_start_index(id);
-            self.set(start_index + index, value);
-        } else {
-            panic!(
-                "Attempt to write to {} at index {}, where {} has only {} outputs.",
-                id, index, id, nr_out
-            )
-        }
+    /// set value by Id (instance) and Id (field)
+    pub fn set_out_val(&mut self, id: &str, field: &str, value: Signal) {
+        let index = *self
+            .id_field_index
+            .get(&(id.into(), field.into()))
+            .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
+        let start_index = self.get_id_start_index(id);
+        self.set(start_index + index, value);
     }
 
     /// iterate over the evaluators and increase clock by one
@@ -228,7 +243,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "Component identifier po1 is defined twice")]
+    #[should_panic(expected = "Component identifier \"po1\" is defined twice")]
     fn test_redefined() {
         let cs = ComponentStore {
             store: vec![Rc::new(ProbeOut::new("po1")), Rc::new(ProbeOut::new("po1"))],
@@ -241,33 +256,6 @@ mod test {
     }
 
     #[test]
-    fn test_set_id_out() {
-        let cs = ComponentStore {
-            store: vec![Rc::new(ProbeOut::new("po1"))],
-        };
-
-        let mut clock = 0;
-        let mut simulator = Simulator::new(&cs, &mut clock);
-
-        assert_eq!(clock, 1);
-        simulator.set_id_index("po1", 0, 7);
-    }
-
-    #[test]
-    #[should_panic(expected = "Attempt to write to po1 at index 1, where po1 has only 1 outputs.")]
-    fn test_set_id_out_of_range() {
-        let cs = ComponentStore {
-            store: vec![Rc::new(ProbeOut::new("po1"))],
-        };
-
-        let mut clock = 0;
-        let mut simulator = Simulator::new(&cs, &mut clock);
-
-        assert_eq!(clock, 1);
-        simulator.set_id_index("po1", 1, 7);
-    }
-
-    #[test]
     fn test_get_input_val() {
         let cs = ComponentStore {
             store: vec![Rc::new(ProbeOut::new("po1"))],
@@ -277,11 +265,11 @@ mod test {
         let simulator = Simulator::new(&cs, &mut clock);
 
         assert_eq!(clock, 1);
-        let _ = simulator.get_input_val(&Input::new("po1", 0));
+        let _ = simulator.get_input_val(&Input::new("po1", "out"));
     }
 
     #[test]
-    #[should_panic(expected = "Attempt to read po1 at index 1, where po1 has only 1 outputs.")]
+    #[should_panic(expected = "Component \"po1\", field \"missing\" not found.")]
     fn test_get_input_out_of_range() {
         let cs = ComponentStore {
             store: vec![Rc::new(ProbeOut::new("po1"))],
@@ -291,6 +279,6 @@ mod test {
         let simulator = Simulator::new(&cs, &mut clock);
 
         assert_eq!(clock, 1);
-        let _ = simulator.get_input_val(&Input::new("po1", 1));
+        let _ = simulator.get_input_val(&Input::new("po1", "missing"));
     }
 }

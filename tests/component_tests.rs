@@ -13,8 +13,8 @@ fn test_add() {
             Rc::new(Add {
                 id: "add".to_string(),
                 pos: (0.0, 0.0),
-                a_in: Input::new("po1", 0),
-                b_in: Input::new("po2", 0),
+                a_in: Input::new("po1", "out"),
+                b_in: Input::new("po2", "out"),
             }),
         ],
     };
@@ -24,16 +24,16 @@ fn test_add() {
     assert_eq!(clock, 1);
 
     // outputs
-    let add_val = &Input::new("add", 0);
-    let add_overflow = &Input::new("add", 1);
+    let add_val = &Input::new("add", "out");
+    let add_overflow = &Input::new("add", "overflow");
 
     // reset
     assert_eq!(simulator.get_input_val(add_val), 0 + 0);
     assert_eq!(simulator.get_input_val(add_overflow), false as Signal);
 
     println!("<setup for clock 2>");
-    simulator.set_id_index("po1", 0, 42);
-    simulator.set_id_index("po2", 0, 1337);
+    simulator.set_out_val("po1", "out", 42);
+    simulator.set_out_val("po2", "out", 1337);
     println!("sim_state {:?}", simulator.sim_state);
     println!("<clock>");
     simulator.clock(&mut clock);
@@ -44,8 +44,8 @@ fn test_add() {
 
     // trigger positive overflow
     println!("<setup for clock 3>");
-    simulator.set_id_index("po1", 0, Signal::MAX / 2);
-    simulator.set_id_index("po2", 0, 1);
+    simulator.set_out_val("po1", "out", Signal::MAX / 2);
+    simulator.set_out_val("po2", "out", 1);
     println!("sim_state {:?}", simulator.sim_state);
     println!("<clock>");
     simulator.clock(&mut clock);

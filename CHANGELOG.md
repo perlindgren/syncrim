@@ -4,6 +4,10 @@ Tracking changes per date:
 
 ## 230714
 
+- WIP support for named outputs.
+
+## 230713
+
 - Added bounds checking for `Simulator` (`set_id_index`, `get_input_val`), panics on out of bounds.
 - Added re-definition check for `Simulator`, panics on re-definition.
 - Added units tests to the above.

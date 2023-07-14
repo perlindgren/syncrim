@@ -18,11 +18,11 @@ fn main() {
                 big_endian: true,
 
                 // ports
-                data: Input::new("data", 0),
-                addr: Input::new("addr", 0),
-                ctrl: Input::new("ctrl", 0),
-                sign_extend: Input::new("sext", 0),
-                size: Input::new("size", 0),
+                data: Input::new("data", "out"),
+                addr: Input::new("addr", "out"),
+                ctrl: Input::new("ctrl", "out"),
+                sign: Input::new("sext", "out"),
+                size: Input::new("size", "out"),
 
                 // memory
                 memory: Memory::new(),
@@ -58,48 +58,48 @@ fn main() {
                 id: "w1".to_string(),
                 pos: (100.0, 110.0),
                 delta: (0.0, 40.0),
-                input: Input::new("data", 0),
+                input: Input::new("data", "out"),
             }),
             Rc::new(Wire {
                 id: "w2".to_string(),
                 pos: (120.0, 110.0),
                 delta: (0.0, 40.0),
-                input: Input::new("addr", 0),
+                input: Input::new("addr", "out"),
             }),
             Rc::new(Wire {
                 id: "w3".to_string(),
                 pos: (140.0, 110.0),
                 delta: (0.0, 40.0),
-                input: Input::new("sext", 0),
+                input: Input::new("sext", "out"),
             }),
             Rc::new(Wire {
                 id: "w4".to_string(),
                 pos: (160.0, 110.0),
                 delta: (0.0, 40.0),
-                input: Input::new("size", 0),
+                input: Input::new("size", "out"),
             }),
             Rc::new(Wire {
                 id: "w5".to_string(),
                 pos: (220.0, 110.0),
                 delta: (0.0, 40.0),
-                input: Input::new("mem", 0),
+                input: Input::new("mem", "data"),
             }),
             Rc::new(Wire {
                 id: "w6".to_string(),
                 pos: (240.0, 110.0),
                 delta: (0.0, 40.0),
-                input: Input::new("mem", 1),
+                input: Input::new("mem", "err"),
             }),
             // probes
             Rc::new(Probe {
                 id: "out".to_string(),
                 pos: (220.0, 100.0),
-                input: Input::new("mem", 0),
+                input: Input::new("mem", "data"),
             }),
             Rc::new(Probe {
                 id: "err".to_string(),
                 pos: (240.0, 100.0),
-                input: Input::new("mem", 1),
+                input: Input::new("mem", "err"),
             }),
         ],
     };

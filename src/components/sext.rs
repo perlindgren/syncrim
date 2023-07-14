@@ -1,10 +1,10 @@
 // use std::fmt::Alignment;
-use crate::common::{Component, Input, Output, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Id, Input, OutputType, Ports, Signal, Simulator};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Sext {
-    pub id: String,
+    pub id: Id,
     pub pos: (f32, f32),
     pub sext_in: Input,
     pub in_size: u8,
@@ -17,14 +17,10 @@ impl Component for Sext {
         println!("Sign Extension");
     }
 
-    fn get_id_ports(&self) -> (String, Ports) {
+    fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![self.sext_in.clone()],
-                out_type: OutputType::Combinatorial,
-                outputs: vec![Output::Function],
-            },
+            Ports::new(vec![&self.sext_in], OutputType::Combinatorial, vec!["out"]),
         )
     }
 
@@ -53,6 +49,6 @@ impl Component for Sext {
         );
 
         // set output
-        simulator.set_id_index(&self.id, 0, value);
+        simulator.set_out_val(&self.id, "out", value);
     }
 }
