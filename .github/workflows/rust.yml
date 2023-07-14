@@ -33,6 +33,3 @@ jobs:
           args: --no-default-features --features gui-egui
       - name: Run tests
         run: cargo test --workspace --no-default-features --features components --verbose
-      - uses: actions/upload-artifact@v3
-        with:
-          path: target/debug/syncrim
