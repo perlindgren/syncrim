@@ -1,8 +1,7 @@
-use serde::{Deserialize, Serialize};
-use std::cell::Cell;
-use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
-
 use log::*;
+use serde::{Deserialize, Serialize};
+use std::{cell::Cell, rc::Rc};
+use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct RegFile {
@@ -19,7 +18,7 @@ pub struct RegFile {
     pub write_enable: Input,
 
     // data, should be an array of 32 Cells, but its harder to manage in Rust (Cell not Copy)
-    pub registers: Vec<Cell<u32>>,
+    pub registers: Rc<Vec<Cell<u32>>>,
 }
 
 impl RegFile {

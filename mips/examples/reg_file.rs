@@ -40,9 +40,9 @@ fn main() {
             // regfile
             Rc::new(RegFile {
                 id: "reg_file".to_string(),
-                pos: (200.0, 150.0),
-                width: 100.0,
-                height: 150.0,
+                pos: (300.0, 200.0),
+                width: 200.0,
+                height: 300.0,
 
                 // ports
                 read_addr1: Input::new("c_read_reg_1", "out"),
@@ -52,7 +52,7 @@ fn main() {
                 write_enable: Input::new("c_write_enable", "out"),
 
                 // data
-                registers: vec![Cell::new(0); 32],
+                registers: Rc::new(vec![Cell::new(0); 32]),
             }),
         ],
     };

@@ -15,7 +15,7 @@ use log::*;
 impl ViziaComponent for Mux {
     // create view
     fn view(&self, cx: &mut Context) {
-        trace!("---- Create Add View");
+        trace!("---- Create Mux View");
 
         View::build(
             MuxView {
