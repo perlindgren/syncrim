@@ -1,8 +1,7 @@
 use log::*;
 use serde::{Deserialize, Serialize};
-use std::convert::From;
-use std::ops::{Deref, DerefMut, Range};
-use std::{cell::Cell, cell::RefCell, rc::Rc};
+use std::ops::{Deref, Range};
+use std::{cell::RefCell, rc::Rc};
 use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
 
 #[derive(Serialize, Deserialize)]
@@ -33,6 +32,12 @@ impl RegStore {
 
     pub fn range() -> Range<u8> {
         Range { start: 0, end: 32 }
+    }
+}
+
+impl Default for RegStore {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

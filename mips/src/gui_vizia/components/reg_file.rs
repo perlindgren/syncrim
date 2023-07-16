@@ -1,13 +1,7 @@
 use crate::components::{RegFile, RegStore};
-use std::{cell::RefCell, rc::Rc};
+
 use syncrim::{
-    common::ViziaComponent,
-    gui_vizia::tooltip::new_component_tooltip,
-    vizia::{
-        self,
-        prelude::*,
-        vg::{Paint, Path},
-    },
+    common::ViziaComponent, gui_vizia::tooltip::new_component_tooltip, vizia::prelude::*,
 };
 
 #[typetag::serde]
@@ -25,8 +19,6 @@ impl ViziaComponent for RegFile {
                     .left(Pixels(10.0))
                     .top(Pixels(10.0));
 
-                // for i in RegStore::default() {
-                // for i in 0..32 {
                 for i in RegStore::range() {
                     let item = RegFileView::registers
                         .map(move |reg| reg.0.borrow().get(i as usize).copied().unwrap());
@@ -55,21 +47,4 @@ impl View for RegFileView {
     fn element(&self) -> Option<&'static str> {
         Some("RegView")
     }
-
-    // fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
-    //     let bounds = cx.bounds();
-    //     // println!("InstMem draw {:?}", bounds);
-
-    //     let mut path = Path::new();
-    //     let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 1.0, 1.0));
-    //     paint.set_line_width(cx.logical_to_physical(1.0));
-
-    //     path.move_to(bounds.left() + 0.5, bounds.top() + 0.5);
-    //     path.line_to(bounds.right() + 0.5, bounds.top() + 0.5);
-    //     path.line_to(bounds.right() + 0.5, bounds.bottom() + 0.5);
-    //     path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
-    //     path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
-
-    //     canvas.fill_path(&path, &paint);
-    // }
 }
