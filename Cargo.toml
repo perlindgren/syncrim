@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [workspace]
-members = ["mips"]
+members = ["mips", "riscv"]
 
 [dependencies]
 clap = { version = "4.3.11", features = ["derive"] }

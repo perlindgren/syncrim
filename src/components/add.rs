@@ -14,6 +14,7 @@ impl Component for Add {
     fn to_(&self) {
         println!("Add");
     }
+    fn to_string(&self)->String{"".to_string()}
 
     fn get_id_ports(&self) -> (Id, Ports) {
         (

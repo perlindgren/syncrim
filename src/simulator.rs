@@ -87,7 +87,6 @@ impl Simulator {
                 let (_, ports) = c.get_id_ports();
                 for in_port in &ports.inputs {
                     let from_id = &in_port.id;
-
                     let from_node = id_node.get(from_id).unwrap();
                     graph.add_edge(*from_node, *to_node, ());
                     println!(
@@ -192,6 +191,18 @@ impl Simulator {
             component.evaluate(self);
         }
         *clock = self.history.len();
+    }
+
+    pub fn c_by_id_str(&self, id: &String) -> String{
+            let ordered_components = self.ordered_components.clone();
+    
+            for component in ordered_components {
+                if component.get_id_ports().0 == id.clone(){
+                    return component.to_string()
+                }
+            }
+            panic!("Could not find component {}", id);
+
     }
 
     /// reverse simulation using history if clock > 1

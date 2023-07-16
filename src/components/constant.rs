@@ -14,6 +14,7 @@ impl Component for Constant {
         println!("constant {:?}", self.value);
     }
 
+    fn to_string(&self)->String{"".to_string()}
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
