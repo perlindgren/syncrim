@@ -64,6 +64,7 @@ fn main() {
                     0x00500093,//addi x1, x0, 5 #x1=0x5
                     0x4020d093,//srai x1, x1, 2 #x1=0x1
                     0xfffff0b7,//lui x1, 0xFFFFF #x1=0xFFFFF000
+                    0xfffff097,//auipc x1, 0xFFFFF #x1=0xFFFFF040
                     0x00000033,//add x0, x0, x0, basically nop before panicking so we can see result.
                     0x00940023,//sb x8, 0(x9) # should panic over opcode for now
 

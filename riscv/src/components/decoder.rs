@@ -205,6 +205,18 @@ impl Component for Decoder {
                 sign_zero_ext_sel = 1; //zero-extend
                 imm_a_mux_data = imm_big;
             }
+            0b0010111 => {//AUIPC
+                alu_operand_a_sel = 1; //big-imm
+                alu_operand_b_sel = 2;  //PC
+                regfile_rd = (instruction & (0b11111<<7)) >> 7;
+                regfile_rs1 = 0; //x0
+                regfile_we = 1; //enable write
+                wb_mux = 0; //ALU source
+                alu_operator = 1; //ADD
+                sign_zero_ext_data = 0; //don't care
+                sign_zero_ext_sel = 1; //don't care
+                imm_a_mux_data = imm_big;
+            }
             _ => {panic!("Invalid opcode! {:b}", opcode)}
         }
 
