@@ -1,5 +1,5 @@
-use crate::components::RegFile;
-use std::{cell::Cell, rc::Rc};
+use crate::components::{RegFile, RegStore};
+use std::{cell::RefCell, rc::Rc};
 use syncrim::{
     common::ViziaComponent,
     gui_vizia::tooltip::new_component_tooltip,
@@ -24,17 +24,14 @@ impl ViziaComponent for RegFile {
                 Label::new(cx, "Register File")
                     .left(Pixels(10.0))
                     .top(Pixels(10.0));
-                List::new(cx, RegFileView::registers.map(|x| *(*x)), |cx, _, item| {
-                    // Label::new(cx, item);
-                    Label::new(cx, "-");
-                });
-                // Binding::new(cx, RegFileView::registers, |cx, wrapper_regs| {
-                //     let regs = wrapper_regs.get(cx);
-                //     List::new(cx, regs, |cx, _, item| {
-                //         //     // Label::new(cx, item);
-                //         //     Label::new(cx, "-");
-                //     });
-                // });
+
+                // for i in RegStore::default() {
+                // for i in 0..32 {
+                for i in RegStore::range() {
+                    let item = RegFileView::registers
+                        .map(move |reg| reg.0.borrow().get(i as usize).copied().unwrap());
+                    Label::new(cx, item);
+                }
             },
         )
         .position_type(PositionType::SelfDirected)
@@ -51,7 +48,7 @@ impl ViziaComponent for RegFile {
 
 #[derive(Lens, Clone)]
 pub struct RegFileView {
-    registers: Rc<Vec<Cell<u32>>>,
+    registers: RegStore,
 }
 
 impl View for RegFileView {

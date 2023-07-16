@@ -1,6 +1,8 @@
 use log::*;
 use serde::{Deserialize, Serialize};
-use std::{cell::Cell, rc::Rc};
+use std::convert::From;
+use std::ops::{Deref, DerefMut, Range};
+use std::{cell::Cell, cell::RefCell, rc::Rc};
 use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
 
 #[derive(Serialize, Deserialize)]
@@ -18,8 +20,35 @@ pub struct RegFile {
     pub write_enable: Input,
 
     // data, should be an array of 32 Cells, but its harder to manage in Rust (Cell not Copy)
-    pub registers: Rc<Vec<Cell<u32>>>,
+    pub registers: RegStore,
 }
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct RegStore(pub Rc<RefCell<[u32; 32]>>);
+
+impl RegStore {
+    pub fn new() -> RegStore {
+        RegStore(Rc::new(RefCell::new([0; 32])))
+    }
+
+    pub fn range() -> Range<u8> {
+        Range { start: 0, end: 32 }
+    }
+}
+
+// impl Deref for RegStore {
+//     type Target = [u32; 32];
+
+//     fn deref(&self) -> &Self::Target {
+//         &self.0.borrow()
+//     }
+// }
+
+// impl DerefMut for RegStore {
+//     fn deref_mut(&mut self) -> &mut Self::Target {
+//         &mut self.0.borrow_mut()
+//     }
+// }
 
 impl RegFile {
     fn read_reg(&self, simulator: &Simulator, input: &Input) -> u32 {
@@ -28,7 +57,7 @@ impl RegFile {
 
         // mips always reads 0;
         if read_addr > 0 {
-            self.registers[read_addr].get()
+            self.registers.0.borrow()[read_addr]
         } else {
             0
         }
@@ -58,7 +87,7 @@ impl Component for RegFile {
             trace!("data {}", data);
             let write_addr = simulator.get_input_val(&self.write_addr) as usize;
             trace!("write_addr {}", write_addr);
-            self.registers[write_addr].set(data);
+            self.registers.0.borrow_mut()[write_addr] = data;
         }
 
         // read after write

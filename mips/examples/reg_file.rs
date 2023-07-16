@@ -1,5 +1,5 @@
 use mips::components::*;
-use std::cell::Cell;
+use std::cell::RefCell;
 use std::{path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input, Signal},
@@ -52,7 +52,7 @@ fn main() {
                 write_enable: Input::new("c_write_enable", "out"),
 
                 // data
-                registers: Rc::new(vec![Cell::new(0); 32]),
+                registers: RegStore::new(),
             }),
         ],
     };
