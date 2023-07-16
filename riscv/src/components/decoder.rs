@@ -33,6 +33,7 @@ impl Component for Decoder {
                     "regfile_we".into(),
                     "sign_zero_ext_sel".into(),
                     "sign_zero_ext_data".into(),
+                    "imm_a_mux_data".into(),
                 ],
             },
         )
@@ -50,6 +51,7 @@ impl Component for Decoder {
         let funct7 = (instruction & (0b1111111<<25))>>25;
         let imm = instruction>>20;
         let shamt = (instruction&(0b11111<<20))>>20;
+        let imm_big = instruction&0xFFFFF000;
         let mut wb_mux = 0;
         let mut alu_operand_a_sel = 0;
         let mut alu_operand_b_sel = 0;
@@ -60,6 +62,7 @@ impl Component for Decoder {
         let mut alu_operator = 0;
         let mut sign_zero_ext_sel = 0;
         let mut sign_zero_ext_data = 0;
+        let mut imm_a_mux_data = 0;
 
         match opcode{
             0b0110011 => { //OP
@@ -190,6 +193,18 @@ impl Component for Decoder {
                     _=>{panic!("Invalid funct3! {:b}", funct3)},
                 }
             }
+            0b0110111 => {//LUI
+                alu_operand_a_sel = 1; //big-imm
+                alu_operand_b_sel = 1;  //imm
+                regfile_rd = (instruction & (0b11111<<7)) >> 7;
+                regfile_rs1 = 0; //x0
+                regfile_we = 1; //enable write
+                wb_mux = 0; //ALU source
+                alu_operator = 1; //ADD
+                sign_zero_ext_data = 0; //add 0
+                sign_zero_ext_sel = 1; //zero-extend
+                imm_a_mux_data = imm_big;
+            }
             _ => {panic!("Invalid opcode! {:b}", opcode)}
         }
 
@@ -203,6 +218,7 @@ impl Component for Decoder {
         simulator.set_out_val(&self.id, "alu_operator", alu_operator);
         simulator.set_out_val(&self.id, "sign_zero_ext_sel", sign_zero_ext_sel);
         simulator.set_out_val(&self.id, "sign_zero_ext_data", sign_zero_ext_data);
+        simulator.set_out_val(&self.id, "imm_a_mux_data", imm_a_mux_data);
 
 
 

@@ -11,20 +11,20 @@ fn main() {
     let cs = ComponentStore {
         store: vec![
             Rc::new(Add {
-                id: "add".to_string(),
+                id: "pc_adder".to_string(),
                 pos: (150.0, 120.0),
-                a_in: Input::new("c1", "out"),
+                a_in: Input::new("pc_adder_c", "out"),
                 b_in: Input::new("reg", "out"),
             }),
             Rc::new(Constant {
-                id: "c1".to_string(),
+                id: "pc_adder_c".to_string(),
                 pos: (100.0, 100.0),
                 value: 4,
             }),
             Rc::new(Register {
                 id: "reg".to_string(),
                 pos: (100.0, 140.0),
-                r_in: Input::new("add", "out"),
+                r_in: Input::new("pc_adder", "out"),
             }),
             Rc::new(InstrMem {
                 id: "instr_mem".to_string(),
@@ -63,6 +63,7 @@ fn main() {
                     0x4020d093,//srai x1, x1, 2 #x1=0xfffffffe
                     0x00500093,//addi x1, x0, 5 #x1=0x5
                     0x4020d093,//srai x1, x1, 2 #x1=0x1
+                    0xfffff0b7,//lui x1, 0xFFFFF #x1=0xFFFFF000
                     0x00000033,//add x0, x0, x0, basically nop before panicking so we can see result.
                     0x00940023,//sb x8, 0(x9) # should panic over opcode for now
 
@@ -138,13 +139,13 @@ fn main() {
                 id:"alu_operand_a_mux".to_string(),
                 pos:(700.0,150.0),
                 select:Input::new("decoder", "alu_operand_a_sel"),
-                m_in:vec![Input::new("reg_file","reg_a")]
+                m_in:vec![Input::new("reg_file","reg_a"),Input::new("decoder","imm_a_mux_data")]
             }),
             Rc::new(Mux{
                 id:"alu_operand_b_mux".to_string(),
                 pos:(700.0,300.0),
                 select:Input::new("decoder", "alu_operand_b_sel"),
-                m_in:vec![Input::new("reg_file","reg_b"),Input::new("imm_szext","out")]
+                m_in:vec![Input::new("reg_file","reg_b"),Input::new("imm_szext","out"),Input::new("pc_adder","out" )]
             }),
 
             Rc::new(ALU{
