@@ -19,7 +19,7 @@ pub struct RegFile {
     pub write_addr: Input,
     pub write_enable: Input,
 
-    // data, should be an array of 32 Cells, but its harder to manage in Rust (Cell not Copy)
+    // data
     pub registers: RegStore,
 }
 
@@ -36,19 +36,13 @@ impl RegStore {
     }
 }
 
-// impl Deref for RegStore {
-//     type Target = [u32; 32];
+impl Deref for RegStore {
+    type Target = RefCell<[u32; 32]>;
 
-//     fn deref(&self) -> &Self::Target {
-//         &self.0.borrow()
-//     }
-// }
-
-// impl DerefMut for RegStore {
-//     fn deref_mut(&mut self) -> &mut Self::Target {
-//         &mut self.0.borrow_mut()
-//     }
-// }
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 impl RegFile {
     fn read_reg(&self, simulator: &Simulator, input: &Input) -> u32 {
@@ -57,7 +51,7 @@ impl RegFile {
 
         // mips always reads 0;
         if read_addr > 0 {
-            self.registers.0.borrow()[read_addr]
+            self.registers.borrow()[read_addr]
         } else {
             0
         }
@@ -87,7 +81,7 @@ impl Component for RegFile {
             trace!("data {}", data);
             let write_addr = simulator.get_input_val(&self.write_addr) as usize;
             trace!("write_addr {}", write_addr);
-            self.registers.0.borrow_mut()[write_addr] = data;
+            self.registers.borrow_mut()[write_addr] = data;
         }
 
         // read after write
