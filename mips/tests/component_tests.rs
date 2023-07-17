@@ -1,5 +1,4 @@
 use mips::components::{RegFile, RegStore};
-use std::cell::Cell;
 use std::rc::Rc;
 use syncrim::{
     common::{ComponentStore, Input, Signal, Simulator},

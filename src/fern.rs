@@ -1,5 +1,8 @@
 // setup fern log
+
+#[allow(unused_imports)]
 use log::LevelFilter;
+
 pub fn fern_setup() {
     let f = fern::Dispatch::new()
         // Perform allocation-free log formatting
