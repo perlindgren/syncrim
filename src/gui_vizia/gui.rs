@@ -130,18 +130,27 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
             .background_color(Color::lightgray())
             .height(Auto);
 
-            Grid::new(cx, |cx| {
-                // (re-)bind all components when simulator changed
-                Binding::new(
-                    cx,
-                    GuiData::simulator.then(Simulator::ordered_components),
-                    |cx, wrapper_oc| {
-                        let oc = wrapper_oc.get(cx);
-                        for c in oc {
-                            c.view(cx);
-                        }
-                    },
-                )
+            HStack::new(cx, |cx| {
+                // Left pane
+                Label::new(cx, "Left").top(Pixels(0.0));
+
+                // Grid area
+                Grid::new(cx, |cx| {
+                    // (re-)bind all components when simulator changed
+                    Binding::new(
+                        cx,
+                        GuiData::simulator.then(Simulator::ordered_components),
+                        |cx, wrapper_oc| {
+                            let oc = wrapper_oc.get(cx);
+                            for c in oc {
+                                c.view(cx);
+                            }
+                        },
+                    )
+                });
+
+                // Right pane
+                Label::new(cx, "Right").top(Pixels(0.0));
             });
 
             //
