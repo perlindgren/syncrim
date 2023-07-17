@@ -1,5 +1,4 @@
-use mips::components::RegFile;
-use std::cell::Cell;
+use mips::components::{RegFile, RegStore};
 use std::rc::Rc;
 use syncrim::{
     common::{ComponentStore, Input, Signal, Simulator},
@@ -31,7 +30,7 @@ fn test_reg_file() {
                 write_enable: Input::new("write_enable", "out"),
 
                 // data
-                registers: vec![Cell::new(0); 32],
+                registers: RegStore::new(),
             }),
         ],
     };

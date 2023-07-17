@@ -2,6 +2,10 @@
 
 Tracking changes per date:
 
+## 230717
+
+- mips/reg_file update, showcasing interior mutability and gui_vizia poc.
+  
 ## 230714
 
 - `fern` based logger.
