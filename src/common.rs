@@ -68,6 +68,9 @@ pub trait Component {
 #[cfg(feature = "gui-vizia")]
 #[typetag::serde(tag = "type")]
 pub trait ViziaComponent: Component {
+    /// create left Vizia view
+    fn left_view(&self, _cx: &mut vizia::context::Context) {}
+
     /// create Vizia view
     fn view(&self, _cx: &mut vizia::context::Context) {}
 }

@@ -30,6 +30,8 @@ pub(crate) enum GuiEvent {
     Preferences,
     ShowAbout,
     HideAbout,
+    ShowLeftPanel,
+    HideLeftPanel,
     // SelectComponent(usize),
 }
 
@@ -70,6 +72,10 @@ impl Model for GuiData {
             GuiEvent::Preferences => trace!("Preferences"),
             GuiEvent::ShowAbout => self.show_about = true,
             GuiEvent::HideAbout => self.show_about = false,
+            GuiEvent::ShowLeftPanel => {
+                error!("Show Left Panel {:?} {:?}", _meta.origin, _meta.target)
+            }
+            GuiEvent::HideLeftPanel => error!("Hide Left Panel {:?}", _meta.origin),
             // GuiEvent::SelectComponent(index) => self.selected_id = *index,
         });
     }
@@ -131,8 +137,27 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
             .height(Auto);
 
             HStack::new(cx, |cx| {
-                // Left pane
-                Label::new(cx, "Left").top(Pixels(0.0));
+                HStack::new(cx, |cx| {
+                    // Left pane
+                    Binding::new(
+                        cx,
+                        GuiData::simulator.then(Simulator::ordered_components),
+                        |cx, wrapper_oc| {
+                            VStack::new(cx, |cx| {
+                                Label::new(cx, "Left").top(Pixels(0.0));
+                                let oc = wrapper_oc.get(cx);
+                                for c in oc {
+                                    VStack::new(cx, |cx| {
+                                        c.left_view(cx);
+                                    })
+                                    .visibility(Visibility::Hidden);
+                                }
+                            })
+                            .border_color(Color::black())
+                            .border_width(Pixels(1.0));
+                        },
+                    );
+                });
 
                 // Grid area
                 Grid::new(cx, |cx| {
@@ -141,10 +166,27 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                         cx,
                         GuiData::simulator.then(Simulator::ordered_components),
                         |cx, wrapper_oc| {
-                            let oc = wrapper_oc.get(cx);
-                            for c in oc {
-                                c.view(cx);
-                            }
+                            VStack::new(cx, |cx| {
+                                let oc = wrapper_oc.get(cx);
+                                for (i, c) in oc.iter().enumerate() {
+                                    error!("comp id {}", i);
+                                    VStack::new(cx, |cx| {
+                                        c.view(cx);
+                                    })
+                                    .position_type(PositionType::SelfDirected)
+                                    .size(Auto)
+                                    .on_mouse_down(
+                                        move |ex, button| {
+                                            if button == MouseButton::Right {
+                                                error!("on_mouse_down {:?}", i);
+                                                ex.emit(GuiEvent::ShowLeftPanel)
+                                            }
+                                        },
+                                    );
+                                }
+                            })
+                            .border_color(Color::black())
+                            .border_width(Pixels(1.0));
                         },
                     )
                 });

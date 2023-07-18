@@ -13,6 +13,14 @@ use log::*;
 #[typetag::serde]
 impl ViziaComponent for InstrMem {
     // create view
+    fn left_view(&self, cx: &mut Context) {
+        trace!("---- Create Left Instr View");
+        View::build(InstMemLeft { display: false }, cx, |cx| {
+            Label::new(cx, "Inst Mem Left");
+        });
+    }
+
+    // create view
     fn view(&self, cx: &mut Context) {
         trace!("---- Create InsrMem View");
         View::build(InstMem {}, cx, |cx| {
@@ -25,8 +33,35 @@ impl ViziaComponent for InstrMem {
         .top(Pixels(self.pos.1 - 100.0))
         .width(Pixels(100.0))
         .height(Pixels(200.0))
+        // .on_press(|cx| {
+        //     println!("press");
+        //     cx.emit(MemEvent::Hide)
+        // })
         .tooltip(|cx| new_component_tooltip(cx, self));
     }
+}
+
+#[derive(Lens, Clone)]
+pub struct InstMemLeft {
+    display: bool,
+}
+
+impl View for InstMemLeft {
+    fn element(&self) -> Option<&'static str> {
+        Some("InstMem")
+    }
+
+    fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
+        event.map(|app_event, _meta| match app_event {
+            MemEvent::Hide => {
+                println!("got mem-event");
+            }
+        });
+    }
+}
+
+enum MemEvent {
+    Hide,
 }
 
 pub struct InstMem {}

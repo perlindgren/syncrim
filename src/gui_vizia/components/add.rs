@@ -24,6 +24,7 @@ impl ViziaComponent for Add {
                 .hoverable(false);
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
+        .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 20.0))
         .top(Pixels(self.pos.1 - 40.0))
         .width(Pixels(40.0))

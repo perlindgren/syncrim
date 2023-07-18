@@ -15,7 +15,8 @@ pub fn fern_setup() {
             ))
         })
         // Add blanket level filter -
-        .level(log::LevelFilter::Debug);
+        // .level(log::LevelFilter::Debug);
+        .level(log::LevelFilter::Trace);
 
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
@@ -23,6 +24,7 @@ pub fn fern_setup() {
         .level_for("vizia_core::systems::hover", LevelFilter::Info)
         .level_for("vizia_core::context", LevelFilter::Info)
         .level_for("cosmic_text::buffer", LevelFilter::Warn)
+        .level_for("cosmic_text", LevelFilter::Warn)
         .level_for("selectors::matching", LevelFilter::Warn)
         .level_for("cosmic_text::font::system::std", LevelFilter::Warn)
         .level_for("cosmic_text::font::fallback", LevelFilter::Warn);
