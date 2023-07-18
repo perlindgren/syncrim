@@ -1,7 +1,7 @@
-use crate::components::RegFile;
+use crate::components::Sext;
 use syncrim::{
     common::ViziaComponent,
-    gui_vizia::{tooltip::new_component_tooltip, GuiData},
+    gui_vizia::tooltip::new_component_tooltip,
     vizia::{
         prelude::*,
         vg::{Color, Paint, Path},
@@ -9,42 +9,34 @@ use syncrim::{
 };
 
 #[typetag::serde]
-impl ViziaComponent for RegFile {
+impl ViziaComponent for Sext {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create RegFile View");
-        View::build(RegFileView {}, cx, |cx| {
-            let input = self.id.clone();
-
-            Binding::new(cx,GuiData::clock, move |cx, _| {
-                    
-                Label::new(cx, &{
-                    let simulator = GuiData::simulator.get(cx);
-                    simulator.c_by_id_str(&input).to_string()
-                })
-                .hoverable(false);
-                //.hoverable(false);
-            });
-
+        println!("---- Create Sext View");
+        View::build(SextView {}, cx, |cx| {
+            Label::new(cx, "SExt")
+                .left(Percentage(0.0))
+                .top(Percentage(0.0));
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 50.0))
         .top(Pixels(self.pos.1 - 100.0))
-        .width(Pixels(250.0))
-        .height(Pixels(750.0))
+        .width(Pixels(50.0))
+        .height(Pixels(20.0))
         .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 
-pub struct RegFileView {}
+pub struct SextView {}
 
-impl View for RegFileView {
+impl View for SextView {
     fn element(&self) -> Option<&'static str> {
-        Some("RegFile")
+        Some("InstMem")
     }
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
+        // println!("InstMem draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(Color::rgbf(0.0, 1.0, 1.0));

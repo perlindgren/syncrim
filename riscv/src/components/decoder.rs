@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, Output, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Input, Signal, Output, OutputType, Ports, Simulator};
+use syncrim::components::MemCtrl;
 
 #[derive(Serialize, Deserialize)]
 pub struct Decoder {
@@ -34,6 +35,11 @@ impl Component for Decoder {
                     "sign_zero_ext_sel".into(),
                     "sign_zero_ext_data".into(),
                     "imm_a_mux_data".into(),
+                    "pc_se_data".into(),
+                    "pc_mux_sel".into(),
+                    "data_mem_size".into(),
+                    "data_se".into(),
+                    "data_mem_ctrl".into(),
                 ],
             },
         )
@@ -52,6 +58,13 @@ impl Component for Decoder {
         let imm = instruction>>20;
         let shamt = (instruction&(0b11111<<20))>>20;
         let imm_big = instruction&0xFFFFF000;
+        let imm_big_shuffled = 
+        (((instruction & (0b1<<31))>>(31-20))|
+        ((instruction & (0b1111111111<<21))>>(30-10))|
+        ((instruction & (0b1<<20))>>(20-11))|
+        ((instruction & (0b11111111<<12))))&0b1111_1111_1111_1111_1111_1111_1111_1110;
+          //no idea why this is encoded this way but the ISA is what it is
+        let imm_store = ((instruction&(0b11111<<7))>>7) | ((instruction&(0b1111111<<25))>>20);
         let mut wb_mux = 0;
         let mut alu_operand_a_sel = 0;
         let mut alu_operand_b_sel = 0;
@@ -63,6 +76,11 @@ impl Component for Decoder {
         let mut sign_zero_ext_sel = 0;
         let mut sign_zero_ext_data = 0;
         let mut imm_a_mux_data = 0;
+        let mut pc_mux_sel = 0;
+        let mut pc_se_data = 0;
+        let mut data_mem_size = 0;
+        let mut data_se = 0;
+        let mut data_mem_ctrl = MemCtrl::None;
 
         match opcode{
             0b0110011 => { //OP
@@ -217,6 +235,64 @@ impl Component for Decoder {
                 sign_zero_ext_sel = 1; //don't care
                 imm_a_mux_data = imm_big;
             }
+            0b1101111 => {//JAL
+                alu_operand_a_sel = 0; //rs1
+                alu_operand_b_sel = 2;  //PC
+                regfile_rd = (instruction & (0b11111<<7)) >> 7;
+                regfile_rs1 = 0; //x0 
+                regfile_we = 1; //enable write
+                wb_mux = 0; //ALU source
+                alu_operator = 1; //ADD
+                sign_zero_ext_data = 0; //don't care
+                sign_zero_ext_sel = 1; //don't care
+                pc_se_data = imm_big_shuffled;
+                pc_mux_sel = 1; //select data instead of loop
+            }
+            0b0000011 =>{//LOAD
+                println!("----------LOAD");
+                alu_operand_a_sel = 0; //rs1
+                alu_operand_b_sel = 1;   //imm
+                regfile_rd = (instruction & (0b11111<<7)) >> 7;
+                regfile_rs1 = (instruction & (0b11111<<15)) >> 15;
+                regfile_we = 1;
+                wb_mux = 1; //data memory
+                alu_operator = 1;//ADD
+                sign_zero_ext_data = imm; //immediate
+                sign_zero_ext_sel = 0; //sign extend
+
+                data_mem_ctrl = MemCtrl::Read;
+                match(funct3){
+                    0b000=>{data_mem_size=1;data_se=1}, //lb
+                    0b001=>{data_mem_size=2;data_se=1}, //lh
+                    0b010=>{data_mem_size=4;data_se=1}, //lw
+                    0b100=>{data_mem_size=1;data_se=0}, //lbu
+                    0b101=>{data_mem_size=2;data_se=0}, //lhu
+                    _=>{panic!("Unsupported funct3 {:b}", funct3)},
+                }
+
+
+            }
+            0b0100011 =>{//STORE
+                println!("STORE");
+                alu_operand_a_sel = 0; //rs1
+                alu_operand_b_sel = 1;   //imm
+                regfile_rd = (instruction & (0b11111<<7)) >> 7;
+                regfile_rs1 = (instruction & (0b11111<<15)) >> 15;
+                regfile_rs2 = (instruction & (0b11111<<20)) >> 20;
+                regfile_we = 0;
+                wb_mux = 0; //don't care
+                alu_operator = 1;//ADD
+                sign_zero_ext_data = imm_store; //immediate store type
+                sign_zero_ext_sel = 0; //sign extend
+
+                data_mem_ctrl = MemCtrl::Write;
+                match(funct3){//size
+                    0b000=>{data_mem_size=1;println!("BYTE")},
+                    0b001=>{data_mem_size=2;println!("HALFWORD")},
+                    0b010=>{data_mem_size=4;println!("WORD")},
+                    _=>panic!("Unsupported funct3 {:b}", funct3),
+                }
+            }
             _ => {panic!("Invalid opcode! {:b}", opcode)}
         }
 
@@ -231,7 +307,11 @@ impl Component for Decoder {
         simulator.set_out_val(&self.id, "sign_zero_ext_sel", sign_zero_ext_sel);
         simulator.set_out_val(&self.id, "sign_zero_ext_data", sign_zero_ext_data);
         simulator.set_out_val(&self.id, "imm_a_mux_data", imm_a_mux_data);
-
+        simulator.set_out_val(&self.id, "pc_se_data", pc_se_data);
+        simulator.set_out_val(&self.id, "pc_mux_sel", pc_mux_sel);
+        simulator.set_out_val(&self.id, "data_mem_size", data_mem_size);
+        simulator.set_out_val(&self.id, "data_se", data_se);
+        simulator.set_out_val(&self.id, "data_mem_ctrl", data_mem_ctrl as Signal);
 
 
     }

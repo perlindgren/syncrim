@@ -1,6 +1,7 @@
 // An example MIPS model
 
 use riscv::components::*;
+use riscv::components::Sext;
 use std::{path::PathBuf, rc::Rc, cell::Cell};
 use syncrim::{
     common::{ComponentStore, Input},
@@ -13,13 +14,30 @@ fn main() {
             Rc::new(Add {
                 id: "pc_adder".to_string(),
                 pos: (150.0, 120.0),
-                a_in: Input::new("pc_adder_c", "out"),
+                a_in: Input::new("pc_adder_mux", "out"),
                 b_in: Input::new("reg", "out"),
             }),
             Rc::new(Constant {
                 id: "pc_adder_c".to_string(),
                 pos: (100.0, 100.0),
                 value: 4,
+            }),
+            Rc::new(Wire{
+                id: "wire".to_string(),
+                pos:(500.0, 500.0),
+                delta:(200.0, 300.0),
+                input:(Input::new("reg", "out")),
+            }),
+            Rc::new(Mux{
+                id:"pc_adder_mux".to_string(),
+                pos:(100.0, 120.0),
+                select: Input::new("decoder", "pc_mux_sel"),
+                m_in:vec![Input::new("pc_adder_c", "out"),Input::new("pc_adder_mux_se", "out")]
+            }),
+            Rc::new(Sext{
+                id:"pc_adder_mux_se".to_string(),
+                pos:(70.0, 120.0),
+                data_i:Input::new("decoder", "pc_se_data"),
             }),
             Rc::new(Register {
                 id: "reg".to_string(),
@@ -48,7 +66,7 @@ fn main() {
                     // 0x0060e1b3,//or x3, x1, x6 #  x3 = 0x00000007
                     // 0x00000033,//add x0, x0, x0, basically nop before panicking so we can see result.
                     // 0x00940023,//sb x8, 0(x9) # should panic over opcode for now
-                    //OP_IMM TEST BLOCK
+                    //OP_IMM, AUIPC, LUI TEST BLOCK
                     0x00310093,//addi x1, x2, 3 # x1=0x5
                     0xffd0a093,//slti x1, x1, -3 # x1=0x0
                     0x0030a093,//slti x1, x1, 3 # x1=0x1
@@ -65,8 +83,22 @@ fn main() {
                     0x4020d093,//srai x1, x1, 2 #x1=0x1
                     0xfffff0b7,//lui x1, 0xFFFFF #x1=0xFFFFF000
                     0xfffff097,//auipc x1, 0xFFFFF #x1=0xFFFFF040
+                    0x00000093,//addi, x1, x0, 0 x1 = 0
+                    0x00408093,//addi x1, x1, 4 x1+=4
+                    //0xff9ff16f,//jal, x2, -8 should jump to the addi before and keep incrementing x1.
                     0x00000033,//add x0, x0, x0, basically nop before panicking so we can see result.
-                    0x00940023,//sb x8, 0(x9) # should panic over opcode for now
+                    //0x00940023,//sb x8, 0(x9) # should panic over opcode for now
+                    0x00102023,//sw x1, 0(x0) store x1=4 at 0
+                    0x00002283,//lw x5, 0(x0) x5=4
+                    0x00228213,//addi x4, x5, 2 //x4=6
+                    0x00002303, //lw x6, 0(x0), x6 = 4
+                    0xfff00093,//set x1 to -1 addi x1, x0, -1
+                    0x00102023,//store -1 at 0
+                    0x00000203,//load via lb -1 to x4
+                    0x00004203,//lbu x4 -1 again.
+                    0x004002a3,//sb x4, 5(0)
+                    0x00000033,//add x0, x0, x0, basically nop before panicking so we can see result.
+                    0x00000033,//add x0, x0, x0, basically nop before panicking so we can see result.
 
                     4,5,6,7,8,9],
             }),    
@@ -136,6 +168,21 @@ fn main() {
                 Cell::new(31),
                 ],
             }),
+            Rc::new({Mem{
+                id:"data_memory".to_string(),
+                pos:(700.0, 600.0),
+                width:100.0,
+                height:100.0,
+                big_endian:false,
+                data:Input::new("reg_file", "reg_b"),
+                addr:Input::new("alu", "result_o"),
+                ctrl:Input::new("decoder", "data_mem_ctrl"),
+                sign:Input::new("decoder", "data_se"),
+                size:Input::new("decoder", "data_mem_size"),
+                memory: Memory::new(),
+
+
+            }}),
             Rc::new(Mux{
                 id:"alu_operand_a_mux".to_string(),
                 pos:(700.0,150.0),
@@ -146,7 +193,7 @@ fn main() {
                 id:"alu_operand_b_mux".to_string(),
                 pos:(700.0,300.0),
                 select:Input::new("decoder", "alu_operand_b_sel"),
-                m_in:vec![Input::new("reg_file","reg_b"),Input::new("imm_szext","out"),Input::new("pc_adder","out" )]
+                m_in:vec![Input::new("reg_file","reg_b"),Input::new("imm_szext","out"),Input::new("reg","out" )]
             }),
 
             Rc::new(ALU{
@@ -160,7 +207,7 @@ fn main() {
                 id:"wb_mux".to_string(),
                 pos:(900.0, 225.0),
                 select:Input::new("decoder", "wb_mux"),
-                m_in:vec![Input::new("alu", "result_o")],
+                m_in:vec![Input::new("alu", "result_o"),Input::new("data_memory", "data")],
             }),
         ],
     };
