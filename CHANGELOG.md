@@ -2,6 +2,10 @@
 
 Tracking changes per date:
 
+## 230718
+
+- Panes, right click component to display component interior on left panel. Close left panel view by the Close button.
+
 ## 230717
 
 - mips/reg_file update, showcasing interior mutability and gui_vizia poc.

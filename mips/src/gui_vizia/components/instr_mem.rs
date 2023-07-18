@@ -1,7 +1,7 @@
 use crate::components::InstrMem;
 use syncrim::{
     common::ViziaComponent,
-    gui_vizia::{tooltip::new_component_tooltip, GuiEvent},
+    gui_vizia::tooltip::new_component_tooltip,
     vizia::{
         prelude::*,
         vg::{Color, Paint, Path},
@@ -15,16 +15,10 @@ impl ViziaComponent for InstrMem {
     // create view
     fn left_view(&self, cx: &mut Context) {
         trace!("---- Create Left Instr View");
-        // HStack::new(cx, |cx| {
+
         View::build(InstMemLeft { display: false }, cx, |cx| {
             Label::new(cx, "Inst Mem Left");
         });
-        // Button::new(
-        //     cx,
-        //     |cx| cx.emit(GuiEvent::HideLeftPanel),
-        //     |cx| Label::new(cx, "Hide"),
-        // );
-        // });
     }
 
     // create view
@@ -40,10 +34,6 @@ impl ViziaComponent for InstrMem {
         .top(Pixels(self.pos.1 - 100.0))
         .width(Pixels(100.0))
         .height(Pixels(200.0))
-        // .on_press(|cx| {
-        //     println!("press");
-        //     cx.emit(MemEvent::Hide)
-        // })
         .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
@@ -58,17 +48,7 @@ impl View for InstMemLeft {
         Some("InstMem")
     }
 
-    fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
-        event.map(|app_event, _meta| match app_event {
-            MemEvent::Hide => {
-                println!("got mem-event");
-            }
-        });
-    }
-}
-
-enum MemEvent {
-    Hide,
+    // TODO, what to show here
 }
 
 pub struct InstMem {}
