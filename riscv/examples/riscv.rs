@@ -66,7 +66,7 @@ fn main() {
                     // 0x0060e1b3,//or x3, x1, x6 #  x3 = 0x00000007
                     // 0x00000033,//add x0, x0, x0, basically nop before panicking so we can see result.
                     // 0x00940023,//sb x8, 0(x9) # should panic over opcode for now
-                    //OP_IMM, AUIPC, LUI TEST BLOCK
+                    //OP_IMM, AUIPC, LUI, STORE, LOAD, OP_IMM TEST BLOCK
                     0x00310093,//addi x1, x2, 3 # x1=0x5
                     0xffd0a093,//slti x1, x1, -3 # x1=0x0
                     0x0030a093,//slti x1, x1, 3 # x1=0x1
