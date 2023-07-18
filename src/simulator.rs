@@ -103,7 +103,8 @@ impl Simulator {
         }
 
         // topological order
-        let top = toposort(&graph, None).unwrap();
+        let top =
+            toposort(&graph, None).expect("Topological sort failed, your model contains loops.");
         trace!("--- top \n{:?}", top);
 
         let mut ordered_components = vec![];

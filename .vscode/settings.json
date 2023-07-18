@@ -3,7 +3,7 @@
   "rust-analyzer.linkedProjects": [
     "./mips/Cargo.toml",
     "./Cargo.toml",
-    ".\\mips\\Cargo.toml"    
+    ".\\mips\\Cargo.toml"
   ],
   "cSpell.ignoreWords": [
     "Clippy",
@@ -12,6 +12,7 @@
     "Luleå",
     "Tpdf",
     "blueviolet",
+    "darkgray",
     "eframe",
     "egui",
     "epaint",
@@ -36,7 +37,7 @@
     "vizia",
     "winit",
     "xffff"
-  ],
+  ]
   //,
 
   // "rust-analyzer.cargo.unsetTest": [
@@ -44,5 +45,5 @@
   // ],
   // "rust-analyzer.cargo.noDefaultFeatures": true,
   // "rust-analyzer.cargo.features": ["gui-egui"]
-  // "rust-analyzer.cargo.features": ["components"] # use with nDefaultFeatures to just test 
+  // "rust-analyzer.cargo.features": ["components"] # use with nDefaultFeatures to just test
 }

@@ -1,6 +1,7 @@
 use crate::common::{ComponentStore, Simulator};
 use crate::gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::Transport};
 use rfd::FileDialog;
+use std::collections::HashSet;
 use std::path::PathBuf;
 use vizia::prelude::*;
 
@@ -15,10 +16,11 @@ pub struct GuiData {
     pub is_saved: bool,
     pub show_about: bool,
     pub selected_id: usize,
+    pub visible: HashSet<usize>,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub(crate) enum GuiEvent {
+pub enum GuiEvent {
     Open,
     ReOpen,
     Clock,
@@ -30,6 +32,8 @@ pub(crate) enum GuiEvent {
     Preferences,
     ShowAbout,
     HideAbout,
+    ShowLeftPanel(usize),
+    HideLeftPanel(usize),
     // SelectComponent(usize),
 }
 
@@ -70,7 +74,15 @@ impl Model for GuiData {
             GuiEvent::Preferences => trace!("Preferences"),
             GuiEvent::ShowAbout => self.show_about = true,
             GuiEvent::HideAbout => self.show_about = false,
-            // GuiEvent::SelectComponent(index) => self.selected_id = *index,
+            GuiEvent::ShowLeftPanel(i) => {
+                error!("Show Left Panel {:?} {:?}", _meta.origin, _meta.target);
+                self.visible.insert(*i);
+                error!("visible {:?}", self.visible);
+            }
+            GuiEvent::HideLeftPanel(i) => {
+                error!("Hide Left Panel {:?}", _meta.origin);
+                self.visible.remove(i);
+            } // GuiEvent::SelectComponent(index) => self.selected_id = *index,
         });
     }
 }
@@ -109,6 +121,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
             is_saved: false,
             show_about: false,
             selected_id: 0,
+            visible: HashSet::new(),
         }
         .build(cx);
 
@@ -130,18 +143,93 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
             .background_color(Color::lightgray())
             .height(Auto);
 
-            Grid::new(cx, |cx| {
-                // (re-)bind all components when simulator changed
-                Binding::new(
-                    cx,
-                    GuiData::simulator.then(Simulator::ordered_components),
-                    |cx, wrapper_oc| {
-                        let oc = wrapper_oc.get(cx);
-                        for c in oc {
-                            c.view(cx);
-                        }
-                    },
-                )
+            HStack::new(cx, |cx| {
+                HStack::new(cx, |cx| {
+                    // Left pane
+                    Binding::new(
+                        cx,
+                        GuiData::simulator.then(Simulator::ordered_components),
+                        |cx, wrapper_oc| {
+                            VStack::new(cx, |cx| {
+                                Label::new(cx, "Left").top(Pixels(0.0));
+                                let oc = wrapper_oc.get(cx);
+                                for (i, c) in oc.iter().enumerate() {
+                                    VStack::new(cx, |cx| {
+                                        HStack::new(cx, |cx| {
+                                            let (id, _) = c.get_id_ports();
+                                            Label::new(cx, &format!("Instance: {}", &id))
+                                                .left(Pixels(5.0))
+                                                .top(Stretch(1.0))
+                                                .bottom(Stretch(1.0))
+                                                .right(Stretch(1.0))
+                                                .size(Auto);
+
+                                            Button::new(
+                                                cx,
+                                                move |cx| cx.emit(GuiEvent::HideLeftPanel(i)),
+                                                |cx| Label::new(cx, "Close"),
+                                            )
+                                            .right(Pixels(1.0))
+                                            .top(Pixels(1.0))
+                                            .bottom(Pixels(1.0));
+                                        })
+                                        .background_color(Color::lightgrey())
+                                        .height(Auto)
+                                        .border_color(Color::darkgray())
+                                        .border_width(Pixels(1.0));
+                                        c.left_view(cx);
+                                    })
+                                    .display({
+                                        GuiData::visible.map(move |hs_visible| {
+                                            if hs_visible.contains(&i) {
+                                                Display::Flex
+                                            } else {
+                                                Display::None
+                                            }
+                                        })
+                                    });
+                                }
+                            })
+                            .border_color(Color::black())
+                            .border_width(Pixels(1.0));
+                        },
+                    );
+                });
+
+                // Grid area
+                Grid::new(cx, |cx| {
+                    // (re-)bind all components when simulator changed
+                    Binding::new(
+                        cx,
+                        GuiData::simulator.then(Simulator::ordered_components),
+                        |cx, wrapper_oc| {
+                            VStack::new(cx, |cx| {
+                                let oc = wrapper_oc.get(cx);
+                                for (i, c) in oc.iter().enumerate() {
+                                    error!("comp id {}", i);
+                                    VStack::new(cx, |cx| {
+                                        c.view(cx);
+                                    })
+                                    .position_type(PositionType::SelfDirected)
+                                    .size(Auto)
+                                    .on_mouse_down(
+                                        move |ex, button| {
+                                            if button == MouseButton::Right {
+                                                error!("on_mouse_down {:?}", i);
+                                                ex.emit(GuiEvent::ShowLeftPanel(i))
+                                            }
+                                        },
+                                    );
+                                }
+                            })
+                            .border_color(Color::black())
+                            .border_width(Pixels(1.0));
+                        },
+                    )
+                });
+
+                // Right pane
+                Label::new(cx, "Right").top(Pixels(0.0));
             });
 
             //

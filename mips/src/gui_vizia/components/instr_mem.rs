@@ -13,6 +13,15 @@ use log::*;
 #[typetag::serde]
 impl ViziaComponent for InstrMem {
     // create view
+    fn left_view(&self, cx: &mut Context) {
+        trace!("---- Create Left Instr View");
+
+        View::build(InstMemLeft { display: false }, cx, |cx| {
+            Label::new(cx, "Inst Mem Left");
+        });
+    }
+
+    // create view
     fn view(&self, cx: &mut Context) {
         trace!("---- Create InsrMem View");
         View::build(InstMem {}, cx, |cx| {
@@ -29,6 +38,19 @@ impl ViziaComponent for InstrMem {
     }
 }
 
+#[derive(Lens, Clone)]
+pub struct InstMemLeft {
+    display: bool,
+}
+
+impl View for InstMemLeft {
+    fn element(&self) -> Option<&'static str> {
+        Some("InstMem")
+    }
+
+    // TODO, what to show here
+}
+
 pub struct InstMem {}
 
 impl View for InstMem {
@@ -38,7 +60,7 @@ impl View for InstMem {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        trace!("InstMem draw {:?}", bounds);
+        // trace!("InstMem draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(Color::rgbf(0.0, 1.0, 1.0));
