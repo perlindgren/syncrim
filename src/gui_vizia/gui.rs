@@ -3,7 +3,7 @@ use crate::gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::T
 use rfd::FileDialog;
 use std::collections::HashSet;
 use std::path::PathBuf;
-use vizia::prelude::*;
+use vizia::{icons, prelude::*};
 
 use log::*;
 
@@ -17,6 +17,7 @@ pub struct GuiData {
     pub show_about: bool,
     pub selected_id: usize,
     pub visible: HashSet<usize>,
+    pub expanded: HashSet<usize>,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -34,6 +35,7 @@ pub enum GuiEvent {
     HideAbout,
     ShowLeftPanel(usize),
     HideLeftPanel(usize),
+    ToggleExpandLeftPanel(usize),
     // SelectComponent(usize),
 }
 
@@ -75,14 +77,23 @@ impl Model for GuiData {
             GuiEvent::ShowAbout => self.show_about = true,
             GuiEvent::HideAbout => self.show_about = false,
             GuiEvent::ShowLeftPanel(i) => {
-                error!("Show Left Panel {:?} {:?}", _meta.origin, _meta.target);
+                error!("Show Left Panel {:?}", i);
                 self.visible.insert(*i);
                 error!("visible {:?}", self.visible);
             }
             GuiEvent::HideLeftPanel(i) => {
-                error!("Hide Left Panel {:?}", _meta.origin);
+                error!("Hide Left Panel {:?}", i);
                 self.visible.remove(i);
-            } // GuiEvent::SelectComponent(index) => self.selected_id = *index,
+            }
+            GuiEvent::ToggleExpandLeftPanel(i) => {
+                error!("Toggle Expand Left Panel {:?}", i);
+                error!("expanded {:?}", self.visible);
+                if self.expanded.contains(i) {
+                    self.expanded.remove(i);
+                } else {
+                    self.expanded.insert(*i);
+                }
+            }
         });
     }
 }
@@ -122,6 +133,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
             show_about: false,
             selected_id: 0,
             visible: HashSet::new(),
+            expanded: HashSet::new(),
         }
         .build(cx);
 
@@ -155,8 +167,35 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                                 let oc = wrapper_oc.get(cx);
                                 for (i, c) in oc.iter().enumerate() {
                                     VStack::new(cx, |cx| {
-                                        HStack::new(cx, |cx| {
+                                        HStack::new(cx, move |cx| {
+                                            Button::new(
+                                                cx,
+                                                move |cx| {
+                                                    cx.emit(GuiEvent::ToggleExpandLeftPanel(i))
+                                                },
+                                                |cx| {
+                                                    Label::new(
+                                                        cx,
+                                                        GuiData::expanded.map(move |expanded| {
+                                                            if expanded.contains(&i) {
+                                                                // expanded
+                                                                icons::ICON_CHEVRON_DOWN
+                                                            } else {
+                                                                // folded
+                                                                icons::ICON_CHEVRON_RIGHT
+                                                            }
+                                                        }),
+                                                    )
+                                                    .class("icon")
+                                                },
+                                            )
+                                            .left(Pixels(5.0))
+                                            .top(Stretch(1.0))
+                                            .bottom(Stretch(1.0))
+                                            .right(Stretch(1.0))
+                                            .size(Auto);
                                             let (id, _) = c.get_id_ports();
+
                                             Label::new(cx, &format!("Instance: {}", &id))
                                                 .left(Pixels(5.0))
                                                 .top(Stretch(1.0))
@@ -167,7 +206,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                                             Button::new(
                                                 cx,
                                                 move |cx| cx.emit(GuiEvent::HideLeftPanel(i)),
-                                                |cx| Label::new(cx, "Close"),
+                                                |cx| Label::new(cx, icons::ICON_X).class("icon"),
                                             )
                                             .right(Pixels(1.0))
                                             .top(Pixels(1.0))
@@ -177,17 +216,26 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                                         .height(Auto)
                                         .border_color(Color::darkgray())
                                         .border_width(Pixels(1.0));
-                                        c.left_view(cx);
+                                        // left view expanded or folded
+                                        VStack::new(cx, |cx| c.left_view(cx)).display(
+                                            GuiData::expanded.map(move |hs_expanded| {
+                                                if hs_expanded.contains(&i) {
+                                                    Display::Flex
+                                                } else {
+                                                    Display::None
+                                                }
+                                            }),
+                                        );
                                     })
-                                    .display({
+                                    .display(
                                         GuiData::visible.map(move |hs_visible| {
                                             if hs_visible.contains(&i) {
                                                 Display::Flex
                                             } else {
                                                 Display::None
                                             }
-                                        })
-                                    });
+                                        }),
+                                    );
                                 }
                             })
                             .border_color(Color::black())

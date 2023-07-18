@@ -4,7 +4,9 @@ Tracking changes per date:
 
 ## 230718
 
-- Panes, right click component to display component interior on left panel. Close left panel view by the Close button.
+- Panes, right click component to display component interior on left panel. Close left panel view by the X (Close) button.
+
+- Left panel views can be folded/unfolded
 
 ## 230717
 
