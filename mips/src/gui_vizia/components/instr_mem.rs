@@ -1,7 +1,7 @@
 use crate::components::InstrMem;
 use syncrim::{
     common::ViziaComponent,
-    gui_vizia::tooltip::new_component_tooltip,
+    gui_vizia::{tooltip::new_component_tooltip, GuiEvent},
     vizia::{
         prelude::*,
         vg::{Color, Paint, Path},
@@ -15,9 +15,16 @@ impl ViziaComponent for InstrMem {
     // create view
     fn left_view(&self, cx: &mut Context) {
         trace!("---- Create Left Instr View");
+        // HStack::new(cx, |cx| {
         View::build(InstMemLeft { display: false }, cx, |cx| {
             Label::new(cx, "Inst Mem Left");
         });
+        // Button::new(
+        //     cx,
+        //     |cx| cx.emit(GuiEvent::HideLeftPanel),
+        //     |cx| Label::new(cx, "Hide"),
+        // );
+        // });
     }
 
     // create view
@@ -73,7 +80,7 @@ impl View for InstMem {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        trace!("InstMem draw {:?}", bounds);
+        // trace!("InstMem draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(Color::rgbf(0.0, 1.0, 1.0));

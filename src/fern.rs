@@ -27,7 +27,9 @@ pub fn fern_setup() {
         .level_for("cosmic_text", LevelFilter::Warn)
         .level_for("selectors::matching", LevelFilter::Warn)
         .level_for("cosmic_text::font::system::std", LevelFilter::Warn)
-        .level_for("cosmic_text::font::fallback", LevelFilter::Warn);
+        .level_for("cosmic_text::font::fallback", LevelFilter::Warn)
+        .level_for("async_io::driver", LevelFilter::Warn);
+
     f
         // Output to stdout, files, and other Dispatch configurations
         .chain(std::io::stdout())
