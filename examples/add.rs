@@ -7,13 +7,12 @@ use syncrim::{
 fn main() {
     let cs = ComponentStore {
         store: vec![
-            Rc::new(RefCell::new(Add {
-                id: "add".to_string(),
-                pos: (200.0, 120.0),
-                a_in: Input::new("c1", 0),
-
-                b_in: Input::new("c2", 0),
-            })),
+            Rc::new(RefCell::new(Add::new(
+                "add".to_string(),
+                (200.0, 120.0),
+                Input::new("c1", 0),
+                Input::new("c2", 0),
+            ))),
             Rc::new(RefCell::new(Constant {
                 id: "c1".to_string(),
                 pos: (100.0, 100.0),

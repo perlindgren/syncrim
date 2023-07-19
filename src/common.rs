@@ -19,7 +19,7 @@ type Components = Vec<Rc<RefCell<dyn ViziaComponent>>>;
 // todo: Probably make a separate ComponentsEditor type
 // so we don't have to use refcell everywhere
 #[cfg(feature = "gui-egui")]
-type Components = Vec<Rc<RefCell<dyn EguiComponent>>>;
+pub type Components = Vec<Rc<RefCell<dyn EguiComponent>>>;
 
 #[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
@@ -89,8 +89,12 @@ pub trait EguiComponent: Component {
         _offset: egui::Vec2,
         _scale: f32,
         _clip_rect: egui::Rect,
-    ) -> bool {
-        false
+        _components: &Components,
+    ) -> crate::gui_egui::helper::EditorRenderReturn {
+        crate::gui_egui::helper::EditorRenderReturn {
+            delete: false,
+            resp: None,
+        }
     }
     fn size(&self) -> egui::Rect {
         egui::Rect::NOTHING

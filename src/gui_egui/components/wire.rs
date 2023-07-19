@@ -1,6 +1,6 @@
-use crate::common::{EguiComponent, Simulator};
+use crate::common::{Components, EguiComponent, Simulator};
 use crate::components::Wire;
-use crate::gui_egui::helper::offset_helper;
+use crate::gui_egui::helper::{offset_helper, out_of_bounds, EditorRenderReturn};
 use egui::{
     containers, Color32, Id, PointerButton, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2,
 };
@@ -13,7 +13,7 @@ impl EguiComponent for Wire {
         simulator: Option<Simulator>,
         offset: Vec2,
         scale: f32,
-        _clip_rect: Rect,
+        clip_rect: Rect,
     ) -> Option<Response> {
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
         let mut offset = offset;
@@ -35,6 +35,7 @@ impl EguiComponent for Wire {
             min: oh((0f32, 0f32), s, o),
             max: oh((self.delta.0, self.delta.1), s, o),
         };
+        let rect = out_of_bounds(rect, clip_rect);
         let r = ui.allocate_rect(
             rect,
             Sense {
@@ -65,7 +66,8 @@ impl EguiComponent for Wire {
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
-    ) -> bool {
+        _cs: &Components,
+    ) -> EditorRenderReturn {
         let mut delete = false;
         let resp = Wire::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
         if resp.dragged_by(PointerButton::Primary) {
@@ -73,12 +75,14 @@ impl EguiComponent for Wire {
             self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
         }
         if resp.drag_released_by(PointerButton::Primary) {
-            if self.pos.0 < offset.x {
-                println!("delete!");
+            if resp.interact_pointer_pos().unwrap().x < offset.x {
                 delete = true;
             }
         }
-        delete
+        EditorRenderReturn {
+            delete,
+            resp: Some(resp),
+        }
     }
 
     fn size(&self) -> Rect {

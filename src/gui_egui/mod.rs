@@ -1,6 +1,6 @@
 mod editor;
 mod gui;
-mod helper;
+pub mod helper;
 mod keymap;
 mod menu;
 

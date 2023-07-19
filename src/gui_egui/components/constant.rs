@@ -1,6 +1,6 @@
-use crate::common::{EguiComponent, Simulator};
+use crate::common::{Components, EguiComponent, Simulator};
 use crate::components::Constant;
-use crate::gui_egui::helper::out_of_bounds;
+use crate::gui_egui::helper::{out_of_bounds, EditorRenderReturn};
 use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, RichText, Sense};
 
 #[typetag::serde]
@@ -63,7 +63,8 @@ impl EguiComponent for Constant {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
-    ) -> bool {
+        _cs: &Components,
+    ) -> EditorRenderReturn {
         let mut delete = false;
         let resp = Constant::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
         if resp.dragged_by(PointerButton::Primary) {
@@ -71,12 +72,14 @@ impl EguiComponent for Constant {
             self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
         }
         if resp.drag_released_by(PointerButton::Primary) {
-            if self.pos.0 < offset.x {
-                println!("delete!");
+            if resp.interact_pointer_pos().unwrap().x < offset.x {
                 delete = true;
             }
         }
-        delete
+        EditorRenderReturn {
+            delete,
+            resp: Some(resp),
+        }
     }
 
     fn size(&self) -> Rect {
