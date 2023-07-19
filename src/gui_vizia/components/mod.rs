@@ -3,6 +3,7 @@ mod constant;
 mod mem;
 mod mux;
 mod probe;
+mod probe_edit;
 mod probe_out;
 mod register;
 mod sext;
