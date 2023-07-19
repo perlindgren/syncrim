@@ -1,8 +1,48 @@
 use log::*;
+use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
 use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
+
+#[allow(non_camel_case_types)]
+#[rustfmt::skip]
+#[derive(Copy, Clone, Debug, TryFromPrimitive)]
+#[repr(u8)]
+pub enum Reg {
+    zero    = 0,    // Constant 0
+    at      = 1,    // Reserved for assembler
+    v0      = 2,    // Expression evaluation and results of function
+    v1      = 3,    // Expression evaluation and results of function
+    a0      = 4,    // Argument 1
+    a1      = 5,    // Argument 2
+    a2      = 6,    // Argument 3
+    a3      = 7,    // Argument 4
+    t0      = 8,    // Temporary (not preserved across calls)
+    t1      = 9,    // Temporary (not preserved across calls)
+    t2      = 10,   // Temporary (not preserved across calls)
+    t3      = 11,   // Temporary (not preserved across calls)
+    t4      = 12,   // Temporary (not preserved across calls)
+    t5      = 13,   // Temporary (not preserved across calls)
+    t6      = 14,   // Temporary (not preserved across calls)
+    t7      = 15,   // Temporary (not preserved across calls)
+    s0      = 16,   // Temporary (not preserved across calls)
+    s1      = 17,   // Temporary (not preserved across calls)
+    s2      = 18,   // Temporary (not preserved across calls)
+    s3      = 19,   // Temporary (not preserved across calls)
+    s4      = 20,   // Temporary (not preserved across calls)
+    s5      = 21,   // Temporary (not preserved across calls)
+    s6      = 22,   // Temporary (not preserved across calls)
+    s7      = 23,   // Temporary (not preserved across calls)
+    t8      = 24,   // Temporary (not preserved across calls)
+    t9      = 25,   // Temporary (not preserved across calls)
+    k0      = 26,   // Reserved for OS kernel
+    k1      = 27,   // Reserved for OS kernel
+    gp      = 28,   // Pointer to global area
+    sp      = 29,   // Stack pointer
+    fp      = 30,   // Frame pointer
+    ra      = 31,   // Return address (used by function calls)
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct RegFile {
@@ -20,18 +60,50 @@ pub struct RegFile {
 
     // data
     pub registers: RegStore,
+    pub history: RegHistory,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct RegOp {
+    read_addr1: u8,
+    read_addr2: u8,
+    write_addr2: Option<(u8, u32)>,
+    old_data: Option<u8>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct RegHistory(RefCell<Vec<RegOp>>);
+
+impl RegHistory {
+    pub fn new() -> Self {
+        RegHistory(RefCell::new(Vec::new()))
+    }
+}
+
+impl Default for RegHistory {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct RegStore(pub Rc<RefCell<[u32; 32]>>);
 
 impl RegStore {
-    pub fn new() -> RegStore {
+    pub fn new() -> Self {
         RegStore(Rc::new(RefCell::new([0; 32])))
     }
 
-    pub fn range() -> Range<u8> {
+    pub fn full_range() -> Range<u8> {
         Range { start: 0, end: 32 }
+    }
+
+    pub fn lo_range() -> Range<u8> {
+        Range { start: 0, end: 16 }
+    }
+
+    pub fn hi_range() -> Range<u8> {
+        Range { start: 16, end: 32 }
     }
 }
 

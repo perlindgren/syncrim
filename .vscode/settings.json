@@ -26,6 +26,7 @@
     "repr",
     "rgbaf",
     "rgbf",
+    "rustfmt",
     "serde",
     "struct",
     "stylesheet",
