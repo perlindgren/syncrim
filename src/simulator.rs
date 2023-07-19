@@ -86,6 +86,7 @@ impl Simulator {
                 let to_node = id_node.get(to_id).unwrap();
                 let (_, ports) = c.get_id_ports();
                 for in_port in &ports.inputs {
+                    println!("{}", &in_port.id);
                     let from_id = &in_port.id;
                     let from_node = id_node.get(from_id).unwrap();
                     graph.add_edge(*from_node, *to_node, ());

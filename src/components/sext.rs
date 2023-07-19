@@ -30,6 +30,7 @@ impl Component for Sext {
         // get input values
         let mut value = simulator.get_input_val(&self.sext_in);
         let max_size: Signal = 1 << self.in_size as Signal;
+        println!("SEXT IN:{},OUT:{}",self.in_size, self.out_size);
         assert!(
             value < max_size,
             "SXT input ({}) greater than allowed input size ({})",
@@ -38,15 +39,15 @@ impl Component for Sext {
         );
 
         if (value & 1 << (self.in_size - 1)) != 0 {
-            value |= (1 << self.out_size as Signal) - (1 << self.in_size as Signal)
+            value |= (((1 as u64) << (self.out_size as u64)) - ((1 as u64 )<< (self.in_size as u64))) as Signal;
         }
 
-        println!(
-            "{}, {}, {}",
-            value,
-            1 << (self.out_size as Signal),
-            1 << (self.in_size as Signal)
-        );
+        // println!(
+        //     "{}, {}, {}",
+        //     value,
+        //     1 << (self.out_size as Signal),
+        //     1 << (self.in_size as Signal)
+        // );
 
         // set output
         simulator.set_out_val(&self.id, "out", value);
