@@ -1,9 +1,9 @@
-use crate::common::{Component, Input, Output, OutputType, Ports, Simulator};
+use crate::common::{Component, Id, Input, OutputType, Ports, Simulator};
+use log::*;
 use serde::{Deserialize, Serialize};
-
 #[derive(Serialize, Deserialize)]
 pub struct Register {
-    pub id: String,
+    pub id: Id,
     pub pos: (f32, f32),
     pub r_in: Input,
 }
@@ -11,18 +11,18 @@ pub struct Register {
 #[typetag::serde]
 impl Component for Register {
     fn to_(&self) {
-        println!("register");
+        trace!("register");
     }
 
-    fn get_id_ports(&self) -> (String, Ports) {
+    fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
-            Ports {
+            Ports::new(
                 // Vector of inputs
-                inputs: vec![self.r_in.clone()],
-                out_type: OutputType::Sequential,
-                outputs: vec![Output::Function],
-            },
+                vec![&self.r_in],
+                OutputType::Sequential,
+                vec!["out"],
+            ),
         )
     }
 
@@ -31,7 +31,7 @@ impl Component for Register {
         // get input value
         let value = simulator.get_input_val(&self.r_in);
         // set output
-        simulator.set_id_index(&self.id, 0, value);
-        println!("eval: register id {} in {}", self.id, value);
+        simulator.set_out_val(&self.id, "out", value);
+        trace!("eval: register id {} in {}", self.id, value);
     }
 }

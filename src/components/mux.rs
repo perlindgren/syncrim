@@ -1,9 +1,9 @@
-use crate::common::{Component, Input, Output, OutputType, Ports, Simulator};
+use crate::common::{Component, Id, Input, OutputType, Ports, Simulator};
+use log::*;
 use serde::{Deserialize, Serialize};
-
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
-    pub id: String,
+    pub id: Id,
     pub pos: (f32, f32),
     pub select: Input,
     pub m_in: Vec<Input>,
@@ -12,10 +12,10 @@ pub struct Mux {
 #[typetag::serde]
 impl Component for Mux {
     fn to_(&self) {
-        println!("mux");
+        trace!("mux");
     }
 
-    fn get_id_ports(&self) -> (String, Ports) {
+    fn get_id_ports(&self) -> (Id, Ports) {
         let mut inputs = vec![self.select.clone()];
         let mut m = self.m_in.clone();
         inputs.append(&mut m);
@@ -25,7 +25,7 @@ impl Component for Mux {
             Ports {
                 inputs,
                 out_type: OutputType::Combinatorial,
-                outputs: vec![Output::Function],
+                outputs: vec!["out".into()],
             },
         )
     }
@@ -34,10 +34,10 @@ impl Component for Mux {
     fn evaluate(&self, simulator: &mut Simulator) {
         // get input value
         let select = simulator.get_input_val(&self.select) as usize;
-        println!("select {}", select);
+        trace!("select {}", select);
         let value = simulator.get_input_val(&self.m_in[select]);
 
         // set output
-        simulator.set_id_index(&self.id, 0, value);
+        simulator.set_out_val(&self.id, "out", value);
     }
 }

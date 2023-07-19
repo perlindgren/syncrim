@@ -9,11 +9,13 @@ use vizia::{
     vg::{Paint, Path},
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for Probe {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Probe View");
+        trace!("---- Create Probe View");
         View::build(ProbeView {}, cx, |cx| {
             let input = self.input.clone();
 
@@ -45,7 +47,7 @@ impl View for ProbeView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        // println!("Probe draw {:?}", bounds);
+        // trace!("Probe draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 1.0, 1.0));

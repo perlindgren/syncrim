@@ -1,6 +1,8 @@
 use crate::gui_vizia::GuiEvent;
 use vizia::{icons, prelude::*};
 
+use log::*;
+
 pub(crate) struct Menu {}
 impl View for Menu {}
 
@@ -19,7 +21,7 @@ impl Menu {
                         |cx| {
                             MenuButton::new(
                                 cx,
-                                |_| println!("File"),
+                                |_| trace!("File"),
                                 |cx| {
                                     HStack::new(cx, |cx| {
                                         Label::new(cx, "New");
@@ -30,7 +32,7 @@ impl Menu {
                             MenuButton::new(
                                 cx,
                                 |cx| {
-                                    println!("Open");
+                                    trace!("Open");
                                     cx.emit(GuiEvent::Open);
                                 },
                                 |cx| {
@@ -43,7 +45,7 @@ impl Menu {
                             MenuButton::new(
                                 cx,
                                 |cx| {
-                                    println!("Re-Open");
+                                    trace!("Re-Open");
                                     cx.emit(GuiEvent::ReOpen);
                                 },
                                 |cx| {
@@ -59,7 +61,7 @@ impl Menu {
                                 |cx| {
                                     MenuButton::new(
                                         cx,
-                                        |_| println!("Doc 1"),
+                                        |_| trace!("Doc 1"),
                                         |cx| Label::new(cx, "Doc 1"),
                                     );
                                     Submenu::new(
@@ -68,33 +70,33 @@ impl Menu {
                                         |cx| {
                                             MenuButton::new(
                                                 cx,
-                                                |_| println!("Version 1"),
+                                                |_| trace!("Version 1"),
                                                 |cx| Label::new(cx, "Version 1"),
                                             );
                                             MenuButton::new(
                                                 cx,
-                                                |_| println!("Version 2"),
+                                                |_| trace!("Version 2"),
                                                 |cx| Label::new(cx, "Version 2"),
                                             );
                                             MenuButton::new(
                                                 cx,
-                                                |_| println!("Version 3"),
+                                                |_| trace!("Version 3"),
                                                 |cx| Label::new(cx, "Version 3"),
                                             );
                                         },
                                     );
                                     MenuButton::new(
                                         cx,
-                                        |_| println!("Doc 3"),
+                                        |_| trace!("Doc 3"),
                                         |cx| Label::new(cx, "Doc 3"),
                                     );
                                 },
                             );
                             MenuDivider::new(cx);
-                            MenuButton::new(cx, |_| println!("Save"), |cx| Label::new(cx, "Save"));
+                            MenuButton::new(cx, |_| trace!("Save"), |cx| Label::new(cx, "Save"));
                             MenuButton::new(
                                 cx,
-                                |_| println!("Save As"),
+                                |_| trace!("Save As"),
                                 |cx| Label::new(cx, "Save As"),
                             );
                             MenuDivider::new(cx);
@@ -128,7 +130,7 @@ impl Menu {
                         |cx| {
                             MenuButton::new(
                                 cx,
-                                |_| println!("Cut"),
+                                |_| trace!("Cut"),
                                 |cx| {
                                     HStack::new(cx, |cx| {
                                         Label::new(cx, icons::ICON_CUT).class("icon");
@@ -138,7 +140,7 @@ impl Menu {
                             );
                             MenuButton::new(
                                 cx,
-                                |_| println!("Copy"),
+                                |_| trace!("Copy"),
                                 |cx| {
                                     HStack::new(cx, |cx| {
                                         Label::new(cx, icons::ICON_COPY).class("icon");
@@ -148,7 +150,7 @@ impl Menu {
                             );
                             MenuButton::new(
                                 cx,
-                                |_| println!("Paste"),
+                                |_| trace!("Paste"),
                                 |cx| {
                                     HStack::new(cx, |cx| {
                                         Label::new(cx, icons::ICON_CLIPBOARD).class("icon");
@@ -165,12 +167,12 @@ impl Menu {
                         |cx| {
                             MenuButton::new(
                                 cx,
-                                |_| println!("Zoom In"),
+                                |_| trace!("Zoom In"),
                                 |cx| Label::new(cx, "Zoom In"),
                             );
                             MenuButton::new(
                                 cx,
-                                |_| println!("Zoom Out"),
+                                |_| trace!("Zoom Out"),
                                 |cx| Label::new(cx, "Zoom Out"),
                             );
                             Submenu::new(
@@ -179,32 +181,32 @@ impl Menu {
                                 |cx| {
                                     MenuButton::new(
                                         cx,
-                                        |_| println!("10%"),
+                                        |_| trace!("10%"),
                                         |cx| Label::new(cx, "10%"),
                                     );
                                     MenuButton::new(
                                         cx,
-                                        |_| println!("20%"),
+                                        |_| trace!("20%"),
                                         |cx| Label::new(cx, "20%"),
                                     );
                                     MenuButton::new(
                                         cx,
-                                        |_| println!("50%"),
+                                        |_| trace!("50%"),
                                         |cx| Label::new(cx, "50%"),
                                     );
                                     MenuButton::new(
                                         cx,
-                                        |_| println!("100%"),
+                                        |_| trace!("100%"),
                                         |cx| Label::new(cx, "100%"),
                                     );
                                     MenuButton::new(
                                         cx,
-                                        |_| println!("150%"),
+                                        |_| trace!("150%"),
                                         |cx| Label::new(cx, "150%"),
                                     );
                                     MenuButton::new(
                                         cx,
-                                        |_| println!("200%"),
+                                        |_| trace!("200%"),
                                         |cx| Label::new(cx, "200%"),
                                     );
                                 },
@@ -218,7 +220,7 @@ impl Menu {
                         |cx| {
                             MenuButton::new(
                                 cx,
-                                |_| println!("Show License"),
+                                |_| trace!("Show License"),
                                 |cx| Label::new(cx, "Show License"),
                             );
                             MenuButton::new(

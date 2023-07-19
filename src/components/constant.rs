@@ -1,33 +1,32 @@
-use crate::common::{Component, Output, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
+use log::*;
 use serde::{Deserialize, Serialize};
-
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
-    pub id: String,
+    pub id: Id,
     pub pos: (f32, f32),
-    pub value: Signal, // perhaps vector here ... not sure
+    pub value: Signal,
 }
 
 #[typetag::serde]
 impl Component for Constant {
     fn to_(&self) {
-        println!("constant {:?}", self.value);
+        trace!("constant {:?}", self.value);
     }
 
-    fn get_id_ports(&self) -> (String, Ports) {
+    fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
-            Ports {
+            Ports::new(
                 // Constants do not take any inputs
-                inputs: vec![],
-                out_type: OutputType::Combinatorial,
-                // Single output value
-                outputs: vec![Output::Constant(self.value)],
-            },
+                vec![],
+                OutputType::Combinatorial,
+                vec!["out"],
+            ),
         )
     }
 
     fn evaluate(&self, simulator: &mut Simulator) {
-        simulator.set_id_index(&self.id, 0, self.value);
+        simulator.set_out_val(&self.id, "out", self.value);
     }
 }

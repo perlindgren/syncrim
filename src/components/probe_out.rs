@@ -1,33 +1,34 @@
-use crate::common::{Component, Output, OutputType, Ports};
+use crate::common::{Component, Id, OutputType, Ports};
+use log::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct ProbeOut {
-    pub id: String,
+    pub id: Id,
 }
 
 #[typetag::serde]
 impl Component for ProbeOut {
     fn to_(&self) {
-        println!("ProbeOut");
+        trace!("ProbeOut");
     }
 
-    fn get_id_ports(&self) -> (String, Ports) {
+    fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
-            Ports {
+            Ports::new(
                 // Constants do not take any inputs
-                inputs: vec![],
-                out_type: OutputType::Combinatorial,
+                vec![],
+                OutputType::Combinatorial,
                 // Single output value
-                outputs: vec![Output::Function],
-            },
+                vec!["out"],
+            ),
         )
     }
 }
 
 impl ProbeOut {
     pub fn new(id: &str) -> Self {
-        ProbeOut { id: id.to_string() }
+        ProbeOut { id: id.into() }
     }
 }

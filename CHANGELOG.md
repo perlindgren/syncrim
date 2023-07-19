@@ -2,6 +2,32 @@
 
 Tracking changes per date:
 
+## 230718
+
+- Panes, right click component to display component interior on left panel. Close left panel view by the X (Close) button.
+
+- Left panel views can be folded/unfolded
+
+## 230717
+
+- mips/reg_file update, showcasing interior mutability and gui_vizia poc.
+  
+## 230714
+
+- `fern` based logger.
+
+- Fixed clippy lint for Rust 1.71
+
+- WIP support for named outputs.
+
+- Added caching to the Github workflow to improve job times.
+
+## 230713
+
+- Added bounds checking for `Simulator` (`set_id_index`, `get_input_val`), panics on out of bounds.
+- Added re-definition check for `Simulator`, panics on re-definition.
+- Added units tests to the above.
+
 ## 230705
 
 - Refactoring of `Component` trait such that logic part is separated from GUI part.
@@ -15,7 +41,6 @@ Tracking changes per date:
 - `.gitignore` to exclude `.gv` and `.json` files.
 
 - `SignExtension` component.
-
 
 Compilation times might be annoying. It seems that under Linux there is a lot more dependencies than under Windows, so building `SyncRim` is faster on Win10 than under Linux (stock settings). There are a number of things to try out to reduce compilation times (and in particular `hot` iterations).
 

@@ -23,7 +23,7 @@ pub struct Editor {
 
 impl Editor {
     pub fn gui(cs: ComponentStore, _path: &PathBuf) -> Self {
-        let dummy_input = Input::new("x", 0);
+        let dummy_input = Input::new("id", "field");
         Editor {
             component_store: cs,
             scale: 1f32,

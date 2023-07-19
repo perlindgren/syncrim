@@ -1,13 +1,14 @@
 use mips::components::*;
-use std::cell::Cell;
 use std::{path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input, Signal},
     components::*,
+    fern::fern_setup,
 };
 
 // TODO: fix wires and layout
 fn main() {
+    fern_setup();
     let cs = ComponentStore {
         store: vec![
             Rc::new(Constant {
@@ -38,19 +39,19 @@ fn main() {
             // regfile
             Rc::new(RegFile {
                 id: "reg_file".to_string(),
-                pos: (200.0, 150.0),
-                width: 100.0,
-                height: 150.0,
+                pos: (300.0, 200.0),
+                width: 200.0,
+                height: 300.0,
 
                 // ports
-                read_addr1: Input::new("c_read_reg_1", 0),
-                read_addr2: Input::new("c_read_reg_2", 0),
-                write_data: Input::new("c_write_data", 0),
-                write_addr: Input::new("c_write_addr", 0),
-                write_enable: Input::new("c_write_enable", 0),
+                read_addr1: Input::new("c_read_reg_1", "out"),
+                read_addr2: Input::new("c_read_reg_2", "out"),
+                write_data: Input::new("c_write_data", "out"),
+                write_addr: Input::new("c_write_addr", "out"),
+                write_enable: Input::new("c_write_enable", "out"),
 
                 // data
-                registers: vec![Cell::new(0); 32],
+                registers: RegStore::new(),
             }),
         ],
     };

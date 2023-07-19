@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, Output, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct InstrMem {
@@ -9,10 +9,12 @@ pub struct InstrMem {
     pub pc: Input,
 }
 
+use log::*;
+
 #[typetag::serde()]
 impl Component for InstrMem {
     fn to_(&self) {
-        println!("InstrMem");
+        trace!("InstrMem");
     }
 
     fn get_id_ports(&self) -> (String, Ports) {
@@ -21,7 +23,7 @@ impl Component for InstrMem {
             Ports {
                 inputs: vec![self.pc.clone()],
                 out_type: OutputType::Combinatorial,
-                outputs: vec![Output::Function],
+                outputs: vec!["out".into()],
             },
         )
     }
@@ -30,10 +32,10 @@ impl Component for InstrMem {
         // get instr at pc/4
         let pc = simulator.get_input_val(&self.pc);
 
-        println!("--- evaluate instr mem: pc {}", pc);
+        trace!("--- evaluate instr mem: pc {}", pc);
         let instr = self.instr[(pc / 4) as usize];
         // set output
-        println!("--- output {}", instr);
-        simulator.set_id_index(&self.id, 0, instr);
+        trace!("--- output {}", instr);
+        simulator.set_out_val(&self.id, "out", instr);
     }
 }
