@@ -1,4 +1,4 @@
-use crate::common::ComponentStore;
+use crate::common::Components;
 use egui::{Pos2, Rect, Response, Vec2};
 
 pub struct EditorRenderReturn {
@@ -36,13 +36,16 @@ pub fn out_of_bounds(request: Rect, clip_rect: Rect) -> Rect {
     return rect;
 }
 
-pub fn unique_component_name(cs: &ComponentStore, id: &str) -> String {
+pub fn unique_component_name(cs: &Components, id: &str) -> String {
     let mut new_id: String = id.into();
     let mut contains_id = true;
     while contains_id {
         contains_id = false;
-        for c in cs.store.iter() {
-            let (id, _) = c.borrow_mut().get_id_ports();
+        for c in cs.iter() {
+            let id = match c.try_borrow_mut() {
+                Ok(a) => a.get_id_ports().0,
+                Err(e) => String::from(""),
+            };
             if id == new_id {
                 contains_id = true;
                 // todo: make this fancier
@@ -53,5 +56,7 @@ pub fn unique_component_name(cs: &ComponentStore, id: &str) -> String {
     }
     String::from(new_id)
 }
+
+// todo: Create the properties window the same way every time for the different components
 
 //pub fn

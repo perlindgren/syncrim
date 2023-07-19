@@ -15,39 +15,39 @@ fn main() {
                 Input::new("c1", "out"),
                 Input::new("c2", "out"),
             ))),
-            Rc::new(RefCell::new(Constant {
-                id: "c1".to_string(),
-                pos: (100.0, 100.0),
-                value: 3,
-            })),
-            Rc::new(RefCell::new(Constant {
-                id: "c2".to_string(),
-                pos: (100.0, 140.0),
-                value: 4,
-            })),
-            Rc::new(RefCell::new(Wire {
-                id: "w1".to_string(),
-                pos: (110.0, 100.0),
-                delta: (70.0, 0.0),
-                input: Input::new("c1", "out"),
-            })),
-            Rc::new(RefCell::new(Wire {
-                id: "w2".to_string(),
-                pos: (110.0, 140.0),
-                delta: (70.0, 0.0),
-                input: Input::new("c2", "out"),
-            })),
-            Rc::new(RefCell::new(Wire {
-                id: "w3".to_string(),
-                pos: (220.0, 120.0),
-                delta: (40.0, 0.0),
-                input: Input::new("add", "out"),
-            })),
-            Rc::new(RefCell::new(Probe {
-                id: "p1".to_string(),
-                pos: (270.0, 120.0),
-                input: Input::new("add", "out"),
-            })),
+            Rc::new(RefCell::new(Constant::new(
+                "c1".to_string(),
+                (100.0, 100.0),
+                3,
+            ))),
+            Rc::new(RefCell::new(Constant::new(
+                "c2".to_string(),
+                (100.0, 140.0),
+                4,
+            ))),
+            Rc::new(RefCell::new(Wire::new(
+                "w1".to_string(),
+                (110.0, 100.0),
+                (70.0, 0.0),
+                Input::new("c1", "out"),
+            ))),
+            Rc::new(RefCell::new(Wire::new(
+                "w2".to_string(),
+                (110.0, 140.0),
+                (70.0, 0.0),
+                Input::new("c2", "out"),
+            ))),
+            Rc::new(RefCell::new(Wire::new(
+                "w3".to_string(),
+                (220.0, 120.0),
+                (40.0, 0.0),
+                Input::new("add", "out"),
+            ))),
+            Rc::new(RefCell::new(Probe::new(
+                "p1".to_string(),
+                (270.0, 120.0),
+                Input::new("add", "out"),
+            ))),
         ],
     };
 

@@ -6,6 +6,21 @@ pub struct Constant {
     pub id: Id,
     pub pos: (f32, f32),
     pub value: Signal,
+    // this is ugly... (egui)
+    pub properties_window: bool,
+    pub id_tmp: Id,
+}
+
+impl Constant {
+    pub fn new(id: String, pos: (f32, f32), value: Signal) -> Self {
+        Constant {
+            id: id.clone(),
+            pos,
+            value,
+            properties_window: false,
+            id_tmp: id,
+        }
+    }
 }
 
 #[typetag::serde]

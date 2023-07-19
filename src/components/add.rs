@@ -9,18 +9,19 @@ pub struct Add {
     pub a_in: Input,
     pub b_in: Input,
     // this is ugly... (egui)
-    #[cfg(feature = "gui-egui")]
     pub properties_window: bool,
+    pub id_tmp: Id,
 }
 
 impl Add {
     pub fn new(id: String, pos: (f32, f32), a_in: Input, b_in: Input) -> Self {
         Add {
-            id,
+            id: id.clone(),
             pos,
             a_in,
             b_in,
             properties_window: false,
+            id_tmp: id,
         }
     }
 }

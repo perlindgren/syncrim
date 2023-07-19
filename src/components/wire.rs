@@ -7,6 +7,22 @@ pub struct Wire {
     pub pos: (f32, f32),
     pub delta: (f32, f32),
     pub input: Input,
+    // this is ugly... (egui)
+    pub properties_window: bool,
+    pub id_tmp: Id,
+}
+
+impl Wire {
+    pub fn new(id: String, pos: (f32, f32), delta: (f32, f32), input: Input) -> Self {
+        Wire {
+            id: id.clone(),
+            pos,
+            delta,
+            input,
+            properties_window: false,
+            id_tmp: id,
+        }
+    }
 }
 
 #[typetag::serde]

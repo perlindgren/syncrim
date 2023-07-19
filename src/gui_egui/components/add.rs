@@ -1,12 +1,15 @@
-use crate::gui_egui::helper::{offset_helper, out_of_bounds, EditorRenderReturn};
+use crate::gui_egui::helper::{
+    offset_helper, out_of_bounds, unique_component_name, EditorRenderReturn,
+};
 use crate::{
     common::{Components, EguiComponent, Simulator},
     components::Add,
 };
 use egui::{
     containers::{ComboBox, Window},
-    PointerButton, Pos2, Rect, Sense, Vec2,
+    Frame, Margin, PointerButton, Pos2, Rect, Rounding, Sense, Vec2,
 };
+use epaint::Shadow;
 
 #[typetag::serde]
 impl EguiComponent for Add {
@@ -100,7 +103,7 @@ impl EguiComponent for Add {
         let mut delete = false;
         let resp = Add::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
         if resp.dragged_by(PointerButton::Primary) {
-            let delta = resp.drag_delta();
+            let delta = resp.drag_delta() / scale;
             self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
         }
 
@@ -112,37 +115,122 @@ impl EguiComponent for Add {
         if self.properties_window {
             let mut a_in = self.a_in.id.clone();
             let mut b_in = self.b_in.id.clone();
-            let resp = Window::new(format!("Properties: {}", self.id)).show(ui.ctx(), |ui| {
-                let r = ComboBox::from_label("a_in")
-                    .selected_text(format!("{:?}", a_in))
-                    .show_ui(ui, |ui| {
-                        for c in cs.iter() {
-                            let id = match c.try_borrow_mut() {
-                                Ok(a) => a.get_id_ports().0.clone(),
-                                Err(e) => self.id.clone(),
-                            };
-                            ui.selectable_value(&mut a_in, id.clone(), id);
+            let mut a_in_field = self.a_in.field.clone();
+            let mut b_in_field = self.b_in.field.clone();
+            let w_resp = Window::new(format!("Properties: {}", self.id))
+                .frame(Frame {
+                    inner_margin: Margin::same(10f32),
+                    outer_margin: Margin::same(0f32),
+                    rounding: Rounding::same(10f32),
+                    shadow: Shadow::small_dark(),
+                    fill: ui.visuals().panel_fill,
+                    stroke: ui.visuals().window_stroke,
+                })
+                .default_pos(Pos2 {
+                    x: (resp.rect.min.x + resp.rect.max.x) / 2f32,
+                    y: (resp.rect.min.y + resp.rect.max.y) / 2f32,
+                })
+                .show(ui.ctx(), |ui| {
+                    ui.horizontal(|ui| {
+                        let id_label = ui.label("Id: ");
+                        let r = ui
+                            .text_edit_singleline(&mut self.id_tmp)
+                            .labelled_by(id_label.id);
+                        if r.lost_focus() && self.id_tmp != self.id {
+                            self.id = unique_component_name(cs, self.id_tmp.as_str());
                         }
                     });
-                let r2 = ComboBox::from_label("b_in")
-                    .selected_text(format!("{:?}", b_in))
-                    .show_ui(ui, |ui| {
-                        for c in cs.iter() {
-                            let id = match c.try_borrow_mut() {
-                                Ok(a) => a.get_id_ports().0.clone(),
-                                Err(e) => self.id.clone(),
-                            };
-                            ui.selectable_value(&mut b_in, id.clone(), id);
-                        }
+
+                    ui.horizontal(|ui| {
+                        ui.add(
+                            egui::Slider::new(&mut self.pos.0, 0f32..=1000f32)
+                                .text("pos x")
+                                .clamp_to_range(false),
+                        );
+                        ui.add(
+                            egui::Slider::new(&mut self.pos.1, 0f32..=1000f32)
+                                .text("pos y")
+                                .clamp_to_range(false),
+                        );
                     });
-            });
-            if resp.unwrap().response.clicked_elsewhere() {
+                    ui.horizontal(|ui| {
+                        ComboBox::from_label("a_in.id")
+                            .selected_text(format!("{}", a_in))
+                            .show_ui(ui, |ui| {
+                                for c in cs.iter() {
+                                    let id = match c.try_borrow_mut() {
+                                        Ok(a) => a.get_id_ports().0.clone(),
+                                        Err(e) => self.id.clone(),
+                                    };
+                                    ui.selectable_value(&mut a_in, id.clone(), id);
+                                }
+                            });
+                        ComboBox::from_label("a_in.field")
+                            .selected_text(format!("{}", b_in_field))
+                            .show_ui(ui, |ui| {
+                                for c in cs.iter() {
+                                    let id = match c.try_borrow_mut() {
+                                        Ok(a) => a.get_id_ports().0.clone(),
+                                        Err(e) => self.id.clone(),
+                                    };
+                                    if id != a_in {
+                                        continue;
+                                    }
+                                    let fields = match c.try_borrow_mut() {
+                                        Ok(a) => a.get_id_ports().1.outputs,
+                                        Err(_) => vec![],
+                                    };
+                                    for field in fields {
+                                        ui.selectable_value(&mut b_in_field, field.clone(), field);
+                                    }
+                                }
+                            });
+                    });
+
+                    ui.horizontal(|ui| {
+                        ComboBox::from_label("b_in.id")
+                            .selected_text(format!("{}", b_in))
+                            .show_ui(ui, |ui| {
+                                for c in cs.iter() {
+                                    let id = match c.try_borrow_mut() {
+                                        Ok(a) => a.get_id_ports().0.clone(),
+                                        Err(e) => self.id.clone(),
+                                    };
+                                    ui.selectable_value(&mut b_in, id.clone(), id);
+                                }
+                            });
+                        ComboBox::from_label("b_in.field")
+                            .selected_text(format!("{}", b_in_field))
+                            .show_ui(ui, |ui| {
+                                for c in cs.iter() {
+                                    let id = match c.try_borrow_mut() {
+                                        Ok(a) => a.get_id_ports().0.clone(),
+                                        Err(e) => self.id.clone(),
+                                    };
+                                    if id != b_in {
+                                        continue;
+                                    }
+                                    let fields = match c.try_borrow_mut() {
+                                        Ok(a) => a.get_id_ports().1.outputs,
+                                        Err(_) => vec![],
+                                    };
+                                    for field in fields {
+                                        ui.selectable_value(&mut b_in_field, field.clone(), field);
+                                    }
+                                }
+                            });
+                    });
+                    self.a_in.id = a_in;
+                    self.b_in.id = b_in;
+                    self.a_in.field = a_in_field;
+                    self.b_in.field = b_in_field;
+                });
+            if w_resp.unwrap().response.clicked_elsewhere() {
                 self.properties_window = false;
             }
         }
 
         if resp.clicked_by(PointerButton::Secondary) {
-            println!("opening properties window");
             // Open properties window
             self.properties_window = true;
         }

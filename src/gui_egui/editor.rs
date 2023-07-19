@@ -3,6 +3,7 @@ use crate::components::*;
 use crate::gui_egui::{
     gui::Gui,
     helper::{offset_helper, unique_component_name},
+    keymap,
     menu::Menu,
 };
 use eframe::{egui, Frame};
@@ -46,22 +47,18 @@ impl Editor {
                         dummy_input.clone(),
                         dummy_input.clone(),
                     ))),
-                    Rc::new(RefCell::new(Constant {
-                        id: "c".to_string(),
-                        pos: (0.0, 0.0),
-                        value: 0,
-                    })),
-                    Rc::new(RefCell::new(Wire {
-                        id: "w".to_string(),
-                        pos: (0.0, 0.0),
-                        delta: (70.0, 0.0),
-                        input: dummy_input.clone(),
-                    })),
-                    Rc::new(RefCell::new(Probe {
-                        id: "p".to_string(),
-                        pos: (0.0, 0.0),
-                        input: dummy_input.clone(),
-                    })),
+                    Rc::new(RefCell::new(Constant::new("c".to_string(), (0.0, 0.0), 0))),
+                    Rc::new(RefCell::new(Wire::new(
+                        "w".to_string(),
+                        (0.0, 0.0),
+                        (70.0, 0.0),
+                        dummy_input.clone(),
+                    ))),
+                    Rc::new(RefCell::new(Probe::new(
+                        "p".to_string(),
+                        (0.0, 0.0),
+                        dummy_input.clone(),
+                    ))),
                 ],
             },
             dummy_input,
@@ -167,13 +164,10 @@ impl Editor {
                                 let _resp = match c.borrow_mut().get_id_ports().0.as_str() {
                                     // todo: Make this a lot better and not hardcoded
                                     "c" => {
-                                        let id = unique_component_name(&s.component_store, "c");
+                                        let id =
+                                            unique_component_name(&s.component_store.store, "c");
                                         let comp: Rc<RefCell<dyn EguiComponent>> =
-                                            Rc::new(RefCell::new(Constant {
-                                                id,
-                                                pos: (0.0, 0.0),
-                                                value: 0,
-                                            }));
+                                            Rc::new(RefCell::new(Constant::new(id, (0.0, 0.0), 0)));
                                         let resp = comp
                                             .borrow_mut()
                                             .render(ui, None, padding, s.scale, clip_rect);
@@ -181,14 +175,15 @@ impl Editor {
                                         resp
                                     }
                                     "w" => {
-                                        let id = unique_component_name(&s.component_store, "w");
+                                        let id =
+                                            unique_component_name(&s.component_store.store, "w");
                                         let comp: Rc<RefCell<dyn EguiComponent>> =
-                                            Rc::new(RefCell::new(Wire {
+                                            Rc::new(RefCell::new(Wire::new(
                                                 id,
-                                                pos: (0.0, 0.0),
-                                                delta: (70.0, 0.0),
-                                                input: s.dummy_input.clone(),
-                                            }));
+                                                (0.0, 0.0),
+                                                (70.0, 0.0),
+                                                s.dummy_input.clone(),
+                                            )));
                                         let resp = comp
                                             .borrow_mut()
                                             .render(ui, None, padding, s.scale, clip_rect);
@@ -196,13 +191,14 @@ impl Editor {
                                         resp
                                     }
                                     "p" => {
-                                        let id = unique_component_name(&s.component_store, "p");
+                                        let id =
+                                            unique_component_name(&s.component_store.store, "p");
                                         let comp: Rc<RefCell<dyn EguiComponent>> =
-                                            Rc::new(RefCell::new(Probe {
+                                            Rc::new(RefCell::new(Probe::new(
                                                 id,
-                                                pos: (0.0, 0.0),
-                                                input: s.dummy_input.clone(),
-                                            }));
+                                                (0.0, 0.0),
+                                                s.dummy_input.clone(),
+                                            )));
                                         let resp = comp
                                             .borrow_mut()
                                             .render(ui, None, padding, s.scale, clip_rect);
@@ -210,7 +206,8 @@ impl Editor {
                                         resp
                                     }
                                     "add" | _ => {
-                                        let id = unique_component_name(&s.component_store, "add");
+                                        let id =
+                                            unique_component_name(&s.component_store.store, "add");
                                         let comp: Rc<RefCell<dyn EguiComponent>> =
                                             Rc::new(RefCell::new(Add::new(
                                                 id,
@@ -258,12 +255,12 @@ impl Editor {
                 ));
             }
 
-            let xd = gui.simulator.ordered_components.clone();
+            let tcs = gui.simulator.ordered_components.clone();
             let s = Editor::gui_to_editor(gui);
             s.component_store.store.retain(|c| {
                 let delete = c
                     .borrow_mut()
-                    .render_editor(ui, None, s.offset + s.pan, s.scale, s.clip_rect, &xd)
+                    .render_editor(ui, None, s.offset + s.pan, s.scale, s.clip_rect, &tcs)
                     .delete;
                 !delete
             });
@@ -272,6 +269,15 @@ impl Editor {
         let cpr = central_panel.response.interact(egui::Sense::drag());
         if cpr.dragged_by(egui::PointerButton::Middle) {
             Editor::gui_to_editor(gui).pan += cpr.drag_delta();
+        }
+        if central_panel.response.hovered() {
+            ctx.input_mut(|i| {
+                if i.scroll_delta.y > 0f32 {
+                    keymap::view_zoom_in_fn(gui);
+                } else if i.scroll_delta.y < 0f32 {
+                    keymap::view_zoom_out_fn(gui);
+                }
+            });
         }
     }
 

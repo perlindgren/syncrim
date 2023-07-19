@@ -111,6 +111,12 @@ pub trait EguiComponent: Component {
     }
 }
 
+#[cfg(feature = "gui-egui")]
+pub struct EguiExtra {
+    pub properties_window: bool,
+    pub id_tmp: String,
+}
+
 #[derive(Debug, Clone)]
 pub struct Ports {
     pub inputs: Vec<Input>,
