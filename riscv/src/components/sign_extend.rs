@@ -32,12 +32,12 @@ impl Component for Sext {
     fn evaluate(&self, simulator: &mut Simulator) {
         //data is zero extended as default since its a 32 bit signal 
         let mut data = simulator.get_input_val(&self.data_i);
-        println!("SEDATA:{:b}", data);
-        println!("Sign extending");
+        //println!("SEDATA:{:b}", data);
+        //println!("Sign extending");
         if(data>>20 == 1){
             let mask:u32 = 0b11111111111<<21;
             data = data|mask;
-            println!("sign was one, data:{:b}", data);
+            //println!("sign was one, data:{:b}", data);
         }
         simulator.set_out_val(&self.id, "out", data);
     }

@@ -35,11 +35,17 @@ impl Component for Decoder {
                     "sign_zero_ext_sel".into(),
                     "sign_zero_ext_data".into(),
                     "imm_a_mux_data".into(),
-                    "pc_se_data".into(),
-                    "pc_mux_sel".into(),
+                    //"pc_se_data".into(),
+                    //"pc_mux_sel".into(),
                     "data_mem_size".into(),
                     "data_se".into(),
                     "data_mem_ctrl".into(),
+                    "pc_imm_sel".into(),
+                    "big_imm".into(),
+                    "branch_imm".into(),
+                    "branch_logic_ctl".into(),
+                    "branch_logic_enable".into(),
+                    "jalr_imm".into(),
                 ],
             },
         )
@@ -65,6 +71,11 @@ impl Component for Decoder {
         ((instruction & (0b11111111<<12))))&0b1111_1111_1111_1111_1111_1111_1111_1110;
           //no idea why this is encoded this way but the ISA is what it is
         let imm_store = ((instruction&(0b11111<<7))>>7) | ((instruction&(0b1111111<<25))>>20);
+        let branch_imm = 
+        ((instruction&(0b1<<31))>>19)|
+        ((instruction&(0b111111<<25))>>20)|
+        ((instruction&(0b1111<<8))>>7)|
+        ((instruction&(0b1<<7))<<4);
         let mut wb_mux = 0;
         let mut alu_operand_a_sel = 0;
         let mut alu_operand_b_sel = 0;
@@ -76,11 +87,18 @@ impl Component for Decoder {
         let mut sign_zero_ext_sel = 0;
         let mut sign_zero_ext_data = 0;
         let mut imm_a_mux_data = 0;
-        let mut pc_mux_sel = 0;
-        let mut pc_se_data = 0;
+       // let mut pc_mux_sel = 0;
+       // let mut pc_se_data = 0;
         let mut data_mem_size = 0;
         let mut data_se = 0;
         let mut data_mem_ctrl = MemCtrl::None;
+        let mut big_imm = 0;
+        let mut pc_imm_sel = 0;
+        //let mut branch_imm = 0;
+        let mut branch_logic_ctl = 0;
+        let mut branch_logic_enable = 0;
+        let mut jalr_imm = 0;
+        println!("INSTRUCTION:0x{:08x}", instruction);
 
         match opcode{
             0b0110011 => { //OP
@@ -236,7 +254,7 @@ impl Component for Decoder {
                 imm_a_mux_data = imm_big;
             }
             0b1101111 => {//JAL
-                alu_operand_a_sel = 0; //rs1
+                alu_operand_a_sel = 2; //0
                 alu_operand_b_sel = 2;  //PC
                 regfile_rd = (instruction & (0b11111<<7)) >> 7;
                 regfile_rs1 = 0; //x0 
@@ -245,9 +263,45 @@ impl Component for Decoder {
                 alu_operator = 1; //ADD
                 sign_zero_ext_data = 0; //don't care
                 sign_zero_ext_sel = 1; //don't care
-                pc_se_data = imm_big_shuffled;
-                pc_mux_sel = 1; //select data instead of loop
+                big_imm = imm_big_shuffled;
+                pc_imm_sel = 0;
+                branch_logic_ctl = 0b010; //jal
+                branch_logic_enable = 0b1;
             }
+            0b1100111 =>{//JALR
+                alu_operand_a_sel = 2; //0
+                alu_operand_b_sel = 2;  //PC
+                regfile_rd = (instruction & (0b11111<<7)) >> 7;
+                regfile_rs1 = (instruction & (0b11111<<15)) >> 15;
+                regfile_we = 1; //enable write
+                wb_mux = 0; //ALU source
+                alu_operator = 1; //ADD
+                sign_zero_ext_data = 0; //don't care
+                sign_zero_ext_sel = 1; //don't care
+                big_imm = imm_big_shuffled; //don't care
+                pc_imm_sel = 0; //don't care
+                branch_logic_ctl = 0b011; //jalr
+                branch_logic_enable = 0b1;
+                jalr_imm = imm;
+                             
+            }
+            0b1100011 =>{//BRANCH
+                regfile_rs1 = (instruction & (0b11111<<15)) >> 15;
+                regfile_rs2 = (instruction & (0b11111<<20)) >> 20;
+                pc_imm_sel = 1;
+                //branch_imm = imm;
+                regfile_rd = 0; //don't care
+                regfile_we = 0; //no link
+                wb_mux = 0; //don't care
+                alu_operator = 0; //don't care
+                sign_zero_ext_data = 0; //don't care
+                big_imm = 0; //don't care
+                pc_imm_sel = 1; //branch imm
+                branch_logic_ctl = funct3; //use funct3
+                branch_logic_enable = 0b1;  //enable branch logic
+                println!("BRANCH IMM:{:b}", branch_imm);
+            }
+            
             0b0000011 =>{//LOAD
                 println!("----------LOAD");
                 alu_operand_a_sel = 0; //rs1
@@ -273,7 +327,7 @@ impl Component for Decoder {
 
             }
             0b0100011 =>{//STORE
-                println!("STORE");
+                println!("----------STORE");
                 alu_operand_a_sel = 0; //rs1
                 alu_operand_b_sel = 1;   //imm
                 regfile_rd = (instruction & (0b11111<<7)) >> 7;
@@ -293,8 +347,8 @@ impl Component for Decoder {
                     _=>panic!("Unsupported funct3 {:b}", funct3),
                 }
             }
-            _ => {panic!("Invalid opcode! {:b}", opcode)}
-        }
+            _ => {panic!("Invalid opcode! {:b}", opcode);}
+        };
 
         simulator.set_out_val(&self.id, "wb_mux", wb_mux);
         simulator.set_out_val(&self.id, "alu_operand_a_sel", alu_operand_a_sel);
@@ -307,11 +361,17 @@ impl Component for Decoder {
         simulator.set_out_val(&self.id, "sign_zero_ext_sel", sign_zero_ext_sel);
         simulator.set_out_val(&self.id, "sign_zero_ext_data", sign_zero_ext_data);
         simulator.set_out_val(&self.id, "imm_a_mux_data", imm_a_mux_data);
-        simulator.set_out_val(&self.id, "pc_se_data", pc_se_data);
-        simulator.set_out_val(&self.id, "pc_mux_sel", pc_mux_sel);
+       //simulator.set_out_val(&self.id, "pc_se_data", pc_se_data);
+       //simulator.set_out_val(&self.id, "pc_mux_sel", pc_mux_sel);
         simulator.set_out_val(&self.id, "data_mem_size", data_mem_size);
         simulator.set_out_val(&self.id, "data_se", data_se);
         simulator.set_out_val(&self.id, "data_mem_ctrl", data_mem_ctrl as Signal);
+        simulator.set_out_val(&self.id, "big_imm", big_imm);
+        simulator.set_out_val(&self.id,"pc_imm_sel",pc_imm_sel);
+        simulator.set_out_val(&self.id, "branch_imm", branch_imm);
+        simulator.set_out_val(&self.id, "branch_logic_ctl", branch_logic_ctl);
+        simulator.set_out_val(&self.id, "branch_logic_enable", branch_logic_enable);
+        simulator.set_out_val(&self.id, "jalr_imm", jalr_imm);
 
 
     }

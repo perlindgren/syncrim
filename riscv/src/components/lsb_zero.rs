@@ -2,26 +2,25 @@ use serde::{Deserialize, Serialize};
 use syncrim::common::{Component, Input, Output, OutputType, Ports, Simulator};
 
 #[derive(Serialize, Deserialize)]
-pub struct SZExt {
+pub struct LSBZero {
     pub id: String,
     pub pos: (f32, f32),
 
     pub data_i: Input,
-    pub sel_i:Input,
 
 }
 
 #[typetag::serde()]
-impl Component for SZExt {
+impl Component for LSBZero {
     fn to_(&self) {
-        println!("s_z_ext");
+        println!("LSBZero");
     }
     fn to_string(&self)->String{"".to_string()}
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
             Ports {
-                inputs: vec![self.data_i.clone(),self.sel_i.clone()],
+                inputs: vec![self.data_i.clone()],
                 out_type: OutputType::Combinatorial,
                 outputs: vec![
                     "out".into(),
@@ -31,22 +30,12 @@ impl Component for SZExt {
     }
     #[allow(non_snake_case)]
     fn evaluate(&self, simulator: &mut Simulator) {
-        //data is zero extended as default since its a 32 bit signal 
         let mut data = simulator.get_input_val(&self.data_i);
-        let sel = simulator.get_input_val(&self.sel_i);
-        //println!("SZEDATA:{:x}", data);
-        match sel{
-            0=>{
-                //println!("Sign extending");
-                if(data>>11 == 1){
-                    let mask:u32 = 0xFFFFF000;
-                    data = data|mask;
-                    //println!("sign was one, data:{:x}", data);
-                }
-            }
-            1=>{}
-            _=>{panic!("Invalid sel on SZExt:{}",sel)}
-        }
+        let mask:u32 = !0b1;
+        //println!("STRIPPER  IN:0b{:032b}", data);
+        //println!("STRIPPERMASK:0b{:032b}", mask);
+        data = data&mask;
+        //println!("STRIPPER OUT:0b{:032b}", data);
         simulator.set_out_val(&self.id, "out", data);
     }
 }

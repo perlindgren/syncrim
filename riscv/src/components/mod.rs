@@ -3,11 +3,13 @@ mod alu;
 mod decoder;
 mod reg_file;
 mod sign_zero_ext;
-mod sign_extend;
+mod lsb_zero;
+mod branch_logic;
 
 pub use sign_zero_ext::*;
 pub use instr_mem::*;
 pub use alu::*;
 pub use decoder::*;
 pub use reg_file::*;
-pub use sign_extend::*;
+pub use lsb_zero::*;
+pub use branch_logic::*;
