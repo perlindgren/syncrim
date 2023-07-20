@@ -9,6 +9,7 @@ edition = "2021"
 members = ["mips"]
 
 [dependencies]
+anyhow = "1.0.72"
 clap = { version = "4.3.15", features = ["derive"] }
 fern = "0.6.2"
 log = "0.4.19"

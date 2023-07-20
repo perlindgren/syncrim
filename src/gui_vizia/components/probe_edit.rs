@@ -1,3 +1,5 @@
+use anyhow::{anyhow, Result};
+
 use crate::{
     common::{Signal, ViziaComponent},
     components::{ProbeEdit, TextSignal},
@@ -36,7 +38,7 @@ impl ViziaComponent for ProbeEdit {
             .on_edit(move |_ex, text| {
                 trace!("edit: text {}", text);
 
-                if let Ok(signal) = text.parse::<Signal>() {
+                if let Ok(signal) = parse_signal(&text) {
                     *history_submit.write().unwrap().last_mut().unwrap() = TextSignal {
                         text: text.clone(),
                         signal,
@@ -57,4 +59,17 @@ impl ViziaComponent for ProbeEdit {
 #[derive(Lens, Setter, Model)]
 pub struct ProbeEditView {
     editable_text: String,
+}
+
+fn parse_signal(text: &str) -> Result<Signal, anyhow::Error> {
+    let text = text.trim();
+
+    if let Ok(signal) = text.parse::<Signal>() {
+        Ok(signal)
+    } else if let Some(hex) = text.strip_prefix("0x") {
+        let signal = Signal::from_str_radix(hex, 16)?;
+        Ok(signal)
+    } else {
+        Err(anyhow!("Failed to parse {}", text))
+    }
 }
