@@ -45,6 +45,7 @@ impl ViziaComponent for ProbeEdit {
                     warn!("could not parse input, signal keeps last valid value");
                 }
             })
+            .position_type(PositionType::SelfDirected)
             .left(Pixels(self.pos.0 - 40.0))
             .top(Pixels(self.pos.1 - 10.0))
             .width(Pixels(80.0))
