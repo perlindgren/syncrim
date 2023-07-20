@@ -1,9 +1,9 @@
-use anyhow::{anyhow, Result};
-
+use crate::gui_vizia::GuiData;
 use crate::{
     common::{Signal, ViziaComponent},
     components::{ProbeEdit, TextSignal},
 };
+use anyhow::{anyhow, Result};
 use vizia::prelude::*;
 
 use log::*;
@@ -21,16 +21,13 @@ impl ViziaComponent for ProbeEdit {
         let history_submit = self.history.clone();
 
         Textbox::new(cx, ProbeEditView::editable_text)
-            .bind(
-                crate::gui_vizia::GuiData::clock,
-                move |mut handle, clock| {
-                    let cx = handle.context();
-                    trace!("bind: clock --- {}", clock.get(cx));
-                    let text = history_bind.read().unwrap().last().unwrap().text.clone();
-                    trace!("last text: {:?}", text);
-                    cx.emit(ProbeEditViewSetter::EditableText(text));
-                },
-            )
+            .bind(GuiData::clock, move |mut handle, clock| {
+                let cx = handle.context();
+                trace!("bind: clock --- {}", clock.get(cx));
+                let text = history_bind.read().unwrap().last().unwrap().text.clone();
+                trace!("last text: {:?}", text);
+                cx.emit(ProbeEditViewSetter::EditableText(text));
+            })
             .on_submit(move |ex, text, enter| {
                 trace!("submit: text {} enter {}", text, enter);
                 ex.emit(ProbeEditViewSetter::EditableText(text));
@@ -48,11 +45,10 @@ impl ViziaComponent for ProbeEdit {
                     warn!("could not parse input, signal keeps last valid value");
                 }
             })
-            .width(Pixels(300.0))
             .left(Pixels(self.pos.0 - 40.0))
-            .top(Pixels(self.pos.1 - 20.0))
+            .top(Pixels(self.pos.1 - 10.0))
             .width(Pixels(80.0))
-            .height(Pixels(40.0));
+            .height(Pixels(20.0));
     }
 }
 
