@@ -54,3 +54,71 @@ fn test_add() {
     assert_eq!(simulator.get_input_val(add_val), Signal::MAX / 2 + 1);
     assert_eq!(simulator.get_input_val(add_overflow), true as Signal);
 }
+
+#[test]
+fn test_sext() {
+    let cs = ComponentStore {
+        store: vec![
+            Rc::new(ProbeOut::new("po")),
+            Rc::new(Sext {
+                id: "sext32".to_string(),
+                pos: (0.0, 0.0),
+                sext_in: Input::new("po", "out"),
+                in_size: 4,
+                out_size: 32,
+            }),
+            Rc::new(Sext {
+                id: "sext16".to_string(),
+                pos: (0.0, 0.0),
+                sext_in: Input::new("po", "out"),
+                in_size: 4,
+                out_size: 16,
+            }),
+        ],
+    };
+    let mut clock = 0;
+    let mut simulator = Simulator::new(&cs, &mut clock);
+
+    assert_eq!(clock, 1);
+
+    // outputs
+    let sext32_out = &Input::new("sext32", "out");
+    let sext16_out = &Input::new("sext16", "out");
+
+    // reset
+    assert_eq!(simulator.get_input_val(sext32_out), 0 as Signal);
+    assert_eq!(simulator.get_input_val(sext16_out), 0 as Signal);
+
+    // Sign-extended
+    println!("<setup for clock 2>");
+    simulator.set_out_val("po", "out", 0b1111 as Signal);
+    println!("sim_state {:?}", simulator.sim_state);
+    println!("<clock>");
+    simulator.clock(&mut clock);
+    println!("sim_state {:?}", simulator.sim_state);
+    assert_eq!(clock, 2);
+    assert_eq!(simulator.get_input_val(sext32_out), 0xFFFFFFFF as Signal);
+    assert_eq!(simulator.get_input_val(sext16_out), 0xFFFF as Signal);
+
+    // Zero-extended
+    println!("<setup for clock 3>");
+    simulator.set_out_val("po", "out", 0b111);
+    println!("sim_state {:?}", simulator.sim_state);
+    println!("<clock>");
+    simulator.clock(&mut clock);
+    println!("sim_state {:?}", simulator.sim_state);
+    assert_eq!(clock, 3);
+    assert_eq!(simulator.get_input_val(sext32_out), 0b111 as Signal);
+    assert_eq!(simulator.get_input_val(sext16_out), 0b111 as Signal);
+
+    // Unclean upper bits
+    println!("<setup for clock 4>");
+    simulator.set_out_val("po", "out", 0b10111);
+    println!("sim_state {:?}", simulator.sim_state);
+    println!("<clock>");
+    simulator.clock(&mut clock);
+    println!("sim_state {:?}", simulator.sim_state);
+    assert_eq!(clock, 4);
+    assert_eq!(simulator.get_input_val(sext32_out), 0b111 as Signal);
+    assert_eq!(simulator.get_input_val(sext16_out), 0b111 as Signal);
+}
