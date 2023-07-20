@@ -3,8 +3,6 @@ use log::*;
 use serde::{Deserialize, Serialize};
 use std::{cell::RefCell, rc::Rc};
 
-use log::*;
-
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeEdit {
     pub id: Id,
