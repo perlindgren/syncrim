@@ -63,8 +63,8 @@ pub trait Component {
     /// evaluate component based on current internal state
     fn clock(&self, _simulator: &mut Simulator) {}
 
-    /// evaluate component based on prior internal state
-    fn un_clock(&self, _simulator: &mut Simulator) {}
+    /// update component internal state
+    fn un_clock(&self) {}
 }
 
 // Specific functionality for Vizia frontend

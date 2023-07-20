@@ -1,6 +1,6 @@
 use crate::{
     common::{Signal, ViziaComponent},
-    components::ProbeEdit,
+    components::{ProbeEdit, TextSignal},
 };
 use vizia::prelude::*;
 
@@ -11,35 +11,42 @@ impl ViziaComponent for ProbeEdit {
     fn view(&self, cx: &mut Context) {
         trace!("---- Create ProbeEdit View");
         ProbeEditView {
-            editable_text: "0".to_string(),
-            history: Vec::new(),
+            editable_text: "".to_string(),
         }
         .build(cx);
 
-        self.clone().build(cx);
-        let plepps = self.clone();
+        let history_bind = self.history.clone();
+        let history_submit = self.history.clone();
 
         Textbox::new(cx, ProbeEditView::editable_text)
-            .width(Pixels(300.0))
-            .on_submit(|cx, text, enter| {
-                trace!("text {} {}", text, enter);
-
-                // TODO, do we want to require pressing enter?
-                // IMO, you probably just want to enter the value and click simulate
-                //if enter {
-                if let Ok(signal) = text.parse::<Signal>() {
+            .bind(
+                crate::gui_vizia::GuiData::clock,
+                move |mut handle, clock| {
+                    let cx = handle.context();
+                    trace!("bind: clock --- {}", clock.get(cx));
+                    let text = history_bind.read().unwrap().last().unwrap().text.clone();
+                    trace!("last text: {:?}", text);
                     cx.emit(ProbeEditViewSetter::EditableText(text));
-                    cx.emit(ProbeEditEvent::Value(signal));
-                    error!("signal {}", signal);
+                },
+            )
+            .on_submit(move |ex, text, enter| {
+                trace!("submit: text {} enter {}", text, enter);
+                ex.emit(ProbeEditViewSetter::EditableText(text));
+            })
+            .on_edit(move |_ex, text| {
+                trace!("edit: text {}", text);
+
+                if let Ok(signal) = text.parse::<Signal>() {
+                    *history_submit.write().unwrap().last_mut().unwrap() = TextSignal {
+                        text: text.clone(),
+                        signal,
+                    };
+                    trace!("signal {}", signal);
                 } else {
-                    error!("could not parse input");
+                    warn!("could not parse input, signal keeps last valid value");
                 }
-                //};
             })
-            .bind(crate::gui_vizia::GuiData::clock, move |cx, clock| {
-                error!("clock --- {}", clock.get(&cx));
-                error!("view history: {:?}", plepps.history);
-            })
+            .width(Pixels(300.0))
             .left(Pixels(self.pos.0 - 40.0))
             .top(Pixels(self.pos.1 - 20.0))
             .width(Pixels(80.0))
@@ -47,24 +54,7 @@ impl ViziaComponent for ProbeEdit {
     }
 }
 
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub enum ProbeEditEvent {
-    Value(Signal),
-}
-
-impl Model for ProbeEdit {
-    fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
-        event.map(|app_event, _meta| match app_event {
-            ProbeEditEvent::Value(signal) => {
-                trace!("view: {}", signal);
-                *self.history.borrow_mut().last_mut().unwrap() = *signal;
-            }
-        });
-    }
-}
-
 #[derive(Lens, Setter, Model)]
 pub struct ProbeEditView {
     editable_text: String,
-    history: Vec<String>,
 }

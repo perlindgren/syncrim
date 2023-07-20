@@ -206,7 +206,7 @@ impl Simulator {
             let ordered_components = self.ordered_components.clone();
 
             for component in ordered_components {
-                component.un_clock(self);
+                component.un_clock();
             }
         }
         *clock = self.history.len();
