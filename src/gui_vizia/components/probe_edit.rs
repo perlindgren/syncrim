@@ -15,6 +15,8 @@ impl ViziaComponent for ProbeEdit {
         }
         .build(cx);
 
+        self.clone().build(cx);
+
         Textbox::new(cx, ProbeEditView::editable_text)
             .width(Pixels(300.0))
             .on_submit(|cx, text, b| {
@@ -23,6 +25,7 @@ impl ViziaComponent for ProbeEdit {
                 if b {
                     if let Ok(signal) = text.parse::<Signal>() {
                         cx.emit(ProbeEditViewSetter::EditableText(text));
+                        cx.emit(ProbeEditEvent::Value(signal));
                         error!("signal {}", signal);
                     }
                 };
@@ -31,6 +34,22 @@ impl ViziaComponent for ProbeEdit {
             .top(Pixels(self.pos.1 - 20.0))
             .width(Pixels(80.0))
             .height(Pixels(40.0));
+    }
+}
+
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub enum ProbeEditEvent {
+    Value(Signal),
+}
+
+impl Model for ProbeEdit {
+    fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
+        event.map(|app_event, _meta| match app_event {
+            ProbeEditEvent::Value(signal) => {
+                error!("view: {}", signal);
+                *self.data.borrow_mut() = *signal;
+            }
+        });
     }
 }
 
