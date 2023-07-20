@@ -26,9 +26,14 @@ impl Component for Sext {
 
     // propagate sign extension to output
     // TODO: always extend to Signal size? (it should not matter and should be slightly cheaper)
-    fn evaluate(&self, simulator: &mut Simulator) {
-        assert!(self.out_size <= Signal::BITS, "{}: Output size {} is larger than maximum size {}",
-                self.id, self.out_size, Signal::BITS);
+    fn clock(&self, simulator: &mut Simulator) {
+        assert!(
+            self.out_size <= Signal::BITS,
+            "{}: Output size {} is larger than maximum size {}",
+            self.id,
+            self.out_size,
+            Signal::BITS
+        );
 
         // get input values
         let mut value = simulator.get_input_val(&self.sext_in);

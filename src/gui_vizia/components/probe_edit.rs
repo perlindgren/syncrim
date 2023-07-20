@@ -12,23 +12,33 @@ impl ViziaComponent for ProbeEdit {
         trace!("---- Create ProbeEdit View");
         ProbeEditView {
             editable_text: "0".to_string(),
+            history: Vec::new(),
         }
         .build(cx);
 
         self.clone().build(cx);
+        let plepps = self.clone();
 
         Textbox::new(cx, ProbeEditView::editable_text)
             .width(Pixels(300.0))
-            .on_submit(|cx, text, b| {
-                error!("text {} {}", text, b);
+            .on_submit(|cx, text, enter| {
+                trace!("text {} {}", text, enter);
 
-                if b {
-                    if let Ok(signal) = text.parse::<Signal>() {
-                        cx.emit(ProbeEditViewSetter::EditableText(text));
-                        cx.emit(ProbeEditEvent::Value(signal));
-                        error!("signal {}", signal);
-                    }
-                };
+                // TODO, do we want to require pressing enter?
+                // IMO, you probably just want to enter the value and click simulate
+                //if enter {
+                if let Ok(signal) = text.parse::<Signal>() {
+                    cx.emit(ProbeEditViewSetter::EditableText(text));
+                    cx.emit(ProbeEditEvent::Value(signal));
+                    error!("signal {}", signal);
+                } else {
+                    error!("could not parse input");
+                }
+                //};
+            })
+            .bind(crate::gui_vizia::GuiData::clock, move |cx, clock| {
+                error!("clock --- {}", clock.get(&cx));
+                error!("view history: {:?}", plepps.history);
             })
             .left(Pixels(self.pos.0 - 40.0))
             .top(Pixels(self.pos.1 - 20.0))
@@ -46,8 +56,8 @@ impl Model for ProbeEdit {
     fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
         event.map(|app_event, _meta| match app_event {
             ProbeEditEvent::Value(signal) => {
-                error!("view: {}", signal);
-                *self.data.borrow_mut() = *signal;
+                trace!("view: {}", signal);
+                *self.history.borrow_mut().last_mut().unwrap() = *signal;
             }
         });
     }
@@ -56,4 +66,5 @@ impl Model for ProbeEdit {
 #[derive(Lens, Setter, Model)]
 pub struct ProbeEditView {
     editable_text: String,
+    history: Vec<String>,
 }

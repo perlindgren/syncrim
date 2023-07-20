@@ -152,7 +152,7 @@ impl Component for RegFile {
         )
     }
 
-    fn evaluate(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) {
         if simulator.get_input_val(&self.write_enable) == true as Signal {
             let data = simulator.get_input_val(&self.write_data);
             trace!("data {}", data);

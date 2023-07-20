@@ -7,7 +7,7 @@ use std::{cell::RefCell, rc::Rc};
 pub struct ProbeEdit {
     pub id: Id,
     pub pos: (f32, f32),
-    pub data: Rc<RefCell<Signal>>,
+    pub history: Rc<RefCell<Vec<Signal>>>, // will contain the next editable value
 }
 
 #[typetag::serde]
@@ -30,12 +30,27 @@ impl Component for ProbeEdit {
     }
 
     // propagate editable value
-    fn evaluate(&self, simulator: &mut Simulator) {
-        let value = *self.data.borrow();
-        error!("value {}", value);
+    fn clock(&self, simulator: &mut Simulator) {
+        let history = self.history.borrow();
+        error!("{} history {:?}", self.id, history);
+        let current = *history.last().unwrap();
 
-        // set output
-        simulator.set_out_val(&self.id, "out", value);
+        // set output to current value
+        simulator.set_out_val(&self.id, "out", current);
+        drop(history);
+        // push to prepare data for next;
+        self.history.borrow_mut().push(current)
+    }
+
+    // reverse simulation, notice does not touch simulator state, its just internal
+    fn un_clock(&self, simulator: &mut Simulator) {
+        let mut history = self.history.borrow_mut();
+        error!("{} history {:?}", self.id, history);
+        let _current = history.pop().unwrap(); // pop the current editable value
+        error!("current {:?}", _current);
+        drop(history);
+        let history = self.history.borrow();
+        error!("new {} history {:?}", self.id, history);
     }
 }
 
@@ -44,7 +59,8 @@ impl ProbeEdit {
         ProbeEdit {
             id: id.into(),
             pos,
-            data: Rc::new(RefCell::new(0)),
+            // initiate internal history
+            history: Rc::new(RefCell::new(vec![0])),
         }
     }
 }

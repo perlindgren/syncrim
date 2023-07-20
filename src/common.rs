@@ -60,8 +60,11 @@ pub trait Component {
     /// returns the (id, Ports) of the component
     fn get_id_ports(&self) -> (Id, Ports);
 
-    /// evaluation function
-    fn evaluate(&self, _simulator: &mut Simulator) {}
+    /// evaluate component based on current internal state
+    fn clock(&self, _simulator: &mut Simulator) {}
+
+    /// evaluate component based on prior internal state
+    fn un_clock(&self, _simulator: &mut Simulator) {}
 }
 
 // Specific functionality for Vizia frontend

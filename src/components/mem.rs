@@ -194,7 +194,7 @@ impl Component for Mem {
         )
     }
 
-    fn evaluate(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) {
         let data = simulator.get_input_val(&self.data);
         let addr = simulator.get_input_val(&self.addr) as usize;
         let ctrl = MemCtrl::try_from(simulator.get_input_val(&self.ctrl) as u8).unwrap();

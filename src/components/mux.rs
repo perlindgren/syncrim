@@ -31,7 +31,7 @@ impl Component for Mux {
     }
 
     // propagate selected input value to output
-    fn evaluate(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) {
         // get input value
         let select = simulator.get_input_val(&self.select) as usize;
         trace!("select {}", select);
