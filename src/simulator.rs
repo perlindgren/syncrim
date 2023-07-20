@@ -192,7 +192,7 @@ impl Simulator {
         let ordered_components = self.ordered_components.clone();
 
         for component in ordered_components {
-            component.evaluate(self);
+            component.clock(self);
         }
         *clock = self.history.len();
     }
@@ -203,6 +203,11 @@ impl Simulator {
             let state = self.history.pop().unwrap();
             // set old state
             self.sim_state = state;
+            let ordered_components = self.ordered_components.clone();
+
+            for component in ordered_components {
+                component.un_clock();
+            }
         }
         *clock = self.history.len();
     }

@@ -1,4 +1,4 @@
-use mips::components::{RegFile, RegStore};
+use mips::components::{RegFile, RegHistory, RegStore};
 use std::rc::Rc;
 use syncrim::{
     common::{ComponentStore, Input, Signal, Simulator},
@@ -31,6 +31,7 @@ fn test_reg_file() {
 
                 // data
                 registers: RegStore::new(),
+                history: RegHistory::new(),
             }),
         ],
     };
