@@ -17,16 +17,18 @@ impl ViziaComponent for Wire {
     fn view(&self, cx: &mut Context) {
         trace!("---- Create Wire View");
         let surround = 5.0;
-        View::build(WireView { surround }, cx, |cx| {
-            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
-        })
-        .position_type(PositionType::SelfDirected)
-        .left(Pixels(self.pos.0 - surround))
-        .top(Pixels(self.pos.1 - surround))
-        .width(Pixels(self.delta.0 + 2.0 * surround))
-        .height(Pixels(self.delta.1 + 2.0 * surround))
-        .on_press(|ex| ex.emit(PopupEvent::Switch))
-        .tooltip(|cx| new_component_tooltip(cx, self));
+        for (i, pos) in self.pos[1..].iter().enumerate() {
+            View::build(WireView { surround }, cx, |cx| {
+                NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+            })
+            .position_type(PositionType::SelfDirected)
+            .left(Pixels(self.pos[i].0 - surround))
+            .top(Pixels(self.pos[i].1 - surround))
+            .width(Pixels(pos.0 + 2.0 * surround))
+            .height(Pixels(pos.1 + 2.0 * surround))
+            .on_press(|ex| ex.emit(PopupEvent::Switch))
+            .tooltip(|cx| new_component_tooltip(cx, self));
+        }
     }
 }
 
