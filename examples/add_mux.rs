@@ -15,11 +15,7 @@ fn main() {
                 a_in: Input::new("c", "out"),
                 b_in: Input::new("r1", "out"),
             }),
-            Rc::new(Constant {
-                id: "c".to_string(),
-                pos: (100.0, 100.0),
-                value: 1.into(),
-            }),
+            Constant::rc_new("c", (100.0, 100.0), 1),
             Rc::new(Register {
                 id: "r1".to_string(),
                 pos: (100.0, 140.0),
@@ -88,26 +84,10 @@ fn main() {
                     Input::new("mc4", "out"),
                 ],
             }),
-            Rc::new(Constant {
-                id: "mc1".to_string(),
-                pos: (190.0, 270.0),
-                value: 0.into(),
-            }),
-            Rc::new(Constant {
-                id: "mc2".to_string(),
-                pos: (190.0, 290.0),
-                value: 1.into(),
-            }),
-            Rc::new(Constant {
-                id: "mc3".to_string(),
-                pos: (190.0, 310.0),
-                value: 2.into(),
-            }),
-            Rc::new(Constant {
-                id: "mc4".to_string(),
-                pos: (190.0, 330.0),
-                value: 3.into(),
-            }),
+            Constant::rc_new("mc1", (150.0, 270.0), 0),
+            Constant::rc_new("mc2", (150.0, 290.0), 1),
+            Constant::rc_new("mc3", (150.0, 310.0), 2),
+            Constant::rc_new("mc4", (150.0, 330.0), 3),
             Rc::new(Wire {
                 id: "wm_sel".to_string(),
                 pos: (260.0, 180.0),
