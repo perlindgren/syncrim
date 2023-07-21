@@ -2,6 +2,10 @@
 
 Tracking changes per date:
 
+## 230721
+
+- Added rudimentary support for a structured `Signal` type, inspired by HDLs.
+
 ## 230719
 
 - `ProbeEdit`, a component for interactive debugging (and maybe some end usage as well). It allows you to enter a value (dec/hex) for a signal. It acts as a register so its content will be used in the next clock cycle (one could also think of changing this to act directly by triggering some re-evaluation, not sure). `ProbeEdit` also implements a proper history buffer so you can reverse the simulation.

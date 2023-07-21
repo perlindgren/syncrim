@@ -18,11 +18,7 @@ fn main() {
                 a_in: Input::new("c1", "out"),
                 b_in: Input::new("reg", "out"),
             }),
-            Rc::new(Constant {
-                id: "c1".to_string(),
-                pos: (100.0, 100.0),
-                value: 4,
-            }),
+            Constant::rc_new("c1", (100.0, 100.0), 4),
             Rc::new(Register {
                 id: "reg".to_string(),
                 pos: (100.0, 140.0),
