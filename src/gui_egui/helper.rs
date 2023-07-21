@@ -3,7 +3,14 @@ use egui::{Pos2, Rect, Response, Vec2};
 
 pub struct EditorRenderReturn {
     pub delete: bool,
-    pub resp: Option<Response>,
+    pub resp: Option<Vec<Response>>,
+}
+
+pub fn offset_reverse_helper_pos2(xy: Pos2, scale: f32, offset: Vec2) -> Pos2 {
+    egui::Pos2 {
+        x: (xy.x - offset.x) * scale,
+        y: (xy.y - offset.y) * scale,
+    }
 }
 
 pub fn offset_helper(xy: (f32, f32), scale: f32, offset: Vec2) -> Pos2 {

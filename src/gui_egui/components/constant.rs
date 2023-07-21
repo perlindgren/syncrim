@@ -3,7 +3,7 @@ use crate::components::Constant;
 use crate::gui_egui::helper::{out_of_bounds, unique_component_name, EditorRenderReturn};
 use egui::{
     Align2, Area, Color32, Frame, Margin, Order, PointerButton, Pos2, Rect, RichText, Rounding,
-    Sense, Window,
+    Sense, Vec2, Window,
 };
 use epaint::Shadow;
 
@@ -16,7 +16,7 @@ impl EguiComponent for Constant {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: Rect,
-    ) -> Option<egui::Response> {
+    ) -> Option<Vec<egui::Response>> {
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
@@ -57,7 +57,7 @@ impl EguiComponent for Constant {
                 },
             );
         }
-        Some(r)
+        Some(vec![r])
     }
 
     fn render_editor(
@@ -70,7 +70,8 @@ impl EguiComponent for Constant {
         cs: &Components,
     ) -> EditorRenderReturn {
         let mut delete = false;
-        let resp = Constant::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
+        let r_vec = Constant::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
+        let resp = &r_vec[0];
         if resp.dragged_by(PointerButton::Primary) {
             let delta = resp.drag_delta() / scale;
             self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
@@ -119,12 +120,6 @@ impl EguiComponent for Constant {
                         );
                     });
                     ui.add(egui::Slider::new(&mut self.value, u32::MIN..=u32::MAX).text("value"));
-                    /*
-                    ui.horizontal(|ui| {
-
-                        ui.text_edit_singleline(value);
-                    });
-                    */
                 });
             if resp.unwrap().response.clicked_elsewhere() {
                 self.properties_window = false;
@@ -138,7 +133,7 @@ impl EguiComponent for Constant {
 
         EditorRenderReturn {
             delete,
-            resp: Some(resp),
+            resp: Some(r_vec),
         }
     }
 
@@ -150,5 +145,10 @@ impl EguiComponent for Constant {
             },
             max: Pos2 { x: 10f32, y: 10f32 },
         }
+    }
+
+    fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
+        let own_pos = Vec2::new(self.pos.0, self.pos.1);
+        vec![(String::from("out"), Pos2::new(10f32, 0f32) + own_pos)]
     }
 }

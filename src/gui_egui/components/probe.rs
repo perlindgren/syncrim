@@ -16,7 +16,7 @@ impl EguiComponent for Probe {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: Rect,
-    ) -> Option<egui::Response> {
+    ) -> Option<Vec<egui::Response>> {
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
@@ -63,7 +63,7 @@ impl EguiComponent for Probe {
                 },
             );
         }
-        Some(r)
+        Some(vec![r])
     }
 
     fn render_editor(
@@ -76,7 +76,8 @@ impl EguiComponent for Probe {
         cs: &Components,
     ) -> EditorRenderReturn {
         let mut delete = false;
-        let resp = Probe::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
+        let r_vec = Probe::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
+        let resp = &r_vec[0];
         if resp.dragged_by(egui::PointerButton::Primary) {
             let delta = resp.drag_delta() / scale;
             self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
@@ -175,7 +176,7 @@ impl EguiComponent for Probe {
 
         EditorRenderReturn {
             delete,
-            resp: Some(resp),
+            resp: Some(r_vec),
         }
     }
 

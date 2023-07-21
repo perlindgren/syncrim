@@ -92,9 +92,10 @@ pub trait EguiComponent: Component {
         _offset: egui::Vec2,
         _scale: f32,
         _clip_rect: egui::Rect,
-    ) -> Option<egui::Response> {
+    ) -> Option<Vec<egui::Response>> {
         None
     }
+
     fn render_editor(
         &mut self,
         _ui: &mut egui::Ui,
@@ -109,8 +110,14 @@ pub trait EguiComponent: Component {
             resp: None,
         }
     }
+
     fn size(&self) -> egui::Rect {
         egui::Rect::NOTHING
+    }
+
+    /// Get ports location relative to self, (inputs, outputs)
+    fn ports_location(&self) -> Vec<(Id, egui::Pos2)> {
+        vec![]
     }
 }
 

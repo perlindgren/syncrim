@@ -10,7 +10,7 @@ impl EguiComponent for Sext {
         _offset: egui::Vec2,
         _scale: f32,
         _clip_rect: egui::Rect,
-    ) -> Option<egui::Response> {
+    ) -> Option<Vec<egui::Response>> {
         todo!("implement sext");
         None
     }

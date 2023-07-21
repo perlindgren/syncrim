@@ -11,7 +11,7 @@ impl EguiComponent for Register {
         offset: egui::Vec2,
         scale: f32,
         _clip_rect: egui::Rect,
-    ) -> Option<egui::Response> {
+    ) -> Option<Vec<egui::Response>> {
         // 21x41
         // middle: 11x 21y (0 0)
         let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;

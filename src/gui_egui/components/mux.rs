@@ -11,7 +11,7 @@ impl EguiComponent for Mux {
         offset: egui::Vec2,
         scale: f32,
         _clip_rect: egui::Rect,
-    ) -> Option<egui::Response> {
+    ) -> Option<Vec<egui::Response>> {
         // 41x(20*ports + 11)
         // middle: 21x ((20*ports + 10)/2+1)y (0 0)
         let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;

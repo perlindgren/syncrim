@@ -2,7 +2,7 @@ use crate::gui_egui::helper::{
     offset_helper, out_of_bounds, unique_component_name, EditorRenderReturn,
 };
 use crate::{
-    common::{Components, EguiComponent, Simulator},
+    common::{Components, EguiComponent, Id, Simulator},
     components::Add,
 };
 use egui::{
@@ -20,7 +20,7 @@ impl EguiComponent for Add {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
-    ) -> Option<egui::Response> {
+    ) -> Option<Vec<egui::Response>> {
         // 41x81
         // middle: 21x 41y (0 0)
         let oh: fn((f32, f32), f32, Vec2) -> egui::Pos2 = offset_helper;
@@ -72,11 +72,18 @@ impl EguiComponent for Add {
         let r = ui.allocate_rect(
             rect,
             Sense {
-                click: true,
-                drag: true,
-                focusable: true,
-            },
+                click: false,
+                drag: false,
+                focusable: false,
+            }, /*
+               Sense {
+                   click: true,
+                   drag: true,
+                   focusable: true,
+               },
+               */
         );
+
         if r.hovered() && !r.dragged() {
             egui::containers::popup::show_tooltip_for(
                 ui.ctx(),
@@ -88,7 +95,7 @@ impl EguiComponent for Add {
                 },
             );
         }
-        Some(r)
+        Some(vec![r])
     }
 
     fn render_editor(
@@ -101,7 +108,13 @@ impl EguiComponent for Add {
         cs: &Components,
     ) -> EditorRenderReturn {
         let mut delete = false;
-        let resp = Add::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
+        let r_vec = Add::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
+        let resp = &r_vec[0];
+        let resp = resp.interact(Sense {
+            click: true,
+            drag: true,
+            focusable: true,
+        });
         if resp.dragged_by(PointerButton::Primary) {
             let delta = resp.drag_delta() / scale;
             self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
@@ -181,7 +194,7 @@ impl EguiComponent for Add {
                                         Err(_) => vec![],
                                     };
                                     for field in fields {
-                                        ui.selectable_value(&mut b_in_field, field.clone(), field);
+                                        ui.selectable_value(&mut a_in_field, field.clone(), field);
                                     }
                                 }
                             });
@@ -237,7 +250,7 @@ impl EguiComponent for Add {
 
         EditorRenderReturn {
             delete,
-            resp: Some(resp),
+            resp: Some(r_vec),
         }
     }
 
@@ -249,5 +262,14 @@ impl EguiComponent for Add {
             },
             max: Pos2 { x: 20f32, y: 40f32 },
         }
+    }
+
+    fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
+        let own_pos = Vec2::new(self.pos.0, self.pos.1);
+        vec![
+            (self.a_in.id.clone(), Pos2::new(-20f32, -20f32) + own_pos),
+            (self.b_in.id.clone(), Pos2::new(-20f32, 20f32) + own_pos),
+            (String::from("out"), Pos2::new(20f32, 0f32) + own_pos),
+        ]
     }
 }

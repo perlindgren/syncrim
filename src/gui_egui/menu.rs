@@ -100,19 +100,19 @@ impl Menu {
         });
         ui.horizontal(|ui| {
             if ui.button("⟲").clicked() {
-                keymap::control_reset(gui);
+                keymap::control_reset_fn(gui);
             }
             if ui.button("⏮").clicked() {
-                keymap::control_step_back(gui);
+                keymap::control_step_back_fn(gui);
             }
             if ui.button("⏭").clicked() {
-                keymap::control_step_forward(gui);
+                keymap::control_step_forward_fn(gui);
             }
             if ui.button("▶").clicked() {
-                keymap::control_play(gui);
+                keymap::control_play_fn(gui);
             }
             if ui.button("⏸").clicked() {
-                keymap::control_pause(gui);
+                keymap::control_pause_fn(gui);
             }
             ui.label(format!("Clock #{}", gui.clock));
         });

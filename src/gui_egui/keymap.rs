@@ -21,6 +21,7 @@ pub struct Shortcuts {
     pub control_reset: KeyboardShortcut,
     pub control_step_forward: KeyboardShortcut,
     pub control_step_back: KeyboardShortcut,
+    pub editor_wire: KeyboardShortcut,
 }
 
 impl Default for Shortcuts {
@@ -138,6 +139,10 @@ impl Shortcuts {
                 modifiers: shift,
                 key: Key::F10,
             },
+            editor_wire: KeyboardShortcut {
+                modifiers: none,
+                key: Key::W,
+            },
         }
     }
 
@@ -179,22 +184,25 @@ impl Shortcuts {
             view_zoom_out_fn(gui);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.control_play_toggle)) {
-            control_play_toggle(gui);
+            control_play_toggle_fn(gui);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.control_play)) {
-            control_play(gui);
+            control_play_fn(gui);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.control_pause)) {
-            control_pause(gui);
+            control_pause_fn(gui);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.control_reset)) {
-            control_reset(gui);
+            control_reset_fn(gui);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.control_step_forward)) {
-            control_step_forward(gui);
+            control_step_forward_fn(gui);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.control_step_back)) {
-            control_step_back(gui);
+            control_step_back_fn(gui);
+        }
+        if ctx.input_mut(|i| i.consume_shortcut(&self.editor_wire)) {
+            editor_wire_fn(gui);
         }
     }
 }
@@ -261,34 +269,42 @@ pub fn view_zoom_out_fn(gui: &mut crate::gui_egui::gui::Gui) {
         _ => *scale = 0.1f32,
     }
 }
-pub fn control_play_toggle(gui: &mut crate::gui_egui::gui::Gui) {
+pub fn control_play_toggle_fn(gui: &mut crate::gui_egui::gui::Gui) {
     if !gui.editor_use {
         gui.pause = !gui.pause;
     }
 }
-pub fn control_play(gui: &mut crate::gui_egui::gui::Gui) {
+pub fn control_play_fn(gui: &mut crate::gui_egui::gui::Gui) {
     if !gui.editor_use {
         gui.pause = false;
     }
 }
-pub fn control_pause(gui: &mut crate::gui_egui::gui::Gui) {
+pub fn control_pause_fn(gui: &mut crate::gui_egui::gui::Gui) {
     if !gui.editor_use {
         gui.pause = true;
     }
 }
-pub fn control_reset(gui: &mut crate::gui_egui::gui::Gui) {
+pub fn control_reset_fn(gui: &mut crate::gui_egui::gui::Gui) {
     if !gui.editor_use {
         gui.simulator.reset(&mut gui.clock);
         gui.pause = true;
     }
 }
-pub fn control_step_forward(gui: &mut crate::gui_egui::gui::Gui) {
+pub fn control_step_forward_fn(gui: &mut crate::gui_egui::gui::Gui) {
     if !gui.editor_use {
         gui.simulator.clock(&mut gui.clock);
     }
 }
-pub fn control_step_back(gui: &mut crate::gui_egui::gui::Gui) {
+pub fn control_step_back_fn(gui: &mut crate::gui_egui::gui::Gui) {
     if !gui.editor_use {
         gui.simulator.un_clock(&mut gui.clock);
+    }
+}
+pub fn editor_wire_fn(gui: &mut crate::gui_egui::gui::Gui) {
+    if gui.editor_use {
+        let editor = gui.editor.as_mut().unwrap();
+        editor.wire_mode = !editor.wire_mode;
+        editor.reset_wire_mode();
+        println!("wire mode: {}", editor.wire_mode);
     }
 }

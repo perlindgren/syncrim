@@ -11,7 +11,7 @@ impl EguiComponent for ProbeOut {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: Rect,
-    ) -> Option<egui::Response> {
+    ) -> Option<Vec<egui::Response>> {
         todo!();
         None
     }
