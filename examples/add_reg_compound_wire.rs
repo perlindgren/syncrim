@@ -1,6 +1,6 @@
 use std::{path::PathBuf, rc::Rc};
 use syncrim::{
-    common::{ComponentStore, Input, Signal},
+    common::{ComponentStore, Input},
     components::*,
     fern::fern_setup,
 };
@@ -33,7 +33,14 @@ fn main() {
             }),
             Rc::new(Wire {
                 id: "w3".to_string(),
-                pos: vec![(220.0, 120.0), (260.0, 120.0) , (260.0, 180.0), (60.0, 180.0), (60.0, 140.0), (90.0, 140.0)],
+                pos: vec![
+                    (220.0, 120.0),
+                    (260.0, 120.0),
+                    (260.0, 180.0),
+                    (60.0, 180.0),
+                    (60.0, 140.0),
+                    (90.0, 140.0),
+                ],
                 input: Input::new("add", "out"),
             }),
             Rc::new(Probe {
@@ -49,7 +56,7 @@ fn main() {
         ],
     };
 
-    let path = PathBuf::from("add_reg.json");
+    let path = PathBuf::from("add_reg_compound.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]
