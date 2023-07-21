@@ -66,7 +66,7 @@ mod test {
     use super::*;
 
     use crate::{
-        common::{ComponentStore, Input, Signal, SignalUnsigned, Simulator},
+        common::{ComponentStore, Input, SignalUnsigned, Simulator},
         components::ProbeOut,
     };
     use std::rc::Rc;
@@ -102,8 +102,8 @@ mod test {
         );
 
         println!("<setup for clock 2>");
-        simulator.set_out_val("po1", "out", 42.into());
-        simulator.set_out_val("po2", "out", 1337.into());
+        simulator.set_out_val("po1", "out", 42);
+        simulator.set_out_val("po2", "out", 1337);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock(&mut clock);
@@ -117,8 +117,8 @@ mod test {
 
         // trigger positive overflow
         println!("<setup for clock 3>");
-        simulator.set_out_val("po1", "out", Signal::Data(SignalUnsigned::MAX / 2));
-        simulator.set_out_val("po2", "out", Signal::Data(1));
+        simulator.set_out_val("po1", "out", SignalUnsigned::MAX / 2);
+        simulator.set_out_val("po2", "out", 1);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock(&mut clock);

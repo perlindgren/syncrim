@@ -1,6 +1,6 @@
 use std::{path::PathBuf, rc::Rc};
 use syncrim::{
-    common::{ComponentStore, Input, Signal, SignalUnsigned},
+    common::{ComponentStore, Input, SignalUnsigned},
     components::*,
     fern::fern_setup,
 };
@@ -106,7 +106,7 @@ fn main() {
         ],
     };
 
-    let path = PathBuf::from("mem.json");
+    let path = PathBuf::from("data_mem.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]

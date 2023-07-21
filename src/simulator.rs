@@ -176,13 +176,13 @@ impl Simulator {
     }
 
     /// set value by Id (instance) and Id (field)
-    pub fn set_out_val(&mut self, id: &str, field: &str, value: Signal) {
+    pub fn set_out_val(&mut self, id: &str, field: &str, value: impl Into<Signal>) {
         let index = *self
             .id_field_index
             .get(&(id.into(), field.into()))
             .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
         let start_index = self.get_id_start_index(id);
-        self.set(start_index + index, value);
+        self.set(start_index + index, value.into());
     }
 
     /// iterate over the evaluators and increase clock by one
