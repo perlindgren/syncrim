@@ -1,4 +1,6 @@
-use crate::common::{Component, Id, Input, OutputType, Ports, Signal, Simulator};
+use crate::common::{
+    Component, Id, Input, OutputType, Ports, Signal, SignalSigned, SignalUnsigned, Simulator,
+};
 use log::*;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -46,7 +48,7 @@ impl Memory {
     }
 
     fn align(&self, addr: usize, size: usize) -> Signal {
-        (addr % size != 0) as Signal
+        Signal::Data((addr % size != 0) as SignalUnsigned)
     }
 
     fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> Signal {
@@ -57,12 +59,13 @@ impl Memory {
         let data = data.as_slice();
 
         trace!("{:x?}", data);
-        match size {
+
+        Signal::Data(match size {
             1 => {
                 if sign {
-                    data[0] as i8 as Signal
+                    data[0] as i8 as SignalSigned as SignalUnsigned
                 } else {
-                    data[0] as Signal
+                    data[0] as SignalUnsigned
                 }
             }
             2 => {
@@ -73,14 +76,14 @@ impl Memory {
                         trace!("i_16 {:x?}", i_16);
                         let i_32 = i_16 as i32;
                         trace!("i_32 {:x?}", i_32);
-                        i_32 as Signal
+                        i_32 as SignalUnsigned
                     } else {
                         trace!("read signed half word le");
                         let i_16 = i16::from_le_bytes(data.try_into().unwrap());
                         trace!("i_16 {:x?}", i_16);
                         let i_32 = i_16 as i32;
                         trace!("i_32 {:x?}", i_32);
-                        i_32 as Signal
+                        i_32 as SignalUnsigned
                     }
                 } else if big_endian {
                     trace!("read unsigned half word be");
@@ -88,34 +91,35 @@ impl Memory {
                     trace!("u_16 {:x?}", u_16);
                     let u_32 = u_16 as u32;
                     trace!("u_32 {:x?}", u_32);
-                    u_32 as Signal
+                    u_32 as SignalUnsigned
                 } else {
                     trace!("read unsigned half word le");
                     let u_16 = u16::from_le_bytes(data.try_into().unwrap());
                     trace!("u_16 {:x?}", u_16);
                     let u_32 = u_16 as u32;
                     trace!("u_32 {:x?}", u_32);
-                    u_32 as Signal
+                    u_32 as SignalUnsigned
                 }
             }
             4 => {
                 if sign {
                     if big_endian {
-                        i32::from_be_bytes(data.try_into().unwrap()) as Signal
+                        i32::from_be_bytes(data.try_into().unwrap()) as SignalUnsigned
                     } else {
-                        i32::from_le_bytes(data.try_into().unwrap()) as Signal
+                        i32::from_le_bytes(data.try_into().unwrap()) as SignalUnsigned
                     }
                 } else if big_endian {
-                    u32::from_be_bytes(data.try_into().unwrap()) as Signal
+                    u32::from_be_bytes(data.try_into().unwrap()) as SignalUnsigned
                 } else {
-                    u32::from_le_bytes(data.try_into().unwrap()) as Signal
+                    u32::from_le_bytes(data.try_into().unwrap()) as SignalUnsigned
                 }
             }
             _ => panic!("illegal sized memory operation"),
-        }
+        })
     }
 
     fn write(&self, addr: usize, size: usize, big_endian: bool, data: Signal) {
+        let data: SignalUnsigned = data.try_into().unwrap();
         match size {
             1 => {
                 trace!("write byte");
@@ -196,10 +200,14 @@ impl Component for Mem {
 
     fn clock(&self, simulator: &mut Simulator) {
         let data = simulator.get_input_val(&self.data);
-        let addr = simulator.get_input_val(&self.addr) as usize;
-        let ctrl = MemCtrl::try_from(simulator.get_input_val(&self.ctrl) as u8).unwrap();
-        let size = simulator.get_input_val(&self.size) as usize;
-        let sign = simulator.get_input_val(&self.sign) != 0;
+        let addr: SignalUnsigned = simulator.get_input_val(&self.addr).try_into().unwrap();
+        let addr = addr as usize;
+        let ctrl: SignalUnsigned = simulator.get_input_val(&self.ctrl).try_into().unwrap();
+        let ctrl = MemCtrl::try_from(ctrl as u8).unwrap();
+        let size: SignalUnsigned = simulator.get_input_val(&self.size).try_into().unwrap();
+        let size = size as usize;
+        let sign: SignalUnsigned = simulator.get_input_val(&self.sign).try_into().unwrap();
+        let sign = sign != 0;
 
         match ctrl {
             MemCtrl::Read => {
@@ -207,14 +215,14 @@ impl Component for Mem {
                 let value = self.memory.read(addr, size, sign, self.big_endian);
                 simulator.set_out_val(&self.id, "data", value);
                 let value = self.memory.align(addr, size);
-                trace!("align {}", value);
+                trace!("align {:?}", value);
                 simulator.set_out_val(&self.id, "err", value); // align
             }
             MemCtrl::Write => {
                 trace!("write addr {:?} size {:?}", addr, size);
                 self.memory.write(addr, size, self.big_endian, data);
                 let value = self.memory.align(addr, size);
-                trace!("align {}", value);
+                trace!("align {:?}", value);
                 simulator.set_out_val(&self.id, "err", value); // align
             }
             MemCtrl::None => {
@@ -276,14 +284,17 @@ mod test {
         let err = &Input::new("mem", "err");
 
         // reset
-        assert_eq!(simulator.get_input_val(out), 0);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(
+            simulator.get_input_val(err),
+            (false as SignalUnsigned).into()
+        );
 
         println!("<setup for write 42 to addr 4>");
 
         simulator.set_out_val("data", "out", 0xf0);
         simulator.set_out_val("addr", "out", 4);
-        simulator.set_out_val("ctrl", "out", MemCtrl::Write as Signal);
+        simulator.set_out_val("ctrl", "out", MemCtrl::Write as SignalUnsigned);
         simulator.set_out_val("size", "out", 1);
         println!("sim_state {:?}", simulator.sim_state);
 
@@ -292,109 +303,121 @@ mod test {
         println!("sim_state {:?}", simulator.sim_state);
 
         assert_eq!(clock, 2);
-        assert_eq!(simulator.get_input_val(out), 0);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(
+            simulator.get_input_val(err),
+            (false as SignalUnsigned).into()
+        );
 
         println!("<setup for read byte from addr 4>");
 
-        simulator.set_out_val("ctrl", "out", MemCtrl::Read as Signal);
+        simulator.set_out_val("ctrl", "out", MemCtrl::Read as SignalUnsigned);
         simulator.set_out_val("size", "out", 1);
 
         simulator.clock(&mut clock);
 
         assert_eq!(clock, 3);
-        assert_eq!(simulator.get_input_val(out), 0xf0);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0xf0.into());
+        assert_eq!(
+            simulator.get_input_val(err),
+            (false as SignalUnsigned).into()
+        );
 
         println!("<setup for read byte from addr 4>");
         simulator.set_out_val("size", "out", 1);
-        simulator.set_out_val("sign", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 4);
-        assert_eq!(simulator.get_input_val(out), 0xffff_fff0);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0xffff_fff0.into());
+        assert_eq!(
+            simulator.get_input_val(err),
+            (false as SignalUnsigned).into()
+        );
 
         println!("<setup for read half-word from addr 4>");
         simulator.set_out_val("size", "out", 2);
-        simulator.set_out_val("sign", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true as SignalUnsigned);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 5);
-        assert_eq!(simulator.get_input_val(out), 0xffff_f000);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0xffff_f000.into());
+        assert_eq!(
+            simulator.get_input_val(err),
+            (false as SignalUnsigned).into()
+        );
 
         println!("<setup for read word from addr 4>");
         simulator.set_out_val("size", "out", 4);
-        simulator.set_out_val("sign", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 6);
-        assert_eq!(simulator.get_input_val(out), 0xf000_0000);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0xf000_0000.into());
+        assert_eq!(simulator.get_input_val(err), false.into());
 
         println!("<setup for read word from addr 5>");
         simulator.set_out_val("addr", "out", 5);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 7);
-        assert_eq!(simulator.get_input_val(err), true as Signal);
+        assert_eq!(simulator.get_input_val(err), true.into());
 
         println!("<setup for read word from addr 6>");
         simulator.set_out_val("addr", "out", 6);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 8);
-        assert_eq!(simulator.get_input_val(err), true as Signal);
+        assert_eq!(simulator.get_input_val(err), true.into());
 
         println!("<setup for read word from addr 7>");
         simulator.set_out_val("addr", "out", 7);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 9);
-        assert_eq!(simulator.get_input_val(err), true as Signal);
+        assert_eq!(simulator.get_input_val(err), true.into());
 
         println!("<setup for read word from addr 8>");
         simulator.set_out_val("addr", "out", 8);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 10);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(err), false.into());
 
         println!("<setup for read half-word from addr 9>");
         simulator.set_out_val("addr", "out", 9);
         simulator.set_out_val("size", "out", 2);
         simulator.clock(&mut clock);
         assert_eq!(clock, 11);
-        assert_eq!(simulator.get_input_val(err), true as Signal);
+        assert_eq!(simulator.get_input_val(err), true.into());
 
         println!("<setup for read half-word from addr 10>");
         simulator.set_out_val("addr", "out", 10);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 12);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(err), false.into());
 
         println!("<setup for write half-word at add 10>");
         simulator.set_out_val("addr", "out", 10);
         simulator.set_out_val("data", "out", 0x1234);
-        simulator.set_out_val("ctrl", "out", MemCtrl::Write as Signal);
+        simulator.set_out_val("ctrl", "out", MemCtrl::Write as SignalUnsigned);
         simulator.clock(&mut clock);
         assert_eq!(clock, 13);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(err), false.into());
 
         println!("<setup for read byte at add 10>");
-        simulator.set_out_val("ctrl", "out", MemCtrl::Read as Signal);
+        simulator.set_out_val("ctrl", "out", MemCtrl::Read as SignalUnsigned);
         simulator.set_out_val("size", "out", 1);
         simulator.clock(&mut clock);
         assert_eq!(clock, 14);
-        assert_eq!(simulator.get_input_val(out), 0x12 as Signal);
+        assert_eq!(simulator.get_input_val(out), 0x12.into());
 
         println!("<setup for read byte at add 11>");
         simulator.set_out_val("addr", "out", 11);
         simulator.clock(&mut clock);
         assert_eq!(clock, 15);
-        assert_eq!(simulator.get_input_val(out), 0x34 as Signal);
+        assert_eq!(simulator.get_input_val(out), 0x34.into());
 
         println!("test done")
     }
@@ -443,14 +466,14 @@ mod test {
         let err = &Input::new("mem", "err");
 
         // reset
-        assert_eq!(simulator.get_input_val(out), 0);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(simulator.get_input_val(err), false.into());
 
         // println!("<setup for write 42 to addr 4>");
 
         simulator.set_out_val("data", "out", 0xf0);
         simulator.set_out_val("addr", "out", 4);
-        simulator.set_out_val("ctrl", "out", MemCtrl::Write as Signal);
+        simulator.set_out_val("ctrl", "out", MemCtrl::Write as SignalUnsigned);
         simulator.set_out_val("size", "out", 1); // byte
 
         println!("sim_state {:?}", simulator.sim_state);
@@ -460,67 +483,67 @@ mod test {
         println!("sim_state {:?}", simulator.sim_state);
 
         assert_eq!(clock, 2);
-        assert_eq!(simulator.get_input_val(out), 0);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(simulator.get_input_val(err), false.into());
 
         println!("<setup for read byte from addr 4>");
 
-        simulator.set_out_val("ctrl", "out", MemCtrl::Read as Signal);
+        simulator.set_out_val("ctrl", "out", MemCtrl::Read as SignalUnsigned);
         simulator.set_out_val("size", "out", 1);
 
         simulator.clock(&mut clock);
 
         assert_eq!(clock, 3);
-        assert_eq!(simulator.get_input_val(out), 0xf0);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0xf0.into());
+        assert_eq!(simulator.get_input_val(err), false.into());
 
         println!("<setup for read byte from addr 4>");
         simulator.set_out_val("size", "out", 1);
-        simulator.set_out_val("sign", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 4);
-        assert_eq!(simulator.get_input_val(out), 0xffff_fff0);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0xffff_fff0.into());
+        assert_eq!(simulator.get_input_val(err), false.into());
 
         println!("<setup for read half-word from addr 4>");
         simulator.set_out_val("size", "out", 2);
-        simulator.set_out_val("sign", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 5);
-        assert_eq!(simulator.get_input_val(out), 0x0000_00f0);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0x0000_00f0.into());
+        assert_eq!(simulator.get_input_val(err), false.into());
 
         println!("<setup for read word from addr 4>");
         simulator.set_out_val("size", "out", 4);
-        simulator.set_out_val("sign", "out", true as Signal);
+        simulator.set_out_val("sign", "out", true);
         simulator.clock(&mut clock);
         assert_eq!(clock, 6);
-        assert_eq!(simulator.get_input_val(out), 0x0000_00f0);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(out), 0x0000_00f0.into());
+        assert_eq!(simulator.get_input_val(err), false.into());
 
         println!("<setup for write half-word at add 10>");
         simulator.set_out_val("addr", "out", 10); // b
         simulator.set_out_val("data", "out", 0x1234);
-        simulator.set_out_val("ctrl", "out", MemCtrl::Write as Signal);
+        simulator.set_out_val("ctrl", "out", MemCtrl::Write as SignalUnsigned);
         simulator.set_out_val("size", "out", 2);
 
         simulator.clock(&mut clock);
         assert_eq!(clock, 7);
-        assert_eq!(simulator.get_input_val(err), false as Signal);
+        assert_eq!(simulator.get_input_val(err), false.into());
 
         println!("<setup for read byte at add 10>");
-        simulator.set_out_val("ctrl", "out", MemCtrl::Read as Signal);
+        simulator.set_out_val("ctrl", "out", MemCtrl::Read as SignalUnsigned);
         simulator.set_out_val("size", "out", 1);
         simulator.clock(&mut clock);
         assert_eq!(clock, 8);
-        assert_eq!(simulator.get_input_val(out), 0x34 as Signal);
+        assert_eq!(simulator.get_input_val(out), 0x34.into());
 
         println!("<setup for read byte at add 11>");
         simulator.set_out_val("addr", "out", 11);
         simulator.clock(&mut clock);
         assert_eq!(clock, 9);
-        assert_eq!(simulator.get_input_val(out), 0x12 as Signal);
+        assert_eq!(simulator.get_input_val(out), 0x12.into());
     }
 }

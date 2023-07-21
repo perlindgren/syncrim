@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Simulator};
+use crate::common::{EguiComponent, SignalUnsigned, Simulator};
 use crate::components::Probe;
 use egui::{Align2, Area, Color32, Order, Rect, RichText};
 
@@ -30,7 +30,13 @@ impl EguiComponent for Probe {
                         .size(scale * 12f32)
                         .background_color(Color32::LIGHT_BLUE),
                 )
-                .on_hover_text(format!("{:#x}", value));
+                .on_hover_text({
+                    let r: Result<SignalUnsigned, String> = value.try_into();
+                    match r {
+                        Ok(data) => format!("{:#x}", data),
+                        _ => format!("{:?}", value),
+                    }
+                });
             });
     }
 }

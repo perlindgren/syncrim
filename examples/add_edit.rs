@@ -44,7 +44,7 @@ fn main() {
         ],
     };
 
-    let path = PathBuf::from("add.json");
+    let path = PathBuf::from("add_edit.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]
