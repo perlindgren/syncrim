@@ -27,20 +27,17 @@ fn main() {
             ))),
             Rc::new(RefCell::new(Wire::new(
                 "w1".to_string(),
-                (110.0, 100.0),
-                (70.0, 0.0),
+                vec![(110.0, 100.0), (180.0, 100.0)],
                 Input::new("c1", "out"),
             ))),
             Rc::new(RefCell::new(Wire::new(
                 "w2".to_string(),
-                (110.0, 140.0),
-                (70.0, 0.0),
+                vec![(110.0, 140.0), (180.0, 140.0)],
                 Input::new("c2", "out"),
             ))),
             Rc::new(RefCell::new(Wire::new(
                 "w3".to_string(),
-                (220.0, 120.0),
-                (40.0, 0.0),
+                vec![(220.0, 120.0), (260.0, 120.0)],
                 Input::new("add", "out"),
             ))),
             Rc::new(RefCell::new(Probe::new(

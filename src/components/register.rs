@@ -27,7 +27,7 @@ impl Component for Register {
     }
 
     // propagate input value to output
-    fn evaluate(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) {
         // get input value
         let value = simulator.get_input_val(&self.r_in);
         // set output

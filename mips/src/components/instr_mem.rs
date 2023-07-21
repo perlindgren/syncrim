@@ -28,7 +28,7 @@ impl Component for InstrMem {
         )
     }
 
-    fn evaluate(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) {
         // get instr at pc/4
         let pc = simulator.get_input_val(&self.pc);
 

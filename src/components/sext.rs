@@ -1,5 +1,5 @@
 // use std::fmt::Alignment;
-use crate::common::{Component, Id, Input, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Id, Input, OutputType, Ports, Signal, SignedSignal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
@@ -7,8 +7,8 @@ pub struct Sext {
     pub id: Id,
     pub pos: (f32, f32),
     pub sext_in: Input,
-    pub in_size: u8,
-    pub out_size: u8,
+    pub in_size: u32,
+    pub out_size: u32,
 }
 
 #[typetag::serde]
@@ -26,27 +26,25 @@ impl Component for Sext {
 
     // propagate sign extension to output
     // TODO: always extend to Signal size? (it should not matter and should be slightly cheaper)
-    fn evaluate(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) {
+        assert!(
+            self.out_size <= Signal::BITS,
+            "{}: Output size {} is larger than maximum size {}",
+            self.id,
+            self.out_size,
+            Signal::BITS
+        );
+
         // get input values
         let mut value = simulator.get_input_val(&self.sext_in);
-        let max_size: Signal = 1 << self.in_size as Signal;
-        assert!(
-            value < max_size,
-            "SXT input ({}) greater than allowed input size ({})",
-            value,
-            max_size
-        );
 
-        if (value & 1 << (self.in_size - 1)) != 0 {
-            value |= (1 << self.out_size as Signal) - (1 << self.in_size as Signal)
-        }
+        let to_sext = self.out_size - self.in_size; // Amount to be arithmetically shifted
+        let to_shl = Signal::BITS - self.in_size; // To move input to MSB
+        let to_shr = to_shl - to_sext; // To shift the result back to LSB
 
-        trace!(
-            "{}, {}, {}",
-            value,
-            1 << (self.out_size as Signal),
-            1 << (self.in_size as Signal)
-        );
+        value <<= to_shl;
+        value = (value as SignedSignal >> to_sext) as Signal;
+        value >>= to_shr;
 
         // set output
         simulator.set_out_val(&self.id, "out", value);

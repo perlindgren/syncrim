@@ -17,19 +17,19 @@ impl EguiComponent for Wire {
         simulator: Option<Simulator>,
         offset: Vec2,
         scale: f32,
-        clip_rect: Rect,
-    ) -> Option<Response> {
-        let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
-        let mut offset = offset;
-        offset.x += self.pos.0 * scale;
-        offset.y += self.pos.1 * scale;
+        _clip_rect: egui::Rect,
+    ) {
+        let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
+        let offset = offset;
         let s = scale;
         let o = offset;
-        ui.painter().add(Shape::line_segment(
-            [
-                oh((0f32, 0f32), s, o),
-                oh((self.delta.0, self.delta.1), s, o),
-            ],
+        let mut line_vec = vec![];
+        for pos in self.pos.clone() {
+            line_vec.push(oh(pos, s, o));
+        }
+
+        ui.painter().add(egui::Shape::line(
+            line_vec,
             Stroke {
                 width: scale,
                 color: Color32::BLACK,

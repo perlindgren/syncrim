@@ -52,6 +52,7 @@ fn main() {
 
                 // data
                 registers: RegStore::new(),
+                history: RegHistory::new(),
             }),
         ],
     };

@@ -44,7 +44,7 @@ impl Component for Add {
     }
 
     // propagate addition to output
-    fn evaluate(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) {
         // get input values
         let a_in = simulator.get_input_val(&self.a_in);
         let b_in = simulator.get_input_val(&self.b_in);

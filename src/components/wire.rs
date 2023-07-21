@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct Wire {
     pub id: Id,
-    pub pos: (f32, f32),
-    pub delta: (f32, f32),
+    pub pos: Vec<(f32, f32)>,
     pub input: Input,
     // this is ugly... (egui)
     pub properties_window: bool,
@@ -13,11 +12,10 @@ pub struct Wire {
 }
 
 impl Wire {
-    pub fn new(id: String, pos: (f32, f32), delta: (f32, f32), input: Input) -> Self {
+    pub fn new(id: String, pos: Vec<(f32, f32)>, input: Input) -> Self {
         Wire {
             id: id.clone(),
             pos,
-            delta,
             input,
             properties_window: false,
             id_tmp: id,
