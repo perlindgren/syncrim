@@ -48,7 +48,7 @@ impl Simulator {
             #[allow(clippy::same_item_push)]
             for (index, field_id) in ports.outputs.iter().enumerate() {
                 // create the value with a default to 0
-                lens_values.push(0);
+                lens_values.push(0.into());
                 if id_field_index
                     .insert((id.clone(), field_id.into()), index)
                     .is_some()
@@ -215,7 +215,7 @@ impl Simulator {
     /// reset simulator
     pub fn reset(&mut self, clock: &mut usize) {
         self.history = vec![];
-        self.sim_state.iter_mut().for_each(|val| *val = 0);
+        self.sim_state.iter_mut().for_each(|val| *val = 0.into());
         self.clock(clock);
     }
 

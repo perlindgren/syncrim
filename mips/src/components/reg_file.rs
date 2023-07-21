@@ -3,7 +3,7 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
-use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Signal, SignalUnsigned, Simulator};
 
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
@@ -153,10 +153,13 @@ impl Component for RegFile {
     }
 
     fn clock(&self, simulator: &mut Simulator) {
-        if simulator.get_input_val(&self.write_enable) == true as Signal {
+        if simulator.get_input_val(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_val(&self.write_data);
-            trace!("data {}", data);
-            let write_addr = simulator.get_input_val(&self.write_addr) as usize;
+            trace!("data {:?}", data);
+            let write_addr: usize = simulator
+                .get_input_val(&self.write_addr)
+                .try_into()
+                .unwrap();
             trace!("write_addr {}", write_addr);
             self.registers.borrow_mut()[write_addr] = data;
         }

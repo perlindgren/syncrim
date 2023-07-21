@@ -1,9 +1,9 @@
 use crate::gui_vizia::GuiData;
 use crate::{
-    common::{Signal, ViziaComponent},
+    common::{Signal, SignalSigned, SignalUnsigned, ViziaComponent},
     components::{ProbeEdit, TextSignal},
 };
-use anyhow::{anyhow, Result};
+// use anyhow::{anyhow, Result};
 use vizia::prelude::*;
 
 use log::*;
@@ -35,15 +35,12 @@ impl ViziaComponent for ProbeEdit {
             .on_edit(move |_ex, text| {
                 trace!("edit: text {}", text);
 
-                if let Ok(signal) = parse_signal(&text) {
-                    *history_submit.write().unwrap().last_mut().unwrap() = TextSignal {
-                        text: text.clone(),
-                        signal,
-                    };
-                    trace!("signal {}", signal);
-                } else {
-                    warn!("could not parse input, signal keeps last valid value");
-                }
+                let signal = parse_signal(&text);
+                *history_submit.write().unwrap().last_mut().unwrap() = TextSignal {
+                    text: text.clone(),
+                    signal,
+                };
+                trace!("signal {:?}", signal);
             })
             .position_type(PositionType::SelfDirected)
             .left(Pixels(self.pos.0 - 40.0))
@@ -58,15 +55,18 @@ pub struct ProbeEditView {
     editable_text: String,
 }
 
-fn parse_signal(text: &str) -> Result<Signal, anyhow::Error> {
+fn parse_signal(text: &str) -> Signal {
     let text = text.trim();
 
-    if let Ok(signal) = text.parse::<Signal>() {
-        Ok(signal)
+    if let Ok(signal) = text.parse::<SignalSigned>() {
+        Signal::Data(signal as SignalUnsigned)
     } else if let Some(hex) = text.strip_prefix("0x") {
-        let signal = Signal::from_str_radix(hex, 16)?;
-        Ok(signal)
+        if let Ok(signal) = SignalUnsigned::from_str_radix(hex, 16) {
+            Signal::Data(signal)
+        } else {
+            Signal::Unknown
+        }
     } else {
-        Err(anyhow!("Failed to parse {}", text))
+        Signal::Unknown
     }
 }
