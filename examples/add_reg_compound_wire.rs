@@ -1,6 +1,6 @@
 use std::{path::PathBuf, rc::Rc};
 use syncrim::{
-    common::{ComponentStore, Input},
+    common::{ComponentStore, Input, Signal},
     components::*,
     fern::fern_setup,
 };
@@ -15,11 +15,7 @@ fn main() {
                 a_in: Input::new("c", "out"),
                 b_in: Input::new("reg", "out"),
             }),
-            Rc::new(Constant {
-                id: "c".to_string(),
-                pos: (100.0, 100.0),
-                value: 3,
-            }),
+            Constant::rc_new("c", (100.0, 100.0), 3),
             Rc::new(Register {
                 id: "reg".to_string(),
                 pos: (100.0, 140.0),
