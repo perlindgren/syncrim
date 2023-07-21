@@ -22,10 +22,10 @@ impl ViziaComponent for Wire {
                 NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
             })
             .position_type(PositionType::SelfDirected)
-            .left(Pixels(self.pos[i].0 - surround))
-            .top(Pixels(self.pos[i].1 - surround))
-            .width(Pixels(pos.0 + 2.0 * surround))
-            .height(Pixels(pos.1 + 2.0 * surround))
+            .left(Pixels(self.pos[i - 1].0 - surround))
+            .top(Pixels(self.pos[i - 1].1 - surround))
+            .width(Pixels(pos.0 - self.pos[i - 1].0 + 2.0 * surround))
+            .height(Pixels(pos.1 - self.pos[i - 1].1 + 2.0 * surround))
             .on_press(|ex| ex.emit(PopupEvent::Switch))
             .tooltip(|cx| new_component_tooltip(cx, self));
         }
