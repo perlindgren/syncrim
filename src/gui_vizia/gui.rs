@@ -1,11 +1,14 @@
 use crate::common::{ComponentStore, Simulator};
-use crate::gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::Transport};
+use crate::gui_vizia::gui_components as gui_components;
+use gui_components::*;
+use crate::gui_vizia::{ keymap::init_keymap, transport::Transport};
 use rfd::FileDialog;
 use std::collections::HashSet;
 use std::path::PathBuf;
-use vizia::{icons, prelude::*};
+use vizia::prelude::*;
 
 use log::*;
+use crate::gui_vizia::views::simulator::SimView;
 
 #[derive(Lens, Clone)]
 pub struct GuiData {
@@ -110,7 +113,6 @@ impl GuiData {
         trace!("opened");
     }
 }
-
 pub fn gui(cs: &ComponentStore, path: &PathBuf) {
     let mut clock = 0;
     let simulator = Simulator::new(cs, &mut clock);
@@ -139,7 +141,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
 
         VStack::new(cx, |cx| {
             // Menu
-            Menu::new(cx, |cx| {
+            menu::Menu::new(cx, |cx| {
                 HStack::new(cx, |cx| {
                     Transport::new(cx).size(Auto);
                     Label::new(cx, GuiData::clock.map(|clock| format!("Clock #{}", clock)))
@@ -155,138 +157,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
             .background_color(Color::lightgray())
             .height(Auto);
 
-            HStack::new(cx, |cx| {
-                HStack::new(cx, |cx| {
-                    // Left pane
-                    Binding::new(
-                        cx,
-                        GuiData::simulator.then(Simulator::ordered_components),
-                        |cx, wrapper_oc| {
-                            VStack::new(cx, |cx| {
-                                Label::new(cx, "Left").top(Pixels(0.0));
-                                let oc = wrapper_oc.get(cx);
-                                for (i, c) in oc.iter().enumerate() {
-                                    VStack::new(cx, |cx| {
-                                        // left pane bar
-                                        HStack::new(cx, move |cx| {
-                                            Button::new(
-                                                cx,
-                                                move |cx| {
-                                                    cx.emit(GuiEvent::ToggleExpandLeftPanel(i))
-                                                },
-                                                |cx| {
-                                                    Label::new(
-                                                        cx,
-                                                        GuiData::expanded.map(move |expanded| {
-                                                            if expanded.contains(&i) {
-                                                                // expanded
-                                                                icons::ICON_CHEVRON_DOWN
-                                                            } else {
-                                                                // folded
-                                                                icons::ICON_CHEVRON_RIGHT
-                                                            }
-                                                        }),
-                                                    )
-                                                    .class("icon")
-                                                },
-                                            )
-                                            .left(Pixels(5.0))
-                                            .top(Stretch(1.0))
-                                            .bottom(Stretch(1.0))
-                                            .right(Stretch(1.0))
-                                            .size(Auto);
-                                            let (id, _) = c.get_id_ports();
 
-                                            Label::new(cx, &format!("Instance: {}", &id))
-                                                .left(Pixels(5.0))
-                                                .top(Stretch(1.0))
-                                                .bottom(Stretch(1.0))
-                                                .right(Stretch(1.0))
-                                                .size(Auto);
-
-                                            Button::new(
-                                                cx,
-                                                move |cx| cx.emit(GuiEvent::HideLeftPanel(i)),
-                                                |cx| Label::new(cx, icons::ICON_X).class("icon"),
-                                            )
-                                            .right(Pixels(1.0))
-                                            .top(Pixels(1.0))
-                                            .bottom(Pixels(1.0));
-                                        })
-                                        .background_color(Color::lightgrey())
-                                        .height(Auto)
-                                        .border_color(Color::darkgray())
-                                        .border_width(Pixels(1.0));
-                                        // left view expanded or folded
-                                        VStack::new(cx, |cx| c.left_view(cx)).display(
-                                            GuiData::expanded.map(move |hs_expanded| {
-                                                if hs_expanded.contains(&i) {
-                                                    Display::Flex
-                                                } else {
-                                                    Display::None
-                                                }
-                                            }),
-                                        );
-                                    })
-                                    .display(
-                                        GuiData::visible.map(move |hs_visible| {
-                                            if hs_visible.contains(&i) {
-                                                Display::Flex
-                                            } else {
-                                                Display::None
-                                            }
-                                        }),
-                                    );
-                                }
-                            })
-                            .border_color(Color::black())
-                            .border_width(Pixels(1.0));
-                        },
-                    );
-                });
-
-                ScrollView::new(cx, 0.0, 0.0, true, true, |cx| {
-                    // Grid area
-                    Grid::new(cx, |cx| {
-                        // (re-)bind all components when simulator changed
-                        Binding::new(
-                            cx,
-                            GuiData::simulator.then(Simulator::ordered_components),
-                            |cx, wrapper_oc| {
-                                VStack::new(cx, |cx| {
-                                    let oc = wrapper_oc.get(cx);
-                                    for (i, c) in oc.iter().enumerate() {
-                                        error!("comp id {}", i);
-                                        VStack::new(cx, |cx| {
-                                            c.view(cx);
-                                        })
-                                        .position_type(PositionType::SelfDirected)
-                                        .size(Auto)
-                                        .on_mouse_down(
-                                            move |ex, button| {
-                                                if button == MouseButton::Right {
-                                                    error!("on_mouse_down {:?}", i);
-                                                    ex.emit(GuiEvent::ShowLeftPanel(i))
-                                                }
-                                            },
-                                        );
-                                    }
-                                })
-                                .border_color(Color::black())
-                                .border_width(Pixels(1.0))
-                                .overflow(Overflow::Hidden);
-                            },
-                        )
-                    })
-                    .height(Pixels(1080.0))
-                    .width(Pixels(1920.0));
-                })
-                // .size(Units::Pixels(300.0))
-                .class("bg-default");
-
-                // Right pane
-                Label::new(cx, "Right").top(Pixels(0.0));
-            });
 
             //
             // HStack::new(cx, |cx| {
@@ -310,7 +181,10 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
             })
             .on_blur(|cx| cx.emit(GuiEvent::HideAbout))
             .class("modal");
+
+            SimView::new(cx, (30.0, 50.0, 20.0));
         });
+
     })
     .title("SyncRim")
     .run();

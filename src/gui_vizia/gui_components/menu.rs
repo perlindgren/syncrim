@@ -7,7 +7,7 @@ pub(crate) struct Menu {}
 impl View for Menu {}
 
 impl Menu {
-    pub(crate) fn new<F>(cx: &mut Context, content: F) -> Handle<'_, Self>
+    pub fn new<F>(cx: &mut Context, content: F) -> Handle<'_, Self>
     where
         F: FnOnce(&mut Context),
     {
