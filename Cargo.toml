@@ -86,3 +86,7 @@ required-features = ["components"]
 [[example]]
 name = "data_mem"
 required-features = ["components"]
+
+[[example]]
+name = "add_reg_compound_wire"
+required-features = ["components"]

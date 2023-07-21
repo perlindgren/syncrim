@@ -12,8 +12,7 @@ fn main() {
             Constant::rc_new("c0", (100.0, 110.0), 32768),
             Rc::new(Wire {
                 id: "w0".to_string(),
-                pos: (110.0, 110.0),
-                delta: (30.0, 0.0),
+                pos: vec![(110.0, 110.0), (140.0, 110.0)],
                 input: Input::new("c0", "out"),
             }),
             Rc::new(Sext {
@@ -25,8 +24,7 @@ fn main() {
             }),
             Rc::new(Wire {
                 id: "w1".to_string(),
-                pos: (220.0, 100.0),
-                delta: (30.0, 0.0),
+                pos: vec![(220.0, 100.0), (250.0, 100.0)],
                 input: Input::new("sxt0", "out"),
             }),
             Rc::new(Probe {

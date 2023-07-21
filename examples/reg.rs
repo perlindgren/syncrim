@@ -17,14 +17,12 @@ fn main() {
             }),
             Rc::new(Wire {
                 id: "w1".to_string(),
-                pos: (160.0, 100.0),
-                delta: (30.0, 0.0),
+                pos: vec![(160.0, 100.0), (190.0, 100.0)],
                 input: Input::new("c", "out"),
             }),
             Rc::new(Wire {
                 id: "w2".to_string(),
-                pos: (210.0, 100.0),
-                delta: (30.0, 0.0),
+                pos: vec![(210.0, 100.0), (240.0, 100.0)],
                 input: Input::new("reg", "out"),
             }),
             Rc::new(Probe {
