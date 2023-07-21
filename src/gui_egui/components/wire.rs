@@ -1,6 +1,7 @@
 use crate::common::{EguiComponent, Simulator};
 use crate::components::Wire;
 use crate::gui_egui::helper::offset_helper;
+use egui::Pos2;
 
 #[typetag::serde]
 impl EguiComponent for Wire {
@@ -13,16 +14,16 @@ impl EguiComponent for Wire {
         _clip_rect: egui::Rect,
     ) {
         let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
-        let mut offset = offset;
-        offset.x += self.pos.0 * scale;
-        offset.y += self.pos.1 * scale;
+        let offset = offset;
         let s = scale;
         let o = offset;
-        ui.painter().add(egui::Shape::line_segment(
-            [
-                oh((0f32, 0f32), s, o),
-                oh((self.delta.0, self.delta.1), s, o),
-            ],
+        let mut line_vec = vec![];
+        for pos in self.pos.clone() {
+            line_vec.push(oh(pos, s, o));
+        }
+
+        ui.painter().add(egui::Shape::line(
+            line_vec,
             egui::Stroke {
                 width: scale,
                 color: egui::Color32::BLACK,

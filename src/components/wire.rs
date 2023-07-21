@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct Wire {
     pub id: Id,
-    pub pos: (f32, f32),
-    pub delta: (f32, f32),
+    pub pos: Vec<(f32, f32)>,
     pub input: Input,
 }
 

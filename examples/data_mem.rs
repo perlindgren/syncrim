@@ -58,38 +58,32 @@ fn main() {
             // Wires
             Rc::new(Wire {
                 id: "w1".to_string(),
-                pos: (100.0, 110.0),
-                delta: (0.0, 40.0),
+                pos: vec![(100.0, 110.0), (100.0, 150.0)],
                 input: Input::new("data", "out"),
             }),
             Rc::new(Wire {
                 id: "w2".to_string(),
-                pos: (120.0, 110.0),
-                delta: (0.0, 40.0),
+                pos: vec![(120.0, 110.0), (120.0, 150.0)],
                 input: Input::new("addr", "out"),
             }),
             Rc::new(Wire {
                 id: "w3".to_string(),
-                pos: (140.0, 110.0),
-                delta: (0.0, 40.0),
+                pos: vec![(140.0, 110.0), (140.0, 150.0)],
                 input: Input::new("sext", "out"),
             }),
             Rc::new(Wire {
                 id: "w4".to_string(),
-                pos: (160.0, 110.0),
-                delta: (0.0, 40.0),
+                pos: vec![(160.0, 110.0), (160.0, 150.0)],
                 input: Input::new("size", "out"),
             }),
             Rc::new(Wire {
                 id: "w5".to_string(),
-                pos: (220.0, 110.0),
-                delta: (0.0, 40.0),
+                pos: vec![(220.0, 110.0), (220.0, 150.0)],
                 input: Input::new("mem", "data"),
             }),
             Rc::new(Wire {
                 id: "w6".to_string(),
-                pos: (240.0, 110.0),
-                delta: (0.0, 40.0),
+                pos: vec![(240.0, 110.0), (240.0, 150.0)],
                 input: Input::new("mem", "err"),
             }),
             // probes

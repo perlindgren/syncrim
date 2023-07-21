@@ -20,20 +20,17 @@ fn main() {
             Rc::new(ProbeEdit::new("c2", (60.0, 140.0))),
             Rc::new(Wire {
                 id: "w1".to_string(),
-                pos: (110.0, 100.0),
-                delta: (70.0, 0.0),
+                pos: vec![(110.0, 100.0), (180.0, 100.0)],
                 input: Input::new("c1", "out"),
             }),
             Rc::new(Wire {
                 id: "w2".to_string(),
-                pos: (110.0, 140.0),
-                delta: (70.0, 0.0),
+                pos: vec![(110.0, 140.0), (180.0, 140.0)],
                 input: Input::new("c2", "out"),
             }),
             Rc::new(Wire {
                 id: "w3".to_string(),
-                pos: (220.0, 120.0),
-                delta: (40.0, 0.0),
+                pos: vec![(220.0, 120.0), (260.0, 120.0)],
                 input: Input::new("add", "out"),
             }),
             Rc::new(Probe {
