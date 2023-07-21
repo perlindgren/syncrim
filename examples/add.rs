@@ -16,16 +16,8 @@ fn main() {
 
                 b_in: Input::new("c2", "out"),
             }),
-            Rc::new(Constant {
-                id: "c1".to_string(),
-                pos: (100.0, 100.0),
-                value: 3.into(),
-            }),
-            Rc::new(Constant {
-                id: "c2".to_string(),
-                pos: (100.0, 140.0),
-                value: 4.into(),
-            }),
+            Constant::rc_new("c1", (60.0, 100.0), 3),
+            Constant::rc_new("c2", (60.0, 140.0), 4),
             Rc::new(Wire {
                 id: "w1".to_string(),
                 pos: (110.0, 100.0),
