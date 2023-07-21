@@ -23,7 +23,7 @@ fn main() {
             Rc::new(Constant {
                 id: "c0".to_string(),
                 pos: (190.0, 100.0),
-                value: 3,
+                value: 3.into(),
             }),
             Rc::new(Wire {
                 id: "w0".to_string(),
@@ -34,22 +34,22 @@ fn main() {
             Rc::new(Constant {
                 id: "c1".to_string(),
                 pos: (140.0, 170.0),
-                value: 0,
+                value: 0.into(),
             }),
             Rc::new(Constant {
                 id: "c2".to_string(),
                 pos: (140.0, 190.0),
-                value: 1,
+                value: 1.into(),
             }),
             Rc::new(Constant {
                 id: "c3".to_string(),
                 pos: (140.0, 210.0),
-                value: 2,
+                value: 2.into(),
             }),
             Rc::new(Constant {
                 id: "c4".to_string(),
                 pos: (140.0, 230.0),
-                value: 3,
+                value: 3.into(),
             }),
             Rc::new(Wire {
                 id: "w1".to_string(),

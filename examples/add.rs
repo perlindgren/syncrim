@@ -19,12 +19,12 @@ fn main() {
             Rc::new(Constant {
                 id: "c1".to_string(),
                 pos: (100.0, 100.0),
-                value: 3,
+                value: 3.into(),
             }),
             Rc::new(Constant {
                 id: "c2".to_string(),
                 pos: (100.0, 140.0),
-                value: 4,
+                value: 4.into(),
             }),
             Rc::new(Wire {
                 id: "w1".to_string(),

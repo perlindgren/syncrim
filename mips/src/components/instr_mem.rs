@@ -30,12 +30,12 @@ impl Component for InstrMem {
 
     fn clock(&self, simulator: &mut Simulator) {
         // get instr at pc/4
-        let pc = simulator.get_input_val(&self.pc);
+        let pc: u32 = simulator.get_input_val(&self.pc).try_into().unwrap();
 
-        trace!("--- evaluate instr mem: pc {}", pc);
+        trace!("--- evaluate instr mem: pc {:?}", pc);
         let instr = self.instr[(pc / 4) as usize];
         // set output
         trace!("--- output {}", instr);
-        simulator.set_out_val(&self.id, "out", instr);
+        simulator.set_out_val(&self.id, "out", instr.into());
     }
 }

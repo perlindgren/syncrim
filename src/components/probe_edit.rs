@@ -69,7 +69,7 @@ impl ProbeEdit {
             // initiate internal history
             history: Arc::new(RwLock::new(vec![TextSignal {
                 text: "0".to_string(),
-                signal: 0,
+                signal: Signal::Data(0),
             }])),
         }
     }

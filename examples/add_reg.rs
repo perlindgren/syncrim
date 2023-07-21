@@ -18,7 +18,7 @@ fn main() {
             Rc::new(Constant {
                 id: "c".to_string(),
                 pos: (100.0, 100.0),
-                value: 3,
+                value: 3.into(),
             }),
             Rc::new(Register {
                 id: "reg".to_string(),
