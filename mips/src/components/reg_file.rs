@@ -229,11 +229,11 @@ mod test {
         assert_eq!(simulator.get_input_val(out_reg_2), 0.into());
 
         println!("<setup for clock 2>");
-        simulator.set_out_val("read_reg_1", "out", 0.into());
-        simulator.set_out_val("read_reg_2", "out", 1.into());
-        simulator.set_out_val("write_data", "out", 1337.into());
-        simulator.set_out_val("write_addr", "out", 1.into());
-        simulator.set_out_val("write_enable", "out", (true as SignalUnsigned).into());
+        simulator.set_out_val("read_reg_1", "out", 0);
+        simulator.set_out_val("read_reg_2", "out", 1);
+        simulator.set_out_val("write_data", "out", 1337);
+        simulator.set_out_val("write_addr", "out", 1);
+        simulator.set_out_val("write_enable", "out", true as SignalUnsigned);
 
         // test write and read to reg # 1 in same cycle
         println!("sim_state {:?}", simulator.sim_state);
@@ -246,11 +246,11 @@ mod test {
 
         // test write and read to reg # 0 in same cycle (red #0 should always read 0)
         println!("<setup for clock 3>");
-        simulator.set_out_val("read_reg_1", "out", 0.into());
-        simulator.set_out_val("read_reg_2", "out", 1.into());
-        simulator.set_out_val("write_data", "out", 42.into());
-        simulator.set_out_val("write_addr", "out", 0.into());
-        simulator.set_out_val("write_enable", "out", (true as SignalUnsigned).into());
+        simulator.set_out_val("read_reg_1", "out", 0);
+        simulator.set_out_val("read_reg_2", "out", 1);
+        simulator.set_out_val("write_data", "out", 42);
+        simulator.set_out_val("write_addr", "out", 0);
+        simulator.set_out_val("write_enable", "out", true as SignalUnsigned);
         println!("<clock>");
         simulator.clock(&mut clock);
         println!("sim_state {:?}", simulator.sim_state);

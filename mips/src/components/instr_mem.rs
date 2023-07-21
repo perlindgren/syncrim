@@ -36,6 +36,6 @@ impl Component for InstrMem {
         let instr = self.instr[(pc / 4) as usize];
         // set output
         trace!("--- output {}", instr);
-        simulator.set_out_val(&self.id, "out", instr.into());
+        simulator.set_out_val(&self.id, "out", instr);
     }
 }

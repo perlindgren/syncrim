@@ -41,6 +41,12 @@ impl From<SignalUnsigned> for Signal {
     }
 }
 
+impl From<bool> for Signal {
+    fn from(b: bool) -> Signal {
+        Signal::Data(b as SignalUnsigned)
+    }
+}
+
 #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
 type Components = Vec<Rc<dyn Component>>;
 

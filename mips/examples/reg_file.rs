@@ -1,7 +1,7 @@
 use mips::components::*;
 use std::{path::PathBuf, rc::Rc};
 use syncrim::{
-    common::{ComponentStore, Input, SignalUnsigned},
+    common::{ComponentStore, Input},
     components::*,
     fern::fern_setup,
 };
@@ -15,7 +15,7 @@ fn main() {
             Constant::rc_new("c_read_reg_2", (100.0, 200.0), 4),
             Constant::rc_new("c_write_data", (100.0, 140.0), 42),
             Constant::rc_new("c_write_addr", (100.0, 160.0), 4),
-            Constant::rc_new("c_write_enable", (100.0, 180.0), true as SignalUnsigned),
+            Constant::rc_new("c_write_enable", (100.0, 180.0), true),
             // regfile
             Rc::new(RegFile {
                 id: "reg_file".to_string(),
