@@ -1,6 +1,7 @@
 use crate::common::{Component, Id, Input, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
+
 #[derive(Serialize, Deserialize)]
 pub struct Wire {
     pub id: Id,

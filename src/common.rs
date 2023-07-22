@@ -146,6 +146,7 @@ pub trait EguiComponent: Component {
     fn snap_priority(&self) -> SnapPriority {
         SnapPriority::Default
     }
+    fn set_pos(&mut self, _pos: (f32, f32)) {}
 }
 
 #[cfg(feature = "gui-egui")]

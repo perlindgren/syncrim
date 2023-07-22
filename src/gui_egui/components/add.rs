@@ -164,7 +164,7 @@ impl EguiComponent for Add {
                                 }
                             });
                         ComboBox::from_label("a_in.field")
-                            .selected_text(format!("{}", b_in_field))
+                            .selected_text(format!("{}", a_in_field))
                             .show_ui(ui, |ui| {
                                 for c in cs.iter() {
                                     let id = match c.try_borrow_mut() {
@@ -256,5 +256,9 @@ impl EguiComponent for Add {
             (self.b_in.id.clone(), Pos2::new(-20f32, 20f32) + own_pos),
             (String::from("out"), Pos2::new(20f32, 0f32) + own_pos),
         ]
+    }
+
+    fn set_pos(&mut self, pos: (f32, f32)) {
+        self.pos = pos;
     }
 }

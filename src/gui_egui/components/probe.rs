@@ -3,7 +3,7 @@ use crate::components::Probe;
 use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
 use egui::{
     Align2, Area, Color32, ComboBox, Frame, Margin, Order, PointerButton, Pos2, Rect, RichText,
-    Rounding, Sense, Window,
+    Rounding, Vec2, Window,
 };
 use epaint::Shadow;
 
@@ -184,5 +184,14 @@ impl EguiComponent for Probe {
             },
             max: Pos2 { x: 10f32, y: 10f32 },
         }
+    }
+
+    fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
+        let own_pos = Vec2::new(self.pos.0, self.pos.1);
+        vec![(self.input.id.clone(), Pos2::new(-10f32, 0f32) + own_pos)]
+    }
+
+    fn set_pos(&mut self, pos: (f32, f32)) {
+        self.pos = pos;
     }
 }

@@ -147,4 +147,8 @@ impl EguiComponent for Constant {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![(String::from("out"), Pos2::new(10f32, 0f32) + own_pos)]
     }
+
+    fn set_pos(&mut self, pos: (f32, f32)) {
+        self.pos = pos;
+    }
 }

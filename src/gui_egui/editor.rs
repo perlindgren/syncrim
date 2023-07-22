@@ -30,6 +30,8 @@ pub struct Editor {
     pub wire_cursor_location: Pos2,
     pub wire_start_comp_port: Option<CloseToComponent>,
     pub wire_temp_positions: Vec<(f32, f32)>,
+    pub input_comp: Option<Rc<RefCell<dyn EguiComponent>>>,
+    pub input_cursor_location: Pos2,
 }
 
 #[derive(Clone)]
@@ -68,11 +70,6 @@ impl Editor {
                         dummy_input.clone(),
                     ))),
                     Rc::new(RefCell::new(Constant::new("c".to_string(), (0.0, 0.0), 0))),
-                    Rc::new(RefCell::new(Wire::new(
-                        "w".to_string(),
-                        vec![(0.0, 0.0), (70.0, 0.0)],
-                        dummy_input.clone(),
-                    ))),
                     Rc::new(RefCell::new(Probe::new(
                         "p".to_string(),
                         (0.0, 0.0),
@@ -88,6 +85,8 @@ impl Editor {
             wire_cursor_location: Pos2::ZERO,
             wire_start_comp_port: None,
             wire_temp_positions: vec![],
+            input_comp: None,
+            input_cursor_location: Pos2::ZERO,
         }
     }
 
@@ -163,129 +162,8 @@ impl Editor {
             .show(ctx, |ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     ui.horizontal(|ui| {
-                        let s = Editor::gui_to_editor(gui);
-                        let mut padding = Vec2 {
-                            x: s.offset.x / 2f32,
-                            y: s.offset.y + 10f32,
-                        };
-                        let clip_rect = Rect {
-                            min: Pos2 {
-                                x: 0f32,
-                                y: s.offset.y,
-                            },
-                            max: Pos2 {
-                                x: s.offset.x,
-                                y: f32::INFINITY,
-                            },
-                        };
-                        for c in s.library.store.iter() {
-                            let size = c.borrow_mut().size();
-                            padding.y = padding.y - s.scale * size.min.y;
-                            let r_vec = c
-                                .borrow_mut()
-                                .render(ui, None, padding, s.scale, clip_rect, s.editor_mode)
-                                .unwrap();
-                            let rect = r_vec[0].rect.clone();
-                            for resp in r_vec {
-                                // Create new component
-                                if resp.drag_started_by(PointerButton::Primary) {
-                                    let _resp = match c.borrow_mut().get_id_ports().0.as_str() {
-                                        // todo: Make this a lot better and not hardcoded
-                                        "c" => {
-                                            let id = unique_component_name(
-                                                &s.component_store.store,
-                                                "c",
-                                            );
-                                            let comp: Rc<RefCell<dyn EguiComponent>> = Rc::new(
-                                                RefCell::new(Constant::new(id, (0.0, 0.0), 0)),
-                                            );
-                                            let resp = comp.borrow_mut().render(
-                                                ui,
-                                                None,
-                                                padding,
-                                                s.scale,
-                                                clip_rect,
-                                                s.editor_mode,
-                                            );
-                                            s.component_store.store.push(comp);
-                                            resp
-                                        }
-                                        "w" => {
-                                            let id = unique_component_name(
-                                                &s.component_store.store,
-                                                "w",
-                                            );
-                                            let comp: Rc<RefCell<dyn EguiComponent>> =
-                                                Rc::new(RefCell::new(Wire::new(
-                                                    id,
-                                                    vec![(0.0, 0.0), (70.0, 0.0)],
-                                                    s.dummy_input.clone(),
-                                                )));
-                                            let resp = comp.borrow_mut().render(
-                                                ui,
-                                                None,
-                                                padding,
-                                                s.scale,
-                                                clip_rect,
-                                                s.editor_mode,
-                                            );
-                                            s.component_store.store.push(comp);
-                                            resp
-                                        }
-                                        "p" => {
-                                            let id = unique_component_name(
-                                                &s.component_store.store,
-                                                "p",
-                                            );
-                                            let comp: Rc<RefCell<dyn EguiComponent>> =
-                                                Rc::new(RefCell::new(Probe::new(
-                                                    id,
-                                                    (0.0, 0.0),
-                                                    s.dummy_input.clone(),
-                                                )));
-                                            let resp = comp.borrow_mut().render(
-                                                ui,
-                                                None,
-                                                padding,
-                                                s.scale,
-                                                clip_rect,
-                                                s.editor_mode,
-                                            );
-                                            s.component_store.store.push(comp);
-                                            resp
-                                        }
-                                        "add" | _ => {
-                                            let id = unique_component_name(
-                                                &s.component_store.store,
-                                                "add",
-                                            );
-                                            let comp: Rc<RefCell<dyn EguiComponent>> =
-                                                Rc::new(RefCell::new(Add::new(
-                                                    id,
-                                                    (0.0, 0.0),
-                                                    s.dummy_input.clone(),
-                                                    s.dummy_input.clone(),
-                                                )));
-                                            let resp = comp.borrow_mut().render(
-                                                ui,
-                                                None,
-                                                padding,
-                                                s.scale,
-                                                clip_rect,
-                                                s.editor_mode,
-                                            );
-                                            s.component_store.store.push(comp);
-                                            resp
-                                        }
-                                    };
-                                    // todo: use resp to make it draggable instantly
-                                    // I'm unsure if this is actually possible
-                                    // since it's not possible to create events/set currently
-                                    // dragged entity
-                                }
-                            }
-                            padding.y = rect.max.y + 10f32;
-                        }
+                        let e = Editor::gui_to_editor(gui);
+                        crate::gui_egui::library::show_library(e, ui);
                     });
                 });
             });
@@ -317,7 +195,7 @@ impl Editor {
             let tcs = gui.simulator.ordered_components.clone();
             let s = Editor::gui_to_editor(gui);
             match s.editor_mode {
-                EditorMode::Wire => {
+                EditorMode::Wire | EditorMode::Input => {
                     for c in &s.component_store.store {
                         c.borrow_mut().render(
                             ui,
@@ -329,7 +207,7 @@ impl Editor {
                         );
                     }
                 }
-                EditorMode::Default | EditorMode::Input => {
+                EditorMode::Default => {
                     s.component_store.store.retain(|c| {
                         let delete = c
                             .borrow_mut()
@@ -357,9 +235,8 @@ impl Editor {
         }
         match s.editor_mode {
             EditorMode::Wire => crate::gui_egui::editor_wire::wire_mode(ctx, s, cpr, layer_id),
-            EditorMode::Input | EditorMode::Default => {
-                ctx.output_mut(|o| o.cursor_icon = egui::CursorIcon::Default)
-            }
+            EditorMode::Input => crate::gui_egui::library::input_mode(ctx, s, cpr, layer_id),
+            EditorMode::Default => ctx.output_mut(|o| o.cursor_icon = egui::CursorIcon::Default),
         }
         if central_panel.response.hovered() {
             ctx.input_mut(|i| {
