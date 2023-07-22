@@ -81,6 +81,27 @@ pub trait ViziaComponent: Component {
     fn view(&self, _cx: &mut vizia::context::Context) {}
 }
 
+// Specific structs for egui
+#[cfg(feature = "gui-egui")]
+pub enum SnapPriority {
+    Default,
+    Wire,
+}
+
+#[cfg(feature = "gui-egui")]
+#[derive(Debug, Clone, Copy)]
+pub enum EditorMode {
+    Default,
+    Wire,
+    Input,
+}
+
+#[cfg(feature = "gui-egui")]
+pub struct EditorRenderReturn {
+    pub delete: bool,
+    pub resp: Option<Vec<egui::Response>>,
+}
+
 // Specific functionality for EGui frontend
 #[cfg(feature = "gui-egui")]
 #[typetag::serde(tag = "type")]
@@ -92,6 +113,7 @@ pub trait EguiComponent: Component {
         _offset: egui::Vec2,
         _scale: f32,
         _clip_rect: egui::Rect,
+        _editor_mode: EditorMode,
     ) -> Option<Vec<egui::Response>> {
         None
     }
@@ -104,8 +126,9 @@ pub trait EguiComponent: Component {
         _scale: f32,
         _clip_rect: egui::Rect,
         _components: &Components,
-    ) -> crate::gui_egui::helper::EditorRenderReturn {
-        crate::gui_egui::helper::EditorRenderReturn {
+        _editor_mode: EditorMode,
+    ) -> EditorRenderReturn {
+        EditorRenderReturn {
             delete: false,
             resp: None,
         }
@@ -118,6 +141,10 @@ pub trait EguiComponent: Component {
     /// Get ports location relative to self, (inputs, outputs)
     fn ports_location(&self) -> Vec<(Id, egui::Pos2)> {
         vec![]
+    }
+
+    fn snap_priority(&self) -> SnapPriority {
+        SnapPriority::Default
     }
 }
 

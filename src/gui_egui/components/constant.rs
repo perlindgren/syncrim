@@ -1,6 +1,6 @@
-use crate::common::{Components, EguiComponent, Simulator};
+use crate::common::{Components, EditorMode, EditorRenderReturn, EguiComponent, Simulator};
 use crate::components::Constant;
-use crate::gui_egui::helper::{out_of_bounds, unique_component_name, EditorRenderReturn};
+use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
 use egui::{
     Align2, Area, Color32, Frame, Margin, Order, PointerButton, Pos2, Rect, RichText, Rounding,
     Sense, Vec2, Window,
@@ -16,6 +16,7 @@ impl EguiComponent for Constant {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: Rect,
+        editor_mode: EditorMode,
     ) -> Option<Vec<egui::Response>> {
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
@@ -38,14 +39,7 @@ impl EguiComponent for Constant {
             });
         let rect = area.response.rect;
         let rect = out_of_bounds(rect, clip_rect);
-        let r = ui.allocate_rect(
-            rect,
-            Sense {
-                click: true,
-                drag: true,
-                focusable: true,
-            },
-        );
+        let r = ui.allocate_rect(rect, editor_mode_to_sense(editor_mode));
         if r.hovered() && !r.dragged() {
             egui::containers::popup::show_tooltip_for(
                 ui.ctx(),
@@ -68,9 +62,11 @@ impl EguiComponent for Constant {
         scale: f32,
         clip_rect: egui::Rect,
         cs: &Components,
+        editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
-        let r_vec = Constant::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
+        let r_vec =
+            Constant::render(self, ui, simulator, offset, scale, clip_rect, editor_mode).unwrap();
         let resp = &r_vec[0];
         if resp.dragged_by(PointerButton::Primary) {
             let delta = resp.drag_delta() / scale;

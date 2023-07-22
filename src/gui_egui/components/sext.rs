@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Simulator};
+use crate::common::{EditorMode, EguiComponent, Simulator};
 use crate::components::Sext;
 
 #[typetag::serde]
@@ -10,6 +10,7 @@ impl EguiComponent for Sext {
         _offset: egui::Vec2,
         _scale: f32,
         _clip_rect: egui::Rect,
+        _editor_mode: EditorMode,
     ) -> Option<Vec<egui::Response>> {
         todo!("implement sext");
         None

@@ -1,13 +1,13 @@
 use crate::gui_egui::helper::{
-    offset_helper, out_of_bounds, unique_component_name, EditorRenderReturn,
+    editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
 };
 use crate::{
-    common::{Components, EguiComponent, Id, Simulator},
+    common::{Components, EditorMode, EditorRenderReturn, EguiComponent, Simulator},
     components::Add,
 };
 use egui::{
     containers::{ComboBox, Window},
-    Frame, Margin, PointerButton, Pos2, Rect, Rounding, Sense, Vec2,
+    Frame, Margin, PointerButton, Pos2, Rect, Rounding, Vec2,
 };
 use epaint::Shadow;
 
@@ -20,6 +20,7 @@ impl EguiComponent for Add {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
+        editor_mode: EditorMode,
     ) -> Option<Vec<egui::Response>> {
         // 41x81
         // middle: 21x 41y (0 0)
@@ -69,20 +70,7 @@ impl EguiComponent for Add {
             max: oh((20f32, 40f32), s, o),
         };
         let rect = out_of_bounds(rect, clip_rect);
-        let r = ui.allocate_rect(
-            rect,
-            Sense {
-                click: false,
-                drag: false,
-                focusable: false,
-            }, /*
-               Sense {
-                   click: true,
-                   drag: true,
-                   focusable: true,
-               },
-               */
-        );
+        let r = ui.allocate_rect(rect, editor_mode_to_sense(editor_mode));
 
         if r.hovered() && !r.dragged() {
             egui::containers::popup::show_tooltip_for(
@@ -106,15 +94,12 @@ impl EguiComponent for Add {
         scale: f32,
         clip_rect: egui::Rect,
         cs: &Components,
+        editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
-        let r_vec = Add::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
+        let r_vec =
+            Add::render(self, ui, simulator, offset, scale, clip_rect, editor_mode).unwrap();
         let resp = &r_vec[0];
-        let resp = resp.interact(Sense {
-            click: true,
-            drag: true,
-            focusable: true,
-        });
         if resp.dragged_by(PointerButton::Primary) {
             let delta = resp.drag_delta() / scale;
             self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);

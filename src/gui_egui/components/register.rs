@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Simulator};
+use crate::common::{EditorMode, EguiComponent, Simulator};
 use crate::components::Register;
 use crate::gui_egui::helper::offset_helper;
 
@@ -11,6 +11,7 @@ impl EguiComponent for Register {
         offset: egui::Vec2,
         scale: f32,
         _clip_rect: egui::Rect,
+        editor_mode: EditorMode,
     ) -> Option<Vec<egui::Response>> {
         // 21x41
         // middle: 11x 21y (0 0)

@@ -1,4 +1,4 @@
-use crate::common::{ComponentStore, Simulator};
+use crate::common::{ComponentStore, EditorMode, Simulator};
 use egui::{Key, KeyboardShortcut, Modifiers};
 
 #[derive(Copy, Clone)]
@@ -303,8 +303,15 @@ pub fn control_step_back_fn(gui: &mut crate::gui_egui::gui::Gui) {
 pub fn editor_wire_fn(gui: &mut crate::gui_egui::gui::Gui) {
     if gui.editor_use {
         let editor = gui.editor.as_mut().unwrap();
-        editor.wire_mode = !editor.wire_mode;
-        editor.reset_wire_mode();
-        println!("wire mode: {}", editor.wire_mode);
+        match editor.editor_mode {
+            EditorMode::Default | EditorMode::Input => {
+                editor.editor_mode = EditorMode::Wire;
+            }
+            EditorMode::Wire => {
+                editor.editor_mode = EditorMode::Default;
+            }
+        }
+        crate::gui_egui::editor_wire::reset_wire_mode(editor);
+        println!("wire mode: {:?}", editor.editor_mode);
     }
 }

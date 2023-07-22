@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Simulator};
+use crate::common::{EditorMode, EguiComponent, Simulator};
 use crate::components::Mux;
 use crate::gui_egui::helper::offset_helper;
 
@@ -11,6 +11,7 @@ impl EguiComponent for Mux {
         offset: egui::Vec2,
         scale: f32,
         _clip_rect: egui::Rect,
+        _editor_mode: EditorMode,
     ) -> Option<Vec<egui::Response>> {
         // 41x(20*ports + 11)
         // middle: 21x ((20*ports + 10)/2+1)y (0 0)

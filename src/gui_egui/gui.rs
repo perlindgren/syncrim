@@ -1,4 +1,4 @@
-use crate::common::{ComponentStore, Simulator};
+use crate::common::{ComponentStore, EditorMode, Simulator};
 use crate::gui_egui::{editor::Editor, keymap, keymap::Shortcuts, menu::Menu};
 use eframe::egui;
 use std::path::PathBuf;
@@ -124,6 +124,7 @@ impl Gui {
                     self.offset + self.pan,
                     self.scale,
                     self.clip_rect,
+                    EditorMode::Default,
                 );
             }
         });

@@ -1,15 +1,17 @@
-use crate::common::Components;
-use egui::{Pos2, Rect, Response, Vec2};
-
-pub struct EditorRenderReturn {
-    pub delete: bool,
-    pub resp: Option<Vec<Response>>,
-}
+use crate::common::{Components, EditorMode};
+use egui::{Pos2, Rect, Response, Sense, Vec2};
 
 pub fn offset_reverse_helper_pos2(xy: Pos2, scale: f32, offset: Vec2) -> Pos2 {
     egui::Pos2 {
         x: (xy.x - offset.x) * scale,
         y: (xy.y - offset.y) * scale,
+    }
+}
+
+pub fn offset_reverse_helper(xy: (f32, f32), scale: f32, offset: Vec2) -> Pos2 {
+    egui::Pos2 {
+        x: (xy.0 - offset.x) * scale,
+        y: (xy.1 - offset.y) * scale,
     }
 }
 
@@ -62,6 +64,21 @@ pub fn unique_component_name(cs: &Components, id: &str) -> String {
         }
     }
     String::from(new_id)
+}
+
+pub fn editor_mode_to_sense(editor_mode: EditorMode) -> Sense {
+    match editor_mode {
+        EditorMode::Wire => Sense {
+            click: false,
+            drag: false,
+            focusable: false,
+        },
+        _ => Sense {
+            click: true,
+            drag: true,
+            focusable: true,
+        },
+    }
 }
 
 // todo: Create the properties window the same way every time for the different components

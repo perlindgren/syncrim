@@ -1,11 +1,13 @@
-use crate::common::{Components, EguiComponent, Simulator};
+use crate::common::{
+    Components, EditorMode, EditorRenderReturn, EguiComponent, Simulator, SnapPriority,
+};
 use crate::components::Wire;
 use crate::gui_egui::helper::{
-    offset_helper, out_of_bounds, unique_component_name, EditorRenderReturn,
+    editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
 };
 use egui::{
     containers, Color32, ComboBox, Frame, Margin, PointerButton, Pos2, Rect, Response, Rounding,
-    Sense, Shape, Stroke, Ui, Vec2, Window,
+    Shape, Slider, Stroke, Ui, Vec2, Window,
 };
 use epaint::Shadow;
 
@@ -17,9 +19,10 @@ impl EguiComponent for Wire {
         simulator: Option<Simulator>,
         offset: Vec2,
         scale: f32,
-        clip_rect: egui::Rect,
+        clip_rect: Rect,
+        editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
-        let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
+        let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
         let offset = offset;
         let s = scale;
         let o = offset;
@@ -28,7 +31,7 @@ impl EguiComponent for Wire {
             line_vec.push(oh(pos, s, o));
         }
 
-        ui.painter().add(egui::Shape::line(
+        ui.painter().add(Shape::line(
             line_vec.clone(),
             Stroke {
                 width: scale,
@@ -38,19 +41,20 @@ impl EguiComponent for Wire {
         let mut r_vec = vec![];
 
         for (i, _) in line_vec[1..].iter().enumerate() {
+            let (line_top_left, line_bottom_right) =
+                if line_vec[i].x > line_vec[i + 1].x || line_vec[i].y > line_vec[i + 1].y {
+                    (line_vec[i + 1], line_vec[i])
+                } else {
+                    (line_vec[i], line_vec[i + 1])
+                };
             let rect = Rect {
-                min: line_vec[i],
-                max: line_vec[i + 1],
+                min: line_top_left,
+                max: line_bottom_right,
+                //min: line_vec[i],
+                //max: line_vec[i + 1],
             };
             let rect = out_of_bounds(rect, clip_rect);
-            let r = ui.allocate_rect(
-                rect,
-                Sense {
-                    click: true,
-                    drag: true,
-                    focusable: true,
-                },
-            );
+            let r = ui.allocate_rect(rect, editor_mode_to_sense(editor_mode));
             if r.hovered() && !r.dragged() {
                 containers::popup::show_tooltip_for(
                     ui.ctx(),
@@ -81,9 +85,11 @@ impl EguiComponent for Wire {
         scale: f32,
         clip_rect: Rect,
         cs: &Components,
+        editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
-        let r_vec = Wire::render(self, ui, simulator, offset, scale, clip_rect).unwrap();
+        let r_vec =
+            Wire::render(self, ui, simulator, offset, scale, clip_rect, editor_mode).unwrap();
         for (i, resp) in r_vec.iter().enumerate() {
             if resp.dragged_by(PointerButton::Primary) {
                 let delta = resp.drag_delta() / scale;
@@ -123,24 +129,24 @@ impl EguiComponent for Wire {
 
                         ui.horizontal(|ui| {
                             ui.add(
-                                egui::Slider::new(&mut self.pos[i].0, 0f32..=1000f32)
+                                Slider::new(&mut self.pos[i].0, 0f32..=1000f32)
                                     .text("start x")
                                     .clamp_to_range(false),
                             );
                             ui.add(
-                                egui::Slider::new(&mut self.pos[i].1, 0f32..=1000f32)
+                                Slider::new(&mut self.pos[i].1, 0f32..=1000f32)
                                     .text("start y")
                                     .clamp_to_range(false),
                             );
                         });
                         ui.horizontal(|ui| {
                             ui.add(
-                                egui::Slider::new(&mut self.pos[i + 1].0, 0f32..=1000f32)
+                                Slider::new(&mut self.pos[i + 1].0, 0f32..=1000f32)
                                     .text("end x")
                                     .clamp_to_range(false),
                             );
                             ui.add(
-                                egui::Slider::new(&mut self.pos[i + 1].1, 0f32..=1000f32)
+                                Slider::new(&mut self.pos[i + 1].1, 0f32..=1000f32)
                                     .text("end y")
                                     .clamp_to_range(false),
                             );
@@ -192,5 +198,9 @@ impl EguiComponent for Wire {
             vec.push((format!("{}", i), Pos2 { x: pos.0, y: pos.1 }));
         }
         vec
+    }
+
+    fn snap_priority(&self) -> SnapPriority {
+        SnapPriority::Wire
     }
 }

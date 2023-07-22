@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Simulator};
+use crate::common::{EditorMode, EguiComponent, Simulator};
 use crate::components::ProbeOut;
 use egui::Rect;
 
@@ -11,6 +11,7 @@ impl EguiComponent for ProbeOut {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: Rect,
+        _editor_mode: EditorMode,
     ) -> Option<Vec<egui::Response>> {
         todo!();
         None
