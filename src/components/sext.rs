@@ -4,7 +4,7 @@ use crate::common::{
 };
 use log::*;
 use serde::{Deserialize, Serialize};
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Sext {
     pub id: Id,
     pub pos: (f32, f32),

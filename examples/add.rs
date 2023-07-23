@@ -49,7 +49,8 @@ fn main() {
     };
 
     let path = PathBuf::from("add.json");
-    //cs.save_file(&path);
+    ////cs.save_file(&path);
+    //let cs2 = ComponentStore::load_file(&path);
 
     #[cfg(feature = "gui-egui")]
     syncrim::gui_egui::gui(&cs, &path).ok();

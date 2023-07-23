@@ -1,3 +1,4 @@
+mod component_ui;
 mod editor;
 mod editor_wire;
 mod gui;

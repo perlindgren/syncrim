@@ -1,8 +1,6 @@
 use petgraph::Graph;
 use serde::{Deserialize, Serialize};
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::rc::Rc;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 #[cfg(feature = "gui-vizia")]
 use vizia::prelude::*;
@@ -37,7 +35,7 @@ pub struct Simulator {
     pub graph: Graph<Id, ()>,
 }
 
-//#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 pub struct ComponentStore {
     pub store: Components,
 }
@@ -152,6 +150,7 @@ pub trait EguiComponent: Component {
 }
 
 #[cfg(feature = "gui-egui")]
+#[derive(Serialize, Deserialize)]
 pub struct EguiExtra {
     pub properties_window: bool,
     pub id_tmp: String,

@@ -1,3 +1,6 @@
+use crate::gui_egui::component_ui::{
+    input_id, input_selector, pos_slider, properties_window, rect_with_hover,
+};
 use crate::gui_egui::helper::{
     editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
 };
@@ -69,20 +72,10 @@ impl EguiComponent for Add {
             min: oh((-20f32, -40f32), s, o),
             max: oh((20f32, 40f32), s, o),
         };
-        let rect = out_of_bounds(rect, clip_rect);
-        let r = ui.allocate_rect(rect, editor_mode_to_sense(editor_mode));
-
-        if r.hovered() && !r.dragged() {
-            egui::containers::popup::show_tooltip_for(
-                ui.ctx(),
-                egui::Id::new(self.id.clone()),
-                &rect,
-                |ui| {
-                    ui.label(format!("Id: {}", self.id.clone()));
-                    ui.label("ALU");
-                },
-            );
-        }
+        let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
+            ui.label(format!("Id: {}", self.id.clone()));
+            ui.label("ALU");
+        });
         Some(vec![r])
     }
 
@@ -110,128 +103,19 @@ impl EguiComponent for Add {
                 delete = true;
             }
         }
-        if self.properties_window {
-            let mut a_in = self.a_in.input.id.clone();
-            let mut b_in = self.b_in.input.id.clone();
-            let mut a_in_field = self.a_in.input.field.clone();
-            let mut b_in_field = self.b_in.input.field.clone();
-            let w_resp = Window::new(format!("Properties: {}", self.id))
-                .frame(Frame {
-                    inner_margin: Margin::same(10f32),
-                    outer_margin: Margin::same(0f32),
-                    rounding: Rounding::same(10f32),
-                    shadow: Shadow::small_dark(),
-                    fill: ui.visuals().panel_fill,
-                    stroke: ui.visuals().window_stroke,
-                })
-                .default_pos(Pos2 {
-                    x: (resp.rect.min.x + resp.rect.max.x) / 2f32,
-                    y: (resp.rect.min.y + resp.rect.max.y) / 2f32,
-                })
-                .show(ui.ctx(), |ui| {
-                    ui.horizontal(|ui| {
-                        let id_label = ui.label("Id: ");
-                        let r = ui
-                            .text_edit_singleline(&mut self.id_tmp)
-                            .labelled_by(id_label.id);
-                        if r.lost_focus() && self.id_tmp != self.id {
-                            self.id = unique_component_name(cs, self.id_tmp.as_str());
-                        }
-                    });
 
-                    ui.horizontal(|ui| {
-                        ui.add(
-                            egui::Slider::new(&mut self.pos.0, 0f32..=1000f32)
-                                .text("pos x")
-                                .clamp_to_range(false),
-                        );
-                        ui.add(
-                            egui::Slider::new(&mut self.pos.1, 0f32..=1000f32)
-                                .text("pos y")
-                                .clamp_to_range(false),
-                        );
-                    });
-                    ui.horizontal(|ui| {
-                        ComboBox::from_label("a_in.id")
-                            .selected_text(format!("{}", a_in))
-                            .show_ui(ui, |ui| {
-                                for c in cs.iter() {
-                                    let id = match c.try_borrow_mut() {
-                                        Ok(a) => a.get_id_ports().0.clone(),
-                                        Err(e) => self.id.clone(),
-                                    };
-                                    ui.selectable_value(&mut a_in, id.clone(), id);
-                                }
-                            });
-                        ComboBox::from_label("a_in.field")
-                            .selected_text(format!("{}", a_in_field))
-                            .show_ui(ui, |ui| {
-                                for c in cs.iter() {
-                                    let id = match c.try_borrow_mut() {
-                                        Ok(a) => a.get_id_ports().0.clone(),
-                                        Err(e) => self.id.clone(),
-                                    };
-                                    if id != a_in {
-                                        continue;
-                                    }
-                                    let fields = match c.try_borrow_mut() {
-                                        Ok(a) => a.get_id_ports().1.outputs,
-                                        Err(_) => vec![],
-                                    };
-                                    for field in fields {
-                                        ui.selectable_value(&mut a_in_field, field.clone(), field);
-                                    }
-                                }
-                            });
-                    });
-
-                    ui.horizontal(|ui| {
-                        ComboBox::from_label("b_in.id")
-                            .selected_text(format!("{}", b_in))
-                            .show_ui(ui, |ui| {
-                                for c in cs.iter() {
-                                    let id = match c.try_borrow_mut() {
-                                        Ok(a) => a.get_id_ports().0.clone(),
-                                        Err(e) => self.id.clone(),
-                                    };
-                                    ui.selectable_value(&mut b_in, id.clone(), id);
-                                }
-                            });
-                        ComboBox::from_label("b_in.field")
-                            .selected_text(format!("{}", b_in_field))
-                            .show_ui(ui, |ui| {
-                                for c in cs.iter() {
-                                    let id = match c.try_borrow_mut() {
-                                        Ok(a) => a.get_id_ports().0.clone(),
-                                        Err(e) => self.id.clone(),
-                                    };
-                                    if id != b_in {
-                                        continue;
-                                    }
-                                    let fields = match c.try_borrow_mut() {
-                                        Ok(a) => a.get_id_ports().1.outputs,
-                                        Err(_) => vec![],
-                                    };
-                                    for field in fields {
-                                        ui.selectable_value(&mut b_in_field, field.clone(), field);
-                                    }
-                                }
-                            });
-                    });
-                    self.a_in.input.id = a_in;
-                    self.b_in.input.id = b_in;
-                    self.a_in.input.field = a_in_field;
-                    self.b_in.input.field = b_in_field;
-                });
-            if w_resp.unwrap().response.clicked_elsewhere() {
-                self.properties_window = false;
-            }
-        }
-
-        if resp.clicked_by(PointerButton::Secondary) {
-            // Open properties window
-            self.properties_window = true;
-        }
+        properties_window(
+            ui,
+            self.id.clone(),
+            resp,
+            &mut self.egui_x.properties_window,
+            |ui| {
+                input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, cs);
+                pos_slider(ui, &mut self.pos);
+                input_selector(ui, &mut self.a_in, cs);
+                input_selector(ui, &mut self.b_in, cs);
+            },
+        );
 
         EditorRenderReturn {
             delete,
@@ -262,14 +146,4 @@ impl EguiComponent for Add {
     fn set_pos(&mut self, pos: (f32, f32)) {
         self.pos = pos;
     }
-
-    /*
-        fn set_port_to_input(input: crate::common::Input, field: crate::common::Id) {
-            match field {
-                "out" => self.a_in =
-                "overflow" =>
-                _=> ()
-            }
-        }
-    */
 }

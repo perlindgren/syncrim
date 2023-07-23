@@ -1,4 +1,4 @@
-use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, EguiExtra, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
@@ -6,9 +6,9 @@ pub struct Constant {
     pub id: Id,
     pub pos: (f32, f32),
     pub value: Signal,
-    // this is ugly... (egui)
-    pub properties_window: bool,
-    pub id_tmp: Id,
+    #[cfg(feature = "gui-egui")]
+    #[serde(skip_serializing)]
+    pub egui_x: EguiExtra,
 }
 
 impl Constant {
@@ -17,8 +17,10 @@ impl Constant {
             id: id.clone(),
             pos,
             value,
-            properties_window: false,
-            id_tmp: id,
+            egui_x: EguiExtra {
+                properties_window: false,
+                id_tmp: id,
+            },
         }
     }
 }

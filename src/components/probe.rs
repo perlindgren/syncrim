@@ -1,4 +1,4 @@
-use crate::common::{Component, Id, Input, InputId, OutputType, Ports};
+use crate::common::{Component, EguiExtra, Id, Input, InputId, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
@@ -6,9 +6,9 @@ pub struct Probe {
     pub id: Id,
     pub pos: (f32, f32),
     pub input_id: InputId,
-    // this is ugly... (egui)
-    pub properties_window: bool,
-    pub id_tmp: Id,
+    #[cfg(feature = "gui-egui")]
+    #[serde(skip_serializing)]
+    pub egui_x: EguiExtra,
 }
 
 impl Probe {
@@ -20,8 +20,10 @@ impl Probe {
                 id: String::from("in"),
                 input,
             },
-            properties_window: false,
-            id_tmp: id,
+            egui_x: EguiExtra {
+                properties_window: false,
+                id_tmp: id,
+            },
         }
     }
 }
