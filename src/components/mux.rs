@@ -1,12 +1,33 @@
-use crate::common::{Component, Id, Input, OutputType, Ports, Simulator};
+use crate::common::{Component, Id, Input, InputId, OutputType, Ports, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
     pub id: Id,
     pub pos: (f32, f32),
-    pub select: Input,
-    pub m_in: Vec<Input>,
+    pub select: InputId,
+    pub m_in: Vec<InputId>,
+}
+
+impl Mux {
+    pub fn new(id: String, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Self {
+        let mut v = vec![];
+        for (i, input) in m_in.iter().enumerate() {
+            v.push(InputId {
+                id: format!("in{}", i),
+                input: input.clone(),
+            });
+        }
+        Mux {
+            id: id.clone(),
+            pos,
+            select: InputId {
+                id: String::from("select"),
+                input: select,
+            },
+            m_in: v,
+        }
+    }
 }
 
 #[typetag::serde]
@@ -33,9 +54,9 @@ impl Component for Mux {
     // propagate selected input value to output
     fn clock(&self, simulator: &mut Simulator) {
         // get input value
-        let select = simulator.get_input_val(&self.select) as usize;
+        let select = simulator.get_input_val(&self.select.input) as usize;
         trace!("select {}", select);
-        let value = simulator.get_input_val(&self.m_in[select]);
+        let value = simulator.get_input_val(&self.m_in[select].input);
 
         // set output
         simulator.set_out_val(&self.id, "out", value);

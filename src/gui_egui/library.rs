@@ -85,17 +85,13 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
                     let origin = i.pointer.press_origin().unwrap();
                     e.input_cursor_location = origin;
                 });
-
-                //s.input_comp = Some(
-                //crate::gui_egui::library::reset_input_mode(s);
-                /*
-                 */
             }
         }
         padding.y = rect.max.y + 10f32;
     }
 }
 
+// todo: This should really just copy the component that's in e.input_comp
 pub fn add_comp_to_editor(e: &mut Editor) {
     let pos = offset_reverse_helper_pos2(e.input_cursor_location, e.scale, e.offset);
     let mut comp: Rc<RefCell<dyn EguiComponent>> = match e

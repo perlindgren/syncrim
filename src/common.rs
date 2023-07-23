@@ -63,6 +63,8 @@ pub trait Component {
     /// returns the (id, Ports) of the component
     fn get_id_ports(&self) -> (Id, Ports);
 
+    fn set_id_port(&mut self, _target_port_id: Id, _new_input: Input) {}
+
     /// evaluate component based on current internal state
     fn clock(&self, _simulator: &mut Simulator) {}
 
@@ -157,13 +159,13 @@ pub struct EguiExtra {
 
 #[derive(Debug, Clone)]
 pub struct Ports {
-    pub inputs: Vec<Input>,
+    pub inputs: Vec<InputId>,
     pub out_type: OutputType,
     pub outputs: Vec<Id>,
 }
 
 impl Ports {
-    pub fn new(inputs: Vec<&Input>, out_type: OutputType, outputs: Vec<&str>) -> Self {
+    pub fn new(inputs: Vec<&InputId>, out_type: OutputType, outputs: Vec<&str>) -> Self {
         Ports {
             inputs: inputs.into_iter().cloned().collect(),
             out_type,
@@ -183,6 +185,21 @@ impl Input {
         Input {
             id: id.into(),
             field: field.into(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct InputId {
+    pub id: Id,
+    pub input: Input,
+}
+
+impl InputId {
+    pub fn new(id_self: &str, id: &str, field: &str) -> Self {
+        InputId {
+            id: id_self.into(),
+            input: Input::new(id, field),
         }
     }
 }

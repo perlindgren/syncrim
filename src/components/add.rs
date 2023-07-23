@@ -1,4 +1,6 @@
-use crate::common::{Component, Id, Input, OutputType, Ports, Signal, SignedSignal, Simulator};
+use crate::common::{
+    Component, Id, Input, InputId, OutputType, Ports, Signal, SignedSignal, Simulator,
+};
 use log::*;
 use serde::{Deserialize, Serialize};
 
@@ -6,8 +8,8 @@ use serde::{Deserialize, Serialize};
 pub struct Add {
     pub id: Id,
     pub pos: (f32, f32),
-    pub a_in: Input,
-    pub b_in: Input,
+    pub a_in: InputId,
+    pub b_in: InputId,
     // this is ugly... (egui)
     pub properties_window: bool,
     pub id_tmp: Id,
@@ -18,8 +20,14 @@ impl Add {
         Add {
             id: id.clone(),
             pos,
-            a_in,
-            b_in,
+            a_in: InputId {
+                id: String::from("a_in"),
+                input: a_in,
+            },
+            b_in: InputId {
+                id: String::from("b_in"),
+                input: b_in,
+            },
             properties_window: false,
             id_tmp: id,
         }
@@ -46,8 +54,8 @@ impl Component for Add {
     // propagate addition to output
     fn clock(&self, simulator: &mut Simulator) {
         // get input values
-        let a_in = simulator.get_input_val(&self.a_in);
-        let b_in = simulator.get_input_val(&self.b_in);
+        let a_in = simulator.get_input_val(&self.a_in.input);
+        let b_in = simulator.get_input_val(&self.b_in.input);
 
         // compute addition (notice will panic on overflow)
         let (value, overflow) =
@@ -64,5 +72,13 @@ impl Component for Add {
         // set output
         simulator.set_out_val(&self.id, "out", value as Signal);
         simulator.set_out_val(&self.id, "overflow", Signal::from(overflow));
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            "a_in" => self.a_in.input = new_input,
+            "b_in" => self.b_in.input = new_input,
+            _ => (),
+        }
     }
 }

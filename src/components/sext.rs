@@ -1,12 +1,14 @@
 // use std::fmt::Alignment;
-use crate::common::{Component, Id, Input, OutputType, Ports, Signal, SignedSignal, Simulator};
+use crate::common::{
+    Component, Id, Input, InputId, OutputType, Ports, Signal, SignedSignal, Simulator,
+};
 use log::*;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct Sext {
     pub id: Id,
     pub pos: (f32, f32),
-    pub sext_in: Input,
+    pub sext_in: InputId,
     pub in_size: u32,
     pub out_size: u32,
 }
@@ -36,7 +38,7 @@ impl Component for Sext {
         );
 
         // get input values
-        let mut value = simulator.get_input_val(&self.sext_in);
+        let mut value = simulator.get_input_val(&self.sext_in.input);
 
         let to_sext = self.out_size - self.in_size; // Amount to be arithmetically shifted
         let to_shl = Signal::BITS - self.in_size; // To move input to MSB

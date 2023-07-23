@@ -21,9 +21,9 @@ impl EguiComponent for Probe {
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
-        let input = self.input.clone();
+        let input_id = self.input_id.clone();
         let value = match simulator {
-            Some(s) => s.get_input_val(&input),
+            Some(s) => s.get_input_val(&input_id.input),
             None => 0,
         };
         let area = Area::new(self.id.to_string())
@@ -86,8 +86,8 @@ impl EguiComponent for Probe {
         }
 
         if self.properties_window {
-            let mut input = self.input.id.clone();
-            let mut input_field = self.input.field.clone();
+            let mut input = self.input_id.input.id.clone();
+            let mut input_field = self.input_id.input.field.clone();
             let resp = Window::new(format!("Properties: {}", self.id))
                 .frame(Frame {
                     inner_margin: Margin::same(10f32),
@@ -149,7 +149,7 @@ impl EguiComponent for Probe {
                                     }
                                     let fields = match c.try_borrow_mut() {
                                         Ok(a) => a.get_id_ports().1.outputs,
-                                        Err(_) => vec![self.input.id.clone()],
+                                        Err(_) => vec![self.input_id.input.id.clone()],
                                     };
                                     for field in fields {
                                         ui.selectable_value(&mut input_field, field.clone(), field);
@@ -157,8 +157,8 @@ impl EguiComponent for Probe {
                                 }
                             });
                     });
-                    self.input.id = input;
-                    self.input.field = input_field;
+                    self.input_id.input.id = input;
+                    self.input_id.input.field = input_field;
                 });
             if resp.unwrap().response.clicked_elsewhere() {
                 self.properties_window = false;
@@ -188,7 +188,7 @@ impl EguiComponent for Probe {
 
     fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
-        vec![(self.input.id.clone(), Pos2::new(-10f32, 0f32) + own_pos)]
+        vec![(self.input_id.id.clone(), Pos2::new(-10f32, 0f32) + own_pos)]
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {

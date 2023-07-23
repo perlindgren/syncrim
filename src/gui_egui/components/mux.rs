@@ -25,7 +25,7 @@ impl EguiComponent for Mux {
 
         // selector
         let select = match simulator {
-            Some(s) => s.get_input_val(&self.select),
+            Some(s) => s.get_input_val(&self.select.input),
             None => 0,
         };
 

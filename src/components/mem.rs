@@ -1,4 +1,4 @@
-use crate::common::{Component, Id, Input, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Id, Input, InputId, OutputType, Ports, Signal, Simulator};
 use log::*;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -16,11 +16,11 @@ pub struct Mem {
     pub big_endian: bool,
 
     // ports
-    pub data: Input,
-    pub addr: Input,
-    pub ctrl: Input,
-    pub sign: Input,
-    pub size: Input,
+    pub data: InputId,
+    pub addr: InputId,
+    pub ctrl: InputId,
+    pub sign: InputId,
+    pub size: InputId,
 
     // memory
     pub memory: Memory,
@@ -195,11 +195,11 @@ impl Component for Mem {
     }
 
     fn clock(&self, simulator: &mut Simulator) {
-        let data = simulator.get_input_val(&self.data);
-        let addr = simulator.get_input_val(&self.addr) as usize;
-        let ctrl = MemCtrl::try_from(simulator.get_input_val(&self.ctrl) as u8).unwrap();
-        let size = simulator.get_input_val(&self.size) as usize;
-        let sign = simulator.get_input_val(&self.sign) != 0;
+        let data = simulator.get_input_val(&self.data.input);
+        let addr = simulator.get_input_val(&self.addr.input) as usize;
+        let ctrl = MemCtrl::try_from(simulator.get_input_val(&self.ctrl.input) as u8).unwrap();
+        let size = simulator.get_input_val(&self.size.input) as usize;
+        let sign = simulator.get_input_val(&self.sign.input) != 0;
 
         match ctrl {
             MemCtrl::Read => {

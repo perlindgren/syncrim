@@ -1,11 +1,11 @@
-use crate::common::{Component, Id, Input, OutputType, Ports};
+use crate::common::{Component, Id, Input, InputId, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct Probe {
     pub id: Id,
     pub pos: (f32, f32),
-    pub input: Input,
+    pub input_id: InputId,
     // this is ugly... (egui)
     pub properties_window: bool,
     pub id_tmp: Id,
@@ -16,7 +16,10 @@ impl Probe {
         Probe {
             id: id.clone(),
             pos,
-            input,
+            input_id: InputId {
+                id: String::from("in"),
+                input,
+            },
             properties_window: false,
             id_tmp: id,
         }
@@ -34,11 +37,18 @@ impl Component for Probe {
             self.id.clone(),
             Ports::new(
                 // Probes take one input
-                vec![&self.input],
+                vec![&self.input_id],
                 OutputType::Combinatorial,
                 // No output value
                 vec![],
             ),
         )
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            "in" => self.input_id.input = new_input,
+            _ => (),
+        }
     }
 }

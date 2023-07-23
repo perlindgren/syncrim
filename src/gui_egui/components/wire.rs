@@ -64,7 +64,7 @@ impl EguiComponent for Wire {
                         ui.label(format!("Id: {}", self.id.clone()));
                         match &simulator {
                             Some(s) => {
-                                ui.label(format!("{}", s.get_input_val(&self.input)));
+                                ui.label(format!("{}", s.get_input_val(&self.input_id.input)));
                             }
                             _ => (),
                         }
@@ -102,7 +102,7 @@ impl EguiComponent for Wire {
                 }
             }
             if self.properties_window {
-                let mut input = self.input.id.clone();
+                let mut input = self.input_id.input.id.clone();
                 let resp = Window::new(format!("Properties: {}", self.id))
                     .frame(Frame {
                         inner_margin: Margin::same(10f32),
@@ -162,7 +162,7 @@ impl EguiComponent for Wire {
                                     ui.selectable_value(&mut input, id.clone(), id);
                                 }
                             });
-                        self.input.id = input;
+                        self.input_id.input.id = input;
                     });
                 if resp.unwrap().response.clicked_elsewhere() {
                     self.properties_window = false;

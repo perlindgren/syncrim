@@ -111,10 +111,10 @@ impl EguiComponent for Add {
             }
         }
         if self.properties_window {
-            let mut a_in = self.a_in.id.clone();
-            let mut b_in = self.b_in.id.clone();
-            let mut a_in_field = self.a_in.field.clone();
-            let mut b_in_field = self.b_in.field.clone();
+            let mut a_in = self.a_in.input.id.clone();
+            let mut b_in = self.b_in.input.id.clone();
+            let mut a_in_field = self.a_in.input.field.clone();
+            let mut b_in_field = self.b_in.input.field.clone();
             let w_resp = Window::new(format!("Properties: {}", self.id))
                 .frame(Frame {
                     inner_margin: Margin::same(10f32),
@@ -218,10 +218,10 @@ impl EguiComponent for Add {
                                 }
                             });
                     });
-                    self.a_in.id = a_in;
-                    self.b_in.id = b_in;
-                    self.a_in.field = a_in_field;
-                    self.b_in.field = b_in_field;
+                    self.a_in.input.id = a_in;
+                    self.b_in.input.id = b_in;
+                    self.a_in.input.field = a_in_field;
+                    self.b_in.input.field = b_in_field;
                 });
             if w_resp.unwrap().response.clicked_elsewhere() {
                 self.properties_window = false;
@@ -255,10 +255,21 @@ impl EguiComponent for Add {
             (self.a_in.id.clone(), Pos2::new(-20f32, -20f32) + own_pos),
             (self.b_in.id.clone(), Pos2::new(-20f32, 20f32) + own_pos),
             (String::from("out"), Pos2::new(20f32, 0f32) + own_pos),
+            (String::from("overflow"), Pos2::new(0f32, -40f32) + own_pos),
         ]
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {
         self.pos = pos;
     }
+
+    /*
+        fn set_port_to_input(input: crate::common::Input, field: crate::common::Id) {
+            match field {
+                "out" => self.a_in =
+                "overflow" =>
+                _=> ()
+            }
+        }
+    */
 }

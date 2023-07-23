@@ -1,4 +1,4 @@
-use crate::common::{ComponentStore, Components, EditorMode, EguiComponent, Id, Input};
+use crate::common::{ComponentStore, Components, EditorMode, EguiComponent, Id, Input, InputId};
 use crate::components::*;
 use crate::gui_egui::{
     gui::Gui,
@@ -39,7 +39,7 @@ pub struct CloseToComponent {
     pub comp: Rc<RefCell<dyn EguiComponent>>,
     pub pos: Pos2,
     pub dist: f32,
-    pub port: Id,
+    pub port_id: Id,
 }
 // todo: enum for input mode, wire, component, none
 
@@ -194,37 +194,21 @@ impl Editor {
 
             let tcs = gui.simulator.ordered_components.clone();
             let s = Editor::gui_to_editor(gui);
-            match s.editor_mode {
-                EditorMode::Wire | EditorMode::Input => {
-                    for c in &s.component_store.store {
-                        c.borrow_mut().render(
-                            ui,
-                            None,
-                            s.offset_and_pan,
-                            s.scale,
-                            s.clip_rect,
-                            s.editor_mode,
-                        );
-                    }
-                }
-                EditorMode::Default => {
-                    s.component_store.store.retain(|c| {
-                        let delete = c
-                            .borrow_mut()
-                            .render_editor(
-                                ui,
-                                None,
-                                s.offset_and_pan,
-                                s.scale,
-                                s.clip_rect,
-                                &tcs,
-                                s.editor_mode,
-                            )
-                            .delete;
-                        !delete
-                    });
-                }
-            }
+            s.component_store.store.retain(|c| {
+                let delete = c
+                    .borrow_mut()
+                    .render_editor(
+                        ui,
+                        None,
+                        s.offset_and_pan,
+                        s.scale,
+                        s.clip_rect,
+                        &tcs,
+                        s.editor_mode,
+                    )
+                    .delete;
+                !delete
+            });
         });
         let s = Editor::gui_to_editor(gui);
 

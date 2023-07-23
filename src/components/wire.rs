@@ -1,4 +1,4 @@
-use crate::common::{Component, Id, Input, OutputType, Ports};
+use crate::common::{Component, Id, Input, InputId, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
 
@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct Wire {
     pub id: Id,
     pub pos: Vec<(f32, f32)>,
-    pub input: Input,
+    pub input_id: InputId,
     // this is ugly... (egui)
     pub properties_window: bool,
     pub id_tmp: Id,
@@ -17,7 +17,10 @@ impl Wire {
         Wire {
             id: id.clone(),
             pos,
-            input,
+            input_id: InputId {
+                id: String::from("in"),
+                input,
+            },
             properties_window: false,
             id_tmp: id,
         }
@@ -35,7 +38,7 @@ impl Component for Wire {
             self.id.clone(),
             Ports::new(
                 // Wires take one input
-                vec![&self.input],
+                vec![&self.input_id],
                 OutputType::Combinatorial,
                 // No output value
                 vec![],

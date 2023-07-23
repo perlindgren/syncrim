@@ -14,7 +14,7 @@ pub fn drag_started(ctx: &Context, e: &mut Editor, cpr: Response) {
         let origin = i.pointer.press_origin().unwrap();
         e.wire_cursor_location = origin;
 
-        let offset_cursor_scale = offset_reverse_helper_pos2(origin, e.scale, e.offset);
+        let offset_cursor_scale = offset_reverse_helper_pos2(origin, e.scale, e.offset_and_pan);
         let (closest, closest_wire) =
             clicked_close_to_input_output(offset_cursor_scale, &e.component_store.store);
         let closest_uw = closest.clone().unwrap();
@@ -44,7 +44,8 @@ pub fn drag_started(ctx: &Context, e: &mut Editor, cpr: Response) {
 pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
     let in_c = e.wire_start_comp_port.as_ref().unwrap();
     let out_c = closest_uw;
-    let input = get_input_from_port(&in_c.port, &in_c.comp, &out_c.port, &out_c.comp);
+    let (field_name, input, is_comp_start) =
+        get_outputs_from_port(&in_c.port_id, &in_c.comp, &out_c.port_id, &out_c.comp);
     match input {
         Some(i) => {
             println!("Creating wire component");
@@ -64,7 +65,14 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
 
             e.component_store
                 .store
-                .push(Rc::new(RefCell::new(Wire::new(id, pos_v, i))));
+                .push(Rc::new(RefCell::new(Wire::new(id, pos_v, i.clone()))));
+
+            // Now actually set the input of the wired component
+            if is_comp_start {
+                in_c.comp.borrow_mut().set_id_port(field_name, i);
+            } else {
+                out_c.comp.borrow_mut().set_id_port(field_name, i);
+            }
         }
         None => {
             println!("Seems like you don't have an input at the start or end of the wire");
@@ -159,25 +167,34 @@ pub fn reset_wire_mode(e: &mut Editor) {
     e.wire_temp_positions = vec![];
 }
 
-pub fn get_input_from_port(
-    id_start: &Id,
+/// returns an input made from the output
+pub fn get_outputs_from_port(
+    port_id_start: &Id,
     comp_start: &Rc<RefCell<dyn EguiComponent>>,
-    id_end: &Id,
+    port_id_end: &Id,
     comp_end: &Rc<RefCell<dyn EguiComponent>>,
-) -> Option<Input> {
-    let (_, ports_start) = comp_start.borrow().get_id_ports();
-    for input in ports_start.inputs {
-        if input.id == *id_start {
-            return Some(input);
+) -> (Id, Option<Input>, bool) {
+    let (id, ports_start) = comp_start.borrow().get_id_ports();
+    for port_id in ports_start.outputs {
+        if port_id == *port_id_start {
+            return (
+                port_id_end.clone(),
+                Some(Input { id, field: port_id }),
+                false,
+            );
         }
     }
-    let (_, ports_end) = comp_end.borrow().get_id_ports();
-    for input in ports_end.inputs {
-        if input.id == *id_end {
-            return Some(input);
+    let (id, ports_end) = comp_end.borrow().get_id_ports();
+    for port_id in ports_end.outputs {
+        if port_id == *port_id_end {
+            return (
+                port_id_start.clone(),
+                Some(Input { id, field: port_id }),
+                true,
+            );
         }
     }
-    None
+    (String::new(), None, false)
 }
 
 /// returns (Component, Wire)
@@ -194,7 +211,7 @@ pub fn clicked_close_to_input_output(
             SnapPriority::Wire => &mut closest_wire,
             _ => &mut closest,
         };
-        for (port, pos) in ports {
+        for (port_id, pos) in ports {
             match clos.as_ref() {
                 Some(c) => {
                     let dist = clicked_pos.distance(pos);
@@ -203,7 +220,7 @@ pub fn clicked_close_to_input_output(
                             comp: comp.clone(),
                             pos,
                             dist,
-                            port,
+                            port_id,
                         })
                     }
                 }
@@ -212,7 +229,7 @@ pub fn clicked_close_to_input_output(
                         comp: comp.clone(),
                         pos,
                         dist: clicked_pos.distance(pos),
-                        port,
+                        port_id,
                     })
                 }
             };
