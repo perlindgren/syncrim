@@ -1,7 +1,7 @@
 use crate::common::{ComponentStore, EditorMode, Simulator};
 use crate::gui_egui::{editor::Editor, Gui};
 use egui::{Key, KeyboardShortcut, Modifiers};
-use std::path::PathBuf;
+use std::{path::PathBuf, rc::Rc};
 
 #[derive(Copy, Clone)]
 pub struct Shortcuts {
@@ -253,8 +253,12 @@ pub fn file_editor_toggle_fn(gui: &mut Gui) {
         false => {
             let simulator = std::mem::replace(&mut gui.simulator, None);
             let simulator = simulator.unwrap();
-            let components = simulator.ordered_components.clone();
+            let mut components = simulator.ordered_components.clone();
             drop(simulator);
+
+            for mut c in components.iter_mut() {
+                (*Rc::get_mut(&mut c).unwrap()).set_id_tmp();
+            }
             let _ = gui.editor.insert(Editor::gui(components, &gui.path));
             gui.editor_use = true;
         }

@@ -222,4 +222,8 @@ impl EguiComponent for Wire {
     fn snap_priority(&self) -> SnapPriority {
         SnapPriority::Wire
     }
+
+    fn set_id_tmp(&mut self) {
+        self.egui_x.id_tmp = self.id.clone();
+    }
 }

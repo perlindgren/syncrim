@@ -82,6 +82,14 @@ impl Component for Add {
         simulator.set_out_val(&self.id, "out", value);
         simulator.set_out_val(&self.id, "overflow", overflow);
     }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            "a_in" => self.a_in.input = new_input,
+            "b_in" => self.b_in.input = new_input,
+            _ => (),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -155,13 +163,5 @@ mod test {
             simulator.get_input_val(add_overflow),
             (true as SignalUnsigned).into()
         );
-    }
-
-    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
-        match target_port_id.as_str() {
-            "a_in" => self.a_in.input = new_input,
-            "b_in" => self.b_in.input = new_input,
-            _ => (),
-        }
     }
 }

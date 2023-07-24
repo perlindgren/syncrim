@@ -130,4 +130,8 @@ impl EguiComponent for Probe {
     fn set_pos(&mut self, pos: (f32, f32)) {
         self.pos = pos;
     }
+
+    fn set_id_tmp(&mut self) {
+        self.egui_x.id_tmp = self.id.clone();
+    }
 }

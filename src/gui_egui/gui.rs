@@ -28,6 +28,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions::default();
     let path = path.to_owned();
     simulator.save_dot(&path);
+
     let gui = Gui {
         clock,
         path,
@@ -43,6 +44,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
         editor: None,
         editor_use: false,
     };
+
     eframe::run_native("SyncRim", options, Box::new(|_cc| Box::new(gui)))
 }
 
