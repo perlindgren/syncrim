@@ -241,11 +241,11 @@ mod test {
     #[test]
     fn test_define() {
         let cs = ComponentStore {
-            store: vec![Rc::new(RefCell::new(ProbeOut::new("po1")))],
+            store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
         let mut clock = 0;
-        let _simulator = Simulator::new(&cs, &mut clock);
+        let _simulator = Simulator::new(cs, &mut clock);
 
         assert_eq!(clock, 1);
     }
@@ -254,14 +254,11 @@ mod test {
     #[should_panic(expected = "Component identifier \"po1\" is defined twice")]
     fn test_redefined() {
         let cs = ComponentStore {
-            store: vec![
-                Rc::new(RefCell::new(ProbeOut::new("po1"))),
-                Rc::new(RefCell::new(ProbeOut::new("po1"))),
-            ],
+            store: vec![Rc::new(ProbeOut::new("po1")), Rc::new(ProbeOut::new("po1"))],
         };
 
         let mut clock = 0;
-        let _simulator = Simulator::new(&cs, &mut clock);
+        let _simulator = Simulator::new(cs, &mut clock);
 
         assert_eq!(clock, 1);
     }
@@ -269,11 +266,11 @@ mod test {
     #[test]
     fn test_get_input_val() {
         let cs = ComponentStore {
-            store: vec![Rc::new(RefCell::new(ProbeOut::new("po1")))],
+            store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
         let mut clock = 0;
-        let simulator = Simulator::new(&cs, &mut clock);
+        let simulator = Simulator::new(cs, &mut clock);
 
         assert_eq!(clock, 1);
         let _ = simulator.get_input_val(&Input::new("po1", "out"));
@@ -283,11 +280,11 @@ mod test {
     #[should_panic(expected = "Component \"po1\", field \"missing\" not found.")]
     fn test_get_input_out_of_range() {
         let cs = ComponentStore {
-            store: vec![Rc::new(RefCell::new(ProbeOut::new("po1")))],
+            store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
         let mut clock = 0;
-        let simulator = Simulator::new(&cs, &mut clock);
+        let simulator = Simulator::new(cs, &mut clock);
 
         assert_eq!(clock, 1);
         let _ = simulator.get_input_val(&Input::new("po1", "missing"));

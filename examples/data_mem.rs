@@ -9,94 +9,74 @@ fn main() {
     fern_setup();
     let cs = ComponentStore {
         store: vec![
-            Rc::new(Mem {
-                id: "mem".to_string(),
-                pos: (180.0, 200.0),
-
-                width: 200.0,
-                height: 100.0,
-
+            Rc::new(Mem::new(
+                "mem",
+                (180.0, 200.0),
+                200.0,
+                100.0,
                 // configuration
-                big_endian: true,
-
+                true,
                 // ports
-                data: Input::new("data", "out"),
-                addr: Input::new("addr", "out"),
-                ctrl: Input::new("ctrl", "out"),
-                sign: Input::new("sext", "out"),
-                size: Input::new("size", "out"),
-
+                Input::new("data", "out"),
+                Input::new("addr", "out"),
+                Input::new("ctrl", "out"),
+                Input::new("sext", "out"),
+                Input::new("size", "out"),
                 // memory
-                memory: Memory::new(),
+                Memory::new(),
                 // later history... tbd
-            }),
-            Rc::new(Constant {
-                id: "data".to_string(),
-                pos: (100.0, 100.0),
-                value: 3.into(),
-            }),
-            Rc::new(Constant {
-                id: "addr".to_string(),
-                pos: (120.0, 100.0),
-                value: 4.into(),
-            }),
-            Rc::new(Constant {
-                id: "ctrl".to_string(),
-                pos: (140.0, 100.0),
-                value: (MemCtrl::Write as SignalUnsigned).into(),
-            }),
-            Rc::new(Constant {
-                id: "sext".to_string(),
-                pos: (160.0, 100.0),
-                value: (false as SignalUnsigned).into(),
-            }),
-            Rc::new(Constant {
-                id: "size".to_string(),
-                pos: (180.0, 100.0),
-                value: 1.into(), // byte
-            }),
+            )),
+            Rc::new(Constant::new("data", (100.0, 100.0), 3)),
+            Rc::new(Constant::new("addr", (120.0, 100.0), 4)),
+            Rc::new(Constant::new(
+                "ctrl",
+                (140.0, 100.0),
+                MemCtrl::Write as SignalUnsigned,
+            )),
+            Rc::new(Constant::new(
+                "sext",
+                (160.0, 100.0),
+                false as SignalUnsigned,
+            )),
+            Rc::new(Constant::new(
+                "size",
+                (180.0, 100.0),
+                1, // byte
+            )),
             // Wires
-            Rc::new(Wire {
-                id: "w1".to_string(),
-                pos: vec![(100.0, 110.0), (100.0, 150.0)],
-                input: Input::new("data", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w2".to_string(),
-                pos: vec![(120.0, 110.0), (120.0, 150.0)],
-                input: Input::new("addr", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w3".to_string(),
-                pos: vec![(140.0, 110.0), (140.0, 150.0)],
-                input: Input::new("sext", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w4".to_string(),
-                pos: vec![(160.0, 110.0), (160.0, 150.0)],
-                input: Input::new("size", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w5".to_string(),
-                pos: vec![(220.0, 110.0), (220.0, 150.0)],
-                input: Input::new("mem", "data"),
-            }),
-            Rc::new(Wire {
-                id: "w6".to_string(),
-                pos: vec![(240.0, 110.0), (240.0, 150.0)],
-                input: Input::new("mem", "err"),
-            }),
+            Rc::new(Wire::new(
+                "w1",
+                vec![(100.0, 110.0), (100.0, 150.0)],
+                Input::new("data", "out"),
+            )),
+            Rc::new(Wire::new(
+                "w2",
+                vec![(120.0, 110.0), (120.0, 150.0)],
+                Input::new("addr", "out"),
+            )),
+            Rc::new(Wire::new(
+                "w3",
+                vec![(140.0, 110.0), (140.0, 150.0)],
+                Input::new("sext", "out"),
+            )),
+            Rc::new(Wire::new(
+                "w4",
+                vec![(160.0, 110.0), (160.0, 150.0)],
+                Input::new("size", "out"),
+            )),
+            Rc::new(Wire::new(
+                "w5",
+                vec![(220.0, 110.0), (220.0, 150.0)],
+                Input::new("mem", "data"),
+            )),
+            Rc::new(Wire::new(
+                "w6",
+                vec![(240.0, 110.0), (240.0, 150.0)],
+                Input::new("mem", "err"),
+            )),
             // probes
-            Rc::new(Probe {
-                id: "out".to_string(),
-                pos: (220.0, 100.0),
-                input: Input::new("mem", "data"),
-            }),
-            Rc::new(Probe {
-                id: "err".to_string(),
-                pos: (240.0, 100.0),
-                input: Input::new("mem", "err"),
-            }),
+            Rc::new(Probe::new("out", (220.0, 100.0), Input::new("mem", "data"))),
+            Rc::new(Probe::new("err", (240.0, 100.0), Input::new("mem", "err"))),
         ],
     };
 
@@ -104,7 +84,7 @@ fn main() {
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::gui(&cs, &path).ok();
+    syncrim::gui_egui::gui(cs, &path).ok();
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(&cs, &path);

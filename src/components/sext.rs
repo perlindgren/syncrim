@@ -12,6 +12,26 @@ pub struct Sext {
     pub sext_in: InputId,
     pub in_size: u32,
     pub out_size: u32,
+
+    #[cfg(feature = "gui-egui")]
+    #[serde(skip)]
+    pub egui_x: crate::common::EguiExtra,
+}
+impl Sext {
+    pub fn new(id: &str, pos: (f32, f32), sext_in: Input, in_size: u32, out_size: u32) -> Self {
+        Sext {
+            id: id.to_string(),
+            pos,
+            sext_in: InputId {
+                id: String::from("sext_in"),
+                input: sext_in,
+            },
+            in_size,
+            out_size,
+            #[cfg(feature = "gui-egui")]
+            egui_x: crate::common::EguiExtra::default(),
+        }
+    }
 }
 
 #[typetag::serde]
@@ -69,24 +89,24 @@ mod test {
         let cs = ComponentStore {
             store: vec![
                 Rc::new(ProbeOut::new("po")),
-                Rc::new(Sext {
-                    id: "sext32".to_string(),
-                    pos: (0.0, 0.0),
-                    sext_in: Input::new("po", "out"),
-                    in_size: 4,
-                    out_size: 32,
-                }),
-                Rc::new(Sext {
-                    id: "sext16".to_string(),
-                    pos: (0.0, 0.0),
-                    sext_in: Input::new("po", "out"),
-                    in_size: 4,
-                    out_size: 16,
-                }),
+                Rc::new(Sext::new(
+                    "sext32",
+                    (0.0, 0.0),
+                    Input::new("po", "out"),
+                    4,
+                    32,
+                )),
+                Rc::new(Sext::new(
+                    "sext16",
+                    (0.0, 0.0),
+                    Input::new("po", "out"),
+                    4,
+                    16,
+                )),
             ],
         };
         let mut clock = 0;
-        let mut simulator = Simulator::new(&cs, &mut clock);
+        let mut simulator = Simulator::new(cs, &mut clock);
 
         assert_eq!(clock, 1);
 

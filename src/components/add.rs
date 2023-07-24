@@ -1,6 +1,6 @@
 use crate::common::{
-    Component, EguiExtra, Id, Input, InputId, OutputType, Ports, Signal, SignalSigned,
-    SignalUnsigned, Simulator,
+    Component, Id, Input, InputId, OutputType, Ports, Signal, SignalSigned, SignalUnsigned,
+    Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -14,7 +14,7 @@ pub struct Add {
 
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
-    pub egui_x: EguiExtra,
+    pub egui_x: crate::common::EguiExtra,
 }
 
 impl Add {
@@ -30,7 +30,8 @@ impl Add {
                 id: String::from("b_in"),
                 input: b_in,
             },
-            egui_x: EguiExtra::default(),
+            #[cfg(feature = "gui-egui")]
+            egui_x: crate::common::EguiExtra::default(),
         }
     }
 }
@@ -108,16 +109,16 @@ mod test {
             store: vec![
                 Rc::new(ProbeOut::new("po1")),
                 Rc::new(ProbeOut::new("po2")),
-                Rc::new(Add {
-                    id: "add".to_string(),
-                    pos: (0.0, 0.0),
-                    a_in: Input::new("po1", "out"),
-                    b_in: Input::new("po2", "out"),
-                }),
+                Rc::new(Add::new(
+                    "add",
+                    (0.0, 0.0),
+                    Input::new("po1", "out"),
+                    Input::new("po2", "out"),
+                )),
             ],
         };
         let mut clock = 0;
-        let mut simulator = Simulator::new(&cs, &mut clock);
+        let mut simulator = Simulator::new(cs, &mut clock);
 
         assert_eq!(clock, 1);
 

@@ -9,10 +9,14 @@ pub struct Mux {
     pub pos: (f32, f32),
     pub select: InputId,
     pub m_in: Vec<InputId>,
+
+    #[cfg(feature = "gui-egui")]
+    #[serde(skip)]
+    pub egui_x: crate::common::EguiExtra,
 }
 
 impl Mux {
-    pub fn new(id: String, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Self {
+    pub fn new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Self {
         let mut v = vec![];
         for (i, input) in m_in.iter().enumerate() {
             v.push(InputId {
@@ -21,13 +25,15 @@ impl Mux {
             });
         }
         Mux {
-            id: id.clone(),
+            id: id.to_string(),
             pos,
             select: InputId {
                 id: String::from("select"),
                 input: select,
             },
             m_in: v,
+            #[cfg(feature = "gui-egui")]
+            egui_x: crate::common::EguiExtra::default(),
         }
     }
 }

@@ -28,6 +28,9 @@ pub struct Mem {
     // memory
     pub memory: Memory,
     // later history... tbd
+    #[cfg(feature = "gui-egui")]
+    #[serde(skip)]
+    pub egui_x: crate::common::EguiExtra,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -38,6 +41,53 @@ pub struct Memory {
 impl Default for Memory {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Mem {
+    pub fn new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        big_endian: bool,
+        data: Input,
+        addr: Input,
+        ctrl: Input,
+        sign: Input,
+        size: Input,
+        memory: Memory,
+    ) -> Self {
+        Mem {
+            id: id.to_string(),
+            pos,
+            width: 0f32,
+            height: 0f32,
+            big_endian,
+            data: InputId {
+                id: String::from("data"),
+                input: data,
+            },
+            addr: InputId {
+                id: String::from("addr"),
+                input: addr,
+            },
+            ctrl: InputId {
+                id: String::from("ctrl"),
+                input: ctrl,
+            },
+            sign: InputId {
+                id: String::from("sign"),
+                input: sign,
+            },
+            size: InputId {
+                id: String::from("size"),
+                input: size,
+            },
+            memory,
+            #[cfg(feature = "gui-egui")]
+            egui_x: crate::common::EguiExtra::default(),
+        }
     }
 }
 
@@ -263,32 +313,29 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("size")),
                 Rc::new(ProbeOut::new("sign")),
-                Rc::new(Mem {
-                    id: "mem".into(),
-                    pos: (0.0, 0.0),
-                    width: 0.0,
-                    height: 0.0,
-
+                Rc::new(Mem::new(
+                    "mem",
+                    (0.0, 0.0),
+                    0.0,
+                    0.0,
                     // configuration
-                    big_endian: true, // i.e., big endian
-
+                    true, // i.e., big endian
                     // ports
-                    data: Input::new("data", "out"),
-                    addr: Input::new("addr", "out"),
-                    ctrl: Input::new("ctrl", "out"),
-                    size: Input::new("size", "out"),
-                    sign: Input::new("sign", "out"),
-
+                    Input::new("data", "out"),
+                    Input::new("addr", "out"),
+                    Input::new("ctrl", "out"),
+                    Input::new("size", "out"),
+                    Input::new("sign", "out"),
                     // memory
-                    memory: Memory {
+                    Memory {
                         bytes: RefCell::new(HashMap::new()),
                     },
-                }),
+                )),
             ],
         };
 
         let mut clock = 0;
-        let mut simulator = Simulator::new(&cs, &mut clock);
+        let mut simulator = Simulator::new(cs, &mut clock);
 
         assert_eq!(clock, 1);
 
@@ -444,33 +491,30 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("size")),
                 Rc::new(ProbeOut::new("sign")),
-                Rc::new(Mem {
-                    id: "mem".into(),
-                    pos: (0.0, 0.0),
-                    width: 0.0,
-                    height: 0.0,
-
+                Rc::new(Mem::new(
+                    "mem".into(),
+                    (0.0, 0.0),
+                    0.0,
+                    0.0,
                     // configuration
-                    big_endian: false, // i.e., little endian
-
+                    false, // i.e., little endian
                     // ports
-                    data: Input::new("data", "out"),
-                    addr: Input::new("addr", "out"),
-                    ctrl: Input::new("ctrl", "out"),
-                    size: Input::new("size", "out"),
-                    sign: Input::new("sign", "out"),
-
+                    Input::new("data", "out"),
+                    Input::new("addr", "out"),
+                    Input::new("ctrl", "out"),
+                    Input::new("size", "out"),
+                    Input::new("sign", "out"),
                     // memory
-                    memory: Memory {
+                    Memory {
                         bytes: RefCell::new(HashMap::new()),
                     },
                     // later history... tbd
-                }),
+                )),
             ],
         };
 
         let mut clock = 0;
-        let mut simulator = Simulator::new(&cs, &mut clock);
+        let mut simulator = Simulator::new(cs, &mut clock);
 
         assert_eq!(clock, 1);
 

@@ -190,7 +190,7 @@ pub trait EguiComponent: Component {
 }
 
 #[cfg(feature = "gui-egui")]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct EguiExtra {
     pub properties_window: bool,
     pub id_tmp: String,

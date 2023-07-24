@@ -9,63 +9,63 @@ fn main() {
     fern_setup();
     let cs = ComponentStore {
         store: vec![
-            Rc::new(Add {
-                id: "add".to_string(),
-                pos: (200.0, 120.0),
-                a_in: Input::new("c", "out"),
-                b_in: Input::new("reg", "out"),
-            }),
+            Rc::new(Add::new(
+                "add",
+                (200.0, 120.0),
+                Input::new("c", "out"),
+                Input::new("reg", "out"),
+            )),
             Constant::rc_new("c", (100.0, 100.0), 3),
-            Rc::new(Register {
-                id: "reg".to_string(),
-                pos: (100.0, 140.0),
-                r_in: Input::new("add", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w1".to_string(),
-                pos: vec![(110.0, 100.0), (180.0, 100.0)],
-                input: Input::new("c", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w2".to_string(),
-                pos: vec![(110.0, 140.0), (180.0, 140.0)],
-                input: Input::new("reg", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w3".to_string(),
-                pos: vec![(220.0, 120.0), (260.0, 120.0)],
-                input: Input::new("add", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w4".to_string(),
-                pos: vec![(260.0, 120.0), (260.0, 180.0)],
-                input: Input::new("add", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w5".to_string(),
-                pos: vec![(60.0, 180.0), (260.0, 180.0)],
-                input: Input::new("add", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w6".to_string(),
-                pos: vec![(60.0, 140.0), (60.0, 180.0)],
-                input: Input::new("add", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w7".to_string(),
-                pos: vec![(60.0, 140.0), (90.0, 140.0)],
-                input: Input::new("add", "out"),
-            }),
-            Rc::new(Probe {
-                id: "p_add".to_string(),
-                pos: (280.0, 120.0),
-                input: Input::new("add", "out"),
-            }),
-            Rc::new(Probe {
-                id: "p_reg".to_string(),
-                pos: (130.0, 120.0),
-                input: Input::new("reg", "out"),
-            }),
+            Rc::new(Register::new(
+                "reg",
+                (100.0, 140.0),
+                Input::new("add", "out"),
+            )),
+            Rc::new(Wire::new(
+                "w1",
+                vec![(110.0, 100.0), (180.0, 100.0)],
+                Input::new("c", "out"),
+            )),
+            Rc::new(Wire::new(
+                "w2",
+                vec![(110.0, 140.0), (180.0, 140.0)],
+                Input::new("reg", "out"),
+            )),
+            Rc::new(Wire::new(
+                "w3",
+                vec![(220.0, 120.0), (260.0, 120.0)],
+                Input::new("add", "out"),
+            )),
+            Rc::new(Wire::new(
+                "w4",
+                vec![(260.0, 120.0), (260.0, 180.0)],
+                Input::new("add", "out"),
+            )),
+            Rc::new(Wire::new(
+                "w5",
+                vec![(60.0, 180.0), (260.0, 180.0)],
+                Input::new("add", "out"),
+            )),
+            Rc::new(Wire::new(
+                "w6",
+                vec![(60.0, 140.0), (60.0, 180.0)],
+                Input::new("add", "out"),
+            )),
+            Rc::new(Wire::new(
+                "w7",
+                vec![(60.0, 140.0), (90.0, 140.0)],
+                Input::new("add", "out"),
+            )),
+            Rc::new(Probe::new(
+                "p_add",
+                (280.0, 120.0),
+                Input::new("add", "out"),
+            )),
+            Rc::new(Probe::new(
+                "p_reg",
+                (130.0, 120.0),
+                Input::new("reg", "out"),
+            )),
         ],
     };
 
@@ -73,7 +73,7 @@ fn main() {
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::gui(&cs, &path).ok();
+    syncrim::gui_egui::gui(cs, &path).ok();
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(&cs, &path);

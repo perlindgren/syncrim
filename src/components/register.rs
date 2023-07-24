@@ -6,6 +6,24 @@ pub struct Register {
     pub id: Id,
     pub pos: (f32, f32),
     pub r_in: InputId,
+
+    #[cfg(feature = "gui-egui")]
+    #[serde(skip)]
+    pub egui_x: crate::common::EguiExtra,
+}
+impl Register {
+    pub fn new(id: &str, pos: (f32, f32), r_in: Input) -> Self {
+        Register {
+            id: id.to_string(),
+            pos,
+            r_in: InputId {
+                id: String::from("r_in"),
+                input: r_in,
+            },
+            #[cfg(feature = "gui-egui")]
+            egui_x: crate::common::EguiExtra::default(),
+        }
+    }
 }
 
 #[typetag::serde]

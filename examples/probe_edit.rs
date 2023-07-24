@@ -10,11 +10,11 @@ fn main() {
     let cs = ComponentStore {
         store: vec![
             Rc::new(ProbeEdit::new("probe_edit", (100.0, 100.0))),
-            Rc::new(Probe {
-                id: "probe".to_string(),
-                pos: (250.0, 100.0),
-                input: Input::new("probe_edit", "out"),
-            }),
+            Rc::new(Probe::new(
+                "probe",
+                (250.0, 100.0),
+                Input::new("probe_edit", "out"),
+            )),
         ],
     };
 
@@ -22,7 +22,7 @@ fn main() {
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::gui(&cs, &path).ok();
+    syncrim::gui_egui::gui(cs, &path).ok();
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(&cs, &path);
