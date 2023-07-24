@@ -30,6 +30,7 @@
     "rgbf",
     "rustfmt",
     "serde",
+    "stim",
     "struct",
     "stylesheet",
     "syncrim",
