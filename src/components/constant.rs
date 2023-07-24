@@ -1,4 +1,4 @@
-use crate::common::{Component, EguiExtra, Id, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -41,7 +41,8 @@ impl Constant {
             id: id.to_string(),
             pos,
             value: value.into(),
-            egui_x: EguiExtra::default(),
+            #[cfg(feature = "gui-egui")]
+            egui_x: crate::common::EguiExtra::default(),
         }
     }
 

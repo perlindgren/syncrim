@@ -1,4 +1,4 @@
-use crate::common::{Component, EguiExtra, Id, Input, InputId, OutputType, Ports};
+use crate::common::{Component, Id, Input, InputId, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
 
@@ -22,7 +22,8 @@ impl Wire {
                 id: String::from("in"),
                 input,
             },
-            egui_x: EguiExtra::default(),
+            #[cfg(feature = "gui-egui")]
+            egui_x: crate::common::EguiExtra::default(),
         }
     }
 }

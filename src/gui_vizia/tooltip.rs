@@ -6,7 +6,8 @@ pub fn new_component_tooltip(cx: &mut Context, component: &dyn Component) {
         let (id, ports) = component.get_id_ports();
         Label::new(cx, &id);
 
-        for input in ports.inputs {
+        for input_id in ports.inputs {
+            let input = input_id.input;
             HStack::new(cx, |cx| {
                 Label::new(cx, &input.id);
                 Binding::new(cx, GuiData::clock, move |cx, _| {

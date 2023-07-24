@@ -17,7 +17,8 @@ impl NewPopup {
                         let (id, ports) = id_ports.clone();
                         Label::new(cx, &id);
 
-                        for input in ports.inputs {
+                        for input_id in ports.inputs {
+                            let input = input_id.input;
                             HStack::new(cx, |cx| {
                                 Label::new(cx, &input.id);
                                 Binding::new(cx, GuiData::clock, move |cx, _| {

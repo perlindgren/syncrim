@@ -102,8 +102,8 @@ impl GuiData {
     fn open(&mut self) {
         // Re-Open model
         trace!("open path {:?}", self.path);
-        let cs = Box::new(ComponentStore::load_file(&self.path));
-        let simulator = Simulator::new(&cs, &mut self.clock);
+        let cs = ComponentStore::load_file(&self.path);
+        let simulator = Simulator::new(cs, &mut self.clock);
 
         self.simulator = simulator;
 
@@ -111,7 +111,7 @@ impl GuiData {
     }
 }
 
-pub fn gui(cs: &ComponentStore, path: &PathBuf) {
+pub fn gui(cs: ComponentStore, path: &PathBuf) {
     let mut clock = 0;
     let simulator = Simulator::new(cs, &mut clock);
     let path = path.to_owned();

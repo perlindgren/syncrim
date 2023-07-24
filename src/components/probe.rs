@@ -1,4 +1,4 @@
-use crate::common::{Component, EguiExtra, Id, Input, InputId, OutputType, Ports};
+use crate::common::{Component, Id, Input, InputId, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
@@ -20,6 +20,7 @@ impl Probe {
                 id: String::from("in"),
                 input,
             },
+            #[cfg(feature = "gui-egui")]
             egui_x: EguiExtra::default(),
         }
     }

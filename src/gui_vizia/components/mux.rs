@@ -19,7 +19,7 @@ impl ViziaComponent for Mux {
 
         View::build(
             MuxView {
-                select: self.select.clone(),
+                select: self.select.input.clone(),
                 select_max: self.m_in.len() as u8,
             },
             cx,
