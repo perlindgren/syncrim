@@ -1,6 +1,6 @@
 use std::{path::PathBuf, rc::Rc};
 use syncrim::{
-    common::{ComponentStore, Input, Signal},
+    common::{ComponentStore, Input, SignalUnsigned},
     components::*,
     fern::fern_setup,
 };
@@ -33,27 +33,27 @@ fn main() {
             Rc::new(Constant {
                 id: "data".to_string(),
                 pos: (100.0, 100.0),
-                value: 3,
+                value: 3.into(),
             }),
             Rc::new(Constant {
                 id: "addr".to_string(),
                 pos: (120.0, 100.0),
-                value: 4,
+                value: 4.into(),
             }),
             Rc::new(Constant {
                 id: "ctrl".to_string(),
                 pos: (140.0, 100.0),
-                value: MemCtrl::Write as Signal,
+                value: (MemCtrl::Write as SignalUnsigned).into(),
             }),
             Rc::new(Constant {
                 id: "sext".to_string(),
                 pos: (160.0, 100.0),
-                value: false as Signal,
+                value: (false as SignalUnsigned).into(),
             }),
             Rc::new(Constant {
                 id: "size".to_string(),
                 pos: (180.0, 100.0),
-                value: 1, // byte
+                value: 1.into(), // byte
             }),
             // Wires
             Rc::new(Wire {
@@ -100,7 +100,7 @@ fn main() {
         ],
     };
 
-    let path = PathBuf::from("mem.json");
+    let path = PathBuf::from("data_mem.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]

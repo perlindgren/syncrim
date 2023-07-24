@@ -40,11 +40,7 @@ pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option
     );
 
     if cpr.drag_started_by(PointerButton::Primary) {
-        println!("add new item");
         add_comp_to_editor(e);
-        /*
-        //let comp = (*e.input_comp.as_mut().unwrap().borrow_mut()).clone();
-         */
     }
 }
 
@@ -98,16 +94,16 @@ pub fn add_comp_to_editor(e: &mut Editor) {
         match e.input_comp.as_mut().unwrap().get_id_ports().0.as_str() {
             "c" => {
                 let id = unique_component_name(&id_ports, "c");
-                Rc::new(Constant::new(id, (0.0, 0.0), 0))
+                Rc::new(Constant::new(id.as_str(), (0.0, 0.0), 0))
             }
             "p" => {
                 let id = unique_component_name(&id_ports, "p");
-                Rc::new(Probe::new(id, (0.0, 0.0), e.dummy_input.clone()))
+                Rc::new(Probe::new(id.as_str(), (0.0, 0.0), e.dummy_input.clone()))
             }
             "add" | _ => {
                 let id = unique_component_name(&id_ports, "add");
                 Rc::new(Add::new(
-                    id,
+                    id.as_str(),
                     (0.0, 0.0),
                     e.dummy_input.clone(),
                     e.dummy_input.clone(),

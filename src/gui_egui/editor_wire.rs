@@ -50,9 +50,9 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
         get_outputs_from_port(&in_c.port_id, &in_c.comp, &out_c.port_id, &out_c.comp);
     match input {
         Some(i) => {
-            println!("Creating wire component");
             let id_ports = id_ports_of_all_components(&e.components);
             let id = unique_component_name(&id_ports, "w");
+            let id = id.as_str();
             let mut pos_v: Vec<(f32, f32)> = vec![];
 
             for pos in &e.wire_temp_positions {
@@ -71,13 +71,10 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
             // Now actually set the input of the wired component
             let comp = if is_comp_start { in_c } else { out_c };
             match get_component(&e.components, comp) {
-                Some(c) => {
-                    println!("value: {}", c);
-                    Rc::get_mut(&mut e.components[c])
-                        .unwrap()
-                        .set_id_port(field_name, i)
-                }
-                None => println!("none!!!"),
+                Some(c) => Rc::get_mut(&mut e.components[c])
+                    .unwrap()
+                    .set_id_port(field_name, i),
+                None => (),
             }
         }
         None => {
@@ -89,10 +86,6 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
 
 pub fn get_component(components: &Components, comp: CloseToComponent) -> Option<usize> {
     for (i, c) in components.iter().enumerate() {
-        println!(
-            "reference amount: {}",
-            Rc::strong_count(components.get(i).unwrap())
-        );
         if Rc::ptr_eq(&c, &comp.comp) {
             drop(comp);
             return Some(i);

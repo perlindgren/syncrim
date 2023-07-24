@@ -10,33 +10,29 @@ fn main() {
     let cs = ComponentStore {
         store: vec![
             Rc::new(Add::new(
-                "add".to_string(),
+                "add",
                 (200.0, 120.0),
                 Input::new("c1", "out"),
                 Input::new("c2", "out"),
             )),
-            Rc::new(Constant::new("c1".to_string(), (100.0, 100.0), 3)),
-            Rc::new(Constant::new("c2".to_string(), (100.0, 140.0), 4)),
+            Constant::rc_new("c1", (60.0, 100.0), 3),
+            Constant::rc_new("c2", (60.0, 140.0), 4),
             Rc::new(Wire::new(
-                "w1".to_string(),
+                "w1",
                 vec![(110.0, 100.0), (180.0, 100.0)],
                 Input::new("c1", "out"),
             )),
             Rc::new(Wire::new(
-                "w2".to_string(),
+                "w2",
                 vec![(110.0, 140.0), (180.0, 140.0)],
                 Input::new("c2", "out"),
             )),
             Rc::new(Wire::new(
-                "w3".to_string(),
+                "w3",
                 vec![(220.0, 120.0), (260.0, 120.0)],
                 Input::new("add", "out"),
             )),
-            Rc::new(Probe::new(
-                "p1".to_string(),
-                (270.0, 120.0),
-                Input::new("add", "out"),
-            )),
+            Rc::new(Probe::new("p1", (270.0, 120.0), Input::new("add", "out"))),
         ],
     };
 

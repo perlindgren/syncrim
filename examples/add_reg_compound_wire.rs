@@ -12,36 +12,51 @@ fn main() {
             Rc::new(Add {
                 id: "add".to_string(),
                 pos: (200.0, 120.0),
-                a_in: Input::new("c1", "out"),
-
-                b_in: Input::new("c2", "out"),
+                a_in: Input::new("c", "out"),
+                b_in: Input::new("reg", "out"),
             }),
-            Rc::new(ProbeEdit::new("c1", (60.0, 100.0))),
-            Rc::new(ProbeEdit::new("c2", (60.0, 140.0))),
+            Constant::rc_new("c", (100.0, 100.0), 3),
+            Rc::new(Register {
+                id: "reg".to_string(),
+                pos: (100.0, 140.0),
+                r_in: Input::new("add", "out"),
+            }),
             Rc::new(Wire {
                 id: "w1".to_string(),
                 pos: vec![(110.0, 100.0), (180.0, 100.0)],
-                input: Input::new("c1", "out"),
+                input: Input::new("c", "out"),
             }),
             Rc::new(Wire {
                 id: "w2".to_string(),
                 pos: vec![(110.0, 140.0), (180.0, 140.0)],
-                input: Input::new("c2", "out"),
+                input: Input::new("reg", "out"),
             }),
             Rc::new(Wire {
                 id: "w3".to_string(),
-                pos: vec![(220.0, 120.0), (260.0, 120.0)],
+                pos: vec![
+                    (220.0, 120.0),
+                    (260.0, 120.0),
+                    (260.0, 180.0),
+                    (60.0, 180.0),
+                    (60.0, 140.0),
+                    (90.0, 140.0),
+                ],
                 input: Input::new("add", "out"),
             }),
             Rc::new(Probe {
-                id: "p1".to_string(),
-                pos: (270.0, 120.0),
+                id: "p_add".to_string(),
+                pos: (280.0, 120.0),
                 input: Input::new("add", "out"),
+            }),
+            Rc::new(Probe {
+                id: "p_reg".to_string(),
+                pos: (130.0, 120.0),
+                input: Input::new("reg", "out"),
             }),
         ],
     };
 
-    let path = PathBuf::from("add_edit.json");
+    let path = PathBuf::from("add_reg_compound.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]

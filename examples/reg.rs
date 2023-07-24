@@ -9,11 +9,7 @@ fn main() {
     fern_setup();
     let cs = ComponentStore {
         store: vec![
-            Rc::new(Constant {
-                id: "c".to_string(),
-                pos: (150.0, 100.0),
-                value: 3,
-            }),
+            Constant::rc_new("c", (150.0, 100.0), 3),
             Rc::new(Register {
                 id: "reg".to_string(),
                 pos: (200.0, 100.0),

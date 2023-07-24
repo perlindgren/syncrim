@@ -1,4 +1,7 @@
-use crate::common::{Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, Simulator};
+use crate::common::{
+    Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, Signal, SignalUnsigned,
+    Simulator,
+};
 use crate::components::Probe;
 use crate::gui_egui::component_ui::{
     input_id, input_selector, pos_slider, properties_window, rect_with_hover,
@@ -27,7 +30,7 @@ impl EguiComponent for Probe {
         let input_id = self.input_id.clone();
         let value = match simulator {
             Some(s) => s.get_input_val(&input_id.input),
-            None => 0,
+            None => Signal::Data(0),
         };
         let area = Area::new(self.id.to_string())
             .order(Order::Middle)
@@ -43,7 +46,13 @@ impl EguiComponent for Probe {
                         .size(scale * 12f32)
                         .background_color(Color32::LIGHT_BLUE),
                 )
-                .on_hover_text(format!("{:#x}", value));
+                .on_hover_text({
+                    let r: Result<SignalUnsigned, String> = value.try_into();
+                    match r {
+                        Ok(data) => format!("{:#x}", data),
+                        _ => format!("{:?}", value),
+                    }
+                });
             });
 
         let r = rect_with_hover(

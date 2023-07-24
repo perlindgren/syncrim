@@ -69,13 +69,13 @@ impl Editor {
             library: ComponentStore {
                 store: vec![
                     Rc::new(Add::new(
-                        "add".to_string(),
+                        "add",
                         (0.0, 0.0),
                         dummy_input.clone(),
                         dummy_input.clone(),
                     )),
-                    Rc::new(Constant::new("c".to_string(), (0.0, 0.0), 0)),
-                    Rc::new(Probe::new("p".to_string(), (0.0, 0.0), dummy_input.clone())),
+                    Rc::new(Constant::new("c", (0.0, 0.0), 0)),
+                    Rc::new(Probe::new("p", (0.0, 0.0), dummy_input.clone())),
                 ],
             },
             dummy_input,

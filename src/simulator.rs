@@ -48,7 +48,7 @@ impl Simulator {
             #[allow(clippy::same_item_push)]
             for (index, field_id) in ports.outputs.iter().enumerate() {
                 // create the value with a default to 0
-                lens_values.push(0);
+                lens_values.push(0.into());
                 if id_field_index
                     .insert((id.clone(), field_id.into()), index)
                     .is_some()
@@ -176,13 +176,13 @@ impl Simulator {
     }
 
     /// set value by Id (instance) and Id (field)
-    pub fn set_out_val(&mut self, id: &str, field: &str, value: Signal) {
+    pub fn set_out_val(&mut self, id: &str, field: &str, value: impl Into<Signal>) {
         let index = *self
             .id_field_index
             .get(&(id.into(), field.into()))
             .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
         let start_index = self.get_id_start_index(id);
-        self.set(start_index + index, value);
+        self.set(start_index + index, value.into());
     }
 
     /// iterate over the evaluators and increase clock by one
@@ -215,7 +215,7 @@ impl Simulator {
     /// reset simulator
     pub fn reset(&mut self, clock: &mut usize) {
         self.history = vec![];
-        self.sim_state.iter_mut().for_each(|val| *val = 0);
+        self.sim_state.iter_mut().for_each(|val| *val = 0.into());
         self.clock(clock);
     }
 

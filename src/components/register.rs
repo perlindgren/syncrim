@@ -32,6 +32,6 @@ impl Component for Register {
         let value = simulator.get_input_val(&self.r_in.input);
         // set output
         simulator.set_out_val(&self.id, "out", value);
-        trace!("eval: register id {} in {}", self.id, value);
+        trace!("eval: register id {} in {:?}", self.id, value);
     }
 }

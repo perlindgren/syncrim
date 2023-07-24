@@ -1,6 +1,7 @@
 use crate::common::{Component, EguiExtra, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
     pub id: Id,
@@ -9,20 +10,6 @@ pub struct Constant {
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
     pub egui_x: EguiExtra,
-}
-
-impl Constant {
-    pub fn new(id: String, pos: (f32, f32), value: Signal) -> Self {
-        Constant {
-            id: id.clone(),
-            pos,
-            value,
-            egui_x: EguiExtra {
-                properties_window: false,
-                id_tmp: id,
-            },
-        }
-    }
 }
 
 #[typetag::serde]
@@ -45,5 +32,20 @@ impl Component for Constant {
 
     fn clock(&self, simulator: &mut Simulator) {
         simulator.set_out_val(&self.id, "out", self.value);
+    }
+}
+
+impl Constant {
+    pub fn new(id: &str, pos: (f32, f32), value: impl Into<Signal>) -> Self {
+        Constant {
+            id: id.to_string(),
+            pos,
+            value: value.into(),
+            egui_x: EguiExtra::default(),
+        }
+    }
+
+    pub fn rc_new(id: &str, pos: (f32, f32), value: impl Into<Signal>) -> Rc<Self> {
+        Rc::new(Constant::new(id, pos, value))
     }
 }

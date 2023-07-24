@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Input, ViziaComponent},
+    common::{Component, Input, SignalUnsigned, ViziaComponent},
     components::Mux,
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
 };
@@ -20,6 +20,7 @@ impl ViziaComponent for Mux {
         View::build(
             MuxView {
                 select: self.select.clone(),
+                select_max: self.m_in.len() as u8,
             },
             cx,
             |cx| {
@@ -38,6 +39,7 @@ impl ViziaComponent for Mux {
 
 pub struct MuxView {
     select: Input,
+    select_max: u8,
 }
 
 impl View for MuxView {
@@ -81,17 +83,22 @@ impl View for MuxView {
         // selector
         let simulator = GuiData::simulator.get(cx);
 
-        let select = simulator.get_input_val(&self.select);
+        let select: Result<SignalUnsigned, String> =
+            simulator.get_input_val(&self.select).try_into();
 
-        // trace!("----- select = {}", select);
-        paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));
-        let mut path = Path::new();
+        trace!("----- select = {:?}", select);
+        if let Ok(select) = select {
+            if select < self.select_max as u32 {
+                paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));
+                let mut path = Path::new();
 
-        path.move_to(
-            left + 0.5,
-            top + 0.5 + (20.0 + select as f32 * 20.0) * scale,
-        );
-        path.line_to(right + 0.5, top + height * 0.5 + 0.5);
-        canvas.stroke_path(&path, &paint);
+                path.move_to(
+                    left + 0.5,
+                    top + 0.5 + (20.0 + select as f32 * 20.0) * scale,
+                );
+                path.line_to(right + 0.5, top + height * 0.5 + 0.5);
+                canvas.stroke_path(&path, &paint);
+            }
+        }
     }
 }

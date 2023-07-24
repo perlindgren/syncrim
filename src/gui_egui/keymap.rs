@@ -1,7 +1,7 @@
 use crate::common::{ComponentStore, EditorMode, Simulator};
 use crate::gui_egui::{editor::Editor, Gui};
 use egui::{Key, KeyboardShortcut, Modifiers};
-use std::rc::Rc;
+use std::path::PathBuf;
 
 #[derive(Copy, Clone)]
 pub struct Shortcuts {
@@ -219,7 +219,21 @@ impl Shortcuts {
 
 pub fn file_new_fn(_gui: &mut Gui) {}
 pub fn file_open_fn(_gui: &mut Gui) {}
-pub fn file_save_fn(_gui: &mut Gui) {}
+pub fn file_save_fn(gui: &mut Gui) {
+    match gui.editor_use {
+        true => match gui.editor.as_mut() {
+            Some(e) => ComponentStore {
+                store: e.components.clone(),
+            }
+            .save_file(&PathBuf::from("file.json")),
+            None => (),
+        },
+        false => ComponentStore {
+            store: gui.simulator.clone().unwrap().ordered_components,
+        }
+        .save_file(&PathBuf::from("file.json")),
+    }
+}
 pub fn file_save_as_fn(_gui: &mut Gui) {}
 pub fn file_editor_toggle_fn(gui: &mut Gui) {
     match gui.editor_use {
@@ -322,7 +336,6 @@ pub fn editor_wire_fn(gui: &mut Gui) {
             }
         }
         crate::gui_egui::editor_wire::reset_wire_mode(editor);
-        println!("wire mode: {:?}", editor.editor_mode);
     }
 }
 pub fn editor_escape_fn(gui: &mut Gui) {
@@ -331,6 +344,5 @@ pub fn editor_escape_fn(gui: &mut Gui) {
         editor.editor_mode = EditorMode::Default;
         crate::gui_egui::editor_wire::reset_wire_mode(editor);
         crate::gui_egui::library::reset_input_mode(editor);
-        println!("wire mode: {:?}", editor.editor_mode);
     }
 }

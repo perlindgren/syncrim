@@ -1,5 +1,6 @@
 use crate::common::{
-    Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, Simulator, SnapPriority,
+    Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, SignalUnsigned, Simulator,
+    SnapPriority,
 };
 use crate::components::Wire;
 use crate::gui_egui::component_ui::{
@@ -61,12 +62,18 @@ impl EguiComponent for Wire {
 
             let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
                 ui.label(format!("Id: {}", self.id.clone()));
+                /*
                 match &simulator {
-                    Some(s) => {
-                        ui.label(format!("{}", s.get_input_val(&self.input_id.input)));
-                    }
+                    Some(s) => ui.label({
+                        let r: Result<SignalUnsigned, String> = self.input_id.try_into();
+                        match r {
+                            Ok(data) => format!("{:#x}", data),
+                            _ => format!("{:?}", value),
+                        }
+                    }),
                     _ => (),
                 }
+                */
             });
             r_vec.push(r);
         }

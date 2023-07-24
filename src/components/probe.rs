@@ -12,18 +12,15 @@ pub struct Probe {
 }
 
 impl Probe {
-    pub fn new(id: String, pos: (f32, f32), input: Input) -> Self {
+    pub fn new(id: &str, pos: (f32, f32), input: Input) -> Self {
         Probe {
-            id: id.clone(),
+            id: id.to_string(),
             pos,
             input_id: InputId {
                 id: String::from("in"),
                 input,
             },
-            egui_x: EguiExtra {
-                properties_window: false,
-                id_tmp: id,
-            },
+            egui_x: EguiExtra::default(),
         }
     }
 }

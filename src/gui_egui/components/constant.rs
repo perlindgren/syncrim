@@ -1,4 +1,7 @@
-use crate::common::{Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, Simulator};
+use crate::common::{
+    Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, Signal, SignalUnsigned,
+    Simulator,
+};
 use crate::components::Constant;
 use crate::gui_egui::component_ui::{input_id, pos_slider, properties_window, rect_with_hover};
 use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
@@ -32,11 +35,17 @@ impl EguiComponent for Constant {
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);
                 ui.label(
-                    RichText::new(self.value.to_string())
+                    RichText::new(format!("{:?}", self.value))
                         .size(scale * 12f32)
                         .background_color(Color32::LIGHT_GREEN),
-                );
-                //.on_hover_text(format!("{:#x}", self.value));
+                )
+                .on_hover_text({
+                    let r: Result<SignalUnsigned, String> = self.value.try_into();
+                    match r {
+                        Ok(data) => format!("{:#x}", data),
+                        _ => format!("{:?}", self.value),
+                    }
+                });
             });
         let r = rect_with_hover(
             area.response.rect,
@@ -46,7 +55,7 @@ impl EguiComponent for Constant {
             self.id.clone(),
             |ui| {
                 ui.label(format!("Id: {}", self.id.clone()));
-                ui.label(self.value.to_string());
+                ui.label(format!("{:?}", self.value));
             },
         );
         Some(vec![r])
@@ -84,7 +93,15 @@ impl EguiComponent for Constant {
             |ui| {
                 input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
-                ui.add(egui::Slider::new(&mut self.value, u32::MIN..=u32::MAX).text("value"));
+                // todo: Fix this
+                /*
+                match &mut self.value {
+                    Signal::Data(d) => {
+                        ui.add(egui::Slider::new(&mut d, u32::MIN..=u32::MAX).text("value"));
+                    }
+                    _ => (),
+                }
+                */
             },
         );
 
