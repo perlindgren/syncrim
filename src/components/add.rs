@@ -12,7 +12,7 @@ pub struct Add {
     pub b_in: InputId,
 
     #[cfg(feature = "gui-egui")]
-    #[serde(skip_serializing)]
+    #[serde(skip)]
     pub egui_x: EguiExtra,
 }
 

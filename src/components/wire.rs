@@ -9,7 +9,7 @@ pub struct Wire {
     pub input_id: InputId,
 
     #[cfg(feature = "gui-egui")]
-    #[serde(skip_serializing)]
+    #[serde(skip)]
     pub egui_x: EguiExtra,
 }
 

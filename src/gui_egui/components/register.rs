@@ -7,11 +7,11 @@ impl EguiComponent for Register {
     fn render(
         &self,
         ui: &mut egui::Ui,
-        _simulator: Option<Simulator>,
+        _simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
         _clip_rect: egui::Rect,
-        editor_mode: EditorMode,
+        _editor_mode: EditorMode,
     ) -> Option<Vec<egui::Response>> {
         // 21x41
         // middle: 11x 21y (0 0)

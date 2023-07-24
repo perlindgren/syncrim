@@ -1,8 +1,13 @@
-use crate::common::{ComponentStore, Components, EditorMode, EguiComponent, Id, Input, InputId};
+use crate::common::{
+    ComponentStore, Components, EditorMode, EguiComponent, Id, Input, InputId, Simulator,
+};
 use crate::components::*;
 use crate::gui_egui::{
     gui::Gui,
-    helper::{offset_helper, offset_reverse_helper_pos2, unique_component_name},
+    helper::{
+        id_ports_of_all_components, offset_helper, offset_reverse_helper_pos2,
+        unique_component_name,
+    },
     keymap,
     menu::Menu,
 };
@@ -10,10 +15,10 @@ use eframe::{egui, Frame};
 use egui::{
     Color32, Context, LayerId, PointerButton, Pos2, Rect, Response, Shape, Stroke, Style, Ui, Vec2,
 };
-use std::{cell::RefCell, path::PathBuf, rc::Rc};
+use std::{path::PathBuf, rc::Rc};
 
 pub struct Editor {
-    pub component_store: ComponentStore,
+    pub components: Components,
     pub scale: f32,
     pub pan: Vec2,
     pub offset: Vec2,
@@ -30,13 +35,13 @@ pub struct Editor {
     pub wire_cursor_location: Pos2,
     pub wire_start_comp_port: Option<CloseToComponent>,
     pub wire_temp_positions: Vec<(f32, f32)>,
-    pub input_comp: Option<Rc<RefCell<dyn EguiComponent>>>,
+    pub input_comp: Option<Rc<dyn EguiComponent>>,
     pub input_cursor_location: Pos2,
 }
 
 #[derive(Clone)]
 pub struct CloseToComponent {
-    pub comp: Rc<RefCell<dyn EguiComponent>>,
+    pub comp: Rc<dyn EguiComponent>,
     pub pos: Pos2,
     pub dist: f32,
     pub port_id: Id,
@@ -44,10 +49,10 @@ pub struct CloseToComponent {
 // todo: enum for input mode, wire, component, none
 
 impl Editor {
-    pub fn gui(cs: ComponentStore, _path: &PathBuf) -> Self {
+    pub fn gui(components: Components, _path: &PathBuf) -> Self {
         let dummy_input = Input::new("id", "field");
         Editor {
-            component_store: cs,
+            components,
             scale: 1f32,
             pan: Vec2::new(0f32, 0f32),
             offset: Vec2::new(0f32, 0f32),
@@ -63,18 +68,14 @@ impl Editor {
             ui_change: true,
             library: ComponentStore {
                 store: vec![
-                    Rc::new(RefCell::new(Add::new(
+                    Rc::new(Add::new(
                         "add".to_string(),
                         (0.0, 0.0),
                         dummy_input.clone(),
                         dummy_input.clone(),
-                    ))),
-                    Rc::new(RefCell::new(Constant::new("c".to_string(), (0.0, 0.0), 0))),
-                    Rc::new(RefCell::new(Probe::new(
-                        "p".to_string(),
-                        (0.0, 0.0),
-                        dummy_input.clone(),
-                    ))),
+                    )),
+                    Rc::new(Constant::new("c".to_string(), (0.0, 0.0), 0)),
+                    Rc::new(Probe::new("p".to_string(), (0.0, 0.0), dummy_input.clone())),
                 ],
             },
             dummy_input,
@@ -192,34 +193,50 @@ impl Editor {
                 layer_id = Some(ui.layer_id());
             }
 
-            let tcs = gui.simulator.ordered_components.clone();
-            let s = Editor::gui_to_editor(gui);
-            s.component_store.store.retain(|c| {
-                let delete = c
-                    .borrow_mut()
-                    .render_editor(
-                        ui,
-                        None,
-                        s.offset_and_pan,
-                        s.scale,
-                        s.clip_rect,
-                        &tcs,
-                        s.editor_mode,
-                    )
-                    .delete;
-                !delete
-            });
+            let e = Editor::gui_to_editor(gui);
+            let id_ports = id_ports_of_all_components(&e.components);
+            // The reason we do this is because some of the input modes requires references to
+            // components, but that makes us unable to get the mutable reference to it
+            // (We can only get a mutable reference if only ONE reference to it exists)
+            match e.editor_mode {
+                EditorMode::Wire | EditorMode::Input => {
+                    for c in &e.components {
+                        c.render(
+                            ui,
+                            None,
+                            e.offset + e.pan,
+                            e.scale,
+                            e.clip_rect,
+                            e.editor_mode,
+                        );
+                    }
+                }
+                _ => e.components.retain_mut(|mut c| {
+                    let delete = (*Rc::get_mut(&mut c).unwrap())
+                        .render_editor(
+                            ui,
+                            None,
+                            e.offset_and_pan,
+                            e.scale,
+                            e.clip_rect,
+                            &id_ports,
+                            e.editor_mode,
+                        )
+                        .delete;
+                    !delete
+                }),
+            }
         });
-        let s = Editor::gui_to_editor(gui);
+        let e = Editor::gui_to_editor(gui);
 
         let cpr = central_panel.response.interact(egui::Sense::drag());
         if cpr.dragged_by(PointerButton::Middle) {
-            s.pan += cpr.drag_delta();
-            s.offset_and_pan = s.pan + s.offset;
+            e.pan += cpr.drag_delta();
+            e.offset_and_pan = e.pan + e.offset;
         }
-        match s.editor_mode {
-            EditorMode::Wire => crate::gui_egui::editor_wire::wire_mode(ctx, s, cpr, layer_id),
-            EditorMode::Input => crate::gui_egui::library::input_mode(ctx, s, cpr, layer_id),
+        match e.editor_mode {
+            EditorMode::Wire => crate::gui_egui::editor_wire::wire_mode(ctx, e, cpr, layer_id),
+            EditorMode::Input => crate::gui_egui::library::input_mode(ctx, e, cpr, layer_id),
             EditorMode::Default => ctx.output_mut(|o| o.cursor_icon = egui::CursorIcon::Default),
         }
         if central_panel.response.hovered() {

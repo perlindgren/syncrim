@@ -1,5 +1,7 @@
-use crate::common::{Components, EditorMode};
+use crate::common::{Components, EditorMode, EguiComponent, Ports};
+use crate::gui_egui::editor::CloseToComponent;
 use egui::{Pos2, Rect, Response, Sense, Vec2};
+use std::rc::Rc;
 
 pub fn offset_reverse_helper_pos2(xy: Pos2, scale: f32, offset: Vec2) -> Pos2 {
     egui::Pos2 {
@@ -45,16 +47,13 @@ pub fn out_of_bounds(request: Rect, clip_rect: Rect) -> Rect {
     return rect;
 }
 
-pub fn unique_component_name(cs: &Components, id: &str) -> String {
+pub fn unique_component_name(id_ports: &Vec<(crate::common::Id, Ports)>, id: &str) -> String {
     let mut new_id: String = id.into();
     let mut contains_id = true;
     while contains_id {
         contains_id = false;
-        for c in cs.iter() {
-            let id = match c.try_borrow_mut() {
-                Ok(a) => a.get_id_ports().0,
-                Err(e) => String::from(""),
-            };
+        for c in id_ports {
+            let id = c.0.clone();
             if id == new_id {
                 contains_id = true;
                 // todo: make this fancier
@@ -64,6 +63,14 @@ pub fn unique_component_name(cs: &Components, id: &str) -> String {
         }
     }
     String::from(new_id)
+}
+
+pub fn id_ports_of_all_components(cs: &Components) -> Vec<(crate::common::Id, Ports)> {
+    let mut v = vec![];
+    for c in cs.iter() {
+        v.push(c.get_id_ports())
+    }
+    v
 }
 
 pub fn editor_mode_to_sense(editor_mode: EditorMode) -> Sense {
@@ -80,7 +87,3 @@ pub fn editor_mode_to_sense(editor_mode: EditorMode) -> Sense {
         },
     }
 }
-
-// todo: Create the properties window the same way every time for the different components
-
-//pub fn

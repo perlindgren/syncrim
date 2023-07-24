@@ -7,7 +7,7 @@ impl EguiComponent for Mux {
     fn render(
         &self,
         ui: &mut egui::Ui,
-        simulator: Option<Simulator>,
+        simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
         _clip_rect: egui::Rect,

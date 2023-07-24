@@ -7,7 +7,7 @@ pub struct Probe {
     pub pos: (f32, f32),
     pub input_id: InputId,
     #[cfg(feature = "gui-egui")]
-    #[serde(skip_serializing)]
+    #[serde(skip)]
     pub egui_x: EguiExtra,
 }
 

@@ -1,4 +1,4 @@
-use crate::common::{Components, EditorMode, EditorRenderReturn, EguiComponent, Simulator};
+use crate::common::{Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, Simulator};
 use crate::components::Constant;
 use crate::gui_egui::component_ui::{input_id, pos_slider, properties_window, rect_with_hover};
 use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
@@ -13,7 +13,7 @@ impl EguiComponent for Constant {
     fn render(
         &self,
         ui: &mut egui::Ui,
-        _simulator: Option<Simulator>,
+        _simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
         clip_rect: Rect,
@@ -55,11 +55,11 @@ impl EguiComponent for Constant {
     fn render_editor(
         &mut self,
         ui: &mut egui::Ui,
-        simulator: Option<Simulator>,
+        simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
-        cs: &Components,
+        id_ports: &Vec<(crate::common::Id, Ports)>,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
@@ -82,7 +82,7 @@ impl EguiComponent for Constant {
             resp,
             &mut self.egui_x.properties_window,
             |ui| {
-                input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, cs);
+                input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
                 ui.add(egui::Slider::new(&mut self.value, u32::MIN..=u32::MAX).text("value"));
             },

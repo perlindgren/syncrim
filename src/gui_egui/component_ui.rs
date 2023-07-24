@@ -1,5 +1,6 @@
 use crate::common::{
-    ComponentStore, Components, EditorMode, EditorRenderReturn, EguiComponent, InputId, Simulator,
+    ComponentStore, Components, EditorMode, EditorRenderReturn, EguiComponent, InputId, Ports,
+    Simulator,
 };
 use crate::gui_egui::helper::{
     editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
@@ -82,7 +83,11 @@ pub fn pos_slider(ui: &mut Ui, pos: &mut (f32, f32)) {
         );
     });
 }
-pub fn input_selector(ui: &mut Ui, input_id: &mut InputId, cs: &Components) {
+pub fn input_selector(
+    ui: &mut Ui,
+    input_id: &mut InputId,
+    id_ports: &Vec<(crate::common::Id, Ports)>,
+) {
     let mut port_id = input_id.input.id.clone();
     let mut port_field = input_id.input.field.clone();
     let label_port_id = format!("{}.id", input_id.id.clone());
@@ -93,29 +98,20 @@ pub fn input_selector(ui: &mut Ui, input_id: &mut InputId, cs: &Components) {
         ComboBox::from_label(label_port_id)
             .selected_text(text_port_id)
             .show_ui(ui, |ui| {
-                for c in cs.iter() {
-                    let id = match c.try_borrow_mut() {
-                        Ok(a) => a.get_id_ports().0.clone(),
-                        Err(e) => String::from("unknown_id"),
-                    };
+                for c in id_ports {
+                    let id = c.0.clone();
                     ui.selectable_value(&mut port_id, id.clone(), id);
                 }
             });
         ComboBox::from_label(label_port_field)
             .selected_text(text_port_field)
             .show_ui(ui, |ui| {
-                for c in cs.iter() {
-                    let id = match c.try_borrow_mut() {
-                        Ok(a) => a.get_id_ports().0.clone(),
-                        Err(e) => String::from("unknown_id"),
-                    };
+                for c in id_ports {
+                    let id = c.0.clone();
                     if id != port_id {
                         continue;
                     }
-                    let fields = match c.try_borrow_mut() {
-                        Ok(a) => a.get_id_ports().1.outputs,
-                        Err(_) => vec![],
-                    };
+                    let fields = c.1.outputs.clone();
                     for field in fields {
                         ui.selectable_value(&mut port_field, field.clone(), field);
                     }
@@ -126,14 +122,19 @@ pub fn input_selector(ui: &mut Ui, input_id: &mut InputId, cs: &Components) {
     input_id.input.field = port_field;
 }
 
-pub fn input_id(ui: &mut Ui, id_tmp: &mut String, id: &mut String, cs: &Components) {
+pub fn input_id(
+    ui: &mut Ui,
+    id_tmp: &mut String,
+    id: &mut String,
+    id_ports: &Vec<(crate::common::Id, Ports)>,
+) {
     ui.horizontal(|ui| {
         let id_label = ui.label("Id: ");
         let r = ui
             .text_edit_singleline(&mut *id_tmp)
             .labelled_by(id_label.id);
         if r.lost_focus() && *id_tmp != *id {
-            *id = unique_component_name(cs, (*id_tmp).as_str());
+            *id = unique_component_name(id_ports, (*id_tmp).as_str());
         }
     });
 }

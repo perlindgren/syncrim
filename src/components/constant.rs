@@ -7,7 +7,7 @@ pub struct Constant {
     pub pos: (f32, f32),
     pub value: Signal,
     #[cfg(feature = "gui-egui")]
-    #[serde(skip_serializing)]
+    #[serde(skip)]
     pub egui_x: EguiExtra,
 }
 

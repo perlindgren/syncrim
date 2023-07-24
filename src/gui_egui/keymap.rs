@@ -1,6 +1,7 @@
 use crate::common::{ComponentStore, EditorMode, Simulator};
 use crate::gui_egui::{editor::Editor, Gui};
 use egui::{Key, KeyboardShortcut, Modifiers};
+use std::rc::Rc;
 
 #[derive(Copy, Clone)]
 pub struct Shortcuts {
@@ -226,20 +227,21 @@ pub fn file_editor_toggle_fn(gui: &mut Gui) {
             gui.editor_use = false;
             match gui.editor.as_mut() {
                 Some(e) => {
-                    gui.simulator = Simulator::new(&e.component_store, &mut 0);
+                    let components = e.components.clone();
+                    let simulator =
+                        Simulator::new(ComponentStore { store: components }, &mut gui.clock);
+                    gui.simulator = Some(simulator);
                 }
                 _ => (),
             }
             // todo: Make us swap back into simulator mode (create new simulator)
         }
         false => {
-            gui.editor.get_or_insert(Editor::gui(
-                ComponentStore {
-                    store: gui.simulator.ordered_components.clone(),
-                },
-                &gui.path,
-            ));
-
+            let simulator = std::mem::replace(&mut gui.simulator, None);
+            let simulator = simulator.unwrap();
+            let components = simulator.ordered_components.clone();
+            drop(simulator);
+            let _ = gui.editor.insert(Editor::gui(components, &gui.path));
             gui.editor_use = true;
         }
     }
@@ -294,18 +296,18 @@ pub fn control_pause_fn(gui: &mut Gui) {
 }
 pub fn control_reset_fn(gui: &mut Gui) {
     if !gui.editor_use {
-        gui.simulator.reset(&mut gui.clock);
+        gui.simulator.as_mut().unwrap().reset(&mut gui.clock);
         gui.pause = true;
     }
 }
 pub fn control_step_forward_fn(gui: &mut Gui) {
     if !gui.editor_use {
-        gui.simulator.clock(&mut gui.clock);
+        gui.simulator.as_mut().unwrap().clock(&mut gui.clock);
     }
 }
 pub fn control_step_back_fn(gui: &mut Gui) {
     if !gui.editor_use {
-        gui.simulator.un_clock(&mut gui.clock);
+        gui.simulator.as_mut().unwrap().un_clock(&mut gui.clock);
     }
 }
 pub fn editor_wire_fn(gui: &mut Gui) {

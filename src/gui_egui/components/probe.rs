@@ -1,4 +1,4 @@
-use crate::common::{Components, EditorMode, EditorRenderReturn, EguiComponent, Simulator};
+use crate::common::{Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, Simulator};
 use crate::components::Probe;
 use crate::gui_egui::component_ui::{
     input_id, input_selector, pos_slider, properties_window, rect_with_hover,
@@ -15,7 +15,7 @@ impl EguiComponent for Probe {
     fn render(
         &self,
         ui: &mut egui::Ui,
-        simulator: Option<Simulator>,
+        simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
         clip_rect: Rect,
@@ -63,11 +63,11 @@ impl EguiComponent for Probe {
     fn render_editor(
         &mut self,
         ui: &mut egui::Ui,
-        simulator: Option<Simulator>,
+        simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
-        cs: &Components,
+        id_ports: &Vec<(crate::common::Id, Ports)>,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
@@ -91,9 +91,9 @@ impl EguiComponent for Probe {
             resp,
             &mut self.egui_x.properties_window,
             |ui| {
-                input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, cs);
+                input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
-                input_selector(ui, &mut self.input_id, cs);
+                input_selector(ui, &mut self.input_id, id_ports);
             },
         );
 

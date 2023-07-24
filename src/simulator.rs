@@ -19,7 +19,7 @@ pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 // A solution is to evaluate register updates separately from other components
 // ... but not currently implemented ...
 impl Simulator {
-    pub fn new(component_store: &ComponentStore, clock: &mut usize) -> Self {
+    pub fn new(component_store: ComponentStore, clock: &mut usize) -> Self {
         let mut lens_values = vec![];
 
         let mut id_start_index = HashMap::new();
@@ -31,7 +31,7 @@ impl Simulator {
 
         trace!("-- allocate storage for lensed outputs");
         for c in &component_store.store {
-            let (id, ports) = c.borrow().get_id_ports();
+            let (id, ports) = c.get_id_ports();
 
             trace!("id {}, ports {:?}", id, ports);
             // start index for outputs related to component
@@ -73,19 +73,19 @@ impl Simulator {
         trace!("\nid_node {:?}", id_node);
 
         for (node, c) in &node_comp {
-            trace!("node {:?}, comp_id {:?}", node, c.borrow().get_id_ports());
+            trace!("node {:?}, comp_id {:?}", node, c.get_id_ports());
         }
 
         // insert edges
         for (to_id, c) in &id_component {
             let to_component = id_component.get(to_id).unwrap();
-            let (_, ports) = to_component.borrow().get_id_ports();
+            let (_, ports) = to_component.get_id_ports();
 
             trace!("to_id :{}, ports: {:?}", to_id, ports);
 
             if ports.out_type == OutputType::Combinatorial {
                 let to_node = id_node.get(to_id).unwrap();
-                let (_, ports) = c.borrow().get_id_ports();
+                let (_, ports) = c.get_id_ports();
                 for in_port in &ports.inputs {
                     let from_id = &in_port.input.id;
 
@@ -117,7 +117,7 @@ impl Simulator {
 
         let component_ids: Vec<Id> = ordered_components
             .iter()
-            .map(|c| c.borrow().get_id_ports().0)
+            .map(|c| c.get_id_ports().0)
             .collect();
 
         let mut simulator = Simulator {
@@ -192,7 +192,7 @@ impl Simulator {
         let ordered_components = self.ordered_components.clone();
 
         for component in ordered_components {
-            component.borrow().clock(self);
+            component.clock(self);
         }
         *clock = self.history.len();
     }
@@ -206,7 +206,7 @@ impl Simulator {
             let ordered_components = self.ordered_components.clone();
 
             for component in ordered_components {
-                component.borrow().un_clock();
+                component.un_clock();
             }
         }
         *clock = self.history.len();

@@ -5,7 +5,7 @@ use crate::gui_egui::helper::{
     editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
 };
 use crate::{
-    common::{Components, EditorMode, EditorRenderReturn, EguiComponent, Simulator},
+    common::{Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, Simulator},
     components::Add,
 };
 use egui::{
@@ -19,7 +19,7 @@ impl EguiComponent for Add {
     fn render(
         &self,
         ui: &mut egui::Ui,
-        _simulator: Option<Simulator>,
+        _simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
@@ -82,11 +82,11 @@ impl EguiComponent for Add {
     fn render_editor(
         &mut self,
         ui: &mut egui::Ui,
-        simulator: Option<Simulator>,
+        simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
-        cs: &Components,
+        id_ports: &Vec<(crate::common::Id, Ports)>,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
@@ -110,10 +110,10 @@ impl EguiComponent for Add {
             resp,
             &mut self.egui_x.properties_window,
             |ui| {
-                input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, cs);
+                input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
-                input_selector(ui, &mut self.a_in, cs);
-                input_selector(ui, &mut self.b_in, cs);
+                input_selector(ui, &mut self.a_in, id_ports);
+                input_selector(ui, &mut self.b_in, id_ports);
             },
         );
 

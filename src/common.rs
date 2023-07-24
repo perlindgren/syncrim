@@ -1,6 +1,6 @@
 use petgraph::Graph;
 use serde::{Deserialize, Serialize};
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{collections::HashMap, rc::Rc};
 
 #[cfg(feature = "gui-vizia")]
 use vizia::prelude::*;
@@ -10,15 +10,15 @@ pub type SignedSignal = i32;
 pub type Id = String;
 
 #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
-type Components = Vec<Rc<RefCell<dyn Component>>>;
+type Components = Vec<Rc<dyn Component>>;
 
 #[cfg(feature = "gui-vizia")]
-type Components = Vec<Rc<RefCell<dyn ViziaComponent>>>;
+type Components = Vec<Rc<dyn ViziaComponent>>;
 
 // todo: Probably make a separate ComponentsEditor type
 // so we don't have to use refcell everywhere
 #[cfg(feature = "gui-egui")]
-pub type Components = Vec<Rc<RefCell<dyn EguiComponent>>>;
+pub type Components = Vec<Rc<dyn EguiComponent>>;
 
 #[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
@@ -35,7 +35,7 @@ pub struct Simulator {
     pub graph: Graph<Id, ()>,
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct ComponentStore {
     pub store: Components,
 }
@@ -109,7 +109,7 @@ pub trait EguiComponent: Component {
     fn render(
         &self,
         _ui: &mut egui::Ui,
-        _simulator: Option<Simulator>,
+        _simulator: Option<&mut Simulator>,
         _offset: egui::Vec2,
         _scale: f32,
         _clip_rect: egui::Rect,
@@ -121,11 +121,11 @@ pub trait EguiComponent: Component {
     fn render_editor(
         &mut self,
         _ui: &mut egui::Ui,
-        _simulator: Option<Simulator>,
+        _simulator: Option<&mut Simulator>,
         _offset: egui::Vec2,
         _scale: f32,
         _clip_rect: egui::Rect,
-        _components: &Components,
+        _id_ports: &Vec<(Id, Ports)>,
         _editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         EditorRenderReturn {
@@ -154,6 +154,16 @@ pub trait EguiComponent: Component {
 pub struct EguiExtra {
     pub properties_window: bool,
     pub id_tmp: String,
+}
+
+#[cfg(feature = "gui-egui")]
+impl Default for EguiExtra {
+    fn default() -> Self {
+        EguiExtra {
+            properties_window: false,
+            id_tmp: String::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

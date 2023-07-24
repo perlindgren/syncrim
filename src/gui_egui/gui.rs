@@ -2,9 +2,10 @@ use crate::common::{ComponentStore, EditorMode, Simulator};
 use crate::gui_egui::{editor::Editor, keymap, keymap::Shortcuts, menu::Menu};
 use eframe::egui;
 use std::path::PathBuf;
+use std::rc::Rc;
 
 pub struct Gui {
-    pub simulator: Simulator,
+    pub simulator: Option<Simulator>,
     pub path: PathBuf,
     // History, acts like a stack
     pub history: Vec<Vec<u32>>,
@@ -21,7 +22,7 @@ pub struct Gui {
     pub editor_use: bool,
 }
 
-pub fn gui(cs: &ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
+pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
     let mut clock = 0;
     let simulator = Simulator::new(cs, &mut clock);
     let options = eframe::NativeOptions::default();
@@ -30,7 +31,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
     let gui = Gui {
         clock,
         path,
-        simulator,
+        simulator: Some(simulator),
         history: vec![],
         scale: 1.0f32,
         ui_change: true,
@@ -115,12 +116,13 @@ impl Gui {
 
     fn draw_area(&mut self, ctx: &egui::Context, frame: egui::Frame) {
         let central_panel = egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
+            let sim = self.simulator.as_mut().unwrap();
             ui.set_clip_rect(self.clip_rect);
             // Don't draw over the rest of the ui
-            for c in &self.simulator.ordered_components {
-                c.borrow().render(
+            for c in &sim.ordered_components.clone() {
+                c.render(
                     ui,
-                    Some(self.simulator.clone()),
+                    Some(sim),
                     self.offset + self.pan,
                     self.scale,
                     self.clip_rect,
