@@ -10,7 +10,7 @@ pub struct Wire {
 
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
-    pub egui_x: EguiExtra,
+    pub egui_x: crate::common::EguiExtra,
 }
 
 impl Wire {

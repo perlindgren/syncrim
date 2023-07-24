@@ -8,7 +8,7 @@ pub struct Probe {
     pub input_id: InputId,
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
-    pub egui_x: EguiExtra,
+    pub egui_x: crate::common::EguiExtra,
 }
 
 impl Probe {
@@ -21,7 +21,7 @@ impl Probe {
                 input,
             },
             #[cfg(feature = "gui-egui")]
-            egui_x: EguiExtra::default(),
+            egui_x: crate::common::EguiExtra::default(),
         }
     }
 }

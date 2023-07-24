@@ -9,7 +9,7 @@ pub struct Constant {
     pub value: Signal,
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
-    pub egui_x: EguiExtra,
+    pub egui_x: crate::common::EguiExtra,
 }
 
 #[typetag::serde]
