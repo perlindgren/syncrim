@@ -1,7 +1,7 @@
 use crate::{
-    common::{Component, Simulator, ViziaComponent},
-    components::Probe,
-    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
+    common::{Component, ViziaComponent},
+    components::ProbeStim,
+    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
 
 use vizia::{
@@ -12,24 +12,12 @@ use vizia::{
 use log::*;
 
 #[typetag::serde]
-impl ViziaComponent for Probe {
+impl ViziaComponent for ProbeStim {
     // create view
     fn view(&self, cx: &mut Context) {
-        trace!("---- Create Probe View");
-        View::build(ProbeView {}, cx, |cx| {
-            let input = self.input.clone();
-
-            Binding::new(
-                cx,
-                crate::gui_vizia::GuiData::simulator.then(Simulator::cycle),
-                move |cx, _| {
-                    Label::new(cx, {
-                        let simulator = GuiData::simulator.get(cx);
-                        &format!(" {:?}", simulator.get_input_val(&input))
-                    })
-                    .hoverable(false);
-                },
-            );
+        trace!("---- Create ProbeStim View");
+        View::build(ProbeStimView {}, cx, |cx| {
+            // Label::new(cx, &format!("{:?}", self.value)).hoverable(false);
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
         .position_type(PositionType::SelfDirected)
@@ -37,24 +25,24 @@ impl ViziaComponent for Probe {
         .top(Pixels(self.pos.1 - 10.0))
         .width(Pixels(20.0))
         .height(Pixels(20.0))
+        // TODO: do we want/need tooltip/popup for constants
         .on_press(|ex| ex.emit(PopupEvent::Switch))
         .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
+pub struct ProbeStimView {}
 
-pub struct ProbeView {}
-
-impl View for ProbeView {
+impl View for ProbeStimView {
     fn element(&self) -> Option<&'static str> {
-        Some("Probe")
+        Some("ProbeStim")
     }
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        // trace!("Probe draw {:?}", bounds);
+        // trace!("Constant draw {:?}", bounds);
 
         let mut path = Path::new();
-        let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 1.0, 1.0));
+        let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 1.0, 0.0));
         paint.set_line_width(cx.logical_to_physical(1.0));
 
         path.move_to(bounds.left() + 0.5, bounds.top() + 0.5);

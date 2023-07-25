@@ -1,7 +1,6 @@
 use crate::common::{EguiComponent, Simulator};
 use crate::components::Wire;
 use crate::gui_egui::helper::offset_helper;
-use egui::Pos2;
 
 #[typetag::serde]
 impl EguiComponent for Wire {

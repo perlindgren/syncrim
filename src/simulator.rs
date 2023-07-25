@@ -19,7 +19,7 @@ pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 // A solution is to evaluate register updates separately from other components
 // ... but not currently implemented ...
 impl Simulator {
-    pub fn new(component_store: &ComponentStore, clock: &mut usize) -> Self {
+    pub fn new(component_store: &ComponentStore) -> Self {
         let mut lens_values = vec![];
 
         let mut id_start_index = HashMap::new();
@@ -121,6 +121,7 @@ impl Simulator {
             .collect();
 
         let mut simulator = Simulator {
+            cycle: 0,
             id_start_index,
             ordered_components,
             id_nr_outputs,
@@ -133,7 +134,7 @@ impl Simulator {
 
         trace!("sim_state {:?}", simulator.sim_state);
 
-        simulator.clock(clock);
+        simulator.clock();
         simulator
     }
 
@@ -186,37 +187,37 @@ impl Simulator {
     }
 
     /// iterate over the evaluators and increase clock by one
-    pub fn clock(&mut self, clock: &mut usize) {
+    pub fn clock(&mut self) {
         // push current state
         self.history.push(self.sim_state.clone());
-        let ordered_components = self.ordered_components.clone();
 
-        for component in ordered_components {
+        for component in self.ordered_components.clone() {
             component.clock(self);
         }
-        *clock = self.history.len();
+        self.cycle = self.history.len();
     }
 
     /// reverse simulation using history if clock > 1
-    pub fn un_clock(&mut self, clock: &mut usize) {
-        if *clock > 1 {
+    pub fn un_clock(&mut self) {
+        if self.cycle > 1 {
             let state = self.history.pop().unwrap();
             // set old state
             self.sim_state = state;
-            let ordered_components = self.ordered_components.clone();
+            // to ensure that history length and cycle count complies
+            self.cycle = self.history.len();
 
-            for component in ordered_components {
+            for component in self.ordered_components.clone() {
                 component.un_clock();
             }
         }
-        *clock = self.history.len();
     }
 
     /// reset simulator
-    pub fn reset(&mut self, clock: &mut usize) {
+    pub fn reset(&mut self) {
         self.history = vec![];
+        self.cycle = 0;
         self.sim_state.iter_mut().for_each(|val| *val = 0.into());
-        self.clock(clock);
+        self.clock();
     }
 
     /// save as `dot` file with `.gv` extension
@@ -244,10 +245,9 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let mut clock = 0;
-        let _simulator = Simulator::new(&cs, &mut clock);
+        let simulator = Simulator::new(&cs);
 
-        assert_eq!(clock, 1);
+        assert_eq!(simulator.cycle, 1);
     }
 
     #[test]
@@ -257,10 +257,9 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1")), Rc::new(ProbeOut::new("po1"))],
         };
 
-        let mut clock = 0;
-        let _simulator = Simulator::new(&cs, &mut clock);
+        let simulator = Simulator::new(&cs);
 
-        assert_eq!(clock, 1);
+        assert_eq!(simulator.cycle, 1);
     }
 
     #[test]
@@ -269,10 +268,9 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let mut clock = 0;
-        let simulator = Simulator::new(&cs, &mut clock);
+        let simulator = Simulator::new(&cs);
 
-        assert_eq!(clock, 1);
+        assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_val(&Input::new("po1", "out"));
     }
 
@@ -283,10 +281,9 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let mut clock = 0;
-        let simulator = Simulator::new(&cs, &mut clock);
+        let simulator = Simulator::new(&cs);
 
-        assert_eq!(clock, 1);
+        assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_val(&Input::new("po1", "missing"));
     }
 }

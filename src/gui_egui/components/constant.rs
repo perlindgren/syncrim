@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Signal, SignalUnsigned, Simulator};
+use crate::common::{EguiComponent, SignalUnsigned, Simulator};
 use crate::components::Constant;
 use egui::{Align2, Area, Color32, Order, Rect, RichText};
 
