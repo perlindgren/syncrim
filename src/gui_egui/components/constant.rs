@@ -1,15 +1,8 @@
-use crate::common::{
-    Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, Signal, SignalUnsigned,
-    Simulator,
-};
+use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
 use crate::components::Constant;
 use crate::gui_egui::component_ui::{input_port, pos_slider, properties_window, rect_with_hover};
-use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
-use egui::{
-    Align2, Area, Color32, Frame, Margin, Order, PointerButton, Pos2, Rect, RichText, Rounding,
-    Sense, Vec2, Window,
-};
-use epaint::Shadow;
+use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
+use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, RichText, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Constant {

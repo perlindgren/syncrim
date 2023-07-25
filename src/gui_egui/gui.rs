@@ -1,8 +1,8 @@
-use crate::common::{ComponentStore, EditorMode, Simulator};
+use crate::common::{ComponentStore, Simulator};
+use crate::gui_egui::editor::EditorMode;
 use crate::gui_egui::{editor::Editor, keymap, keymap::Shortcuts, menu::Menu};
 use eframe::egui;
 use std::path::PathBuf;
-use std::rc::Rc;
 
 pub struct Gui {
     pub simulator: Option<Simulator>,

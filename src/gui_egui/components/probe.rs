@@ -1,17 +1,10 @@
-use crate::common::{
-    Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, Signal, SignalUnsigned,
-    Simulator,
-};
+use crate::common::{EguiComponent, Ports, Signal, SignalUnsigned, Simulator};
 use crate::components::Probe;
 use crate::gui_egui::component_ui::{
     input_port, input_selector, pos_slider, properties_window, rect_with_hover,
 };
-use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
-use egui::{
-    Align2, Area, Color32, ComboBox, Frame, Margin, Order, PointerButton, Pos2, Rect, RichText,
-    Rounding, Vec2, Window,
-};
-use epaint::Shadow;
+use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
+use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, RichText, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Probe {

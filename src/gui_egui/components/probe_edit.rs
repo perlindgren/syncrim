@@ -1,5 +1,6 @@
-use crate::common::{EditorMode, EguiComponent, Simulator};
+use crate::common::{EguiComponent, Simulator};
 use crate::components::ProbeEdit;
+use crate::gui_egui::editor::EditorMode;
 use egui::Rect;
 
 #[typetag::serde]
@@ -14,6 +15,5 @@ impl EguiComponent for ProbeEdit {
         _editor_mode: EditorMode,
     ) -> Option<Vec<egui::Response>> {
         todo!();
-        None
     }
 }

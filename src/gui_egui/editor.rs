@@ -1,20 +1,15 @@
-use crate::common::{
-    ComponentStore, Components, EditorMode, EguiComponent, Id, Input, InputPort, Simulator,
-};
+use crate::common::{ComponentStore, Components, EguiComponent, Id, Input};
 use crate::components::*;
 use crate::gui_egui::{
+    editor_wire_mode::WireMode,
     gui::Gui,
-    helper::{
-        id_ports_of_all_components, offset_helper, offset_reverse_helper_pos2,
-        unique_component_name,
-    },
+    helper::{id_ports_of_all_components, offset_helper},
     keymap,
+    library::InputMode,
     menu::Menu,
 };
 use eframe::{egui, Frame};
-use egui::{
-    Color32, Context, LayerId, PointerButton, Pos2, Rect, Response, Shape, Stroke, Style, Ui, Vec2,
-};
+use egui::{Color32, Context, LayerId, PointerButton, Pos2, Rect, Vec2};
 use std::{path::PathBuf, rc::Rc};
 
 pub struct Editor {
@@ -29,14 +24,8 @@ pub struct Editor {
     pub library: ComponentStore,
     pub dummy_input: Input,
     pub editor_mode: EditorMode,
-    pub wire_mode_ended: bool,
-    pub wire_last_pos: Option<Pos2>,
-    pub wire_input: Option<Input>,
-    pub wire_cursor_location: Pos2,
-    pub wire_start_comp_port: Option<CloseToComponent>,
-    pub wire_temp_positions: Vec<(f32, f32)>,
-    pub input_comp: Option<Rc<dyn EguiComponent>>,
-    pub input_cursor_location: Pos2,
+    pub wm: WireMode,
+    pub im: InputMode,
 }
 
 #[derive(Clone)]
@@ -46,7 +35,26 @@ pub struct CloseToComponent {
     pub dist: f32,
     pub port_id: Id,
 }
-// todo: enum for input mode, wire, component, none
+
+#[derive(Debug, Clone, Copy)]
+pub enum EditorMode {
+    Default,
+    Wire,
+    Input,
+}
+
+#[cfg(feature = "gui-egui")]
+pub struct EditorRenderReturn {
+    pub delete: bool,
+    pub resp: Option<Vec<egui::Response>>,
+}
+
+// Specific structs for egui
+#[cfg(feature = "gui-egui")]
+pub enum SnapPriority {
+    Default,
+    Wire,
+}
 
 impl Editor {
     pub fn gui(components: Components, _path: &PathBuf) -> Self {
@@ -80,18 +88,22 @@ impl Editor {
             },
             dummy_input,
             editor_mode: EditorMode::Default,
-            wire_mode_ended: true,
-            wire_last_pos: None,
-            wire_input: None,
-            wire_cursor_location: Pos2::ZERO,
-            wire_start_comp_port: None,
-            wire_temp_positions: vec![],
-            input_comp: None,
-            input_cursor_location: Pos2::ZERO,
+            wm: WireMode {
+                mode_ended: true,
+                last_pos: None,
+                input: None,
+                cursor_location: Pos2::ZERO,
+                start_comp_port: None,
+                temp_positions: vec![],
+            },
+            im: InputMode {
+                comp: None,
+                cursor_location: Pos2::ZERO,
+            },
         }
     }
 
-    pub fn update(ctx: &Context, frame: &mut Frame, gui: &mut Gui) {
+    pub fn update(ctx: &Context, _frame: &mut Frame, gui: &mut Gui) {
         let frame = egui::Frame::none().fill(egui::Color32::WHITE);
 
         if Editor::gui_to_editor(gui).should_area_update(ctx) {
@@ -235,7 +247,7 @@ impl Editor {
             e.offset_and_pan = e.pan + e.offset;
         }
         match e.editor_mode {
-            EditorMode::Wire => crate::gui_egui::editor_wire::wire_mode(ctx, e, cpr, layer_id),
+            EditorMode::Wire => crate::gui_egui::editor_wire_mode::wire_mode(ctx, e, cpr, layer_id),
             EditorMode::Input => crate::gui_egui::library::input_mode(ctx, e, cpr, layer_id),
             EditorMode::Default => ctx.output_mut(|o| o.cursor_icon = egui::CursorIcon::Default),
         }
@@ -253,4 +265,14 @@ impl Editor {
     fn gui_to_editor(gui: &mut Gui) -> &mut Editor {
         gui.editor.as_mut().unwrap()
     }
+}
+
+pub fn get_component(components: &Components, comp: CloseToComponent) -> Option<usize> {
+    for (i, c) in components.iter().enumerate() {
+        if Rc::ptr_eq(&c, &comp.comp) {
+            drop(comp);
+            return Some(i);
+        }
+    }
+    None
 }

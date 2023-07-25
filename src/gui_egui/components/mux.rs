@@ -1,5 +1,6 @@
-use crate::common::{EditorMode, EguiComponent, SignalUnsigned, Simulator};
+use crate::common::{EguiComponent, SignalUnsigned, Simulator};
 use crate::components::Mux;
+use crate::gui_egui::editor::EditorMode;
 use crate::gui_egui::helper::offset_helper;
 
 #[typetag::serde]

@@ -1,6 +1,6 @@
 use std::{path::PathBuf, rc::Rc};
 use syncrim::{
-    common::{ComponentStore, Input, SignalUnsigned},
+    common::{ComponentStore, Input},
     components::*,
     fern::fern_setup,
 };

@@ -1,18 +1,13 @@
 use crate::gui_egui::component_ui::{
     input_port, input_selector, pos_slider, properties_window, rect_with_hover,
 };
-use crate::gui_egui::helper::{
-    editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
-};
+use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
+use crate::gui_egui::helper::offset_helper;
 use crate::{
-    common::{Components, EditorMode, EditorRenderReturn, EguiComponent, Ports, Simulator},
+    common::{EguiComponent, Ports, Simulator},
     components::Add,
 };
-use egui::{
-    containers::{ComboBox, Window},
-    Frame, Margin, PointerButton, Pos2, Rect, Rounding, Vec2,
-};
-use epaint::Shadow;
+use egui::{PointerButton, Pos2, Rect, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Add {
@@ -33,9 +28,7 @@ impl EguiComponent for Add {
         offset.y += self.pos.1 * scale;
         let s = scale;
         let o = offset;
-        //trace!("---- Create Add View");
         // The shape
-        // 40x30
         ui.painter().add(egui::Shape::closed_line(
             vec![
                 oh((-20f32, -40f32), s, o),

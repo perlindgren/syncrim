@@ -1,14 +1,7 @@
-use crate::common::{
-    ComponentStore, Components, EditorMode, EditorRenderReturn, EguiComponent, InputPort, Ports,
-    Simulator,
-};
-use crate::gui_egui::helper::{
-    editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
-};
-use egui::{
-    ComboBox, Frame, Id, InnerResponse, Margin, PointerButton, Pos2, Rect, Response, Rounding, Ui,
-    Window,
-};
+use crate::common::{InputPort, Ports};
+use crate::gui_egui::editor::EditorMode;
+use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
+use egui::{ComboBox, Frame, Margin, PointerButton, Pos2, Rect, Response, Rounding, Ui, Window};
 use epaint::Shadow;
 
 pub fn rect_with_hover<P>(

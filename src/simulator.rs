@@ -236,7 +236,7 @@ impl Simulator {
 mod test {
     use super::*;
     use crate::components::*;
-    use std::{cell::RefCell, rc::Rc};
+    use std::rc::Rc;
 
     #[test]
     fn test_define() {

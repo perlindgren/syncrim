@@ -6,6 +6,9 @@ use std::{
     rc::Rc,
 };
 
+#[cfg(feature = "gui-egui")]
+use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
+
 #[cfg(feature = "gui-vizia")]
 use vizia::prelude::*;
 
@@ -115,27 +118,6 @@ pub trait ViziaComponent: Component {
 
     /// create Vizia view
     fn view(&self, _cx: &mut vizia::context::Context) {}
-}
-
-// Specific structs for egui
-#[cfg(feature = "gui-egui")]
-pub enum SnapPriority {
-    Default,
-    Wire,
-}
-
-#[cfg(feature = "gui-egui")]
-#[derive(Debug, Clone, Copy)]
-pub enum EditorMode {
-    Default,
-    Wire,
-    Input,
-}
-
-#[cfg(feature = "gui-egui")]
-pub struct EditorRenderReturn {
-    pub delete: bool,
-    pub resp: Option<Vec<egui::Response>>,
 }
 
 // Specific functionality for EGui frontend

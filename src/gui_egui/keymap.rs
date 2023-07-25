@@ -1,4 +1,5 @@
-use crate::common::{ComponentStore, EditorMode, Simulator};
+use crate::common::{ComponentStore, Simulator};
+use crate::gui_egui::editor::EditorMode;
 use crate::gui_egui::{editor::Editor, Gui};
 use egui::{Key, KeyboardShortcut, Modifiers};
 use std::{path::PathBuf, rc::Rc};
@@ -23,7 +24,7 @@ pub struct Shortcuts {
     pub control_reset: KeyboardShortcut,
     pub control_step_forward: KeyboardShortcut,
     pub control_step_back: KeyboardShortcut,
-    pub editor_wire: KeyboardShortcut,
+    pub editor_wire_mode: KeyboardShortcut,
     pub editor_escape: KeyboardShortcut,
 }
 
@@ -142,7 +143,7 @@ impl Shortcuts {
                 modifiers: shift,
                 key: Key::F10,
             },
-            editor_wire: KeyboardShortcut {
+            editor_wire_mode: KeyboardShortcut {
                 modifiers: none,
                 key: Key::W,
             },
@@ -208,8 +209,8 @@ impl Shortcuts {
         if ctx.input_mut(|i| i.consume_shortcut(&self.control_step_back)) {
             control_step_back_fn(gui);
         }
-        if ctx.input_mut(|i| i.consume_shortcut(&self.editor_wire)) {
-            editor_wire_fn(gui);
+        if ctx.input_mut(|i| i.consume_shortcut(&self.editor_wire_mode)) {
+            editor_wire_mode_fn(gui);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.editor_escape)) {
             editor_escape_fn(gui);
@@ -236,6 +237,7 @@ pub fn file_save_fn(gui: &mut Gui) {
 }
 pub fn file_save_as_fn(_gui: &mut Gui) {}
 pub fn file_editor_toggle_fn(gui: &mut Gui) {
+    // bug: Switching Editor -> Simulator -> Editor crashes
     match gui.editor_use {
         true => {
             gui.editor_use = false;
@@ -327,7 +329,7 @@ pub fn control_step_back_fn(gui: &mut Gui) {
         gui.simulator.as_mut().unwrap().un_clock(&mut gui.clock);
     }
 }
-pub fn editor_wire_fn(gui: &mut Gui) {
+pub fn editor_wire_mode_fn(gui: &mut Gui) {
     if gui.editor_use {
         let editor = gui.editor.as_mut().unwrap();
         match editor.editor_mode {
@@ -338,14 +340,14 @@ pub fn editor_wire_fn(gui: &mut Gui) {
                 editor.editor_mode = EditorMode::Default;
             }
         }
-        crate::gui_egui::editor_wire::reset_wire_mode(editor);
+        crate::gui_egui::editor_wire_mode::reset_wire_mode(&mut editor.wm);
     }
 }
 pub fn editor_escape_fn(gui: &mut Gui) {
     if gui.editor_use {
         let editor = gui.editor.as_mut().unwrap();
         editor.editor_mode = EditorMode::Default;
-        crate::gui_egui::editor_wire::reset_wire_mode(editor);
-        crate::gui_egui::library::reset_input_mode(editor);
+        crate::gui_egui::editor_wire_mode::reset_wire_mode(&mut editor.wm);
+        crate::gui_egui::library::reset_input_mode(&mut editor.im);
     }
 }

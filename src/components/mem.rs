@@ -61,8 +61,8 @@ impl Mem {
         Mem {
             id: id.to_string(),
             pos,
-            width: 0f32,
-            height: 0f32,
+            width,
+            height,
             big_endian,
             data: InputPort {
                 port_id: String::from("data"),

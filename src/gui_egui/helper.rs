@@ -1,7 +1,6 @@
-use crate::common::{Components, EditorMode, EguiComponent, Ports};
-use crate::gui_egui::editor::CloseToComponent;
-use egui::{Pos2, Rect, Response, Sense, Vec2};
-use std::rc::Rc;
+use crate::common::{Components, Ports};
+use crate::gui_egui::editor::EditorMode;
+use egui::{Pos2, Rect, Sense, Vec2};
 
 pub fn offset_reverse_helper_pos2(xy: Pos2, scale: f32, offset: Vec2) -> Pos2 {
     egui::Pos2 {

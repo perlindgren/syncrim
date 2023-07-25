@@ -1,5 +1,6 @@
-use crate::common::{EditorMode, EguiComponent, Simulator};
+use crate::common::{EguiComponent, Simulator};
 use crate::components::ProbeOut;
+use crate::gui_egui::editor::EditorMode;
 use egui::Rect;
 
 #[typetag::serde]
@@ -14,11 +15,5 @@ impl EguiComponent for ProbeOut {
         _editor_mode: EditorMode,
     ) -> Option<Vec<egui::Response>> {
         todo!();
-        None
     }
-    /*
-    fn interactive_rect(&self, ui: &mut egui::Ui, offset: egui::Vec2, scale: f32) -> egui::Rect {
-        todo!()
-    }
-    */
 }

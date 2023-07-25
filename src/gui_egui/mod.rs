@@ -1,6 +1,6 @@
 mod component_ui;
-mod editor;
-mod editor_wire;
+pub mod editor;
+mod editor_wire_mode;
 mod gui;
 pub mod helper;
 mod keymap;

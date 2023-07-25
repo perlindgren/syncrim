@@ -1,6 +1,7 @@
-use crate::common::{Components, EguiComponent, Id, Input, SnapPriority};
+use crate::common::{Components, EguiComponent, Id, Input};
 use crate::components::Wire;
-use crate::gui_egui::editor::{CloseToComponent, Editor};
+use crate::gui_egui::editor::SnapPriority;
+use crate::gui_egui::editor::{get_component, CloseToComponent, Editor};
 use crate::gui_egui::helper::{
     id_ports_of_all_components, offset_helper, offset_reverse_helper, offset_reverse_helper_pos2,
     unique_component_name,
@@ -8,11 +9,20 @@ use crate::gui_egui::helper::{
 use egui::{Color32, Context, CursorIcon, LayerId, PointerButton, Pos2, Response, Shape, Stroke};
 use std::rc::Rc;
 
+pub struct WireMode {
+    pub mode_ended: bool,
+    pub last_pos: Option<Pos2>,
+    pub input: Option<Input>,
+    pub cursor_location: Pos2,
+    pub start_comp_port: Option<CloseToComponent>,
+    pub temp_positions: Vec<(f32, f32)>,
+}
+
 pub fn drag_started(ctx: &Context, e: &mut Editor, _cpr: Response) {
-    e.wire_mode_ended = false;
+    e.wm.mode_ended = false;
     ctx.input_mut(|i| {
         let origin = i.pointer.press_origin().unwrap();
-        e.wire_cursor_location = origin;
+        e.wm.cursor_location = origin;
 
         let offset_cursor_scale = offset_reverse_helper_pos2(origin, e.scale, e.offset_and_pan);
         let (closest, _closest_wire) =
@@ -20,31 +30,30 @@ pub fn drag_started(ctx: &Context, e: &mut Editor, _cpr: Response) {
         let closest_uw = closest.unwrap();
 
         // First click ALWAYS has to start at a port so we force it
-        if e.wire_temp_positions.len() == 0 {
+        if e.wm.temp_positions.len() == 0 {
             // requires at least one component on the canvas
             let new_pos = closest_uw.pos;
-            e.wire_start_comp_port = Some(closest_uw);
+            e.wm.start_comp_port = Some(closest_uw);
             let new_pos = offset_helper((new_pos.x, new_pos.y), e.scale, e.offset_and_pan);
-            e.wire_temp_positions.push((new_pos.x, new_pos.y));
+            e.wm.temp_positions.push((new_pos.x, new_pos.y));
 
             // We clicked close to a port so this will be the last click done
-        } else if e.wire_temp_positions.len() > 0 && closest_uw.dist <= 10.0f32 {
+        } else if e.wm.temp_positions.len() > 0 && closest_uw.dist <= 10.0f32 {
             // We should finish the component
             last_click(e, closest_uw);
 
             // Click somewhere not near a component
         } else {
-            let (wire1, wire2) =
-                wire_split_into_two(*e.wire_temp_positions.last().unwrap(), (origin.x, origin.y));
-            e.wire_temp_positions.push(wire1);
-            e.wire_temp_positions.push(wire2);
+            let mut wires =
+                wire_split_into_two_vec(*e.wm.temp_positions.last().unwrap(), (origin.x, origin.y));
+            e.wm.temp_positions.append(&mut wires)
         }
     });
 }
 
 pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
-    //let in_c = e.wire_start_comp_port.unwrap();
-    let in_c = std::mem::replace(&mut e.wire_start_comp_port, None).unwrap();
+    //let in_c = e.wm.start_comp_port.unwrap();
+    let in_c = std::mem::replace(&mut e.wm.start_comp_port, None).unwrap();
     let out_c = closest_uw;
     let (field_name, input, is_comp_start) =
         get_outputs_from_port(&in_c.port_id, &in_c.comp, &out_c.port_id, &out_c.comp);
@@ -55,12 +64,12 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
             let id = id.as_str();
             let mut pos_v: Vec<(f32, f32)> = vec![];
 
-            for pos in &e.wire_temp_positions {
+            for pos in &e.wm.temp_positions {
                 let pos_2 = offset_reverse_helper(*pos, e.scale, e.offset_and_pan);
                 pos_v.push((pos_2.x, pos_2.y));
             }
 
-            let last_pos = *e.wire_temp_positions.last().unwrap();
+            let last_pos = *e.wm.temp_positions.last().unwrap();
             let last_pos = offset_reverse_helper(last_pos, e.scale, e.offset_and_pan);
             let mut v =
                 wire_split_into_two_vec((last_pos.x, last_pos.y), (out_c.pos.x, out_c.pos.y));
@@ -81,17 +90,7 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
             println!("Seems like you don't have an input at the start or end of the wire");
         }
     }
-    reset_wire_mode(e);
-}
-
-pub fn get_component(components: &Components, comp: CloseToComponent) -> Option<usize> {
-    for (i, c) in components.iter().enumerate() {
-        if Rc::ptr_eq(&c, &comp.comp) {
-            drop(comp);
-            return Some(i);
-        }
-    }
-    None
+    reset_wire_mode(&mut e.wm);
 }
 
 pub fn wire_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<LayerId>) {
@@ -103,15 +102,15 @@ pub fn wire_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<
         if cpr.drag_started_by(PointerButton::Secondary) {
             // place wire end
             // This should also occur when pressing an input/output after the first one
-            reset_wire_mode(e);
+            reset_wire_mode(&mut e.wm);
         }
 
-        if !e.wire_mode_ended {
+        if !e.wm.mode_ended {
             ctx.input_mut(|i| {
-                e.wire_cursor_location += i.pointer.delta();
+                e.wm.cursor_location += i.pointer.delta();
             });
             let offset_cursor_scale =
-                offset_reverse_helper_pos2(e.wire_cursor_location, e.scale, e.offset_and_pan);
+                offset_reverse_helper_pos2(e.wm.cursor_location, e.scale, e.offset_and_pan);
             let (closest, _closest_wire) =
                 clicked_close_to_input_output(offset_cursor_scale, &e.components);
 
@@ -121,23 +120,18 @@ pub fn wire_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<
                         // We are close enough to move the shown wire to here instead
                         c.pos + e.offset_and_pan
                     } else {
-                        e.wire_cursor_location
+                        e.wm.cursor_location
                     }
                 }
-                None => e.wire_cursor_location,
+                None => e.wm.cursor_location,
             };
 
             let v = wire_split_into_two_vec(
-                *e.wire_temp_positions.last().unwrap(),
+                *e.wm.temp_positions.last().unwrap(),
                 (wire_shown_location.x, wire_shown_location.y),
             );
-            let mut draw_vec: Vec<Pos2> = vec![]; // = s.wire_temp_positions.clone();
-            for (posx, posy) in e
-                .wire_temp_positions
-                .clone()
-                .into_iter()
-                .chain(v.into_iter())
-            {
+            let mut draw_vec: Vec<Pos2> = vec![]; // = s.wm.temp_positions.clone();
+            for (posx, posy) in e.wm.temp_positions.clone().into_iter().chain(v.into_iter()) {
                 draw_vec.push(Pos2::new(posx, posy))
             }
 
@@ -151,6 +145,9 @@ pub fn wire_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<
         }
     }
 }
+
+/// This will only occasionally split the wire into two parts in case needed (e.g. drawing a straight
+/// line)
 pub fn wire_split_into_two_vec(prev: (f32, f32), current: (f32, f32)) -> Vec<(f32, f32)> {
     let mut v = vec![];
     if f32::abs(current.0 - prev.0) < 0.1f32 && f32::abs(current.1 - prev.1) < 0.01f32 {
@@ -164,20 +161,20 @@ pub fn wire_split_into_two_vec(prev: (f32, f32), current: (f32, f32)) -> Vec<(f3
 }
 
 pub fn wire_split_into_two(prev: (f32, f32), current: (f32, f32)) -> ((f32, f32), (f32, f32)) {
-    if f32::abs(prev.0 - current.0) > f32::abs(prev.1 - current.1) {
+    if f32::abs(prev.0 - current.0) < f32::abs(prev.1 - current.1) {
         ((current.0, prev.1), (current.0, current.1))
     } else {
         ((prev.0, current.1), (current.0, current.1))
     }
 }
 
-pub fn reset_wire_mode(e: &mut Editor) {
-    e.wire_mode_ended = true;
-    e.wire_last_pos = None;
-    e.wire_input = None;
-    e.wire_cursor_location = Pos2::ZERO;
-    e.wire_start_comp_port = None;
-    e.wire_temp_positions = vec![];
+pub fn reset_wire_mode(wm: &mut WireMode) {
+    wm.mode_ended = true;
+    wm.last_pos = None;
+    wm.input = None;
+    wm.cursor_location = Pos2::ZERO;
+    wm.start_comp_port = None;
+    wm.temp_positions = vec![];
 }
 
 /// returns an input made from the output
