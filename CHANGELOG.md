@@ -4,6 +4,8 @@ Tracking changes per date:
 
 ## 230725
 
+- Added RISC-V components and model
+
 - Implemented the `ProbeAssert` component, that assert a set sequence of inputs. Made some updates so reading outside of the assert/stim buffers gives `Signal::Unknown` instead of panic (if not in test mode).
 
   Asserts are run only in test mode, allowing gui testing to be more robust.
