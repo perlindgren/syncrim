@@ -238,7 +238,6 @@ pub fn file_save_fn(gui: &mut Gui) {
 }
 pub fn file_save_as_fn(_gui: &mut Gui) {}
 pub fn file_editor_toggle_fn(gui: &mut Gui) {
-    // bug: Switching Editor -> Simulator -> Editor crashes
     match gui.editor_use {
         true => {
             gui.editor_use = false;
@@ -249,15 +248,18 @@ pub fn file_editor_toggle_fn(gui: &mut Gui) {
             }
         }
         false => {
-            let simulator = gui.simulator.take();
-            let simulator = simulator.unwrap();
-            let mut components = simulator.ordered_components.clone();
-            drop(simulator);
+            let editor_existed: bool = gui.editor.as_mut().is_some();
 
-            for c in components.iter_mut() {
-                (*Rc::get_mut(c).unwrap()).set_id_tmp();
+            let simulator = gui.simulator.take().unwrap();
+            let mut components = simulator.ordered_components;
+
+            if !editor_existed {
+                for c in components.iter_mut() {
+                    (*Rc::get_mut(c).unwrap()).set_id_tmp();
+                }
+                let _ = gui.editor.insert(Editor::gui(components, &gui.path));
             }
-            let _ = gui.editor.insert(Editor::gui(components, &gui.path));
+
             gui.editor_use = true;
         }
     }

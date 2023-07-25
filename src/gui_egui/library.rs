@@ -122,5 +122,8 @@ pub fn add_comp_to_editor(e: &mut Editor) {
     Rc::<dyn EguiComponent>::get_mut(&mut comp)
         .unwrap()
         .set_pos((pos.x, pos.y));
+    Rc::<dyn EguiComponent>::get_mut(&mut comp)
+        .unwrap()
+        .set_id_tmp();
     e.components.push(comp);
 }

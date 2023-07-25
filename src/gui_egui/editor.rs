@@ -269,7 +269,7 @@ impl Editor {
 
 pub fn get_component(components: &Components, comp: CloseToComponent) -> Option<usize> {
     for (i, c) in components.iter().enumerate() {
-        if std::ptr::eq(c, &comp.comp) {
+        if Rc::ptr_eq(c, &comp.comp) {
             drop(comp);
             return Some(i);
         }
