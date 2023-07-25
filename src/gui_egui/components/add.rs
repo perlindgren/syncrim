@@ -1,5 +1,5 @@
 use crate::gui_egui::component_ui::{
-    input_id, input_selector, pos_slider, properties_window, rect_with_hover,
+    input_port, input_selector, pos_slider, properties_window, rect_with_hover,
 };
 use crate::gui_egui::helper::{
     editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
@@ -110,7 +110,7 @@ impl EguiComponent for Add {
             resp,
             &mut self.egui_x.properties_window,
             |ui| {
-                input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
+                input_port(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
                 input_selector(ui, &mut self.a_in, id_ports);
                 input_selector(ui, &mut self.b_in, id_ports);
@@ -136,8 +136,14 @@ impl EguiComponent for Add {
     fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![
-            (self.a_in.id.clone(), Pos2::new(-20f32, -20f32) + own_pos),
-            (self.b_in.id.clone(), Pos2::new(-20f32, 20f32) + own_pos),
+            (
+                self.a_in.port_id.clone(),
+                Pos2::new(-20f32, -20f32) + own_pos,
+            ),
+            (
+                self.b_in.port_id.clone(),
+                Pos2::new(-20f32, 20f32) + own_pos,
+            ),
             (String::from("out"), Pos2::new(20f32, 0f32) + own_pos),
             (String::from("overflow"), Pos2::new(0f32, -40f32) + own_pos),
         ]

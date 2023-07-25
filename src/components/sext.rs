@@ -1,6 +1,6 @@
 // use std::fmt::Alignment;
 use crate::common::{
-    Component, Id, Input, InputId, OutputType, Ports, Signal, SignalSigned, SignalUnsigned,
+    Component, Id, Input, InputPort, OutputType, Ports, Signal, SignalSigned, SignalUnsigned,
     Simulator,
 };
 use log::*;
@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 pub struct Sext {
     pub id: Id,
     pub pos: (f32, f32),
-    pub sext_in: InputId,
+    pub sext_in: InputPort,
     pub in_size: u32,
     pub out_size: u32,
 
@@ -22,8 +22,8 @@ impl Sext {
         Sext {
             id: id.to_string(),
             pos,
-            sext_in: InputId {
-                id: String::from("sext_in"),
+            sext_in: InputPort {
+                port_id: String::from("sext_in"),
                 input: sext_in,
             },
             in_size,

@@ -3,7 +3,7 @@ use crate::common::{
     Simulator,
 };
 use crate::components::Constant;
-use crate::gui_egui::component_ui::{input_id, pos_slider, properties_window, rect_with_hover};
+use crate::gui_egui::component_ui::{input_port, pos_slider, properties_window, rect_with_hover};
 use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
 use egui::{
     Align2, Area, Color32, Frame, Margin, Order, PointerButton, Pos2, Rect, RichText, Rounding,
@@ -91,7 +91,7 @@ impl EguiComponent for Constant {
             resp,
             &mut self.egui_x.properties_window,
             |ui| {
-                input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
+                input_port(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
                 // todo: Fix this
                 /*

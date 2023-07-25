@@ -1,11 +1,11 @@
-use crate::common::{Component, Id, Input, InputId, OutputType, Ports, Simulator};
+use crate::common::{Component, Id, Input, InputPort, OutputType, Ports, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct Register {
     pub id: Id,
     pub pos: (f32, f32),
-    pub r_in: InputId,
+    pub r_in: InputPort,
 
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
@@ -16,8 +16,8 @@ impl Register {
         Register {
             id: id.to_string(),
             pos,
-            r_in: InputId {
-                id: String::from("r_in"),
+            r_in: InputPort {
+                port_id: String::from("r_in"),
                 input: r_in,
             },
             #[cfg(feature = "gui-egui")]

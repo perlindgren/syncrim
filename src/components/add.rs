@@ -1,5 +1,5 @@
 use crate::common::{
-    Component, Id, Input, InputId, OutputType, Ports, Signal, SignalSigned, SignalUnsigned,
+    Component, Id, Input, InputPort, OutputType, Ports, Signal, SignalSigned, SignalUnsigned,
     Simulator,
 };
 use log::*;
@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize};
 pub struct Add {
     pub id: Id,
     pub pos: (f32, f32),
-    pub a_in: InputId,
-    pub b_in: InputId,
+    pub a_in: InputPort,
+    pub b_in: InputPort,
 
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
@@ -22,12 +22,12 @@ impl Add {
         Add {
             id: id.to_string(),
             pos,
-            a_in: InputId {
-                id: String::from("a_in"),
+            a_in: InputPort {
+                port_id: String::from("a_in"),
                 input: a_in,
             },
-            b_in: InputId {
-                id: String::from("b_in"),
+            b_in: InputPort {
+                port_id: String::from("b_in"),
                 input: b_in,
             },
             #[cfg(feature = "gui-egui")]

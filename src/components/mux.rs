@@ -1,5 +1,5 @@
 use crate::common::{
-    Component, Id, Input, InputId, OutputType, Ports, Signal, SignalUnsigned, Simulator,
+    Component, Id, Input, InputPort, OutputType, Ports, Signal, SignalUnsigned, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 pub struct Mux {
     pub id: Id,
     pub pos: (f32, f32),
-    pub select: InputId,
-    pub m_in: Vec<InputId>,
+    pub select: InputPort,
+    pub m_in: Vec<InputPort>,
 
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
@@ -19,16 +19,16 @@ impl Mux {
     pub fn new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Self {
         let mut v = vec![];
         for (i, input) in m_in.iter().enumerate() {
-            v.push(InputId {
-                id: format!("in{}", i),
+            v.push(InputPort {
+                port_id: format!("in{}", i),
                 input: input.clone(),
             });
         }
         Mux {
             id: id.to_string(),
             pos,
-            select: InputId {
-                id: String::from("select"),
+            select: InputPort {
+                port_id: String::from("select"),
                 input: select,
             },
             m_in: v,

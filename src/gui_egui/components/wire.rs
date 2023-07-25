@@ -4,7 +4,7 @@ use crate::common::{
 };
 use crate::components::Wire;
 use crate::gui_egui::component_ui::{
-    input_id, input_selector, pos_slider, properties_window, rect_with_hover,
+    input_port, input_selector, pos_slider, properties_window, rect_with_hover,
 };
 use crate::gui_egui::helper::{
     editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
@@ -65,7 +65,7 @@ impl EguiComponent for Wire {
                 /*
                 match &simulator {
                     Some(s) => ui.label({
-                        let r: Result<SignalUnsigned, String> = self.input_id.try_into();
+                        let r: Result<SignalUnsigned, String> = self.input_port.try_into();
                         match r {
                             Ok(data) => format!("{:#x}", data),
                             _ => format!("{:?}", value),
@@ -112,15 +112,15 @@ impl EguiComponent for Wire {
                 resp,
                 &mut self.egui_x.properties_window,
                 |ui| {
-                    input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
+                    input_port(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
                     pos_slider(ui, &mut self.pos[i]);
                     pos_slider(ui, &mut self.pos[i + 1]);
-                    input_selector(ui, &mut self.input_id, id_ports);
+                    input_selector(ui, &mut self.input_port, id_ports);
                 },
             );
             /*
                 if self.egui_x.properties_window {
-                    let mut input = self.input_id.input.id.clone();
+                    let mut input = self.input_port.input.id.clone();
                     let resp = Window::new(format!("Properties: {}", self.id))
                         .frame(Frame {
                             inner_margin: Margin::same(10f32),
@@ -180,7 +180,7 @@ impl EguiComponent for Wire {
                                         ui.selectable_value(&mut input, id.clone(), id);
                                     }
                                 });
-                            self.input_id.input.id = input;
+                            self.input_port.input.id = input;
                         });
                     if resp.unwrap().response.clicked_elsewhere() {
                         self.egui_x.properties_window = false;
@@ -214,7 +214,10 @@ impl EguiComponent for Wire {
     fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
         let mut vec: Vec<(crate::common::Id, Pos2)> = vec![];
         for (i, pos) in self.pos.iter().enumerate() {
-            vec.push((format!("{}", i), Pos2 { x: pos.0, y: pos.1 }));
+            vec.push((
+                format!("{}-{}", self.input_port.port_id, i),
+                Pos2 { x: pos.0, y: pos.1 },
+            ));
         }
         vec
     }

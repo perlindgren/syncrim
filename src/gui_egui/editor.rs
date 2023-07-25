@@ -1,5 +1,5 @@
 use crate::common::{
-    ComponentStore, Components, EditorMode, EguiComponent, Id, Input, InputId, Simulator,
+    ComponentStore, Components, EditorMode, EguiComponent, Id, Input, InputPort, Simulator,
 };
 use crate::components::*;
 use crate::gui_egui::{

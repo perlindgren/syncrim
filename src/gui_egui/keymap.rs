@@ -248,7 +248,6 @@ pub fn file_editor_toggle_fn(gui: &mut Gui) {
                 }
                 _ => (),
             }
-            // todo: Make us swap back into simulator mode (create new simulator)
         }
         false => {
             let simulator = std::mem::replace(&mut gui.simulator, None);

@@ -1,5 +1,5 @@
 use crate::common::{
-    Component, Id, Input, InputId, OutputType, Ports, Signal, SignalSigned, SignalUnsigned,
+    Component, Id, Input, InputPort, OutputType, Ports, Signal, SignalSigned, SignalUnsigned,
     Simulator,
 };
 use log::*;
@@ -19,11 +19,11 @@ pub struct Mem {
     pub big_endian: bool,
 
     // ports
-    pub data: InputId,
-    pub addr: InputId,
-    pub ctrl: InputId,
-    pub sign: InputId,
-    pub size: InputId,
+    pub data: InputPort,
+    pub addr: InputPort,
+    pub ctrl: InputPort,
+    pub sign: InputPort,
+    pub size: InputPort,
 
     // memory
     pub memory: Memory,
@@ -64,24 +64,24 @@ impl Mem {
             width: 0f32,
             height: 0f32,
             big_endian,
-            data: InputId {
-                id: String::from("data"),
+            data: InputPort {
+                port_id: String::from("data"),
                 input: data,
             },
-            addr: InputId {
-                id: String::from("addr"),
+            addr: InputPort {
+                port_id: String::from("addr"),
                 input: addr,
             },
-            ctrl: InputId {
-                id: String::from("ctrl"),
+            ctrl: InputPort {
+                port_id: String::from("ctrl"),
                 input: ctrl,
             },
-            sign: InputId {
-                id: String::from("sign"),
+            sign: InputPort {
+                port_id: String::from("sign"),
                 input: sign,
             },
-            size: InputId {
-                id: String::from("size"),
+            size: InputPort {
+                port_id: String::from("size"),
                 input: size,
             },
             memory,

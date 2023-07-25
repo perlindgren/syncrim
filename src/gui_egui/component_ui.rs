@@ -1,5 +1,5 @@
 use crate::common::{
-    ComponentStore, Components, EditorMode, EditorRenderReturn, EguiComponent, InputId, Ports,
+    ComponentStore, Components, EditorMode, EditorRenderReturn, EguiComponent, InputPort, Ports,
     Simulator,
 };
 use crate::gui_egui::helper::{
@@ -85,14 +85,14 @@ pub fn pos_slider(ui: &mut Ui, pos: &mut (f32, f32)) {
 }
 pub fn input_selector(
     ui: &mut Ui,
-    input_id: &mut InputId,
+    input_port: &mut InputPort,
     id_ports: &Vec<(crate::common::Id, Ports)>,
 ) {
-    let mut port_id = input_id.input.id.clone();
-    let mut port_field = input_id.input.field.clone();
-    let label_port_id = format!("{}.id", input_id.id.clone());
+    let mut port_id = input_port.input.id.clone();
+    let mut port_field = input_port.input.field.clone();
+    let label_port_id = format!("{}.id", input_port.port_id.clone());
     let text_port_id = format!("{}", port_id);
-    let label_port_field = format!("{}.field", input_id.id.clone());
+    let label_port_field = format!("{}.field", input_port.port_id.clone());
     let text_port_field = format!("{}", port_field);
     ui.horizontal(|ui| {
         ComboBox::from_label(label_port_id)
@@ -118,11 +118,11 @@ pub fn input_selector(
                 }
             });
     });
-    input_id.input.id = port_id;
-    input_id.input.field = port_field;
+    input_port.input.id = port_id;
+    input_port.input.field = port_field;
 }
 
-pub fn input_id(
+pub fn input_port(
     ui: &mut Ui,
     id_tmp: &mut String,
     id: &mut String,

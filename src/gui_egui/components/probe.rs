@@ -4,7 +4,7 @@ use crate::common::{
 };
 use crate::components::Probe;
 use crate::gui_egui::component_ui::{
-    input_id, input_selector, pos_slider, properties_window, rect_with_hover,
+    input_port, input_selector, pos_slider, properties_window, rect_with_hover,
 };
 use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
 use egui::{
@@ -27,9 +27,9 @@ impl EguiComponent for Probe {
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
-        let input_id = self.input_id.clone();
+        let input_port = self.input_port.clone();
         let value = match simulator {
-            Some(s) => s.get_input_val(&input_id.input),
+            Some(s) => s.get_input_val(&input_port.input),
             None => Signal::Data(0),
         };
         let area = Area::new(self.id.to_string())
@@ -100,9 +100,9 @@ impl EguiComponent for Probe {
             resp,
             &mut self.egui_x.properties_window,
             |ui| {
-                input_id(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
+                input_port(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
-                input_selector(ui, &mut self.input_id, id_ports);
+                input_selector(ui, &mut self.input_port, id_ports);
             },
         );
 
@@ -124,7 +124,10 @@ impl EguiComponent for Probe {
 
     fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
-        vec![(self.input_id.id.clone(), Pos2::new(-10f32, 0f32) + own_pos)]
+        vec![(
+            self.input_port.port_id.clone(),
+            Pos2::new(-10f32, 0f32) + own_pos,
+        )]
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {

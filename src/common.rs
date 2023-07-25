@@ -53,8 +53,6 @@ type Components = Vec<Rc<dyn Component>>;
 #[cfg(feature = "gui-vizia")]
 type Components = Vec<Rc<dyn ViziaComponent>>;
 
-// todo: Probably make a separate ComponentsEditor type
-// so we don't have to use refcell everywhere
 #[cfg(feature = "gui-egui")]
 pub type Components = Vec<Rc<dyn EguiComponent>>;
 
@@ -73,7 +71,7 @@ pub struct Simulator {
     pub graph: Graph<Id, ()>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ComponentStore {
     pub store: Components,
 }
@@ -208,13 +206,13 @@ impl Default for EguiExtra {
 
 #[derive(Debug, Clone)]
 pub struct Ports {
-    pub inputs: Vec<InputId>,
+    pub inputs: Vec<InputPort>,
     pub out_type: OutputType,
     pub outputs: Vec<Id>,
 }
 
 impl Ports {
-    pub fn new(inputs: Vec<&InputId>, out_type: OutputType, outputs: Vec<&str>) -> Self {
+    pub fn new(inputs: Vec<&InputPort>, out_type: OutputType, outputs: Vec<&str>) -> Self {
         Ports {
             inputs: inputs.into_iter().cloned().collect(),
             out_type,
@@ -239,15 +237,15 @@ impl Input {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct InputId {
-    pub id: Id,
+pub struct InputPort {
+    pub port_id: Id,
     pub input: Input,
 }
 
-impl InputId {
+impl InputPort {
     pub fn new(id_self: &str, id: &str, field: &str) -> Self {
-        InputId {
-            id: id_self.into(),
+        InputPort {
+            port_id: id_self.into(),
             input: Input::new(id, field),
         }
     }
