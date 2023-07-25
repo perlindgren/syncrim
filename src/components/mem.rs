@@ -54,8 +54,8 @@ impl Mem {
         data: Input,
         addr: Input,
         ctrl: Input,
-        sign: Input,
         size: Input,
+        sign: Input,
         memory: Memory,
     ) -> Self {
         Mem {
@@ -76,13 +76,13 @@ impl Mem {
                 port_id: String::from("ctrl"),
                 input: ctrl,
             },
-            sign: InputPort {
-                port_id: String::from("sign"),
-                input: sign,
-            },
             size: InputPort {
                 port_id: String::from("size"),
                 input: size,
+            },
+            sign: InputPort {
+                port_id: String::from("sign"),
+                input: sign,
             },
             memory,
             #[cfg(feature = "gui-egui")]
@@ -492,7 +492,7 @@ mod test {
                 Rc::new(ProbeOut::new("size")),
                 Rc::new(ProbeOut::new("sign")),
                 Rc::new(Mem::new(
-                    "mem".into(),
+                    "mem",
                     (0.0, 0.0),
                     0.0,
                     0.0,

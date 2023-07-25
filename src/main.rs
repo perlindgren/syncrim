@@ -22,5 +22,9 @@ fn main() {
     syncrim::gui_egui::gui(cs, &_path).ok();
 
     #[cfg(feature = "gui-vizia")]
-    syncrim::gui_vizia::gui(&_cs, &_path);
+    syncrim::gui_vizia::gui(cs, &_path);
+
+    // run headless
+    #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
+    syncrim::common::Simulator::new(cs, &mut 0);
 }
