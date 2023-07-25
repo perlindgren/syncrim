@@ -111,14 +111,8 @@ impl GuiData {
     }
 }
 
-<<<<<<< HEAD
 pub fn gui(cs: ComponentStore, path: &PathBuf) {
-    let mut clock = 0;
-    let simulator = Simulator::new(cs, &mut clock);
-=======
-pub fn gui(cs: &ComponentStore, path: &PathBuf) {
     let simulator = Simulator::new(cs);
->>>>>>> upstream/master
     let path = path.to_owned();
     simulator.save_dot(&path);
 
