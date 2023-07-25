@@ -1,6 +1,6 @@
 // An example MIPS model
 use riscv::components::*;
-use std::{path::PathBuf, rc::Rc, cell::RefCell};
+use std::{cell::RefCell, path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
@@ -25,67 +25,70 @@ fn main() {
                 pos: (100.0, 140.0),
                 r_in: Input::new("pc_adder_mux", "out"),
             }),
-
-
-            Rc::new(Mux{
-                id:"pc_adder_mux".to_string(),
-                pos:(100.0, 120.0),
+            Rc::new(Mux {
+                id: "pc_adder_mux".to_string(),
+                pos: (100.0, 120.0),
                 select: Input::new("branch_logic", "out"),
-                m_in:vec![Input::new("pc_adder", "out"),Input::new("jalr_stripper", "out"),Input::new("branch_adder", "out")]
+                m_in: vec![
+                    Input::new("pc_adder", "out"),
+                    Input::new("jalr_stripper", "out"),
+                    Input::new("branch_adder", "out"),
+                ],
             }),
-            Rc::new(Add{
-                id:"jalr_adder".to_string(),
-                pos:(100.0, 200.0),
-                a_in:Input::new("reg_file", "reg_a"),
-                b_in:Input::new("jalr_se", "out"),
-
+            Rc::new(Add {
+                id: "jalr_adder".to_string(),
+                pos: (100.0, 200.0),
+                a_in: Input::new("reg_file", "reg_a"),
+                b_in: Input::new("jalr_se", "out"),
             }),
-            Rc::new(BranchLogic{
-                id:"branch_logic".to_string(),
-                pos:(725.0, 300.0),
-                rs1:Input::new("reg_file", "reg_a"),
-                rs2:Input::new("reg_file", "reg_b"),
-                ctrl:Input::new("decoder", "branch_logic_ctl"),
-                enable:Input::new("decoder", "branch_logic_enable"),
+            Rc::new(BranchLogic {
+                id: "branch_logic".to_string(),
+                pos: (725.0, 300.0),
+                rs1: Input::new("reg_file", "reg_a"),
+                rs2: Input::new("reg_file", "reg_b"),
+                ctrl: Input::new("decoder", "branch_logic_ctl"),
+                enable: Input::new("decoder", "branch_logic_enable"),
             }),
-            Rc::new(LSBZero{
-                id:"jalr_stripper".to_string(),
-                pos:(600.0, 1000.0),
-                data_i:Input::new("jalr_adder", "out"),
+            Rc::new(LSBZero {
+                id: "jalr_stripper".to_string(),
+                pos: (600.0, 1000.0),
+                data_i: Input::new("jalr_adder", "out"),
             }),
-            Rc::new(Sext{
-                id:"jalr_se".to_string(),
-                pos:(900.0,900.0),
-                sext_in:Input::new("decoder", "jalr_imm"),
-                in_size:12,
-                out_size:32,
+            Rc::new(Sext {
+                id: "jalr_se".to_string(),
+                pos: (900.0, 900.0),
+                sext_in: Input::new("decoder", "jalr_imm"),
+                in_size: 12,
+                out_size: 32,
             }),
-
-            Rc::new(Mux{
-                id:"branch_adder_mux".to_string(),
-                pos:(500.0, 1000.0),
-                select:Input::new("decoder","pc_imm_sel"),
-                m_in:vec![Input::new("jal_imm_sext","out"),Input::new("branch_imm_sext","out")],
+            Rc::new(Mux {
+                id: "branch_adder_mux".to_string(),
+                pos: (500.0, 1000.0),
+                select: Input::new("decoder", "pc_imm_sel"),
+                m_in: vec![
+                    Input::new("jal_imm_sext", "out"),
+                    Input::new("branch_imm_sext", "out"),
+                ],
             }),
-            Rc::new(Add{
-                id:"branch_adder".to_string(),
-                pos:(500.0, 1000.0),
-                a_in:Input::new("reg", "out"),
-                b_in:Input::new("branch_adder_mux","out"),
+            Rc::new(Add {
+                id: "branch_adder".to_string(),
+                pos: (500.0, 1000.0),
+                a_in: Input::new("reg", "out"),
+                b_in: Input::new("branch_adder_mux", "out"),
             }),
-            Rc::new(Sext{
-                id:"jal_imm_sext".to_string(),
-                pos:(500.0,1000.0),
-                sext_in:Input::new("decoder", "big_imm"),
-                in_size:21,
-                out_size:32,
+            Rc::new(Sext {
+                id: "jal_imm_sext".to_string(),
+                pos: (500.0, 1000.0),
+                sext_in: Input::new("decoder", "big_imm"),
+                in_size: 21,
+                out_size: 32,
             }),
-            Rc::new(Sext{
-                id:"branch_imm_sext".to_string(),
-                pos:(500.0,1000.0),
-                sext_in:Input::new("decoder", "branch_imm"),
-                in_size:13,
-                out_size:32,
+            Rc::new(Sext {
+                id: "branch_imm_sext".to_string(),
+                pos: (500.0, 1000.0),
+                sext_in: Input::new("decoder", "branch_imm"),
+                in_size: 13,
+                out_size: 32,
             }),
             Rc::new(InstrMem {
                 id: "instr_mem".to_string(),
@@ -170,47 +173,44 @@ fn main() {
                     0x00800113, //addi x2, x0, 8
                     0x00408093, //addi x1, x1, 4
                     0xfe20fee3, //bgeu x1, x2, -4
-                    0x00408093,
-                    0x00408093,
-                    0x00408093,
-                    0x00408093,
-
-                    4,5,6,7,8,9],
-            }),    
-            Rc::new(Decoder{
+                    0x00408093, 0x00408093, 0x00408093, 0x00408093, 4, 5, 6, 7, 8, 9,
+                ],
+            }),
+            Rc::new(Decoder {
                 id: "decoder".to_string(),
                 pos: (300.0, 150.0),
-                instruction:Input::new("instr_mem", "instruction"),
+                instruction: Input::new("instr_mem", "instruction"),
             }),
-            Rc::new(Register{
+            Rc::new(Register {
                 id: "regfile_we_reg".to_string(),
                 pos: (450.0, 50.0),
-                r_in: Input::new("decoder","regfile_we"),
+                r_in: Input::new("decoder", "regfile_we"),
             }),
-            Rc::new(Register{
+            Rc::new(Register {
                 id: "regfile_rd_reg".to_string(),
-                pos:(480.0, 50.0),
+                pos: (480.0, 50.0),
                 r_in: Input::new("decoder", "regfile_rd"),
             }),
-            Rc::new(SZExt{
+            Rc::new(SZExt {
                 id: "imm_szext".to_string(),
-                pos:(450.0, 1000.0),
-                data_i:Input::new("decoder", "sign_zero_ext_data"),
-                sel_i:Input::new("decoder", "sign_zero_ext_sel"),
-
+                pos: (450.0, 1000.0),
+                data_i: Input::new("decoder", "sign_zero_ext_data"),
+                sel_i: Input::new("decoder", "sign_zero_ext_sel"),
             }),
-            Rc::new(RegFile{
-                id:"reg_file".into(),
-                pos:(450.0, 150.0),
-                width:100.0,
-                height:100.0,
-                read_addr1:Input::new("decoder", "regfile_rs1"),
-                read_addr2:Input::new("decoder", "regfile_rs2"),
-                write_data:Input::new("wb_mux", "out"),
-                write_addr:Input::new("regfile_rd_reg", "out"), 
-                write_enable:Input::new("regfile_we_reg", "out"),
-                registers: RegStore::new(Rc::new(RefCell::new([0,1,2,3,10,5,6,7,8,9,10,11,12,13,14,15,16,
-                    17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]))),
+            Rc::new(RegFile {
+                id: "reg_file".into(),
+                pos: (450.0, 150.0),
+                width: 100.0,
+                height: 100.0,
+                read_addr1: Input::new("decoder", "regfile_rs1"),
+                read_addr2: Input::new("decoder", "regfile_rs2"),
+                write_data: Input::new("wb_mux", "out"),
+                write_addr: Input::new("regfile_rd_reg", "out"),
+                write_enable: Input::new("regfile_we_reg", "out"),
+                registers: RegStore::new(Rc::new(RefCell::new([
+                    0, 1, 2, 3, 10, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                    22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+                ]))),
                 // registers: vec![Cell::new(0),
                 // RefCell::new(1),
                 // Cell::new(2),
@@ -244,53 +244,63 @@ fn main() {
                 // Cell::new(30),
                 // Cell::new(31),
                 // ],
-                history:RegHistory::new(),
+                history: RegHistory::new(),
             }),
-            Rc::new({Mem{
-                id:"data_memory".to_string(),
-                pos:(700.0, 600.0),
-                width:100.0,
-                height:100.0,
-                big_endian:false,
-                data:Input::new("reg_file", "reg_b"),
-                addr:Input::new("alu", "result_o"),
-                ctrl:Input::new("decoder", "data_mem_ctrl"),
-                sign:Input::new("decoder", "data_se"),
-                size:Input::new("decoder", "data_mem_size"),
-                memory: Memory::new(),
-
-
-            }}),
-            Rc::new(Constant{
-                id:"zero_c".to_string(),
-                pos:(680.0, 150.0),
-                value:0.try_into().unwrap(),
+            Rc::new({
+                Mem {
+                    id: "data_memory".to_string(),
+                    pos: (700.0, 600.0),
+                    width: 100.0,
+                    height: 100.0,
+                    big_endian: false,
+                    data: Input::new("reg_file", "reg_b"),
+                    addr: Input::new("alu", "result_o"),
+                    ctrl: Input::new("decoder", "data_mem_ctrl"),
+                    sign: Input::new("decoder", "data_se"),
+                    size: Input::new("decoder", "data_mem_size"),
+                    memory: Memory::new(),
+                }
             }),
-            Rc::new(Mux{
-                id:"alu_operand_a_mux".to_string(),
-                pos:(700.0,150.0),
-                select:Input::new("decoder", "alu_operand_a_sel"),
-                m_in:vec![Input::new("reg_file","reg_a"),Input::new("decoder","imm_a_mux_data"), Input::new("zero_c", "out")]
+            Rc::new(Constant {
+                id: "zero_c".to_string(),
+                pos: (680.0, 150.0),
+                value: 0.try_into().unwrap(),
             }),
-            Rc::new(Mux{
-                id:"alu_operand_b_mux".to_string(),
-                pos:(700.0,300.0),
-                select:Input::new("decoder", "alu_operand_b_sel"),
-                m_in:vec![Input::new("reg_file","reg_b"),Input::new("imm_szext","out"),Input::new("pc_adder","out" )]
+            Rc::new(Mux {
+                id: "alu_operand_a_mux".to_string(),
+                pos: (700.0, 150.0),
+                select: Input::new("decoder", "alu_operand_a_sel"),
+                m_in: vec![
+                    Input::new("reg_file", "reg_a"),
+                    Input::new("decoder", "imm_a_mux_data"),
+                    Input::new("zero_c", "out"),
+                ],
             }),
-
-            Rc::new(ALU{
-                id:"alu".to_string(),
-                pos:(800.0, 225.0),
-                operator_i:Input::new("decoder", "alu_operator"),
-                operand_a_i:Input::new("alu_operand_a_mux", "out"),
-                operand_b_i:Input::new("alu_operand_b_mux", "out"),
+            Rc::new(Mux {
+                id: "alu_operand_b_mux".to_string(),
+                pos: (700.0, 300.0),
+                select: Input::new("decoder", "alu_operand_b_sel"),
+                m_in: vec![
+                    Input::new("reg_file", "reg_b"),
+                    Input::new("imm_szext", "out"),
+                    Input::new("pc_adder", "out"),
+                ],
             }),
-            Rc::new(Mux{
-                id:"wb_mux".to_string(),
-                pos:(900.0, 225.0),
-                select:Input::new("decoder", "wb_mux"),
-                m_in:vec![Input::new("alu", "result_o"),Input::new("data_memory", "data")],
+            Rc::new(ALU {
+                id: "alu".to_string(),
+                pos: (800.0, 225.0),
+                operator_i: Input::new("decoder", "alu_operator"),
+                operand_a_i: Input::new("alu_operand_a_mux", "out"),
+                operand_b_i: Input::new("alu_operand_b_mux", "out"),
+            }),
+            Rc::new(Mux {
+                id: "wb_mux".to_string(),
+                pos: (900.0, 225.0),
+                select: Input::new("decoder", "wb_mux"),
+                m_in: vec![
+                    Input::new("alu", "result_o"),
+                    Input::new("data_memory", "data"),
+                ],
             }),
         ],
     };

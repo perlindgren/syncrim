@@ -1,4 +1,4 @@
-use std::{collections::HashMap, cell::RefCell};
+use std::{cell::RefCell, collections::HashMap};
 
 use serde::{Deserialize, Serialize};
 use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
@@ -10,29 +10,29 @@ pub struct CSR {
     pub registers: Registers,
     pub address: Input,
     pub data: Input,
-    pub we:Input,
+    pub we: Input,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Registers{
+pub struct Registers {
     registers: RefCell<HashMap<usize, (u32, CSRPriv)>>,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub enum CSRPriv{
+pub enum CSRPriv {
     MRO,
     MRW,
 }
 
-impl Default for Registers{
-    fn default() -> Self{
+impl Default for Registers {
+    fn default() -> Self {
         let mut map = HashMap::new();
-        map.insert(0xF11, (0x0, CSRPriv::MRO)); //mvendorid may be 0x0 
-        map.insert(0xF12,(0x0, CSRPriv::MRO)); //marchid may be 0x0
+        map.insert(0xF11, (0x0, CSRPriv::MRO)); //mvendorid may be 0x0
+        map.insert(0xF12, (0x0, CSRPriv::MRO)); //marchid may be 0x0
         map.insert(0xF13, (0x0, CSRPriv::MRO)); //mimpid may be 0x0
         map.insert(0xF14, (0x0, CSRPriv::MRO)); //mhartid, since we only have one hart, this must be 0
 
-        map.insert(0x300, (0b11<<11, CSRPriv::MRW)); //mstatus, mpp should be = 3
-        map.insert(0x301, (1<<8, CSRPriv::MRW)); //misa, we support RV32I base ISA
+        map.insert(0x300, (0b11 << 11, CSRPriv::MRW)); //mstatus, mpp should be = 3
+        map.insert(0x301, (1 << 8, CSRPriv::MRW)); //misa, we support RV32I base ISA
         map.insert(0x302, (0x0, CSRPriv::MRW)); //medeleg
         map.insert(0x303, (0x0, CSRPriv::MRW)); //mideleg we only support machine mode, so delegating doesn't make sense
         map.insert(0x304, (0x0, CSRPriv::MRW)); //mie no interrupts enabled as default
@@ -50,9 +50,9 @@ impl Default for Registers{
         //Machine Counter Setup unimplemented
         //Debug registers unimplemented
 
-
-
-        Registers { registers: RefCell::new(map), }
+        Registers {
+            registers: RefCell::new(map),
+        }
     }
 }
 
@@ -65,10 +65,7 @@ impl Component for CSR {
         (
             self.id.clone(),
             Ports {
-                inputs: vec![self.address.clone(),
-                self.data.clone(),
-                self.we.clone(),
-                ],
+                inputs: vec![self.address.clone(), self.data.clone(), self.we.clone()],
                 out_type: OutputType::Combinatorial,
                 outputs: vec!["output".into()],
             },

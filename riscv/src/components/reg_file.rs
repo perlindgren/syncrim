@@ -91,7 +91,7 @@ impl Default for RegHistory {
 pub struct RegStore(pub Rc<RefCell<[u32; 32]>>);
 
 impl RegStore {
-    pub fn new(regs:Rc<RefCell<[u32;32]>>) -> Self {
+    pub fn new(regs: Rc<RefCell<[u32; 32]>>) -> Self {
         RegStore(regs)
     }
 

@@ -1,17 +1,17 @@
-mod instr_mem;
 mod alu;
-mod decoder;
-mod reg_file;
-mod sign_zero_ext;
-mod lsb_zero;
 mod branch_logic;
 mod csr;
+mod decoder;
+mod instr_mem;
+mod lsb_zero;
+mod reg_file;
+mod sign_zero_ext;
 
-pub use sign_zero_ext::*;
-pub use instr_mem::*;
 pub use alu::*;
-pub use decoder::*;
-pub use reg_file::*;
-pub use lsb_zero::*;
 pub use branch_logic::*;
 pub use csr::*;
+pub use decoder::*;
+pub use instr_mem::*;
+pub use lsb_zero::*;
+pub use reg_file::*;
+pub use sign_zero_ext::*;

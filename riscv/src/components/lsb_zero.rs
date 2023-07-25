@@ -7,7 +7,6 @@ pub struct LSBZero {
     pub pos: (f32, f32),
 
     pub data_i: Input,
-
 }
 
 #[typetag::serde()]
@@ -21,16 +20,14 @@ impl Component for LSBZero {
             Ports {
                 inputs: vec![self.data_i.clone()],
                 out_type: OutputType::Combinatorial,
-                outputs: vec![
-                    "out".into(),
-                ],
+                outputs: vec!["out".into()],
             },
         )
     }
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) {
-        let mut data:u32 = simulator.get_input_val(&self.data_i).try_into().unwrap();
-        let mask:u32 = !0b1;
+        let mut data: u32 = simulator.get_input_val(&self.data_i).try_into().unwrap();
+        let mask: u32 = !0b1;
         //println!("STRIPPER  IN:0b{:032b}", data);
         //println!("STRIPPERMASK:0b{:032b}", mask);
         data &= mask;
