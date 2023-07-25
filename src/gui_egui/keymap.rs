@@ -238,6 +238,8 @@ pub fn file_save_fn(gui: &mut Gui) {
 }
 pub fn file_save_as_fn(_gui: &mut Gui) {}
 pub fn file_editor_toggle_fn(gui: &mut Gui) {
+    // Auto-save
+    file_save_fn(gui);
     match gui.editor_use {
         true => {
             gui.editor_use = false;
