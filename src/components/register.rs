@@ -13,7 +13,6 @@ impl Component for Register {
     fn to_(&self) {
         trace!("register");
     }
-    fn to_string(&self)->String{"".to_string()}
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

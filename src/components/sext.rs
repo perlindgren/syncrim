@@ -18,7 +18,6 @@ impl Component for Sext {
     fn to_(&self) {
         trace!("Sign Extension");
     }
-    fn to_string(&self)->String{"".to_string()}
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

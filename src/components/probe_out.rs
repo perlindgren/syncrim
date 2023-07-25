@@ -12,7 +12,6 @@ impl Component for ProbeOut {
     fn to_(&self) {
         trace!("ProbeOut");
     }
-    fn to_string(&self)->String{"".to_string()}
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
