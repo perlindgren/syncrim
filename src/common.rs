@@ -136,6 +136,7 @@ pub trait EguiComponent: Component {
         None
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn render_editor(
         &mut self,
         _ui: &mut egui::Ui,
@@ -143,7 +144,7 @@ pub trait EguiComponent: Component {
         _offset: egui::Vec2,
         _scale: f32,
         _clip_rect: egui::Rect,
-        _id_ports: &Vec<(Id, Ports)>,
+        _id_ports: &[(Id, Ports)],
         _editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         EditorRenderReturn {
@@ -170,20 +171,10 @@ pub trait EguiComponent: Component {
 }
 
 #[cfg(feature = "gui-egui")]
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Default)]
 pub struct EguiExtra {
     pub properties_window: bool,
     pub id_tmp: String,
-}
-
-#[cfg(feature = "gui-egui")]
-impl Default for EguiExtra {
-    fn default() -> Self {
-        EguiExtra {
-            properties_window: false,
-            id_tmp: String::new(),
-        }
-    }
 }
 
 #[derive(Debug, Clone)]

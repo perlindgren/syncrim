@@ -30,7 +30,7 @@ pub fn drag_started(ctx: &Context, e: &mut Editor, _cpr: Response) {
         let closest_uw = closest.unwrap();
 
         // First click ALWAYS has to start at a port so we force it
-        if e.wm.temp_positions.len() == 0 {
+        if e.wm.temp_positions.is_empty() {
             // requires at least one component on the canvas
             let new_pos = closest_uw.pos;
             e.wm.start_comp_port = Some(closest_uw);
@@ -38,7 +38,7 @@ pub fn drag_started(ctx: &Context, e: &mut Editor, _cpr: Response) {
             e.wm.temp_positions.push((new_pos.x, new_pos.y));
 
             // We clicked close to a port so this will be the last click done
-        } else if e.wm.temp_positions.len() > 0 && closest_uw.dist <= 10.0f32 {
+        } else if !e.wm.temp_positions.is_empty() && closest_uw.dist <= 10.0f32 {
             // We should finish the component
             last_click(e, closest_uw);
 
@@ -52,8 +52,7 @@ pub fn drag_started(ctx: &Context, e: &mut Editor, _cpr: Response) {
 }
 
 pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
-    //let in_c = e.wm.start_comp_port.unwrap();
-    let in_c = std::mem::replace(&mut e.wm.start_comp_port, None).unwrap();
+    let in_c = e.wm.start_comp_port.take().unwrap();
     let out_c = closest_uw;
     let (field_name, input, is_comp_start) =
         get_outputs_from_port(&in_c.port_id, &in_c.comp, &out_c.port_id, &out_c.comp);
@@ -79,11 +78,10 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
 
             // Now actually set the input of the wired component
             let comp = if is_comp_start { in_c } else { out_c };
-            match get_component(&e.components, comp) {
-                Some(c) => Rc::get_mut(&mut e.components[c])
+            if let Some(c) = get_component(&e.components, comp) {
+                Rc::get_mut(&mut e.components[c])
                     .unwrap()
-                    .set_id_port(field_name, i),
-                None => (),
+                    .set_id_port(field_name, i);
             }
         }
         None => {

@@ -45,6 +45,7 @@ impl Default for Memory {
 }
 
 impl Mem {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: &str,
         pos: (f32, f32),

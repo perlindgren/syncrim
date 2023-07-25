@@ -222,13 +222,14 @@ pub fn file_new_fn(_gui: &mut Gui) {}
 pub fn file_open_fn(_gui: &mut Gui) {}
 pub fn file_save_fn(gui: &mut Gui) {
     match gui.editor_use {
-        true => match gui.editor.as_mut() {
-            Some(e) => ComponentStore {
-                store: e.components.clone(),
+        true => {
+            if let Some(e) = gui.editor.as_mut() {
+                ComponentStore {
+                    store: e.components.clone(),
+                }
+                .save_file(&PathBuf::from("file.json"))
             }
-            .save_file(&PathBuf::from("file.json")),
-            None => (),
-        },
+        }
         false => ComponentStore {
             store: gui.simulator.clone().unwrap().ordered_components,
         }
@@ -241,24 +242,21 @@ pub fn file_editor_toggle_fn(gui: &mut Gui) {
     match gui.editor_use {
         true => {
             gui.editor_use = false;
-            match gui.editor.as_mut() {
-                Some(e) => {
-                    let components = e.components.clone();
-                    let simulator =
-                        Simulator::new(ComponentStore { store: components }, &mut gui.clock);
-                    gui.simulator = Some(simulator);
-                }
-                _ => (),
+            if let Some(e) = gui.editor.as_mut() {
+                let components = e.components.clone();
+                let simulator =
+                    Simulator::new(ComponentStore { store: components }, &mut gui.clock);
+                gui.simulator = Some(simulator);
             }
         }
         false => {
-            let simulator = std::mem::replace(&mut gui.simulator, None);
+            let simulator = gui.simulator.take();
             let simulator = simulator.unwrap();
             let mut components = simulator.ordered_components.clone();
             drop(simulator);
 
-            for mut c in components.iter_mut() {
-                (*Rc::get_mut(&mut c).unwrap()).set_id_tmp();
+            for c in components.iter_mut() {
+                (*Rc::get_mut(c).unwrap()).set_id_tmp();
             }
             let _ = gui.editor.insert(Editor::gui(components, &gui.path));
             gui.editor_use = true;

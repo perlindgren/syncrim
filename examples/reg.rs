@@ -36,5 +36,5 @@ fn main() {
     syncrim::gui_egui::gui(cs, &path).ok();
 
     #[cfg(feature = "gui-vizia")]
-    syncrim::gui_vizia::gui(&cs, &path);
+    syncrim::gui_vizia::gui(cs, &path);
 }

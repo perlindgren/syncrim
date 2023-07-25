@@ -61,7 +61,7 @@ impl EguiComponent for Constant {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
-        id_ports: &Vec<(crate::common::Id, Ports)>,
+        id_ports: &[(crate::common::Id, Ports)],
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
@@ -72,10 +72,10 @@ impl EguiComponent for Constant {
             let delta = resp.drag_delta() / scale;
             self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
         }
-        if resp.drag_released_by(PointerButton::Primary) {
-            if resp.interact_pointer_pos().unwrap().x < offset.x {
-                delete = true;
-            }
+        if resp.drag_released_by(PointerButton::Primary)
+            && resp.interact_pointer_pos().unwrap().x < offset.x
+        {
+            delete = true;
         }
 
         properties_window(

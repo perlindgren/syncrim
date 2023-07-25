@@ -80,7 +80,7 @@ impl EguiComponent for Wire {
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
-        id_ports: &Vec<(crate::common::Id, Ports)>,
+        id_ports: &[(crate::common::Id, Ports)],
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
@@ -93,10 +93,10 @@ impl EguiComponent for Wire {
                 self.pos[i] = (self.pos[i].0 + delta.x, self.pos[i].1 + delta.y);
                 self.pos[i + 1] = (self.pos[i + 1].0 + delta.x, self.pos[i + 1].1 + delta.y);
             }
-            if resp.drag_released_by(PointerButton::Primary) {
-                if resp.interact_pointer_pos().unwrap().x < offset.x {
-                    delete = true;
-                }
+            if resp.drag_released_by(PointerButton::Primary)
+                && resp.interact_pointer_pos().unwrap().x < offset.x
+            {
+                delete = true;
             }
             properties_window(
                 ui,

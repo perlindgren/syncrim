@@ -3,7 +3,9 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
-use syncrim::common::{Component, Input, OutputType, Ports, Signal, SignalUnsigned, Simulator};
+use syncrim::common::{
+    Component, Input, InputPort, OutputType, Ports, Signal, SignalUnsigned, Simulator,
+};
 
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
@@ -52,15 +54,59 @@ pub struct RegFile {
     pub height: f32,
 
     // ports
-    pub read_addr1: Input,
-    pub read_addr2: Input,
-    pub write_data: Input,
-    pub write_addr: Input,
-    pub write_enable: Input,
+    pub read_addr1: InputPort,
+    pub read_addr2: InputPort,
+    pub write_data: InputPort,
+    pub write_addr: InputPort,
+    pub write_enable: InputPort,
 
     // data
     pub registers: RegStore,
     pub history: RegHistory,
+}
+impl RegFile {
+    pub fn new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        read_addr1: Input,
+        read_addr2: Input,
+        write_data: Input,
+        write_addr: Input,
+        write_enable: Input,
+        registers: RegStore,
+        history: RegHistory,
+    ) -> Self {
+        RegFile {
+            id: id.to_string(),
+            pos,
+            width,
+            height,
+            read_addr1: InputPort {
+                port_id: "read_addr1".to_string(),
+                input: read_addr1,
+            },
+            read_addr2: InputPort {
+                port_id: "read_addr2".to_string(),
+                input: read_addr2,
+            },
+            write_data: InputPort {
+                port_id: "write_data".to_string(),
+                input: write_data,
+            },
+            write_addr: InputPort {
+                port_id: "write_addr".to_string(),
+                input: write_addr,
+            },
+            write_enable: InputPort {
+                port_id: "write_enable".to_string(),
+                input: write_enable,
+            },
+            registers,
+            history,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -154,11 +200,11 @@ impl Component for RegFile {
     }
 
     fn clock(&self, simulator: &mut Simulator) {
-        if simulator.get_input_val(&self.write_enable) == (true as SignalUnsigned).into() {
-            let data = simulator.get_input_val(&self.write_data);
+        if simulator.get_input_val(&self.write_enable.input) == (true as SignalUnsigned).into() {
+            let data = simulator.get_input_val(&self.write_data.input);
             trace!("data {:?}", data);
             let write_addr: SignalUnsigned = simulator
-                .get_input_val(&self.write_addr)
+                .get_input_val(&self.write_addr.input)
                 .try_into()
                 .unwrap();
             trace!("write_addr {}", write_addr);
@@ -166,11 +212,11 @@ impl Component for RegFile {
         }
 
         // read after write
-        let reg_value_a = self.read_reg(simulator, &self.read_addr1);
+        let reg_value_a = self.read_reg(simulator, &self.read_addr1.input);
         trace!("reg_value {}", reg_value_a);
         simulator.set_out_val(&self.id, "reg_a", Signal::Data(reg_value_a));
 
-        let reg_value_b = self.read_reg(simulator, &self.read_addr2);
+        let reg_value_b = self.read_reg(simulator, &self.read_addr2.input);
         trace!("reg_value {}", reg_value_b);
         simulator.set_out_val(&self.id, "reg_b", Signal::Data(reg_value_b));
     }
@@ -196,27 +242,25 @@ mod test {
                 Rc::new(ProbeOut::new("write_addr")),
                 Rc::new(ProbeOut::new("write_enable")),
                 // regfile
-                Rc::new(RegFile {
-                    id: "reg_file".to_string(),
-                    pos: (200.0, 150.0),
-                    width: 100.0,
-                    height: 150.0,
-
+                Rc::new(RegFile::new(
+                    "reg_file",
+                    (200.0, 150.0),
+                    100.0,
+                    150.0,
                     // ports
-                    read_addr1: Input::new("read_reg_1", "out"),
-                    read_addr2: Input::new("read_reg_2", "out"),
-                    write_data: Input::new("write_data", "out"),
-                    write_addr: Input::new("write_addr", "out"),
-                    write_enable: Input::new("write_enable", "out"),
-
+                    Input::new("read_reg_1", "out"),
+                    Input::new("read_reg_2", "out"),
+                    Input::new("write_data", "out"),
+                    Input::new("write_addr", "out"),
+                    Input::new("write_enable", "out"),
                     // data
-                    registers: RegStore::new(),
-                    history: RegHistory::new(),
-                }),
+                    RegStore::new(),
+                    RegHistory::new(),
+                )),
             ],
         };
         let mut clock = 0;
-        let mut simulator = Simulator::new(&cs, &mut clock);
+        let mut simulator = Simulator::new(cs, &mut clock);
 
         assert_eq!(clock, 1);
 

@@ -65,12 +65,12 @@ pub fn properties_window<P>(
 pub fn pos_slider(ui: &mut Ui, pos: &mut (f32, f32)) {
     ui.horizontal(|ui| {
         ui.add(
-            egui::Slider::new(&mut (*pos).0, 0f32..=1000f32)
+            egui::Slider::new(&mut pos.0, 0f32..=1000f32)
                 .text("pos x")
                 .clamp_to_range(false),
         );
         ui.add(
-            egui::Slider::new(&mut (*pos).1, 0f32..=1000f32)
+            egui::Slider::new(&mut pos.1, 0f32..=1000f32)
                 .text("pos y")
                 .clamp_to_range(false),
         );
@@ -79,14 +79,14 @@ pub fn pos_slider(ui: &mut Ui, pos: &mut (f32, f32)) {
 pub fn input_selector(
     ui: &mut Ui,
     input_port: &mut InputPort,
-    id_ports: &Vec<(crate::common::Id, Ports)>,
+    id_ports: &[(crate::common::Id, Ports)],
 ) {
     let mut port_id = input_port.input.id.clone();
     let mut port_field = input_port.input.field.clone();
     let label_port_id = format!("{}.id", input_port.port_id.clone());
-    let text_port_id = format!("{}", port_id);
+    let text_port_id = port_id.to_string();
     let label_port_field = format!("{}.field", input_port.port_id.clone());
-    let text_port_field = format!("{}", port_field);
+    let text_port_field = port_field.to_string();
     ui.horizontal(|ui| {
         ComboBox::from_label(label_port_id)
             .selected_text(text_port_id)
@@ -119,7 +119,7 @@ pub fn input_port(
     ui: &mut Ui,
     id_tmp: &mut String,
     id: &mut String,
-    id_ports: &Vec<(crate::common::Id, Ports)>,
+    id_ports: &[(crate::common::Id, Ports)],
 ) {
     ui.horizontal(|ui| {
         let id_label = ui.label("Id: ");

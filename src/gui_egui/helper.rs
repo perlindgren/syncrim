@@ -25,9 +25,11 @@ pub fn offset_helper(xy: (f32, f32), scale: f32, offset: Vec2) -> Pos2 {
 
 pub fn out_of_bounds(request: Rect, clip_rect: Rect) -> Rect {
     let mut rect = Rect::NOTHING;
-    if request.max.x < clip_rect.min.x || request.max.y < clip_rect.min.y {
-        return rect;
-    } else if request.min.x > clip_rect.max.x || request.min.y > clip_rect.max.y {
+    if request.max.x < clip_rect.min.x
+        || request.max.y < clip_rect.min.y
+        || request.min.x > clip_rect.max.x
+        || request.min.y > clip_rect.max.y
+    {
         return rect;
     }
     rect = request;
@@ -43,10 +45,10 @@ pub fn out_of_bounds(request: Rect, clip_rect: Rect) -> Rect {
     if request.min.y < clip_rect.min.y {
         rect.min.y = clip_rect.min.y;
     }
-    return rect;
+    rect
 }
 
-pub fn unique_component_name(id_ports: &Vec<(crate::common::Id, Ports)>, id: &str) -> String {
+pub fn unique_component_name(id_ports: &[(crate::common::Id, Ports)], id: &str) -> String {
     let mut new_id: String = id.into();
     let mut contains_id = true;
     while contains_id {
@@ -56,12 +58,12 @@ pub fn unique_component_name(id_ports: &Vec<(crate::common::Id, Ports)>, id: &st
             if id == new_id {
                 contains_id = true;
                 // todo: make this fancier
-                new_id.push_str("1");
+                new_id.push('1');
                 break;
             }
         }
     }
-    String::from(new_id)
+    new_id
 }
 
 pub fn id_ports_of_all_components(cs: &Components) -> Vec<(crate::common::Id, Ports)> {

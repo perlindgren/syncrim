@@ -72,11 +72,11 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
     };
     for c in e.library.store.iter() {
         let size = c.size();
-        padding.y = padding.y - e.scale * size.min.y;
+        padding.y -= e.scale * size.min.y;
         let r_vec = c
             .render(ui, None, padding, e.scale, clip_rect, e.editor_mode)
             .unwrap();
-        let rect = r_vec[0].rect.clone();
+        let rect = r_vec[0].rect;
         for resp in r_vec {
             // Create new component
             if resp.drag_started_by(PointerButton::Primary) {
@@ -108,7 +108,7 @@ pub fn add_comp_to_editor(e: &mut Editor) {
                 let id = unique_component_name(&id_ports, "p");
                 Rc::new(Probe::new(id.as_str(), (0.0, 0.0), e.dummy_input.clone()))
             }
-            "add" | _ => {
+            "add" => {
                 let id = unique_component_name(&id_ports, "add");
                 Rc::new(Add::new(
                     id.as_str(),
@@ -117,6 +117,7 @@ pub fn add_comp_to_editor(e: &mut Editor) {
                     e.dummy_input.clone(),
                 ))
             }
+            _ => todo!(),
         };
     Rc::<dyn EguiComponent>::get_mut(&mut comp)
         .unwrap()

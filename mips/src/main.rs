@@ -6,8 +6,11 @@ fn main() {
     fern_setup();
 
     let path = PathBuf::from("mips.json");
-    let _cs = ComponentStore::load_file(&path);
+    let cs = ComponentStore::load_file(&path);
 
     #[cfg(feature = "gui-vizia")]
-    syncrim::gui_vizia::gui(&_cs, &path);
+    syncrim::gui_vizia::gui(cs, &path);
+
+    #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
+    syncrim::common::Simulator::new(cs, &mut 0);
 }

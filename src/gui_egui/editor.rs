@@ -10,7 +10,7 @@ use crate::gui_egui::{
 };
 use eframe::{egui, Frame};
 use egui::{Color32, Context, LayerId, PointerButton, Pos2, Rect, Vec2};
-use std::{path::PathBuf, rc::Rc};
+use std::{path::Path, rc::Rc};
 
 pub struct Editor {
     pub components: Components,
@@ -57,7 +57,7 @@ pub enum SnapPriority {
 }
 
 impl Editor {
-    pub fn gui(components: Components, _path: &PathBuf) -> Self {
+    pub fn gui(components: Components, _path: &Path) -> Self {
         let dummy_input = Input::new("id", "field");
         Editor {
             components,
@@ -223,8 +223,8 @@ impl Editor {
                         );
                     }
                 }
-                _ => e.components.retain_mut(|mut c| {
-                    let delete = (*Rc::get_mut(&mut c).unwrap())
+                _ => e.components.retain_mut(|c| {
+                    let delete = (*Rc::get_mut(c).unwrap())
                         .render_editor(
                             ui,
                             None,
@@ -269,7 +269,7 @@ impl Editor {
 
 pub fn get_component(components: &Components, comp: CloseToComponent) -> Option<usize> {
     for (i, c) in components.iter().enumerate() {
-        if Rc::ptr_eq(&c, &comp.comp) {
+        if std::ptr::eq(c, &comp.comp) {
             drop(comp);
             return Some(i);
         }
