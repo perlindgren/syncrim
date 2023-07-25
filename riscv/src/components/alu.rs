@@ -62,7 +62,7 @@ impl Component for ALU {
         _=>{},
 
       }
-      println!("ALU result_o:{}", result_o);
+      //println!("ALU result_o:{}", result_o);
       simulator.set_out_val(&self.id, "result_o", result_o);
     }
 }
