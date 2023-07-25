@@ -95,7 +95,6 @@ pub trait Component {
     // placeholder
     fn to_(&self) {}
 
-    fn to_string(&self)-> String{"".to_string()}
     /// returns the (id, Ports) of the component
     fn get_id_ports(&self) -> (Id, Ports);
 
