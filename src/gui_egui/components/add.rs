@@ -103,10 +103,12 @@ impl EguiComponent for Add {
             resp,
             &mut self.egui_x.properties_window,
             |ui| {
+                let mut clicked_dropdown = false;
                 input_port(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
-                input_selector(ui, &mut self.a_in, id_ports);
-                input_selector(ui, &mut self.b_in, id_ports);
+                clicked_dropdown |= input_selector(ui, &mut self.a_in, id_ports);
+                clicked_dropdown |= input_selector(ui, &mut self.b_in, id_ports);
+                clicked_dropdown
             },
         );
 

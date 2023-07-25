@@ -104,10 +104,12 @@ impl EguiComponent for Wire {
                 resp,
                 &mut self.egui_x.properties_window,
                 |ui| {
+                    let mut clicked_dropdown = false;
                     input_port(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
                     pos_slider(ui, &mut self.pos[i]);
                     pos_slider(ui, &mut self.pos[i + 1]);
-                    input_selector(ui, &mut self.input_port, id_ports);
+                    clicked_dropdown |= input_selector(ui, &mut self.input_port, id_ports);
+                    clicked_dropdown
                 },
             );
         }

@@ -33,8 +33,9 @@ pub fn properties_window<P>(
     properties_window: &mut bool,
     mut f: P,
 ) where
-    P: FnMut(&mut Ui),
+    P: FnMut(&mut Ui) -> bool,
 {
+    let mut clicked_dropdown = false;
     if *properties_window {
         let resp = Window::new(format!("Properties: {}", id))
             .frame(Frame {
@@ -50,9 +51,9 @@ pub fn properties_window<P>(
                 y: (resp.rect.min.y + resp.rect.max.y) / 2f32,
             })
             .show(ui.ctx(), |ui| {
-                f(ui);
+                clicked_dropdown = f(ui);
             });
-        if resp.unwrap().response.clicked_elsewhere() {
+        if !clicked_dropdown && resp.unwrap().response.clicked_elsewhere() {
             *properties_window = false;
         }
     }
@@ -80,7 +81,7 @@ pub fn input_selector(
     ui: &mut Ui,
     input_port: &mut InputPort,
     id_ports: &[(crate::common::Id, Ports)],
-) {
+) -> bool {
     let mut port_id = input_port.input.id.clone();
     let mut port_field = input_port.input.field.clone();
     let label_port_id = format!("{}.id", input_port.port_id.clone());
@@ -111,8 +112,11 @@ pub fn input_selector(
                 }
             });
     });
+    let clicked_dropdown = input_port.input.id != port_id || input_port.input.field != port_field;
+
     input_port.input.id = port_id;
     input_port.input.field = port_field;
+    clicked_dropdown
 }
 
 pub fn input_port(

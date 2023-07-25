@@ -95,6 +95,7 @@ impl EguiComponent for Constant {
                     _ => (),
                 }
                 */
+                false
             },
         );
 

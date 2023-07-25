@@ -269,6 +269,9 @@ impl Editor {
 
 pub fn get_component(components: &Components, comp: CloseToComponent) -> Option<usize> {
     for (i, c) in components.iter().enumerate() {
+        // doing std::ptr::eq doesn't work and this works so I'm going to keep it
+        // even if clippy errors on it
+        #[deny(clippy::vtable_address_comparisons)]
         if Rc::ptr_eq(c, &comp.comp) {
             drop(comp);
             return Some(i);
