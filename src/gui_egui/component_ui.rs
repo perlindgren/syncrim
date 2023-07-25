@@ -77,6 +77,7 @@ pub fn pos_slider(ui: &mut Ui, pos: &mut (f32, f32)) {
         );
     });
 }
+
 pub fn input_selector(
     ui: &mut Ui,
     input_port: &mut InputPort,
