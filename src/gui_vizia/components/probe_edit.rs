@@ -3,7 +3,6 @@ use crate::{
     common::{Signal, SignalSigned, SignalUnsigned, Simulator, ViziaComponent},
     components::{ProbeEdit, TextSignal},
 };
-// use anyhow::{anyhow, Result};
 use vizia::prelude::*;
 
 use log::*;
@@ -17,15 +16,15 @@ impl ViziaComponent for ProbeEdit {
         }
         .build(cx);
 
-        let history_bind = self.history.clone();
-        let history_submit = self.history.clone();
+        let history_bind = self.edit_history.clone();
+        let history_submit = self.edit_history.clone();
 
         Textbox::new(cx, ProbeEditView::editable_text)
             .bind(
                 GuiData::simulator.then(Simulator::cycle),
-                move |mut handle, clock| {
+                move |mut handle, cycle| {
                     let cx = handle.context();
-                    trace!("bind: clock --- {}", clock.get(cx));
+                    trace!("bind: clock --- {}", cycle.get(cx));
                     let text = history_bind.read().unwrap().last().unwrap().text.clone();
                     trace!("last text: {:?}", text);
                     cx.emit(ProbeEditViewSetter::EditableText(text));

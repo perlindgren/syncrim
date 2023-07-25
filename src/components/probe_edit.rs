@@ -1,13 +1,16 @@
 use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
-use std::sync::{Arc, RwLock};
+use std::{
+    rc::Rc,
+    sync::{Arc, RwLock},
+};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeEdit {
     pub id: Id,
     pub pos: (f32, f32),
-    pub history: Arc<RwLock<Vec<TextSignal>>>, // will contain the next editable value
+    pub edit_history: Arc<RwLock<Vec<TextSignal>>>, // will contain the next editable value
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -37,7 +40,7 @@ impl Component for ProbeEdit {
 
     // propagate editable value
     fn clock(&self, simulator: &mut Simulator) {
-        let mut history = self.history.write().unwrap();
+        let mut history = self.edit_history.write().unwrap();
         trace!("{} history {:?}", self.id, history);
         let current = history.last().unwrap().clone();
         // set output to current value
@@ -48,16 +51,16 @@ impl Component for ProbeEdit {
 
     // reverse simulation, notice does not touch simulator state, its just internal
     fn un_clock(&self) {
-        let mut history = self.history.write().unwrap();
-        trace!("{} history {:?}", self.id, history);
-        let _next = history.pop().unwrap(); // pop the next editable value
-        let _current = history.pop().unwrap(); // pop current editable value
-        let prev = history.pop().unwrap(); // pop the prev editable value
+        let mut edit_history = self.edit_history.write().unwrap();
+        trace!("{} history {:?}", self.id, edit_history);
+        let _next = edit_history.pop().unwrap(); // pop the next editable value
+        let _current = edit_history.pop().unwrap(); // pop current editable value
+        let prev = edit_history.pop().unwrap(); // pop the prev editable value
         trace!("next {:?}", _next);
         trace!("current {:?}", _current);
         trace!("prev {:?}", prev);
-        history.push(prev.clone()); // push as current
-        history.push(prev); // push as next (to be edited)
+        edit_history.push(prev.clone()); // push as current
+        edit_history.push(prev); // push as next (to be edited)
     }
 }
 
@@ -67,10 +70,14 @@ impl ProbeEdit {
             id: id.into(),
             pos,
             // initiate internal history
-            history: Arc::new(RwLock::new(vec![TextSignal {
+            edit_history: Arc::new(RwLock::new(vec![TextSignal {
                 text: "0".to_string(),
                 signal: Signal::Data(0),
             }])),
         }
+    }
+
+    pub fn rc_new(id: &str, pos: (f32, f32)) -> Rc<Self> {
+        Rc::new(ProbeEdit::new(id, pos))
     }
 }
