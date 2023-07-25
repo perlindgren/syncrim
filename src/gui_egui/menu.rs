@@ -59,7 +59,7 @@ fn btn(ui: &mut egui::Ui, name: &str, keys: egui::KeyboardShortcut) -> egui::Res
 
 fn shared_buttons_file(gui: &mut Gui, ui: &mut Ui) {
     ui.menu_button("File", |ui| {
-        if btn(ui, "File", gui.shortcuts.file_new).clicked() {
+        if btn(ui, "New", gui.shortcuts.file_new).clicked() {
             keymap::file_new_fn(gui);
         }
         if btn(ui, "Open", gui.shortcuts.file_open).clicked() {

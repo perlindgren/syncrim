@@ -1,7 +1,10 @@
 use crate::common::{ComponentStore, Simulator};
-use crate::gui_egui::editor::EditorMode;
-use crate::gui_egui::{editor::Editor, Gui};
+use crate::gui_egui::editor::{Editor, EditorMode};
+use crate::gui_egui::editor_wire_mode::reset_wire_mode;
+use crate::gui_egui::library::reset_input_mode;
+use crate::gui_egui::Gui;
 use egui::{Key, KeyboardShortcut, Modifiers};
+use rfd::FileDialog;
 use std::{path::PathBuf, rc::Rc};
 
 #[derive(Copy, Clone)]
@@ -219,7 +222,28 @@ impl Shortcuts {
 }
 
 pub fn file_new_fn(_gui: &mut Gui) {}
-pub fn file_open_fn(_gui: &mut Gui) {}
+pub fn file_open_fn(gui: &mut Gui) {
+    let files = FileDialog::new().add_filter("json", &["json"]).pick_file();
+    let mut path = PathBuf::default();
+    if let Some(path_buf) = files {
+        path = path_buf;
+    }
+    let cs = ComponentStore::load_file(&path);
+    match gui.editor_use {
+        true => {
+            if let Some(e) = gui.editor.as_mut() {
+                // Clear all references
+                reset_wire_mode(&mut e.wm);
+                reset_input_mode(&mut e.im);
+                e.components = cs.store;
+            }
+        }
+        false => {
+            let _ = gui.simulator.take();
+            gui.simulator = Some(Simulator::new(cs));
+        }
+    }
+}
 pub fn file_save_fn(gui: &mut Gui) {
     match gui.editor_use {
         true => {
@@ -341,14 +365,14 @@ pub fn editor_wire_mode_fn(gui: &mut Gui) {
                 editor.editor_mode = EditorMode::Default;
             }
         }
-        crate::gui_egui::editor_wire_mode::reset_wire_mode(&mut editor.wm);
+        reset_wire_mode(&mut editor.wm);
     }
 }
 pub fn editor_escape_fn(gui: &mut Gui) {
     if gui.editor_use {
         let editor = gui.editor.as_mut().unwrap();
         editor.editor_mode = EditorMode::Default;
-        crate::gui_egui::editor_wire_mode::reset_wire_mode(&mut editor.wm);
-        crate::gui_egui::library::reset_input_mode(&mut editor.im);
+        reset_wire_mode(&mut editor.wm);
+        reset_input_mode(&mut editor.im);
     }
 }
