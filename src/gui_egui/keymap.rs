@@ -229,12 +229,12 @@ pub fn control_pause(gui: &mut crate::gui_egui::gui::Gui) {
     gui.pause = true;
 }
 pub fn control_reset(gui: &mut crate::gui_egui::gui::Gui) {
-    gui.simulator.reset(&mut gui.clock);
+    gui.simulator.reset();
     gui.pause = true;
 }
 pub fn control_step_forward(gui: &mut crate::gui_egui::gui::Gui) {
-    gui.simulator.clock(&mut gui.clock);
+    gui.simulator.clock();
 }
 pub fn control_step_back(gui: &mut crate::gui_egui::gui::Gui) {
-    gui.simulator.un_clock(&mut gui.clock);
+    gui.simulator.un_clock();
 }

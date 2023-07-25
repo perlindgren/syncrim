@@ -2,9 +2,11 @@ use std::{path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
+    fern::fern_setup,
 };
 
 fn main() {
+    fern_setup();
     let cs = ComponentStore {
         store: vec![
             Rc::new(Add {
@@ -13,11 +15,7 @@ fn main() {
                 a_in: Input::new("c", "out"),
                 b_in: Input::new("r1", "out"),
             }),
-            Rc::new(Constant {
-                id: "c".to_string(),
-                pos: (100.0, 100.0),
-                value: 1,
-            }),
+            Constant::rc_new("c", (100.0, 100.0), 1),
             Rc::new(Register {
                 id: "r1".to_string(),
                 pos: (100.0, 140.0),
@@ -25,44 +23,37 @@ fn main() {
             }),
             Rc::new(Wire {
                 id: "w1".to_string(),
-                pos: (110.0, 100.0),
-                delta: (70.0, 0.0),
+                pos: vec![(110.0, 100.0), (180.0, 100.0)],
                 input: Input::new("c", "out"),
             }),
             Rc::new(Wire {
                 id: "w2".to_string(),
-                pos: (110.0, 140.0),
-                delta: (70.0, 0.0),
+                pos: vec![(110.0, 140.0), (180.0, 140.0)],
                 input: Input::new("r1", "out"),
             }),
             Rc::new(Wire {
                 id: "w3".to_string(),
-                pos: (220.0, 120.0),
-                delta: (40.0, 0.0),
+                pos: vec![(220.0, 120.0), (260.0, 120.0)],
                 input: Input::new("add", "out"),
             }),
             Rc::new(Wire {
                 id: "w4".to_string(),
-                pos: (260.0, 120.0),
-                delta: (0.0, 60.0),
+                pos: vec![(260.0, 120.0), (260.0, 180.0)],
                 input: Input::new("add", "out"),
             }),
             Rc::new(Wire {
                 id: "w5".to_string(),
-                pos: (60.0, 180.0),
-                delta: (200.0, 0.0),
+                pos: vec![(60.0, 180.0), (260.0, 180.0)],
                 input: Input::new("add", "out"),
             }),
             Rc::new(Wire {
                 id: "w6".to_string(),
-                pos: (60.0, 140.0),
-                delta: (0.0, 40.0),
+                pos: vec![(60.0, 140.0), (60.0, 180.0)],
                 input: Input::new("add", "out"),
             }),
             Rc::new(Wire {
                 id: "w7".to_string(),
-                pos: (60.0, 140.0),
-                delta: (30.0, 0.0),
+                pos: vec![(60.0, 140.0), (90.0, 140.0)],
                 input: Input::new("add", "out"),
             }),
             Rc::new(Probe {
@@ -86,60 +77,38 @@ fn main() {
                     Input::new("mc4", "out"),
                 ],
             }),
-            Rc::new(Constant {
-                id: "mc1".to_string(),
-                pos: (190.0, 270.0),
-                value: 0,
-            }),
-            Rc::new(Constant {
-                id: "mc2".to_string(),
-                pos: (190.0, 290.0),
-                value: 1,
-            }),
-            Rc::new(Constant {
-                id: "mc3".to_string(),
-                pos: (190.0, 310.0),
-                value: 2,
-            }),
-            Rc::new(Constant {
-                id: "mc4".to_string(),
-                pos: (190.0, 330.0),
-                value: 3,
-            }),
+            Constant::rc_new("mc1", (150.0, 270.0), 0),
+            Constant::rc_new("mc2", (150.0, 290.0), 1),
+            Constant::rc_new("mc3", (150.0, 310.0), 2),
+            Constant::rc_new("mc4", (150.0, 330.0), 3),
             Rc::new(Wire {
                 id: "wm_sel".to_string(),
-                pos: (260.0, 180.0),
-                delta: (0.0, 70.0),
+                pos: vec![(260.0, 180.0), (260.0, 250.0)],
                 input: Input::new("add", "out"),
             }),
             Rc::new(Wire {
                 id: "wm1".to_string(),
-                pos: (200.0, 270.0),
-                delta: (50.0, 0.0),
+                pos: vec![(200.0, 270.0), (250.0, 270.0)],
                 input: Input::new("mc1", "out"),
             }),
             Rc::new(Wire {
                 id: "wm2".to_string(),
-                pos: (200.0, 290.0),
-                delta: (50.0, 0.0),
+                pos: vec![(200.0, 290.0), (250.0, 290.0)],
                 input: Input::new("mc2", "out"),
             }),
             Rc::new(Wire {
                 id: "wm3".to_string(),
-                pos: (200.0, 310.0),
-                delta: (50.0, 0.0),
+                pos: vec![(200.0, 310.0), (250.0, 310.0)],
                 input: Input::new("mc3", "out"),
             }),
             Rc::new(Wire {
                 id: "wm4".to_string(),
-                pos: (200.0, 330.0),
-                delta: (50.0, 0.0),
+                pos: vec![(200.0, 330.0), (250.0, 330.0)],
                 input: Input::new("mc4", "out"),
             }),
             Rc::new(Wire {
                 id: "wm_o0".to_string(),
-                pos: (290.0, 300.0),
-                delta: (50.0, 0.0),
+                pos: vec![(290.0, 300.0), (340.0, 300.0)],
                 input: Input::new("mux", "out"),
             }),
             Rc::new(Probe {

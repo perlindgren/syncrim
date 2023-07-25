@@ -9,22 +9,27 @@ use vizia::{
     vg::{Paint, Path},
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for Wire {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Wire View");
+        trace!("---- Create Wire View");
         let surround = 5.0;
-        View::build(WireView { surround }, cx, |cx| {
-            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
-        })
-        .position_type(PositionType::SelfDirected)
-        .left(Pixels(self.pos.0 - surround))
-        .top(Pixels(self.pos.1 - surround))
-        .width(Pixels(self.delta.0 + 2.0 * surround))
-        .height(Pixels(self.delta.1 + 2.0 * surround))
-        .on_press(|ex| ex.emit(PopupEvent::Switch))
-        .tooltip(|cx| new_component_tooltip(cx, self));
+
+        for (i, pos) in self.pos[1..].iter().enumerate() {
+            View::build(WireView { surround }, cx, |cx| {
+                NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+            })
+            .position_type(PositionType::SelfDirected)
+            .left(Pixels(f32::min(pos.0, self.pos[i].0) - surround))
+            .top(Pixels(f32::min(pos.1, self.pos[i].1) - surround))
+            .width(Pixels(f32::abs(pos.0 - self.pos[i].0) + 2.0 * surround))
+            .height(Pixels(f32::abs(pos.1 - self.pos[i].1) + 2.0 * surround))
+            .on_press(|ex| ex.emit(PopupEvent::Switch))
+            .tooltip(|cx| new_component_tooltip(cx, self));
+        }
     }
 }
 
@@ -39,7 +44,7 @@ impl View for WireView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        // println!("Wire draw {:?}", bounds);
+        // trace!("Wire draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbaf(0.0, 0.0, 0.1, 0.5));

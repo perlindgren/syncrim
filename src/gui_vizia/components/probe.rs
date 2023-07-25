@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, ViziaComponent},
+    common::{Component, Simulator, ViziaComponent},
     components::Probe,
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
 };
@@ -9,21 +9,27 @@ use vizia::{
     vg::{Paint, Path},
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for Probe {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Probe View");
+        trace!("---- Create Probe View");
         View::build(ProbeView {}, cx, |cx| {
             let input = self.input.clone();
 
-            Binding::new(cx, crate::gui_vizia::GuiData::clock, move |cx, _| {
-                Label::new(cx, {
-                    let simulator = GuiData::simulator.get(cx);
-                    &format!(" {:?}", simulator.get_input_val(&input))
-                })
-                .hoverable(false);
-            });
+            Binding::new(
+                cx,
+                crate::gui_vizia::GuiData::simulator.then(Simulator::cycle),
+                move |cx, _| {
+                    Label::new(cx, {
+                        let simulator = GuiData::simulator.get(cx);
+                        &format!(" {:?}", simulator.get_input_val(&input))
+                    })
+                    .hoverable(false);
+                },
+            );
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
         .position_type(PositionType::SelfDirected)
@@ -45,7 +51,7 @@ impl View for ProbeView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        // println!("Probe draw {:?}", bounds);
+        // trace!("Probe draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 1.0, 1.0));

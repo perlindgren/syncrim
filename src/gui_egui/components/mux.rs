@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Simulator};
+use crate::common::{EguiComponent, SignalUnsigned, Simulator};
 use crate::components::Mux;
 use crate::gui_egui::helper::offset_helper;
 
@@ -22,8 +22,8 @@ impl EguiComponent for Mux {
         let o = offset;
         let pa = self.m_in.len() as f32;
 
-        // selector
-        let select = simulator.get_input_val(&self.select);
+        // selector, here we can treat Signal better (see Vizia counterpart)
+        let select: SignalUnsigned = simulator.get_input_val(&self.select).try_into().unwrap();
 
         // The shape
         ui.painter().add(egui::Shape::closed_line(

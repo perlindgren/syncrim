@@ -16,8 +16,8 @@ fn main() {
 
                 b_in: Input::new("c2", "out"),
             }),
-            Constant::rc_new("c1", (60.0, 100.0), 3),
-            Constant::rc_new("c2", (60.0, 140.0), 4),
+            Rc::new(ProbeEdit::new("c1", (60.0, 100.0))),
+            Rc::new(ProbeEdit::new("c2", (60.0, 140.0))),
             Rc::new(Wire {
                 id: "w1".to_string(),
                 pos: vec![(110.0, 100.0), (180.0, 100.0)],
@@ -41,7 +41,7 @@ fn main() {
         ],
     };
 
-    let path = PathBuf::from("add.json");
+    let path = PathBuf::from("add_edit.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]

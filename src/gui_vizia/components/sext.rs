@@ -10,11 +10,13 @@ use vizia::{
     vg::{Paint, Path},
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for Sext {
     // create viewI
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Sext View");
+        trace!("---- Create Sext View");
         assert!(self.in_size < self.out_size);
 
         View::build(SextView {}, cx, move |cx| {
@@ -25,6 +27,7 @@ impl ViziaComponent for Sext {
                 .hoverable(false);
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
+        .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 40.0))
         .top(Pixels(self.pos.1 - 20.0))
         .width(Pixels(80.0))
@@ -43,7 +46,7 @@ impl View for SextView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        //println!("Sext draw {:?}", bounds);
+        //trace!("Sext draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));

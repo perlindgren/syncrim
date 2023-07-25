@@ -9,11 +9,13 @@ use vizia::{
     vg::{Paint, Path},
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for Add {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Add View");
+        trace!("---- Create Add View");
 
         View::build(AddView {}, cx, move |cx| {
             Label::new(cx, "+")
@@ -22,6 +24,7 @@ impl ViziaComponent for Add {
                 .hoverable(false);
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
+        .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 20.0))
         .top(Pixels(self.pos.1 - 40.0))
         .width(Pixels(40.0))
@@ -40,7 +43,7 @@ impl View for AddView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        //println!("Add draw {:?}", bounds);
+        //trace!("Add draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));

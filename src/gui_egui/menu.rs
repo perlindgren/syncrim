@@ -109,7 +109,7 @@ impl Menu {
             if ui.button("⏸").clicked() {
                 crate::gui_egui::keymap::control_pause(gui);
             }
-            ui.label(format!("Clock #{}", gui.clock));
+            ui.label(format!("Cycle #{}", gui.simulator.cycle));
         });
     }
 }

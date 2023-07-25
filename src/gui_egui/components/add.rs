@@ -22,7 +22,7 @@ impl EguiComponent for Add {
         offset.y += self.pos.1 * scale;
         let s = scale;
         let o = offset;
-        //println!("---- Create Add View");
+        //trace!("---- Create Add View");
         // The shape
         // 40x30
         ui.painter().add(egui::Shape::closed_line(

@@ -6,22 +6,8 @@ use syncrim::{
     common::{ComponentStore, Input},
     components::*,
 };
-use clap::Parser;
 
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-   /// Path to source file
-   #[arg(short, long)]
-   source_path: String,
-
-   #[arg(short, long)]
-   link_path: String,
-}
 fn main() {
-    let args = Args::parse();
-    let memory = riscv_elf_parse::Memory::new_from_assembly(&args.source_path, &args.link_path);
-    println!("{}", memory);
     let cs = ComponentStore {
         store: vec![
             Rc::new(Add {

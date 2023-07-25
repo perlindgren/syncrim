@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Simulator};
+use crate::common::{EguiComponent, SignalUnsigned, Simulator};
 use crate::components::Constant;
 use egui::{Align2, Area, Color32, Order, Rect, RichText};
 
@@ -24,11 +24,17 @@ impl EguiComponent for Constant {
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);
                 ui.label(
-                    RichText::new(self.value.to_string())
+                    RichText::new(format!("{:?}", self.value))
                         .size(scale * 12f32)
                         .background_color(Color32::LIGHT_GREEN),
                 )
-                .on_hover_text(format!("{:#x}", self.value));
+                .on_hover_text({
+                    let r: Result<SignalUnsigned, String> = self.value.try_into();
+                    match r {
+                        Ok(data) => format!("{:#x}", data),
+                        _ => format!("{:?}", self.value),
+                    }
+                })
             });
     }
 }

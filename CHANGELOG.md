@@ -2,7 +2,39 @@
 
 Tracking changes per date:
 
+## 230725
+
+- Implemented the `ProbeAssert` component, that assert a set sequence of inputs. Made some updates so reading outside of the assert/stim buffers gives `Signal::Unknown` instead of panic (if not in test mode).
+
+  Asserts are run only in test mode, allowing gui testing to be more robust.
+
+- Refactored, `clock` as `cycle` and put it in the `Simulator` (thanks to Fredrik for suggesting this a while back). Now the Simulator holds the complete state, which is better.
+
+- Implemented the `ProbeStim` component, to provide a set sequence of outputs.
+  
+## 230721
+
+- Added rudimentary support for a structured `Signal` type, inspired by HDLs.
+
+## 230719
+
+- `ProbeEdit`, a component for interactive debugging (and maybe some end usage as well). It allows you to enter a value (dec/hex) for a signal. It acts as a register so its content will be used in the next clock cycle (one could also think of changing this to act directly by triggering some re-evaluation, not sure). `ProbeEdit` also implements a proper history buffer so you can reverse the simulation.
+
+- `un_clock` method in the `Component` trait. It does not alter the simulation state (for that we already have a history buffer), components with internal state (e.g., the `ProbeEdit` component) implements `un_clock` and keep a local history. Maybe we will have some helper functions to that end.
+
+## 230718
+
+- Panes, right click component to display component interior on left panel. Close left panel view by the X (Close) button.
+
+- Left panel views can be folded/unfolded
+
+## 230717
+
+- mips/reg_file update, showcasing interior mutability and gui_vizia poc.
+  
 ## 230714
+
+- `fern` based logger.
 
 - Fixed clippy lint for Rust 1.71
 

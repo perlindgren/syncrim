@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Input, ViziaComponent},
+    common::{Component, Input, SignalUnsigned, ViziaComponent},
     components::Mux,
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
 };
@@ -9,15 +9,18 @@ use vizia::{
     vg::{Paint, Path},
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for Mux {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Add View");
+        trace!("---- Create Mux View");
 
         View::build(
             MuxView {
                 select: self.select.clone(),
+                select_max: self.m_in.len() as u8,
             },
             cx,
             |cx| {
@@ -36,6 +39,7 @@ impl ViziaComponent for Mux {
 
 pub struct MuxView {
     select: Input,
+    select_max: u8,
 }
 
 impl View for MuxView {
@@ -46,7 +50,7 @@ impl View for MuxView {
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
         let scale = cx.scale_factor();
-        // println!("Mux draw {:?}", bounds);
+        // trace!("Mux draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 0.0, 0.0));
@@ -79,17 +83,22 @@ impl View for MuxView {
         // selector
         let simulator = GuiData::simulator.get(cx);
 
-        let select = simulator.get_input_val(&self.select);
+        let select: Result<SignalUnsigned, String> =
+            simulator.get_input_val(&self.select).try_into();
 
-        // println!("----- select = {}", select);
-        paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));
-        let mut path = Path::new();
+        trace!("----- select = {:?}", select);
+        if let Ok(select) = select {
+            if select < self.select_max as u32 {
+                paint = Paint::color(vizia::vg::Color::rgbf(1.0, 0.0, 0.0));
+                let mut path = Path::new();
 
-        path.move_to(
-            left + 0.5,
-            top + 0.5 + (20.0 + select as f32 * 20.0) * scale,
-        );
-        path.line_to(right + 0.5, top + height * 0.5 + 0.5);
-        canvas.stroke_path(&path, &paint);
+                path.move_to(
+                    left + 0.5,
+                    top + 0.5 + (20.0 + select as f32 * 20.0) * scale,
+                );
+                path.line_to(right + 0.5, top + height * 0.5 + 0.5);
+                canvas.stroke_path(&path, &paint);
+            }
+        }
     }
 }

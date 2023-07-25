@@ -9,11 +9,13 @@ use vizia::{
     vg::{Paint, Path},
 };
 
+use log::*;
+
 #[typetag::serde]
 impl ViziaComponent for Register {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Register View ");
+        trace!("---- Create Register View ");
 
         View::build(RegisterView {}, cx, |cx| {
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
@@ -37,7 +39,7 @@ impl View for RegisterView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        // println!("Register draw {:?}", bounds);
+        // trace!("Register draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 0.0, 0.0));

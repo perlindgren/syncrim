@@ -1,6 +1,7 @@
 use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
+use log::*;
 use serde::{Deserialize, Serialize};
-
+use std::rc::Rc;
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
     pub id: Id,
@@ -11,7 +12,7 @@ pub struct Constant {
 #[typetag::serde]
 impl Component for Constant {
     fn to_(&self) {
-        println!("constant {:?}", self.value);
+        trace!("constant {:?}", self.value);
     }
 
     fn to_string(&self)->String{"".to_string()}
@@ -27,7 +28,21 @@ impl Component for Constant {
         )
     }
 
-    fn evaluate(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) {
         simulator.set_out_val(&self.id, "out", self.value);
+    }
+}
+
+impl Constant {
+    pub fn new(id: &str, pos: (f32, f32), value: impl Into<Signal>) -> Self {
+        Constant {
+            id: id.to_string(),
+            pos,
+            value: value.into(),
+        }
+    }
+
+    pub fn rc_new(id: &str, pos: (f32, f32), value: impl Into<Signal>) -> Rc<Self> {
+        Rc::new(Constant::new(id, pos, value))
     }
 }

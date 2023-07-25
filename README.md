@@ -471,7 +471,7 @@ The logic part is found in `src/components/add.rs`:
 ```rust
 impl Component for Add {
     fn to_(&self) {
-        println!("Add");
+        trace!("Add");
     }
 
     fn get_id_ports(&self) -> (String, Ports) {
@@ -495,7 +495,7 @@ impl Component for Add {
         let (value, overflow) =
             SignedSignal::overflowing_add(a_in as SignedSignal, b_in as SignedSignal);
 
-        println!(
+        trace!(
             "eval Add a_in {}, b_in {}, value = {}, overflow = {}",
             a_in, b_in, value, overflow
         );
@@ -513,7 +513,7 @@ A Vizia frontend for the `Add` component is found in `src/gui_vizia/components/a
 impl ViziaComponent for Add {
     // create view
     fn view(&self, cx: &mut Context) {
-        println!("---- Create Add View");
+        trace!("---- Create Add View");
 
         View::build(AddView {}, cx, move |cx| {
             Label::new(cx, "+")

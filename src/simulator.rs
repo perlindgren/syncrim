@@ -5,6 +5,7 @@ use petgraph::{
     Graph,
 };
 
+use log::*;
 use std::collections::HashMap;
 use std::{fs::File, io::prelude::*, path::PathBuf};
 
@@ -18,7 +19,7 @@ pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 // A solution is to evaluate register updates separately from other components
 // ... but not currently implemented ...
 impl Simulator {
-    pub fn new(component_store: &ComponentStore, clock: &mut usize) -> Self {
+    pub fn new(component_store: &ComponentStore) -> Self {
         let mut lens_values = vec![];
 
         let mut id_start_index = HashMap::new();
@@ -28,11 +29,11 @@ impl Simulator {
         let mut id_field_index = HashMap::new();
         // allocate storage for lensed outputs
 
-        println!("-- allocate storage for lensed outputs");
+        trace!("-- allocate storage for lensed outputs");
         for c in &component_store.store {
             let (id, ports) = c.get_id_ports();
 
-            println!("id {}, ports {:?}", id, ports);
+            trace!("id {}, ports {:?}", id, ports);
             // start index for outputs related to component
             if id_start_index
                 .insert(id.clone(), lens_values.len())
@@ -47,7 +48,7 @@ impl Simulator {
             #[allow(clippy::same_item_push)]
             for (index, field_id) in ports.outputs.iter().enumerate() {
                 // create the value with a default to 0
-                lens_values.push(0);
+                lens_values.push(0.into());
                 if id_field_index
                     .insert((id.clone(), field_id.into()), index)
                     .is_some()
@@ -69,10 +70,10 @@ impl Simulator {
             node_comp.insert(node, c);
         }
 
-        println!("\nid_node {:?}", id_node);
+        trace!("\nid_node {:?}", id_node);
 
         for (node, c) in &node_comp {
-            println!("node {:?}, comp_id {:?}", node, c.get_id_ports());
+            trace!("node {:?}, comp_id {:?}", node, c.get_id_ports());
         }
 
         // insert edges
@@ -80,7 +81,7 @@ impl Simulator {
             let to_component = id_component.get(to_id).unwrap();
             let (_, ports) = to_component.get_id_ports();
 
-            println!("to_id :{}, ports: {:?}", to_id, ports);
+            trace!("to_id :{}, ports: {:?}", to_id, ports);
 
             if ports.out_type == OutputType::Combinatorial {
                 let to_node = id_node.get(to_id).unwrap();
@@ -90,17 +91,21 @@ impl Simulator {
                     let from_id = &in_port.id;
                     let from_node = id_node.get(from_id).unwrap();
                     graph.add_edge(*from_node, *to_node, ());
-                    println!(
+                    trace!(
                         "add_edge {}:{:?} -> {}:{:?}",
-                        from_id, from_node, to_id, to_node
+                        from_id,
+                        from_node,
+                        to_id,
+                        to_node
                     );
                 }
             }
         }
 
         // topological order
-        let top = toposort(&graph, None).unwrap();
-        println!("--- top \n{:?}", top);
+        let top =
+            toposort(&graph, None).expect("Topological sort failed, your model contains loops.");
+        trace!("--- top \n{:?}", top);
 
         let mut ordered_components = vec![];
         for node in &top {
@@ -115,9 +120,8 @@ impl Simulator {
             .map(|c| c.get_id_ports().0)
             .collect();
 
-        // unimplemented!();
-
         let mut simulator = Simulator {
+            cycle: 0,
             id_start_index,
             ordered_components,
             id_nr_outputs,
@@ -128,9 +132,9 @@ impl Simulator {
             graph,
         };
 
-        println!("sim_state {:?}", simulator.sim_state);
+        trace!("sim_state {:?}", simulator.sim_state);
 
-        simulator.clock(clock);
+        simulator.clock();
         simulator
     }
 
@@ -173,25 +177,24 @@ impl Simulator {
     }
 
     /// set value by Id (instance) and Id (field)
-    pub fn set_out_val(&mut self, id: &str, field: &str, value: Signal) {
+    pub fn set_out_val(&mut self, id: &str, field: &str, value: impl Into<Signal>) {
         let index = *self
             .id_field_index
             .get(&(id.into(), field.into()))
             .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
         let start_index = self.get_id_start_index(id);
-        self.set(start_index + index, value);
+        self.set(start_index + index, value.into());
     }
 
     /// iterate over the evaluators and increase clock by one
-    pub fn clock(&mut self, clock: &mut usize) {
+    pub fn clock(&mut self) {
         // push current state
         self.history.push(self.sim_state.clone());
-        let ordered_components = self.ordered_components.clone();
 
-        for component in ordered_components {
-            component.evaluate(self);
+        for component in self.ordered_components.clone() {
+            component.clock(self);
         }
-        *clock = self.history.len();
+        self.cycle = self.history.len();
     }
 
     pub fn c_by_id_str(&self, id: &String) -> String{
@@ -207,20 +210,26 @@ impl Simulator {
     }
 
     /// reverse simulation using history if clock > 1
-    pub fn un_clock(&mut self, clock: &mut usize) {
-        if *clock > 1 {
+    pub fn un_clock(&mut self) {
+        if self.cycle > 1 {
             let state = self.history.pop().unwrap();
             // set old state
             self.sim_state = state;
+            // to ensure that history length and cycle count complies
+            self.cycle = self.history.len();
+
+            for component in self.ordered_components.clone() {
+                component.un_clock();
+            }
         }
-        *clock = self.history.len();
     }
 
     /// reset simulator
-    pub fn reset(&mut self, clock: &mut usize) {
+    pub fn reset(&mut self) {
         self.history = vec![];
-        self.sim_state.iter_mut().for_each(|val| *val = 0);
-        self.clock(clock);
+        self.cycle = 0;
+        self.sim_state.iter_mut().for_each(|val| *val = 0.into());
+        self.clock();
     }
 
     /// save as `dot` file with `.gv` extension
@@ -248,10 +257,9 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let mut clock = 0;
-        let _simulator = Simulator::new(&cs, &mut clock);
+        let simulator = Simulator::new(&cs);
 
-        assert_eq!(clock, 1);
+        assert_eq!(simulator.cycle, 1);
     }
 
     #[test]
@@ -261,10 +269,9 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1")), Rc::new(ProbeOut::new("po1"))],
         };
 
-        let mut clock = 0;
-        let _simulator = Simulator::new(&cs, &mut clock);
+        let simulator = Simulator::new(&cs);
 
-        assert_eq!(clock, 1);
+        assert_eq!(simulator.cycle, 1);
     }
 
     #[test]
@@ -273,10 +280,9 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let mut clock = 0;
-        let simulator = Simulator::new(&cs, &mut clock);
+        let simulator = Simulator::new(&cs);
 
-        assert_eq!(clock, 1);
+        assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_val(&Input::new("po1", "out"));
     }
 
@@ -287,10 +293,9 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let mut clock = 0;
-        let simulator = Simulator::new(&cs, &mut clock);
+        let simulator = Simulator::new(&cs);
 
-        assert_eq!(clock, 1);
+        assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_val(&Input::new("po1", "missing"));
     }
 }

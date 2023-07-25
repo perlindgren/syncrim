@@ -1,6 +1,6 @@
-use crate::common::{Component, Id, Input, OutputType, Ports, Simulator};
+use crate::common::{Component, Id, Input, OutputType, Ports, Signal, SignalUnsigned, Simulator};
+use log::*;
 use serde::{Deserialize, Serialize};
-
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
     pub id: Id,
@@ -12,7 +12,7 @@ pub struct Mux {
 #[typetag::serde]
 impl Component for Mux {
     fn to_(&self) {
-        println!("mux");
+        trace!("mux");
     }
     fn to_string(&self)->String{"".to_string()}
     fn get_id_ports(&self) -> (Id, Ports) {
@@ -31,11 +31,16 @@ impl Component for Mux {
     }
 
     // propagate selected input value to output
-    fn evaluate(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) {
         // get input value
-        let select = simulator.get_input_val(&self.select) as usize;
-        println!("select {}", select);
-        let value = simulator.get_input_val(&self.m_in[select]);
+        let select: SignalUnsigned = simulator.get_input_val(&self.select).try_into().unwrap();
+        let select = select as usize;
+        trace!("select {}", select);
+        let value = if select < self.m_in.len() {
+            simulator.get_input_val(&self.m_in[select])
+        } else {
+            Signal::Unknown
+        };
 
         // set output
         simulator.set_out_val(&self.id, "out", value);
