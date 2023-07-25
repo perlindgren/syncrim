@@ -62,6 +62,7 @@ pub type Components = Vec<Rc<dyn EguiComponent>>;
 #[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
 pub struct Simulator {
+    pub cycle: usize,
     pub id_start_index: IdStartIndex,
 
     // Components stored in topological evaluation order

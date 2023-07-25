@@ -10,7 +10,6 @@ pub struct Gui {
     // History, acts like a stack
     pub history: Vec<Vec<u32>>,
     pub scale: f32,
-    pub clock: usize,
     // When the ui elements change size
     pub ui_change: bool,
     pub offset: egui::Vec2,
@@ -23,14 +22,12 @@ pub struct Gui {
 }
 
 pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
-    let mut clock = 0;
-    let simulator = Simulator::new(cs, &mut clock);
+    let simulator = Simulator::new(cs);
     let options = eframe::NativeOptions::default();
     let path = path.to_owned();
     simulator.save_dot(&path);
 
     let gui = Gui {
-        clock,
         path,
         simulator: Some(simulator),
         history: vec![],

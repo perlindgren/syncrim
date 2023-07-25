@@ -32,7 +32,7 @@ impl Menu {
             if ui.button("⏸").clicked() {
                 keymap::control_pause_fn(gui);
             }
-            ui.label(format!("Clock #{}", gui.clock));
+            ui.label(format!("Cycle #{}", gui.simulator.as_ref().unwrap().cycle));
         });
     }
 

@@ -117,10 +117,9 @@ mod test {
                 )),
             ],
         };
-        let mut clock = 0;
-        let mut simulator = Simulator::new(cs, &mut clock);
+        let mut simulator = Simulator::new(cs);
 
-        assert_eq!(clock, 1);
+        assert_eq!(simulator.cycle, 1);
 
         // outputs
         let add_val = &Input::new("add", "out");
@@ -138,9 +137,10 @@ mod test {
         simulator.set_out_val("po2", "out", 1337);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
-        simulator.clock(&mut clock);
+        simulator.clock();
+
         println!("sim_state {:?}", simulator.sim_state);
-        assert_eq!(clock, 2);
+        assert_eq!(simulator.cycle, 2);
         assert_eq!(simulator.get_input_val(add_val), (42 + 1337).into());
         assert_eq!(
             simulator.get_input_val(add_overflow),
@@ -153,9 +153,9 @@ mod test {
         simulator.set_out_val("po2", "out", 1);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
-        simulator.clock(&mut clock);
+        simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
-        assert_eq!(clock, 3);
+        assert_eq!(simulator.cycle, 3);
         assert_eq!(
             simulator.get_input_val(add_val),
             (SignalUnsigned::MAX / 2 + 1).into()

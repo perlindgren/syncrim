@@ -105,10 +105,10 @@ mod test {
                 )),
             ],
         };
-        let mut clock = 0;
-        let mut simulator = Simulator::new(cs, &mut clock);
 
-        assert_eq!(clock, 1);
+        let mut simulator = Simulator::new(cs);
+
+        assert_eq!(simulator.cycle, 1);
 
         // outputs
         let sext32_out = &Input::new("sext32", "out");
@@ -123,9 +123,9 @@ mod test {
         simulator.set_out_val("po", "out", 0b1111);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
-        simulator.clock(&mut clock);
+        simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
-        assert_eq!(clock, 2);
+        assert_eq!(simulator.cycle, 2);
         assert_eq!(simulator.get_input_val(sext32_out), 0xFFFFFFFF.into());
         assert_eq!(simulator.get_input_val(sext16_out), 0xFFFF.into());
 
@@ -134,9 +134,9 @@ mod test {
         simulator.set_out_val("po", "out", 0b111);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
-        simulator.clock(&mut clock);
+        simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
-        assert_eq!(clock, 3);
+        assert_eq!(simulator.cycle, 3);
         assert_eq!(simulator.get_input_val(sext32_out), 0b111.into());
         assert_eq!(simulator.get_input_val(sext16_out), 0b111.into());
 
@@ -145,9 +145,9 @@ mod test {
         simulator.set_out_val("po", "out", 0b10111);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
-        simulator.clock(&mut clock);
+        simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
-        assert_eq!(clock, 4);
+        assert_eq!(simulator.cycle, 4);
         assert_eq!(simulator.get_input_val(sext32_out), 0b111.into());
         assert_eq!(simulator.get_input_val(sext16_out), 0b111.into());
     }

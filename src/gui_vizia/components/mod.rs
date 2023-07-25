@@ -8,3 +8,4 @@ mod probe_out;
 mod register;
 mod sext;
 mod wire;
+mod probe_stim;

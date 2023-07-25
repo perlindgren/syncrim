@@ -259,10 +259,10 @@ mod test {
                 )),
             ],
         };
-        let mut clock = 0;
-        let mut simulator = Simulator::new(cs, &mut clock);
 
-        assert_eq!(clock, 1);
+        let mut simulator = Simulator::new(cs);
+
+        assert_eq!(simulator.cycle, 1);
 
         // outputs
         let out_reg_1 = &Input::new("reg_file", "reg_a");
@@ -282,9 +282,9 @@ mod test {
         // test write and read to reg # 1 in same cycle
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
-        simulator.clock(&mut clock);
+        simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
-        assert_eq!(clock, 2);
+        assert_eq!(simulator.cycle, 2);
         assert_eq!(simulator.get_input_val(out_reg_1), 0.into());
         assert_eq!(simulator.get_input_val(out_reg_2), 1337.into());
 
@@ -296,9 +296,9 @@ mod test {
         simulator.set_out_val("write_addr", "out", 0);
         simulator.set_out_val("write_enable", "out", true as SignalUnsigned);
         println!("<clock>");
-        simulator.clock(&mut clock);
+        simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
-        assert_eq!(clock, 3);
+        assert_eq!(simulator.cycle, 3);
         assert_eq!(simulator.get_input_val(out_reg_1), 0.into());
         assert_eq!(simulator.get_input_val(out_reg_2), 1337.into());
     }

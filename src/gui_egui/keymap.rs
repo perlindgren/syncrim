@@ -244,8 +244,7 @@ pub fn file_editor_toggle_fn(gui: &mut Gui) {
             gui.editor_use = false;
             if let Some(e) = gui.editor.as_mut() {
                 let components = e.components.clone();
-                let simulator =
-                    Simulator::new(ComponentStore { store: components }, &mut gui.clock);
+                let simulator = Simulator::new(ComponentStore { store: components });
                 gui.simulator = Some(simulator);
             }
         }
@@ -313,18 +312,18 @@ pub fn control_pause_fn(gui: &mut Gui) {
 }
 pub fn control_reset_fn(gui: &mut Gui) {
     if !gui.editor_use {
-        gui.simulator.as_mut().unwrap().reset(&mut gui.clock);
+        gui.simulator.as_mut().unwrap().reset();
         gui.pause = true;
     }
 }
 pub fn control_step_forward_fn(gui: &mut Gui) {
     if !gui.editor_use {
-        gui.simulator.as_mut().unwrap().clock(&mut gui.clock);
+        gui.simulator.as_mut().unwrap().clock();
     }
 }
 pub fn control_step_back_fn(gui: &mut Gui) {
     if !gui.editor_use {
-        gui.simulator.as_mut().unwrap().un_clock(&mut gui.clock);
+        gui.simulator.as_mut().unwrap().un_clock();
     }
 }
 pub fn editor_wire_mode_fn(gui: &mut Gui) {

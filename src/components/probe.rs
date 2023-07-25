@@ -1,6 +1,7 @@
 use crate::common::{Component, Id, Input, InputPort, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 #[derive(Serialize, Deserialize)]
 pub struct Probe {
     pub id: Id,
@@ -9,21 +10,6 @@ pub struct Probe {
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
     pub egui_x: crate::common::EguiExtra,
-}
-
-impl Probe {
-    pub fn new(id: &str, pos: (f32, f32), input: Input) -> Self {
-        Probe {
-            id: id.to_string(),
-            pos,
-            input_port: InputPort {
-                port_id: String::from("in"),
-                input,
-            },
-            #[cfg(feature = "gui-egui")]
-            egui_x: crate::common::EguiExtra::default(),
-        }
-    }
 }
 
 #[typetag::serde]
@@ -49,5 +35,24 @@ impl Component for Probe {
         if target_port_id.as_str() == "in" {
             self.input_port.input = new_input
         }
+    }
+}
+
+impl Probe {
+    pub fn new(id: &str, pos: (f32, f32), input: Input) -> Self {
+        Probe {
+            id: id.to_string(),
+            pos,
+            input_port: InputPort {
+                port_id: String::from("in"),
+                input,
+            },
+            #[cfg(feature = "gui-egui")]
+            egui_x: crate::common::EguiExtra::default(),
+        }
+    }
+
+    pub fn rc_new(id: &str, pos: (f32, f32), input: Input) -> Rc<Self> {
+        Rc::new(Probe::new(id, pos, input))
     }
 }

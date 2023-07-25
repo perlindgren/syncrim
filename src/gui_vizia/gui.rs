@@ -1,5 +1,7 @@
-use crate::common::{ComponentStore, Simulator};
-use crate::gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::Transport};
+use crate::{
+    common::{ComponentStore, Simulator},
+    gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::Transport},
+};
 use rfd::FileDialog;
 use std::collections::HashSet;
 use std::path::PathBuf;
@@ -10,7 +12,6 @@ use log::*;
 #[derive(Lens, Clone)]
 pub struct GuiData {
     pub path: PathBuf,
-    pub clock: usize,
     pub simulator: Simulator,
     pub pause: bool,
     pub is_saved: bool,
@@ -64,10 +65,10 @@ impl Model for GuiData {
                 }
             }
             GuiEvent::ReOpen => self.open(),
-            GuiEvent::Clock => self.simulator.clock(&mut self.clock),
-            GuiEvent::UnClock => self.simulator.un_clock(&mut self.clock),
+            GuiEvent::Clock => self.simulator.clock(),
+            GuiEvent::UnClock => self.simulator.un_clock(),
             GuiEvent::Reset => {
-                self.simulator.reset(&mut self.clock);
+                self.simulator.reset();
                 self.pause = true;
             }
             GuiEvent::Play => self.pause = false,
@@ -103,17 +104,21 @@ impl GuiData {
         // Re-Open model
         trace!("open path {:?}", self.path);
         let cs = ComponentStore::load_file(&self.path);
-        let simulator = Simulator::new(cs, &mut self.clock);
-
+        let simulator = Simulator::new(cs);
         self.simulator = simulator;
 
         trace!("opened");
     }
 }
 
+<<<<<<< HEAD
 pub fn gui(cs: ComponentStore, path: &PathBuf) {
     let mut clock = 0;
     let simulator = Simulator::new(cs, &mut clock);
+=======
+pub fn gui(cs: &ComponentStore, path: &PathBuf) {
+    let simulator = Simulator::new(cs);
+>>>>>>> upstream/master
     let path = path.to_owned();
     simulator.save_dot(&path);
 
@@ -126,7 +131,6 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
 
         GuiData {
             path,
-            clock,
             simulator,
             pause: true,
             is_saved: false,
@@ -142,10 +146,13 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
             Menu::new(cx, |cx| {
                 HStack::new(cx, |cx| {
                     Transport::new(cx).size(Auto);
-                    Label::new(cx, GuiData::clock.map(|clock| format!("Clock #{}", clock)))
-                        .top(Stretch(1.0))
-                        .bottom(Stretch(1.0))
-                        .height(Auto);
+                    Label::new(
+                        cx,
+                        GuiData::simulator.map(|simulator| format!("Cycle #{:?}", simulator.cycle)),
+                    )
+                    .top(Stretch(1.0))
+                    .bottom(Stretch(1.0))
+                    .height(Auto);
                 })
                 .col_between(Pixels(10.0))
                 .top(Stretch(1.0))
