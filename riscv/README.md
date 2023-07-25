@@ -1,3 +1,3 @@
-# MIPS
+# RISCV
 
-MIPS specific components.
+RISCV specific components.
