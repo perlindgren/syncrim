@@ -8,7 +8,6 @@ pub struct Gui {
     pub simulator: Option<Simulator>,
     pub path: PathBuf,
     // History, acts like a stack
-    pub history: Vec<Vec<u32>>,
     pub scale: f32,
     // When the ui elements change size
     pub ui_change: bool,
@@ -30,7 +29,6 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
     let gui = Gui {
         path,
         simulator: Some(simulator),
-        history: vec![],
         scale: 1.0f32,
         ui_change: true,
         offset: egui::Vec2 { x: 0f32, y: 0f32 },

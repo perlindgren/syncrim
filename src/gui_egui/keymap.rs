@@ -224,11 +224,10 @@ impl Shortcuts {
 pub fn file_new_fn(_gui: &mut Gui) {}
 pub fn file_open_fn(gui: &mut Gui) {
     let files = FileDialog::new().add_filter("json", &["json"]).pick_file();
-    let mut path = PathBuf::default();
     if let Some(path_buf) = files {
-        path = path_buf;
+        gui.path = path_buf;
     }
-    let cs = ComponentStore::load_file(&path);
+    let cs = ComponentStore::load_file(&gui.path);
     match gui.editor_use {
         true => {
             if let Some(e) = gui.editor.as_mut() {
@@ -251,7 +250,7 @@ pub fn file_save_fn(gui: &mut Gui) {
                 ComponentStore {
                     store: e.components.clone(),
                 }
-                .save_file(&PathBuf::from("file.json"))
+                .save_file(&gui.path)
             }
         }
         false => ComponentStore {
@@ -260,7 +259,13 @@ pub fn file_save_fn(gui: &mut Gui) {
         .save_file(&PathBuf::from("file.json")),
     }
 }
-pub fn file_save_as_fn(_gui: &mut Gui) {}
+pub fn file_save_as_fn(gui: &mut Gui) {
+    let files = FileDialog::new().add_filter("json", &["json"]).save_file();
+    if let Some(path_buf) = files {
+        gui.path = path_buf;
+        file_save_fn(gui);
+    }
+}
 pub fn file_editor_toggle_fn(gui: &mut Gui) {
     // Auto-save
     file_save_fn(gui);
