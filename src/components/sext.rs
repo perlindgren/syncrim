@@ -1,6 +1,6 @@
 // use std::fmt::Alignment;
 use crate::common::{
-    Component, Id, Input, OutputType, Ports, Signal, SignalSigned, SignalUnsigned, Simulator,
+    Component, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -49,7 +49,7 @@ impl Component for Sext {
         value >>= to_shr;
 
         // set output
-        simulator.set_out_val(&self.id, "out", Signal::Data(value));
+        simulator.set_out_val(&self.id, "out", value);
     }
 }
 

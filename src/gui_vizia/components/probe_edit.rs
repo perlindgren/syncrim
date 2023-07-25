@@ -1,6 +1,6 @@
 use crate::gui_vizia::GuiData;
 use crate::{
-    common::{Signal, SignalSigned, SignalUnsigned, Simulator, ViziaComponent},
+    common::{SignalData, SignalSigned, SignalUnsigned, Simulator, ViziaComponent},
     components::{ProbeEdit, TextSignal},
 };
 use vizia::prelude::*;
@@ -37,12 +37,12 @@ impl ViziaComponent for ProbeEdit {
             .on_edit(move |_ex, text| {
                 trace!("edit: text {}", text);
 
-                let signal = parse_signal(&text);
+                let value = parse_signal(&text);
                 *history_submit.write().unwrap().last_mut().unwrap() = TextSignal {
                     text: text.clone(),
-                    signal,
+                    signal: value.into(),
                 };
-                trace!("signal {:?}", signal);
+                trace!("signal {:?}", value);
             })
             .position_type(PositionType::SelfDirected)
             .left(Pixels(self.pos.0 - 40.0))
@@ -57,18 +57,18 @@ pub struct ProbeEditView {
     editable_text: String,
 }
 
-fn parse_signal(text: &str) -> Signal {
+fn parse_signal(text: &str) -> SignalData {
     let text = text.trim();
 
     if let Ok(signal) = text.parse::<SignalSigned>() {
-        Signal::Data(signal as SignalUnsigned)
+        (signal as SignalUnsigned).into()
     } else if let Some(hex) = text.strip_prefix("0x") {
         if let Ok(signal) = SignalUnsigned::from_str_radix(hex, 16) {
-            Signal::Data(signal)
+            signal.into()
         } else {
-            Signal::Unknown
+            SignalData::Unknown
         }
     } else {
-        Signal::Unknown
+        SignalData::Unknown
     }
 }

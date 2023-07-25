@@ -3,7 +3,7 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
-use syncrim::common::{Component, Input, OutputType, Ports, Signal, SignalUnsigned, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, SignalUnsigned, Simulator};
 
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
@@ -168,11 +168,11 @@ impl Component for RegFile {
         // read after write
         let reg_value_a = self.read_reg(simulator, &self.read_addr1);
         trace!("reg_value {}", reg_value_a);
-        simulator.set_out_val(&self.id, "reg_a", Signal::Data(reg_value_a));
+        simulator.set_out_val(&self.id, "reg_a", reg_value_a);
 
         let reg_value_b = self.read_reg(simulator, &self.read_addr2);
         trace!("reg_value {}", reg_value_b);
-        simulator.set_out_val(&self.id, "reg_b", Signal::Data(reg_value_b));
+        simulator.set_out_val(&self.id, "reg_b", reg_value_b);
     }
 }
 

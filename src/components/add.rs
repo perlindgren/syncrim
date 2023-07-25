@@ -1,5 +1,5 @@
 use crate::common::{
-    Component, Id, Input, OutputType, Ports, Signal, SignalSigned, SignalUnsigned, Simulator,
+    Component, Id, Input, OutputType, Ports, SignalData, SignalSigned, SignalUnsigned, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -40,11 +40,11 @@ impl Component for Add {
                 let (res, overflow) =
                     SignalSigned::overflowing_add(*a as SignalSigned, *b as SignalSigned);
                 (
-                    Signal::Data(res as SignalUnsigned),
-                    Signal::Data(overflow as SignalUnsigned),
+                    (res as SignalUnsigned).into(),
+                    (overflow as SignalUnsigned).into(),
                 )
             }
-            _ => (Signal::Unknown, Signal::Unknown),
+            _ => (SignalData::Unknown, SignalData::Unknown),
         };
 
         trace!(

@@ -1,4 +1,6 @@
-use crate::common::{Component, ComponentStore, Id, Input, OutputType, Signal, Simulator};
+use crate::common::{
+    Component, ComponentStore, Id, Input, OutputType, Signal, SignalData, Simulator,
+};
 use petgraph::{
     algo::toposort,
     dot::{Config, Dot},
@@ -144,7 +146,7 @@ impl Simulator {
     }
 
     /// get input value
-    pub fn get_input_val(&self, input: &Input) -> Signal {
+    pub fn get_input_val(&self, input: &Input) -> SignalData {
         let nr_out = *self.id_nr_outputs.get(&input.id).unwrap();
         let index = *self
             .id_field_index
@@ -157,7 +159,7 @@ impl Simulator {
             });
         if index < nr_out {
             let start_index = *self.id_start_index.get(&input.id).unwrap();
-            self.get(start_index + index)
+            self.get(start_index + index).get_data()
         } else {
             panic!(
                 "ICE: Attempt to read {:?} at index {}, where {:?} has only {} outputs.",
@@ -172,18 +174,18 @@ impl Simulator {
     }
 
     // set value by index
-    fn set(&mut self, index: usize, value: Signal) {
-        self.sim_state[index] = value;
+    fn set_data(&mut self, index: usize, value: SignalData) {
+        self.sim_state[index].set_data(value);
     }
 
     /// set value by Id (instance) and Id (field)
-    pub fn set_out_val(&mut self, id: &str, field: &str, value: impl Into<Signal>) {
+    pub fn set_out_val(&mut self, id: &str, field: &str, value: impl Into<SignalData>) {
         let index = *self
             .id_field_index
             .get(&(id.into(), field.into()))
             .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
         let start_index = self.get_id_start_index(id);
-        self.set(start_index + index, value.into());
+        self.set_data(start_index + index, value.into());
     }
 
     /// iterate over the evaluators and increase clock by one

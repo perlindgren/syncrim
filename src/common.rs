@@ -1,8 +1,11 @@
+use num_enum::IntoPrimitive;
 use petgraph::Graph;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::{
+    ascii::escape_default,
+    collections::HashMap,
     convert::{From, TryFrom},
+    fmt,
     rc::Rc,
 };
 
@@ -15,8 +18,34 @@ pub type Id = String;
 
 pub type SignalUnsigned = u32;
 pub type SignalSigned = i32;
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone)]
+pub struct Signal {
+    data: SignalData,
+    fmt: SignalFmt,
+}
+
+impl Signal {
+    /// set data field
+    pub fn set_data(&mut self, data: SignalData) {
+        self.data = data
+    }
+    /// set fmt field
+    pub fn set_fmt(&mut self, fmt: SignalFmt) {
+        self.fmt = fmt
+    }
+    /// get data field
+    pub fn get_data(&self) -> SignalData {
+        self.data
+    }
+    /// get fmt field
+    pub fn get_fmt(&self) -> SignalFmt {
+        self.fmt
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq)]
-pub enum Signal {
+pub enum SignalData {
     Uninitialized,
     Unknown,
     DontCare,
@@ -27,23 +56,107 @@ impl TryFrom<Signal> for SignalUnsigned {
     type Error = String;
 
     fn try_from(signal: Signal) -> Result<Self, Self::Error> {
-        if let Signal::Data(data) = signal {
+        if let SignalData::Data(data) = signal.data {
             Ok(data)
         } else {
-            Err(format!("could not convert {:?} into u32", signal))
+            Err(format!(
+                "Could not convert {:?} into SignalUnsigned",
+                signal
+            ))
+        }
+    }
+}
+
+impl TryFrom<SignalData> for SignalUnsigned {
+    type Error = String;
+
+    fn try_from(data: SignalData) -> Result<Self, Self::Error> {
+        if let SignalData::Data(data) = data {
+            Ok(data)
+        } else {
+            Err(format!("Could not convert {:?} into SignalUnsigned", data))
+        }
+    }
+}
+
+impl From<SignalData> for Signal {
+    fn from(data: SignalData) -> Signal {
+        Signal {
+            data,
+            fmt: SignalFmt::Hex(SignalSize::_32),
         }
     }
 }
 
 impl From<SignalUnsigned> for Signal {
     fn from(data: u32) -> Signal {
-        Signal::Data(data)
+        Signal {
+            data: SignalData::Data(data),
+            fmt: SignalFmt::Hex(SignalSize::_32),
+        }
     }
 }
 
 impl From<bool> for Signal {
     fn from(b: bool) -> Signal {
-        Signal::Data(b as SignalUnsigned)
+        Signal {
+            data: SignalData::Data(b as SignalUnsigned),
+            fmt: SignalFmt::Hex(SignalSize::_32),
+        }
+    }
+}
+
+impl From<SignalUnsigned> for SignalData {
+    fn from(data: u32) -> SignalData {
+        SignalData::Data(data)
+    }
+}
+
+impl From<bool> for SignalData {
+    fn from(b: bool) -> SignalData {
+        SignalData::Data(b as SignalUnsigned)
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone)]
+pub enum SignalFmt {
+    Ascii(SignalSize),
+    Unsigned(SignalSize),
+    Signed(SignalSize),
+    Hex(SignalSize),
+    Binary(u8), // just to set a limit to the number of bits
+    Bool,       // treats it as true/false
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone, IntoPrimitive)]
+#[repr(u8)]
+pub enum SignalSize {
+    _8 = 1,
+    _16 = 2,
+    _32 = 4,
+}
+
+impl fmt::Display for Signal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.data {
+            SignalData::Data(value) => match self.fmt {
+                SignalFmt::Ascii(signal_size) => {
+                    let s: u8 = signal_size.into();
+
+                    let bytes = &value.to_be_bytes()[0..s as usize];
+                    // let x: Vec<u8> = bytes.iter().map(|b| escape_default(*b)).flatten().collect();
+                    // write!(f, "{:?}", self.bytes),
+                    unimplemented!()
+                }
+                SignalFmt::Binary(u) => unimplemented!(),
+                SignalFmt::Unsigned(_) => todo!(),
+                SignalFmt::Signed(_) => todo!(),
+                SignalFmt::Hex(_) => todo!(),
+                SignalFmt::Bool => todo!(),
+                // _ => write!(f, "{:?}", self.data),
+            },
+            _ => write!(f, "{:?}", self.data),
+        }
     }
 }
 
@@ -170,11 +283,3 @@ pub enum OutputType {
     // Will be evaluated as synchronous from input to output
     Sequential,
 }
-
-// #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
-// pub enum Output {
-//     // Will be evaluated as a constant (function without inputs)
-//     Constant(Signal),
-//     // Will be evaluated as a function
-//     Function,
-// }

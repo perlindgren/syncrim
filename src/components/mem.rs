@@ -1,5 +1,5 @@
 use crate::common::{
-    Component, Id, Input, OutputType, Ports, Signal, SignalSigned, SignalUnsigned, Simulator,
+    Component, Id, Input, OutputType, Ports, SignalData, SignalSigned, SignalUnsigned, Simulator,
 };
 use log::*;
 use num_enum::IntoPrimitive;
@@ -47,11 +47,11 @@ impl Memory {
         }
     }
 
-    fn align(&self, addr: usize, size: usize) -> Signal {
-        Signal::Data((addr % size != 0) as SignalUnsigned)
+    fn align(&self, addr: usize, size: usize) -> SignalData {
+        ((addr % size != 0) as SignalUnsigned).into()
     }
 
-    fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> Signal {
+    fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> SignalData {
         let data: Vec<u8> = (0..size)
             .map(|i| *self.bytes.borrow().get(&(addr + i)).unwrap_or(&0))
             .collect();
@@ -60,7 +60,7 @@ impl Memory {
 
         trace!("{:x?}", data);
 
-        Signal::Data(match size {
+        match size {
             1 => {
                 if sign {
                     data[0] as i8 as SignalSigned as SignalUnsigned
@@ -115,10 +115,11 @@ impl Memory {
                 }
             }
             _ => panic!("illegal sized memory operation"),
-        })
+        }
+        .into()
     }
 
-    fn write(&self, addr: usize, size: usize, big_endian: bool, data: Signal) {
+    fn write(&self, addr: usize, size: usize, big_endian: bool, data: SignalData) {
         let data: SignalUnsigned = data.try_into().unwrap();
         match size {
             1 => {

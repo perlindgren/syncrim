@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Signal, Simulator, ViziaComponent},
+    common::{Component, SignalData, Simulator, ViziaComponent},
     components::ProbeStim,
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
@@ -23,7 +23,7 @@ impl ViziaComponent for ProbeStim {
                     let rhs = if let Some(value) = values.get(cycle - 1) {
                         *value
                     } else {
-                        Signal::Unknown
+                        (SignalData::Unknown).into()
                     };
                     Label::new(cx, &format!("{:?}", rhs)).hoverable(false);
                 },
