@@ -190,9 +190,8 @@ impl Simulator {
     pub fn clock(&mut self) {
         // push current state
         self.history.push(self.sim_state.clone());
-        let ordered_components = self.ordered_components.clone();
 
-        for component in ordered_components {
+        for component in self.ordered_components.clone() {
             component.clock(self);
         }
         self.cycle = self.history.len();
@@ -204,19 +203,19 @@ impl Simulator {
             let state = self.history.pop().unwrap();
             // set old state
             self.sim_state = state;
-            let ordered_components = self.ordered_components.clone();
+            // to ensure that history length and cycle count complies
+            self.cycle = self.history.len();
 
-            for component in ordered_components {
+            for component in self.ordered_components.clone() {
                 component.un_clock();
             }
         }
-        // to ensure that history length and cycle count complies
-        self.cycle = self.history.len();
     }
 
     /// reset simulator
     pub fn reset(&mut self) {
         self.history = vec![];
+        self.cycle = 0;
         self.sim_state.iter_mut().for_each(|val| *val = 0.into());
         self.clock();
     }

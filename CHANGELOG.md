@@ -2,6 +2,12 @@
 
 Tracking changes per date:
 
+## 230725
+
+- Refactored, `clock` as `cycle` and put it in the `Simulator` (thanks to Fredrik for suggesting this a while back). Now the Simulator holds the complete state, which is better.
+
+- Implemented the `ProbeStim` component, to provide a set sequence of outputs.
+  
 ## 230721
 
 - Added rudimentary support for a structured `Signal` type, inspired by HDLs.
