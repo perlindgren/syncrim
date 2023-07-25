@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, Signal, Output, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
 use syncrim::components::MemCtrl;
 
 #[derive(Serialize, Deserialize)]
@@ -16,7 +16,6 @@ impl Component for Decoder {
     fn to_(&self) {
         println!("Decoder");
     }
-    fn to_string(&self)->String{"".to_string()}
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
@@ -51,13 +50,8 @@ impl Component for Decoder {
         )
     }
     #[allow(non_snake_case)]
-    fn evaluate(&self, simulator: &mut Simulator) {
-        let LOAD = 0b0000011;
-        let STORE = 0b0100011;
-        //let OP = 0b0110011;
-        let OP_IMM = 0b0010011;
-
-        let instruction = simulator.get_input_val(&self.instruction);
+    fn clock(&self, simulator: &mut Simulator) {
+        let instruction:u32 = simulator.get_input_val(&self.instruction).try_into().unwrap();
         let opcode = instruction & 0b1111111;
         let funct3 = (instruction & (0b111<<12))>>12;
         let funct7 = (instruction & (0b1111111<<25))>>25;
@@ -76,14 +70,14 @@ impl Component for Decoder {
         ((instruction&(0b111111<<25))>>20)|
         ((instruction&(0b1111<<8))>>7)|
         ((instruction&(0b1<<7))<<4);
-        let mut wb_mux = 0;
+        let wb_mux:u32;
         let mut alu_operand_a_sel = 0;
         let mut alu_operand_b_sel = 0;
-        let mut regfile_rd = 0;
-        let mut regfile_rs1 = 0;
+        let regfile_rd:u32;
+        let regfile_rs1:u32;
         let mut regfile_rs2 = 0;
-        let mut regfile_we = 0;
-        let mut alu_operator = 0;
+        let regfile_we:u32;
+        let alu_operator:u32;
         let mut sign_zero_ext_sel = 0;
         let mut sign_zero_ext_data = 0;
         let mut imm_a_mux_data = 0;
@@ -114,51 +108,51 @@ impl Component for Decoder {
                 match funct3{
                     0b000 => { // add/sub
                         match funct7{
-                            0b0000000=> {alu_operator = 1;println!("ALU ADD")},//add
-                            0b0100000=> {alu_operator = 2;println!("ALU SUB")},//sub
+                            0b0000000=> {alu_operator = 1;},//add
+                            0b0100000=> {alu_operator = 2;},//sub
                             _=>panic!("Invalid funct7 {:b}", funct7),
                         }
                     }
                     0b001 => {
                         match funct7{ // sll
-                            0b0000000=> {alu_operator = 3;println!("ALU SLL")},//sll
+                            0b0000000=> {alu_operator = 3;},//sll
                             _=>panic!("Invalid funct7 {:b}", funct7),
                         }  
                     }
                     0b010 => {
                         match funct7{ // slt
-                            0b0000000=> {alu_operator = 10;;println!("ALU SLT")},//slt
+                            0b0000000=> {alu_operator = 10;},//slt
                             _=>panic!("Invalid funct7 {:b}", funct7),
                         }  
                     }
                     0b011 => {
                         match funct7{ // sltu
-                            0b0000000=> {alu_operator = 9;println!("ALU SLTU")},//sltu
+                            0b0000000=> {alu_operator = 9;},//sltu
                             _=>panic!("Invalid funct7 {:b}", funct7),
                         }  
                     }
                     0b100 => {
                         match funct7{ // xor
-                            0b0000000=> {alu_operator = 6;println!("ALU XOR")},//xor
+                            0b0000000=> {alu_operator = 6;},//xor
                             _=>panic!("Invalid funct7 {:b}", funct7),
                         }  
                     }
                     0b101 => {
                         match funct7{ // srl
-                            0b0000000=> {alu_operator = 4;println!("ALU SRL")},//srl
-                            0b0100000=> {alu_operator = 5;println!("ALU SRA")}, //sra
+                            0b0000000=> {alu_operator = 4;},//srl
+                            0b0100000=> {alu_operator = 5;}, //sra
                             _=>panic!("Invalid funct7 {:b}", funct7),
                         }  
                     }
                     0b110 => {
                         match funct7{ // or
-                            0b0000000=> {alu_operator = 7;println!("ALU OR")},//or
+                            0b0000000=> {alu_operator = 7;},//or
                             _=>panic!("Invalid funct7 {:b}", funct7),
                         }  
                     }
                     0b111 => { //and
                         match funct7{ 
-                            0b0000000=> {alu_operator = 8;println!("ALU AND")},//and
+                            0b0000000=> {alu_operator = 8;},//and
                             _=>panic!("Invalid funct7 {:b}", funct7),
                         }  
                     }
@@ -288,7 +282,7 @@ impl Component for Decoder {
             0b1100011 =>{//BRANCH
                 regfile_rs1 = (instruction & (0b11111<<15)) >> 15;
                 regfile_rs2 = (instruction & (0b11111<<20)) >> 20;
-                pc_imm_sel = 1;
+                //pc_imm_sel = 1;
                 //branch_imm = imm;
                 regfile_rd = 0; //don't care
                 regfile_we = 0; //no link
@@ -299,11 +293,9 @@ impl Component for Decoder {
                 pc_imm_sel = 1; //branch imm
                 branch_logic_ctl = funct3; //use funct3
                 branch_logic_enable = 0b1;  //enable branch logic
-                println!("BRANCH IMM:{:b}", branch_imm);
             }
             
             0b0000011 =>{//LOAD
-                println!("----------LOAD");
                 alu_operand_a_sel = 0; //rs1
                 alu_operand_b_sel = 1;   //imm
                 regfile_rd = (instruction & (0b11111<<7)) >> 7;
@@ -315,7 +307,7 @@ impl Component for Decoder {
                 sign_zero_ext_sel = 0; //sign extend
 
                 data_mem_ctrl = MemCtrl::Read;
-                match(funct3){
+                match funct3 {
                     0b000=>{data_mem_size=1;data_se=1}, //lb
                     0b001=>{data_mem_size=2;data_se=1}, //lh
                     0b010=>{data_mem_size=4;data_se=1}, //lw
@@ -327,7 +319,6 @@ impl Component for Decoder {
 
             }
             0b0100011 =>{//STORE
-                println!("----------STORE");
                 alu_operand_a_sel = 0; //rs1
                 alu_operand_b_sel = 1;   //imm
                 regfile_rd = (instruction & (0b11111<<7)) >> 7;
@@ -340,10 +331,10 @@ impl Component for Decoder {
                 sign_zero_ext_sel = 0; //sign extend
 
                 data_mem_ctrl = MemCtrl::Write;
-                match(funct3){//size
-                    0b000=>{data_mem_size=1;println!("BYTE")},
-                    0b001=>{data_mem_size=2;println!("HALFWORD")},
-                    0b010=>{data_mem_size=4;println!("WORD")},
+                match funct3 {//size
+                    0b000=>{data_mem_size=1;},
+                    0b001=>{data_mem_size=2;},
+                    0b010=>{data_mem_size=4;},
                     _=>panic!("Unsupported funct3 {:b}", funct3),
                 }
             }
@@ -365,7 +356,7 @@ impl Component for Decoder {
        //simulator.set_out_val(&self.id, "pc_mux_sel", pc_mux_sel);
         simulator.set_out_val(&self.id, "data_mem_size", data_mem_size);
         simulator.set_out_val(&self.id, "data_se", data_se);
-        simulator.set_out_val(&self.id, "data_mem_ctrl", data_mem_ctrl as Signal);
+        simulator.set_out_val(&self.id, "data_mem_ctrl", data_mem_ctrl as u32);
         simulator.set_out_val(&self.id, "big_imm", big_imm);
         simulator.set_out_val(&self.id,"pc_imm_sel",pc_imm_sel);
         simulator.set_out_val(&self.id, "branch_imm", branch_imm);

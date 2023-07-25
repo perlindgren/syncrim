@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, Output, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct SZExt {
@@ -16,7 +16,6 @@ impl Component for SZExt {
     fn to_(&self) {
         println!("s_z_ext");
     }
-    fn to_string(&self)->String{"".to_string()}
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
@@ -30,15 +29,15 @@ impl Component for SZExt {
         )
     }
     #[allow(non_snake_case)]
-    fn evaluate(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) {
         //data is zero extended as default since its a 32 bit signal 
-        let mut data = simulator.get_input_val(&self.data_i);
-        let sel = simulator.get_input_val(&self.sel_i);
+        let mut data:u32 = simulator.get_input_val(&self.data_i).try_into().unwrap();
+        let sel:u32 = simulator.get_input_val(&self.sel_i).try_into().unwrap();
         //println!("SZEDATA:{:x}", data);
         match sel{
             0=>{
                 //println!("Sign extending");
-                if(data>>11 == 1){
+                if data>>11 == 1{
                     let mask:u32 = 0xFFFFF000;
                     data = data|mask;
                     //println!("sign was one, data:{:x}", data);

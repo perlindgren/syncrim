@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, Output, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct ALU {
@@ -18,7 +18,6 @@ impl Component for ALU {
     fn to_(&self) {
         println!("ALU");
     }
-    fn to_string(&self)->String{"".to_string()}
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
@@ -38,10 +37,10 @@ impl Component for ALU {
         )
     }
     #[allow(non_snake_case)]
-    fn evaluate(&self, simulator: &mut Simulator) {
-      let operator_i = simulator.get_input_val(&self.operator_i);
-      let operand_a_i = simulator.get_input_val(&self.operand_a_i);
-      let operand_b_i = simulator.get_input_val(&self.operand_b_i);
+    fn clock(&self, simulator: &mut Simulator) {
+      let operator_i:u32 = simulator.get_input_val(&self.operator_i).try_into().unwrap();
+      let operand_a_i:u32 = simulator.get_input_val(&self.operand_a_i).try_into().unwrap();
+      let operand_b_i:u32 = simulator.get_input_val(&self.operand_b_i).try_into().unwrap();
       //let operand_c_i = simulator.get_input_val(&self.operand_c_i);
       let mut result_o = 0;
       match operator_i{

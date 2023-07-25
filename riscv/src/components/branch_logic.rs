@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, Output, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct BranchLogic {
@@ -19,7 +19,6 @@ impl Component for BranchLogic {
     fn to_(&self) {
         println!("BranchLogic");
     }
-    fn to_string(&self)->String{"".to_string()}
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
@@ -36,14 +35,14 @@ impl Component for BranchLogic {
         )
     }
     #[allow(non_snake_case)]
-    fn evaluate(&self, simulator: &mut Simulator) {
-        let ctrl = simulator.get_input_val(&self.ctrl);
-        let rs1 = simulator.get_input_val(&self.rs1);
-        let rs2 = simulator.get_input_val(&self.rs2);
-        let enable = simulator.get_input_val(&self.enable);
-        let mut out = 0;
+    fn clock(&self, simulator: &mut Simulator) {
+        let ctrl:u32 = simulator.get_input_val(&self.ctrl).try_into().unwrap();
+        let rs1:u32 = simulator.get_input_val(&self.rs1).try_into().unwrap();
+        let rs2:u32 = simulator.get_input_val(&self.rs2).try_into().unwrap();
+        let enable:u32 = simulator.get_input_val(&self.enable).try_into().unwrap();
+        let out:u32;
         if enable!=0{
-            match(ctrl){
+            match ctrl{
                 0b000=>{
                     if rs1 == rs2{
                         out = 2;

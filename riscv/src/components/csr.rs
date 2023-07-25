@@ -1,7 +1,7 @@
 use std::{collections::HashMap, cell::RefCell};
 
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, Output, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct CSR {
@@ -61,7 +61,6 @@ impl Component for CSR {
     fn to_(&self) {
         println!("CSR");
     }
-    fn to_string(&self)->String{"".to_string()}
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
@@ -76,9 +75,9 @@ impl Component for CSR {
         )
     }
 
-    fn evaluate(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) {
         // get instr at pc/4
-        let we = simulator.get_input_val(&self.we);
+        let _we = simulator.get_input_val(&self.we);
 
         //simulator.set_out_val(&self.id, "instruction", we);
     }
