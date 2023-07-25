@@ -30,7 +30,12 @@ impl Component for ProbeStim {
 
     fn clock(&self, simulator: &mut Simulator) {
         trace!("-- cycle {} --", simulator.cycle);
-        simulator.set_out_val(&self.id, "out", self.values[simulator.cycle]);
+        let out = if let Some(value) = self.values.get(simulator.cycle) {
+            *value
+        } else {
+            Signal::Unknown
+        };
+        simulator.set_out_val(&self.id, "out", out);
     }
 
     // notice we don't implement `un_clock` since the state is already kept in history
