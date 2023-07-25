@@ -39,7 +39,7 @@ impl Component for SZExt {
                 //println!("Sign extending");
                 if data>>11 == 1{
                     let mask:u32 = 0xFFFFF000;
-                    data = data|mask;
+                    data |= mask;
                     //println!("sign was one, data:{:x}", data);
                 }
             }

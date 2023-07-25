@@ -33,7 +33,7 @@ impl Component for LSBZero {
         let mask:u32 = !0b1;
         //println!("STRIPPER  IN:0b{:032b}", data);
         //println!("STRIPPERMASK:0b{:032b}", mask);
-        data = data&mask;
+        data &= mask;
         //println!("STRIPPER OUT:0b{:032b}", data);
         simulator.set_out_val(&self.id, "out", data);
     }

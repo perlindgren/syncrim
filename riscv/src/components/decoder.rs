@@ -62,7 +62,7 @@ impl Component for Decoder {
         (((instruction & (0b1<<31))>>(31-20))|
         ((instruction & (0b1111111111<<21))>>(30-10))|
         ((instruction & (0b1<<20))>>(20-11))|
-        ((instruction & (0b11111111<<12))))&0b1111_1111_1111_1111_1111_1111_1111_1110;
+        (instruction & (0b11111111<<12)))&0b1111_1111_1111_1111_1111_1111_1111_1110;
           //no idea why this is encoded this way but the ISA is what it is
         let imm_store = ((instruction&(0b11111<<7))>>7) | ((instruction&(0b1111111<<25))>>20);
         let branch_imm = 
