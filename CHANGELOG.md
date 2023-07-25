@@ -4,6 +4,10 @@ Tracking changes per date:
 
 ## 230725
 
+- Implemented the `ProbeAssert` component, that assert a set sequence of inputs. Made some updates so reading outside of the assert/stim buffers gives `Signal::Unknown` instead of panic (if not in test mode).
+
+  Asserts are run only in test mode, allowing gui testing to be more robust.
+
 - Refactored, `clock` as `cycle` and put it in the `Simulator` (thanks to Fredrik for suggesting this a while back). Now the Simulator holds the complete state, which is better.
 
 - Implemented the `ProbeStim` component, to provide a set sequence of outputs.
