@@ -3,7 +3,7 @@ use crate::components::*;
 use crate::gui_egui::{
     editor_wire_mode::WireMode,
     gui::Gui,
-    helper::{id_ports_of_all_components, offset_helper},
+    helper::{id_ports_of_all_components_non_wires, offset_helper},
     keymap,
     library::InputMode,
     menu::Menu,
@@ -34,6 +34,7 @@ pub struct CloseToComponent {
     pub pos: Pos2,
     pub dist: f32,
     pub port_id: Id,
+    pub potential_actual_input: Option<Input>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -138,8 +139,10 @@ impl Editor {
             egui::TopBottomPanel::top("topBarEditor").show(ctx, |ui| {
                 Menu::new_editor(ui, gui);
             });
-            Editor::library(ctx, gui);
-            Editor::draw_area(ctx, gui, frame);
+            if gui.editor_use {
+                Editor::library(ctx, gui);
+                Editor::draw_area(ctx, gui, frame);
+            }
         }
     }
 
@@ -206,7 +209,7 @@ impl Editor {
             }
 
             let e = Editor::gui_to_editor(gui);
-            let id_ports = id_ports_of_all_components(&e.components);
+            let id_ports = id_ports_of_all_components_non_wires(&e.components);
             // The reason we do this is because some of the input modes requires references to
             // components, but that makes us unable to get the mutable reference to it
             // (We can only get a mutable reference if only ONE reference to it exists)

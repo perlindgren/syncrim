@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Ports, Simulator};
+use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
 use crate::components::Wire;
 use crate::gui_egui::component_ui::{
     input_port, input_selector, pos_slider, properties_window, rect_with_hover,
@@ -12,7 +12,7 @@ impl EguiComponent for Wire {
     fn render(
         &self,
         ui: &mut Ui,
-        _simulator: Option<&mut Simulator>,
+        simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
@@ -54,18 +54,19 @@ impl EguiComponent for Wire {
 
             let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
                 ui.label(format!("Id: {}", self.id.clone()));
-                /*
                 match &simulator {
-                    Some(s) => ui.label({
-                        let r: Result<SignalUnsigned, String> = self.input_port.try_into();
-                        match r {
-                            Ok(data) => format!("{:#x}", data),
-                            _ => format!("{:?}", value),
-                        }
-                    }),
+                    Some(s) => {
+                        ui.label({
+                            let r: Result<SignalUnsigned, String> =
+                                s.get_input_val(&self.input_port.input).try_into();
+                            match r {
+                                Ok(data) => format!("{:#x}", data),
+                                _ => format!("{:?}", r),
+                            }
+                        });
+                    }
                     _ => (),
                 }
-                */
             });
             r_vec.push(r);
         }

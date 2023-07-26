@@ -80,8 +80,10 @@ impl eframe::App for Gui {
             egui::Context::request_repaint(ctx);
         } else {
             self.top_bar(ctx);
-            self.side_panel(ctx);
-            self.draw_area(ctx, frame);
+            if self.simulator.is_some() {
+                self.side_panel(ctx);
+                self.draw_area(ctx, frame);
+            }
         }
     }
 }

@@ -32,7 +32,9 @@ impl Menu {
             if ui.button("⏸").clicked() {
                 keymap::control_pause_fn(gui);
             }
-            ui.label(format!("Cycle #{}", gui.simulator.as_ref().unwrap().cycle));
+            if let Some(s) = gui.simulator.as_ref() {
+                ui.label(format!("Cycle #{}", s.cycle));
+            }
         });
     }
 

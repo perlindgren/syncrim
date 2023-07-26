@@ -1,5 +1,5 @@
 use crate::common::{Components, Ports};
-use crate::gui_egui::editor::EditorMode;
+use crate::gui_egui::editor::{EditorMode, SnapPriority};
 use egui::{Pos2, Rect, Sense, Vec2};
 
 pub fn offset_reverse_helper_pos2(xy: Pos2, scale: f32, offset: Vec2) -> Pos2 {
@@ -69,7 +69,18 @@ pub fn unique_component_name(id_ports: &[(crate::common::Id, Ports)], id: &str) 
 pub fn id_ports_of_all_components(cs: &Components) -> Vec<(crate::common::Id, Ports)> {
     let mut v = vec![];
     for c in cs.iter() {
-        v.push(c.get_id_ports())
+        v.push(c.get_id_ports());
+    }
+    v
+}
+
+pub fn id_ports_of_all_components_non_wires(cs: &Components) -> Vec<(crate::common::Id, Ports)> {
+    let mut v = vec![];
+    for c in cs.iter() {
+        match c.snap_priority() {
+            SnapPriority::Wire => (),
+            _ => v.push(c.get_id_ports()),
+        }
     }
     v
 }

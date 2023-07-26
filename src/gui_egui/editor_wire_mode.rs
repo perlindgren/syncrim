@@ -1,4 +1,4 @@
-use crate::common::{Components, EguiComponent, Id, Input};
+use crate::common::{Components, Id, Input};
 use crate::components::Wire;
 use crate::gui_egui::editor::SnapPriority;
 use crate::gui_egui::editor::{get_component, CloseToComponent, Editor};
@@ -6,7 +6,9 @@ use crate::gui_egui::helper::{
     id_ports_of_all_components, offset_helper, offset_reverse_helper, offset_reverse_helper_pos2,
     unique_component_name,
 };
-use egui::{Color32, Context, CursorIcon, LayerId, PointerButton, Pos2, Response, Shape, Stroke};
+use egui::{
+    Color32, Context, CursorIcon, LayerId, PointerButton, Pos2, Response, Shape, Stroke, Vec2,
+};
 use std::rc::Rc;
 
 pub struct WireMode {
@@ -19,34 +21,37 @@ pub struct WireMode {
 }
 
 pub fn drag_started(ctx: &Context, e: &mut Editor, _cpr: Response) {
-    e.wm.mode_ended = false;
     ctx.input_mut(|i| {
         let origin = i.pointer.press_origin().unwrap();
         e.wm.cursor_location = origin;
 
         let offset_cursor_scale = offset_reverse_helper_pos2(origin, e.scale, e.offset_and_pan);
-        let (closest, _closest_wire) =
+        let (closest, closest_wire) =
             clicked_close_to_input_output(offset_cursor_scale, &e.components);
-        let closest_uw = closest.unwrap();
 
-        // First click ALWAYS has to start at a port so we force it
-        if e.wm.temp_positions.is_empty() {
-            // requires at least one component on the canvas
-            let new_pos = closest_uw.pos;
-            e.wm.start_comp_port = Some(closest_uw);
-            let new_pos = offset_helper((new_pos.x, new_pos.y), e.scale, e.offset_and_pan);
-            e.wm.temp_positions.push((new_pos.x, new_pos.y));
-
-            // We clicked close to a port so this will be the last click done
-        } else if !e.wm.temp_positions.is_empty() && closest_uw.dist <= 10.0f32 {
-            // We should finish the component
-            last_click(e, closest_uw);
-
-            // Click somewhere not near a component
-        } else {
-            let mut wires =
-                wire_split_into_two_vec(*e.wm.temp_positions.last().unwrap(), (origin.x, origin.y));
-            e.wm.temp_positions.append(&mut wires)
+        match get_closest_component_non_wire_prio(closest, closest_wire, 10f32) {
+            Some(closest_uw) => {
+                if e.wm.temp_positions.is_empty() {
+                    // New Component
+                    e.wm.mode_ended = false;
+                    let new_pos = closest_uw.pos;
+                    e.wm.start_comp_port = Some(closest_uw);
+                    let new_pos = offset_helper((new_pos.x, new_pos.y), e.scale, e.offset_and_pan);
+                    e.wm.temp_positions.push((new_pos.x, new_pos.y));
+                } else {
+                    // Continue existing component
+                    last_click(e, closest_uw);
+                }
+            }
+            None => {
+                if !e.wm.temp_positions.is_empty() {
+                    let mut wires = wire_split_into_two_vec(
+                        *e.wm.temp_positions.last().unwrap(),
+                        (origin.x, origin.y),
+                    );
+                    e.wm.temp_positions.append(&mut wires)
+                }
+            }
         }
     });
 }
@@ -54,10 +59,9 @@ pub fn drag_started(ctx: &Context, e: &mut Editor, _cpr: Response) {
 pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
     let in_c = e.wm.start_comp_port.take().unwrap();
     let out_c = closest_uw;
-    let (field_name, input, is_comp_start) =
-        get_outputs_from_port(&in_c.port_id, &in_c.comp, &out_c.port_id, &out_c.comp);
-    match input {
-        Some(i) => {
+    let (field_name, input_and_bool) = get_outputs_from_port(&in_c, &out_c);
+    match input_and_bool {
+        Some((i, is_input_in_comp_start)) => {
             let id_ports = id_ports_of_all_components(&e.components);
             let id = unique_component_name(&id_ports, "w");
             let id = id.as_str();
@@ -74,18 +78,25 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
                 wire_split_into_two_vec((last_pos.x, last_pos.y), (out_c.pos.x, out_c.pos.y));
             pos_v.append(&mut v);
 
-            e.components.push(Rc::new(Wire::new(id, pos_v, i.clone())));
-
             // Now actually set the input of the wired component
-            let comp = if is_comp_start { in_c } else { out_c };
-            if let Some(c) = get_component(&e.components, comp) {
-                Rc::get_mut(&mut e.components[c])
-                    .unwrap()
-                    .set_id_port(field_name, i);
+            #[allow(clippy::vtable_address_comparisons)]
+            if !Rc::ptr_eq(&in_c.comp, &out_c.comp) {
+                let comp = if is_input_in_comp_start { out_c } else { in_c };
+                println!("comp: {:?}", comp.port_id);
+                e.components.push(Rc::new(Wire::new(id, pos_v, i.clone())));
+                if let Some(c) = get_component(&e.components, comp) {
+                    println!("setting id_port");
+
+                    Rc::get_mut(&mut e.components[c])
+                        .unwrap()
+                        .set_id_port(field_name, i);
+                }
+            } else {
+                println!("You cannot connect a wire to itself");
             }
         }
         None => {
-            println!("Seems like you don't have an input at the start or end of the wire");
+            println!("Seems like you don't exactly have one input at the start or end of the wire");
         }
     }
     reset_wire_mode(&mut e.wm);
@@ -98,8 +109,7 @@ pub fn wire_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<
         drag_started(ctx, e, cpr);
     } else {
         if cpr.drag_started_by(PointerButton::Secondary) {
-            // place wire end
-            // This should also occur when pressing an input/output after the first one
+            // abort wire mode
             reset_wire_mode(&mut e.wm);
         }
 
@@ -109,26 +119,23 @@ pub fn wire_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<
             });
             let offset_cursor_scale =
                 offset_reverse_helper_pos2(e.wm.cursor_location, e.scale, e.offset_and_pan);
-            let (closest, _closest_wire) =
+            let (closest, closest_wire) =
                 clicked_close_to_input_output(offset_cursor_scale, &e.components);
 
-            let wire_shown_location = match closest {
-                Some(c) => {
-                    if c.dist <= 10.0f32 {
-                        // We are close enough to move the shown wire to here instead
-                        c.pos + e.offset_and_pan
-                    } else {
-                        e.wm.cursor_location
-                    }
-                }
-                None => e.wm.cursor_location,
-            };
+            // Here we prioritize component ports over wires in a 10f32 range
+            let wire_shown_location = get_location_of_port_or_wire_inside_radius(
+                closest,
+                closest_wire,
+                10f32,
+                e.wm.cursor_location,
+                e.offset_and_pan,
+            );
 
             let v = wire_split_into_two_vec(
                 *e.wm.temp_positions.last().unwrap(),
                 (wire_shown_location.x, wire_shown_location.y),
             );
-            let mut draw_vec: Vec<Pos2> = vec![]; // = s.wm.temp_positions.clone();
+            let mut draw_vec: Vec<Pos2> = vec![];
             for (posx, posy) in e.wm.temp_positions.clone().into_iter().chain(v.into_iter()) {
                 draw_vec.push(Pos2::new(posx, posy))
             }
@@ -140,6 +147,9 @@ pub fn wire_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<
                     color: Color32::BLACK,
                 },
             ));
+        } else {
+            // todo: Marker that you are potientially close to connecting to something to start a wire
+            // here, like a circle or similar over the port
         }
     }
 }
@@ -177,32 +187,57 @@ pub fn reset_wire_mode(wm: &mut WireMode) {
 
 /// returns an input made from the output
 pub fn get_outputs_from_port(
-    port_id_start: &Id,
-    comp_start: &Rc<dyn EguiComponent>,
-    port_id_end: &Id,
-    comp_end: &Rc<dyn EguiComponent>,
-) -> (Id, Option<Input>, bool) {
-    let (id, ports_start) = comp_start.get_id_ports();
-    for port_id in ports_start.outputs {
-        if port_id == *port_id_start {
-            return (
-                port_id_end.clone(),
-                Some(Input { id, field: port_id }),
-                false,
-            );
-        }
+    comp_start: &CloseToComponent,
+    comp_end: &CloseToComponent,
+) -> (Id, Option<(Input, bool)>) {
+    let out_start: Option<Input> = match &comp_start.potential_actual_input {
+        Some(i) => Some(i.clone()),
+        None => match comp_start.potential_actual_input.clone() {
+            Some(s) => Some(s),
+            None => {
+                let mut o = None;
+                let (id, ports_start) = comp_start.comp.get_id_ports();
+                for port_id in ports_start.outputs {
+                    if port_id == *comp_start.port_id {
+                        o = Some(Input {
+                            id: id.clone(),
+                            field: port_id,
+                        });
+                    }
+                }
+                o
+            }
+        },
+    };
+    let out_end: Option<Input> = match &comp_end.potential_actual_input {
+        Some(i) => Some(i.clone()),
+        None => match comp_end.potential_actual_input.clone() {
+            Some(s) => Some(s),
+            None => {
+                let mut o = None;
+                let (id, ports_end) = comp_end.comp.get_id_ports();
+                for port_id in ports_end.outputs {
+                    if port_id == *comp_end.port_id {
+                        o = Some(Input {
+                            id: id.clone(),
+                            field: port_id,
+                        });
+                    }
+                }
+                o
+            }
+        },
+    };
+    match out_start {
+        Some(s) => match out_end {
+            Some(_) => (String::new(), None),
+            None => (comp_end.port_id.clone(), Some((s, true))),
+        },
+        None => match out_end {
+            Some(e) => (comp_start.port_id.clone(), Some((e, false))),
+            None => (String::new(), None),
+        },
     }
-    let (id, ports_end) = comp_end.get_id_ports();
-    for port_id in ports_end.outputs {
-        if port_id == *port_id_end {
-            return (
-                port_id_start.clone(),
-                Some(Input { id, field: port_id }),
-                true,
-            );
-        }
-    }
-    (String::new(), None, false)
 }
 
 /// returns (Component, Wire)
@@ -220,15 +255,20 @@ pub fn clicked_close_to_input_output(
             _ => &mut closest,
         };
         for (port_id, pos) in ports {
+            let dist = clicked_pos.distance(pos);
+            let potential_actual_input = match comp.snap_priority() {
+                SnapPriority::Wire => Some(comp.get_id_ports().1.inputs[0].input.clone()),
+                _ => None,
+            };
             match clos.as_ref() {
                 Some(c) => {
-                    let dist = clicked_pos.distance(pos);
                     if dist < c.dist {
                         *clos = Some(CloseToComponent {
                             comp: comp.clone(),
                             pos,
                             dist,
                             port_id,
+                            potential_actual_input,
                         })
                     }
                 }
@@ -236,8 +276,9 @@ pub fn clicked_close_to_input_output(
                     *clos = Some(CloseToComponent {
                         comp: comp.clone(),
                         pos,
-                        dist: clicked_pos.distance(pos),
+                        dist,
                         port_id,
+                        potential_actual_input,
                     })
                 }
             };
@@ -245,4 +286,47 @@ pub fn clicked_close_to_input_output(
     }
 
     (closest, closest_wire)
+}
+
+pub fn get_closest_component_non_wire_prio(
+    port: Option<CloseToComponent>,
+    wire: Option<CloseToComponent>,
+    distance: f32,
+) -> Option<CloseToComponent> {
+    fn is_wire_in_range(wire: Option<CloseToComponent>, distance: f32) -> Option<CloseToComponent> {
+        match wire {
+            Some(w) => {
+                if w.dist <= distance {
+                    Some(w)
+                } else {
+                    None
+                }
+            }
+            None => None,
+        }
+    }
+
+    match port {
+        Some(p) => {
+            if p.dist <= distance {
+                Some(p)
+            } else {
+                is_wire_in_range(wire, distance)
+            }
+        }
+        None => None,
+    }
+}
+
+pub fn get_location_of_port_or_wire_inside_radius(
+    port: Option<CloseToComponent>,
+    wire: Option<CloseToComponent>,
+    distance: f32,
+    cursor_location: Pos2,
+    offset: Vec2,
+) -> Pos2 {
+    match get_closest_component_non_wire_prio(port, wire, distance) {
+        Some(c) => c.pos + offset,
+        None => cursor_location,
+    }
 }

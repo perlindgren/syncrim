@@ -101,7 +101,9 @@ pub trait Component {
     /// returns the (id, Ports) of the component
     fn get_id_ports(&self) -> (Id, Ports);
 
-    fn set_id_port(&mut self, _target_port_id: Id, _new_input: Input) {}
+    fn set_id_port(&mut self, _target_port_id: Id, _new_input: Input) {
+        todo!("Set set_id_port for this Component");
+    }
 
     /// evaluate component based on current internal state
     fn clock(&self, _simulator: &mut Simulator) {}
@@ -160,15 +162,20 @@ pub trait EguiComponent: Component {
 
     /// Get ports location relative to self, (inputs, outputs)
     fn ports_location(&self) -> Vec<(Id, egui::Pos2)> {
-        vec![]
+        todo!("Create ports_location for this EguiComponent");
     }
 
     fn snap_priority(&self) -> SnapPriority {
         SnapPriority::Default
     }
-    fn set_pos(&mut self, _pos: (f32, f32)) {}
 
-    fn set_id_tmp(&mut self) {}
+    fn set_pos(&mut self, _pos: (f32, f32)) {
+        todo!("Create set_pos for this EguiComponent");
+    }
+
+    fn set_id_tmp(&mut self) {
+        todo!("Create set_id_tmp for this EguiComponent");
+    }
 }
 
 #[cfg(feature = "gui-egui")]
