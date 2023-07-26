@@ -82,6 +82,15 @@ impl From<SignalData> for Signal {
     }
 }
 
+impl From<(SignalUnsigned, SignalFmt)> for Signal {
+    fn from((data, fmt): (SignalUnsigned, SignalFmt)) -> Signal {
+        Signal {
+            data: data.into(),
+            fmt,
+        }
+    }
+}
+
 impl From<SignalUnsigned> for Signal {
     fn from(data: u32) -> Signal {
         Signal {
@@ -95,7 +104,7 @@ impl From<bool> for Signal {
     fn from(b: bool) -> Signal {
         Signal {
             data: SignalData::Data(b as SignalUnsigned),
-            fmt: SignalFmt::Hex(SignalSize::_32, false),
+            fmt: SignalFmt::Bool,
         }
     }
 }

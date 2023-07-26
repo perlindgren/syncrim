@@ -1,7 +1,7 @@
 use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
+use std::{convert::Into, rc::Rc};
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
     pub id: Id,
@@ -33,15 +33,19 @@ impl Component for Constant {
 }
 
 impl Constant {
-    pub fn new(id: &str, pos: (f32, f32), value: impl Into<Signal>) -> Self {
+    pub fn new(id: &str, pos: (impl Into<f32>, impl Into<f32>), value: impl Into<Signal>) -> Self {
         Constant {
             id: id.to_string(),
-            pos,
+            pos: (pos.0.into(), pos.1.into()),
             value: value.into(),
         }
     }
 
-    pub fn rc_new(id: &str, pos: (f32, f32), value: impl Into<Signal>) -> Rc<Self> {
+    pub fn rc_new(
+        id: &str,
+        pos: (impl Into<f32>, impl Into<f32>),
+        value: impl Into<Signal>,
+    ) -> Rc<Self> {
         Rc::new(Constant::new(id, pos, value))
     }
 }

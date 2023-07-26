@@ -1,7 +1,7 @@
 use crate::common::{Component, Id, Input, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
+use std::{convert::Into, rc::Rc};
 #[derive(Serialize, Deserialize)]
 pub struct Probe {
     pub id: Id,
@@ -30,10 +30,10 @@ impl Component for Probe {
 }
 
 impl Probe {
-    pub fn new(id: &str, pos: (f32, f32), input: Input) -> Self {
+    pub fn new(id: &str, pos: (impl Into<f32>, impl Into<f32>), input: Input) -> Self {
         Probe {
             id: id.to_string(),
-            pos,
+            pos: (pos.0.into(), pos.1.into()),
             input,
         }
     }
