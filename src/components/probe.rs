@@ -38,7 +38,7 @@ impl Probe {
         }
     }
 
-    pub fn rc_new(id: &str, pos: (f32, f32), input: Input) -> Rc<Self> {
+    pub fn rc_new(id: &str, pos: (impl Into<f32>, impl Into<f32>), input: Input) -> Rc<Self> {
         Rc::new(Probe::new(id, pos, input))
     }
 }
