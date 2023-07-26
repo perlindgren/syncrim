@@ -145,8 +145,8 @@ impl Simulator {
         self.sim_state[index]
     }
 
-    /// get input value
-    pub fn get_input_val(&self, input: &Input) -> SignalData {
+    /// get input signal
+    pub fn get_input_signal(&self, input: &Input) -> Signal {
         let nr_out = *self.id_nr_outputs.get(&input.id).unwrap();
         let index = *self
             .id_field_index
@@ -159,13 +159,18 @@ impl Simulator {
             });
         if index < nr_out {
             let start_index = *self.id_start_index.get(&input.id).unwrap();
-            self.get(start_index + index).get_data()
+            self.get(start_index + index)
         } else {
             panic!(
                 "ICE: Attempt to read {:?} at index {}, where {:?} has only {} outputs.",
                 input.id, index, input.id, nr_out
             )
         }
+    }
+
+    /// get input value
+    pub fn get_input_val(&self, input: &Input) -> SignalData {
+        self.get_input_signal(input).get_data()
     }
 
     /// get start index by id
