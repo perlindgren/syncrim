@@ -54,18 +54,15 @@ impl EguiComponent for Wire {
 
             let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
                 ui.label(format!("Id: {}", self.id.clone()));
-                match &simulator {
-                    Some(s) => {
-                        ui.label({
-                            let r: Result<SignalUnsigned, String> =
-                                s.get_input_val(&self.input_port.input).try_into();
-                            match r {
-                                Ok(data) => format!("{:#x}", data),
-                                _ => format!("{:?}", r),
-                            }
-                        });
-                    }
-                    _ => (),
+                if let Some(s) = &simulator {
+                    ui.label({
+                        let r: Result<SignalUnsigned, String> =
+                            s.get_input_val(&self.input_port.input).try_into();
+                        match r {
+                            Ok(data) => format!("{:#x}", data),
+                            _ => format!("{:?}", r),
+                        }
+                    });
                 }
             });
             r_vec.push(r);
