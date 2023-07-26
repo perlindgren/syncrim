@@ -77,7 +77,7 @@ impl From<SignalData> for Signal {
     fn from(data: SignalData) -> Signal {
         Signal {
             data,
-            fmt: SignalFmt::Hex(SignalSize::_32),
+            fmt: SignalFmt::Hex(SignalSize::_32, false),
         }
     }
 }
@@ -86,7 +86,7 @@ impl From<SignalUnsigned> for Signal {
     fn from(data: u32) -> Signal {
         Signal {
             data: SignalData::Data(data),
-            fmt: SignalFmt::Hex(SignalSize::_32),
+            fmt: SignalFmt::Hex(SignalSize::_32, false),
         }
     }
 }
@@ -95,7 +95,7 @@ impl From<bool> for Signal {
     fn from(b: bool) -> Signal {
         Signal {
             data: SignalData::Data(b as SignalUnsigned),
-            fmt: SignalFmt::Hex(SignalSize::_32),
+            fmt: SignalFmt::Hex(SignalSize::_32, false),
         }
     }
 }
@@ -117,9 +117,9 @@ pub enum SignalFmt {
     Ascii(SignalSize),
     Unsigned(SignalSize),
     Signed(SignalSize),
-    Hex(SignalSize),
-    Binary(u8), // just to set a limit to the number of bits
-    Bool,       // treats it as true/false
+    Hex(SignalSize, bool), // bool == true for padding
+    Binary(u8),            // just to set a limit to the number of bits
+    Bool,                  // treats it as true/false
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone, IntoPrimitive)]
@@ -174,13 +174,22 @@ impl fmt::Display for Signal {
                         SignalSize::_32 => format!("{}", value as i32),
                     }
                 ),
-                SignalFmt::Hex(size) => write!(
+                SignalFmt::Hex(size, true) => write!(
                     f,
                     "{}",
                     match size {
                         SignalSize::_8 => format!("{:#04x}", value as u8),
                         SignalSize::_16 => format!("{:#06x}", value as u16),
                         SignalSize::_32 => format!("{:#010x}", value as u32),
+                    }
+                ),
+                SignalFmt::Hex(size, false) => write!(
+                    f,
+                    "{}",
+                    match size {
+                        SignalSize::_8 => format!("{:#x}", value as u8),
+                        SignalSize::_16 => format!("{:#x}", value as u16),
+                        SignalSize::_32 => format!("{:#x}", value as u32),
                     }
                 ),
                 SignalFmt::Bool => write!(f, "{}", !(value == 0)),
@@ -211,23 +220,45 @@ mod test {
     }
 
     #[test]
-    fn test_hex_fmt() {
+    fn test_hex_pad_fmt() {
         let mut signal: Signal = 0x0234_0608.into();
 
         // test hex
+        signal.set_fmt(SignalFmt::Hex(SignalSize::_32, true));
         let s = format!("{}", signal);
         println!("{}", s);
         assert_eq!(&s, "0x02340608");
 
-        signal.set_fmt(SignalFmt::Hex(SignalSize::_16));
+        signal.set_fmt(SignalFmt::Hex(SignalSize::_16, true));
         let s = format!("{}", signal);
         println!("{}", s);
         assert_eq!(&s, "0x0608");
 
-        signal.set_fmt(SignalFmt::Hex(SignalSize::_8));
+        signal.set_fmt(SignalFmt::Hex(SignalSize::_8, true));
         let s = format!("{}", signal);
         println!("{}", s);
         assert_eq!(&s, "0x08");
+    }
+
+    #[test]
+    fn test_hex_fmt() {
+        let mut signal: Signal = 0x0234_0608.into();
+
+        // test hex
+        signal.set_fmt(SignalFmt::Hex(SignalSize::_32, false));
+        let s = format!("{}", signal);
+        println!("{}", s);
+        assert_eq!(&s, "0x2340608");
+
+        signal.set_fmt(SignalFmt::Hex(SignalSize::_16, false));
+        let s = format!("{}", signal);
+        println!("{}", s);
+        assert_eq!(&s, "0x608");
+
+        signal.set_fmt(SignalFmt::Hex(SignalSize::_8, false));
+        let s = format!("{}", signal);
+        println!("{}", s);
+        assert_eq!(&s, "0x8");
     }
 
     #[test]
