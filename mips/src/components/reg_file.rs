@@ -46,7 +46,7 @@ pub enum Reg {
 
 #[derive(Serialize, Deserialize)]
 pub struct RegFile {
-    pub(crate) id: String,
+    id: String,
     pub(crate) pos: (f32, f32),
     pub(crate) width: f32,
     pub(crate) height: f32,

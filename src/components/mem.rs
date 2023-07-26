@@ -5,28 +5,74 @@ use log::*;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
-use std::{cell::RefCell, collections::HashMap, convert::TryFrom};
+use std::{cell::RefCell, collections::HashMap, convert::TryFrom, rc::Rc};
 
 #[derive(Serialize, Deserialize)]
 pub struct Mem {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub width: f32,
-    pub height: f32,
+    id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) width: f32,
+    pub(crate) height: f32,
 
     // configuration
     pub big_endian: bool,
 
     // ports
-    pub data: Input,
-    pub addr: Input,
-    pub ctrl: Input,
-    pub sign: Input,
-    pub size: Input,
+    data: Input,
+    addr: Input,
+    ctrl: Input,
+    sign: Input,
+    size: Input,
 
     // memory
-    pub memory: Memory,
+    memory: Memory,
     // later history... tbd
+}
+
+impl Mem {
+    pub fn new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        big_endian: bool,
+        data: Input,
+        addr: Input,
+        ctrl: Input,
+        sign: Input,
+        size: Input,
+    ) -> Self {
+        Mem {
+            id: id.to_string(),
+            pos,
+            width,
+            height,
+            big_endian,
+            data,
+            addr,
+            ctrl,
+            sign,
+            size,
+            memory: Memory::new(),
+        }
+    }
+
+    pub fn rc_new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        big_endian: bool,
+        data: Input,
+        addr: Input,
+        ctrl: Input,
+        sign: Input,
+        size: Input,
+    ) -> Rc<Self> {
+        Rc::new(Mem::new(
+            id, pos, width, height, big_endian, data, addr, ctrl, sign, size,
+        ))
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

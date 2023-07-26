@@ -9,27 +9,21 @@ fn main() {
     fern_setup();
     let cs = ComponentStore {
         store: vec![
-            Rc::new(Mem {
-                id: "mem".to_string(),
-                pos: (180.0, 200.0),
-
-                width: 200.0,
-                height: 100.0,
-
+            Mem::rc_new(
+                "mem",
+                (180.0, 200.0),
+                200.0,
+                100.0,
                 // configuration
-                big_endian: true,
-
+                true,
                 // ports
-                data: Input::new("data", "out"),
-                addr: Input::new("addr", "out"),
-                ctrl: Input::new("ctrl", "out"),
-                sign: Input::new("sext", "out"),
-                size: Input::new("size", "out"),
-
-                // memory
-                memory: Memory::new(),
+                Input::new("data", "out"),
+                Input::new("addr", "out"),
+                Input::new("ctrl", "out"),
+                Input::new("sext", "out"),
+                Input::new("size", "out"),
                 // later history... tbd
-            }),
+            ),
             Constant::rc_new("data", (100.0, 100.0), 3),
             Constant::rc_new("addr", (120.0, 100.0), 4),
             Constant::rc_new("ctrl", (140.0, 100.0), MemCtrl::Write as SignalUnsigned),

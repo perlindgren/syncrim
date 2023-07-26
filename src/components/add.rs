@@ -7,10 +7,10 @@ use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct Add {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub a_in: Input,
-    pub b_in: Input,
+    id: Id,
+    pub(crate) pos: (f32, f32),
+    a_in: Input,
+    b_in: Input,
 }
 
 #[typetag::serde]
