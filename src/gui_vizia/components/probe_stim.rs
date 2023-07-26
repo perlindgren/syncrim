@@ -25,7 +25,7 @@ impl ViziaComponent for ProbeStim {
                     } else {
                         (SignalData::Unknown).into()
                     };
-                    Label::new(cx, &format!("{:?}", rhs)).hoverable(false);
+                    Label::new(cx, &format!("{}", rhs)).hoverable(false);
                 },
             );
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);

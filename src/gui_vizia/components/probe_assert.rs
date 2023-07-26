@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Signal, SignalData, Simulator, ViziaComponent},
+    common::{Component, SignalData, Simulator, ViziaComponent},
     components::ProbeAssert,
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
 };
@@ -29,13 +29,14 @@ impl ViziaComponent for ProbeAssert {
                     };
                     let simulator = GuiData::simulator.get(cx);
                     let signal = simulator.get_input_signal(&input);
-                    Label::new(cx, &format!("{} == {}", signal, assert))
-                        .hoverable(false)
-                        .background_color(if signal == assert {
-                            Color::lightgreen()
-                        } else {
-                            Color::lightcoral()
-                        });
+                    if signal == assert {
+                        Label::new(cx, &format!("{} == {}", signal, assert))
+                            .background_color(Color::lightgreen())
+                    } else {
+                        Label::new(cx, &format!("{} != {}", signal, assert))
+                            .background_color(Color::lightcoral())
+                    }
+                    .hoverable(false);
                 },
             );
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
