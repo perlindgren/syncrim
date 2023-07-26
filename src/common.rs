@@ -123,13 +123,18 @@ pub trait ViziaComponent: Component {
     fn view(&self, _cx: &mut vizia::context::Context) {}
 }
 
+#[cfg(feature = "gui-egui")]
+use crate::gui_egui::gui::EguiExtra;
+
 // Specific functionality for EGui frontend
 #[cfg(feature = "gui-egui")]
 #[typetag::serde(tag = "type")]
 pub trait EguiComponent: Component {
+    #[allow(clippy::too_many_arguments)]
     fn render(
         &self,
         _ui: &mut egui::Ui,
+        _context: &mut EguiExtra,
         _simulator: Option<&mut Simulator>,
         _offset: egui::Vec2,
         _scale: f32,
@@ -143,6 +148,7 @@ pub trait EguiComponent: Component {
     fn render_editor(
         &mut self,
         _ui: &mut egui::Ui,
+        _context: &mut EguiExtra,
         _simulator: Option<&mut Simulator>,
         _offset: egui::Vec2,
         _scale: f32,
@@ -173,16 +179,9 @@ pub trait EguiComponent: Component {
         todo!("Create set_pos for this EguiComponent");
     }
 
-    fn set_id_tmp(&mut self) {
-        todo!("Create set_id_tmp for this EguiComponent");
+    fn set_id_tmp(&self, context: &mut EguiExtra) {
+        context.id_tmp = self.get_id_ports().0.clone();
     }
-}
-
-#[cfg(feature = "gui-egui")]
-#[derive(Serialize, Deserialize, Clone, Default)]
-pub struct EguiExtra {
-    pub properties_window: bool,
-    pub id_tmp: String,
 }
 
 #[derive(Debug, Clone)]

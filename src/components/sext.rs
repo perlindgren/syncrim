@@ -5,33 +5,16 @@ use crate::common::{
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+
+pub const SEXT_IN_ID: &str = "sext_in";
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Sext {
     pub id: Id,
     pub pos: (f32, f32),
-    pub sext_in: InputPort,
+    pub sext_in: Input,
     pub in_size: u32,
     pub out_size: u32,
-
-    #[cfg(feature = "gui-egui")]
-    #[serde(skip)]
-    pub egui_x: crate::common::EguiExtra,
-}
-impl Sext {
-    pub fn new(id: &str, pos: (f32, f32), sext_in: Input, in_size: u32, out_size: u32) -> Self {
-        Sext {
-            id: id.to_string(),
-            pos,
-            sext_in: InputPort {
-                port_id: String::from("sext_in"),
-                input: sext_in,
-            },
-            in_size,
-            out_size,
-            #[cfg(feature = "gui-egui")]
-            egui_x: crate::common::EguiExtra::default(),
-        }
-    }
 }
 
 #[typetag::serde]
@@ -43,7 +26,14 @@ impl Component for Sext {
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
-            Ports::new(vec![&self.sext_in], OutputType::Combinatorial, vec!["out"]),
+            Ports::new(
+                vec![&InputPort {
+                    port_id: SEXT_IN_ID.to_string(),
+                    input: self.sext_in.clone(),
+                }],
+                OutputType::Combinatorial,
+                vec!["out"],
+            ),
         )
     }
 
@@ -59,10 +49,7 @@ impl Component for Sext {
         );
 
         // get input values
-        let mut value: SignalUnsigned = simulator
-            .get_input_val(&self.sext_in.input)
-            .try_into()
-            .unwrap();
+        let mut value: SignalUnsigned = simulator.get_input_val(&self.sext_in).try_into().unwrap();
 
         let to_sext = self.out_size - self.in_size; // Amount to be arithmetically shifted
         let to_shl = SignalUnsigned::BITS - self.in_size; // To move input to MSB
@@ -76,7 +63,6 @@ impl Component for Sext {
         simulator.set_out_val(&self.id, "out", Signal::Data(value));
     }
 }
-
 #[cfg(test)]
 mod test {
 
@@ -89,20 +75,20 @@ mod test {
         let cs = ComponentStore {
             store: vec![
                 Rc::new(ProbeOut::new("po")),
-                Rc::new(Sext::new(
-                    "sext32",
-                    (0.0, 0.0),
-                    Input::new("po", "out"),
-                    4,
-                    32,
-                )),
-                Rc::new(Sext::new(
-                    "sext16",
-                    (0.0, 0.0),
-                    Input::new("po", "out"),
-                    4,
-                    16,
-                )),
+                Rc::new(Sext {
+                    id: "sext32".to_string(),
+                    pos: (0.0, 0.0),
+                    sext_in: Input::new("po", "out"),
+                    in_size: 4,
+                    out_size: 32,
+                }),
+                Rc::new(Sext {
+                    id: "sext16".to_string(),
+                    pos: (0.0, 0.0),
+                    sext_in: Input::new("po", "out"),
+                    in_size: 4,
+                    out_size: 16,
+                }),
             ],
         };
 

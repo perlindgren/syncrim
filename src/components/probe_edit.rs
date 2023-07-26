@@ -3,15 +3,13 @@ use log::*;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, RwLock};
 
+pub const PROBE_EDIT_OUT_ID: &str = "out";
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeEdit {
     pub id: Id,
     pub pos: (f32, f32),
     pub history: Arc<RwLock<Vec<TextSignal>>>, // will contain the next editable value
-
-    #[cfg(feature = "gui-egui")]
-    #[serde(skip)]
-    pub egui_x: crate::common::EguiExtra,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -34,7 +32,7 @@ impl Component for ProbeEdit {
                 vec![],
                 OutputType::Combinatorial,
                 // Single output value
-                vec!["out"],
+                vec![PROBE_EDIT_OUT_ID],
             ),
         )
     }
@@ -75,9 +73,6 @@ impl ProbeEdit {
                 text: "0".to_string(),
                 signal: Signal::Data(0),
             }])),
-
-            #[cfg(feature = "gui-egui")]
-            egui_x: crate::common::EguiExtra::default(),
         }
     }
 }

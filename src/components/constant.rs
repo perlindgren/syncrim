@@ -2,14 +2,14 @@ use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
+
+pub const CONSTANT_OUT_ID: &str = "out";
+
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
     pub id: Id,
     pub pos: (f32, f32),
     pub value: Signal,
-    #[cfg(feature = "gui-egui")]
-    #[serde(skip)]
-    pub egui_x: crate::common::EguiExtra,
 }
 
 #[typetag::serde]
@@ -25,13 +25,13 @@ impl Component for Constant {
                 // Constants do not take any inputs
                 vec![],
                 OutputType::Combinatorial,
-                vec!["out"],
+                vec![CONSTANT_OUT_ID],
             ),
         )
     }
 
     fn clock(&self, simulator: &mut Simulator) {
-        simulator.set_out_val(&self.id, "out", self.value);
+        simulator.set_out_val(&self.id, CONSTANT_OUT_ID, self.value);
     }
 }
 
@@ -41,8 +41,6 @@ impl Constant {
             id: id.to_string(),
             pos,
             value: value.into(),
-            #[cfg(feature = "gui-egui")]
-            egui_x: crate::common::EguiExtra::default(),
         }
     }
 

@@ -1,29 +1,14 @@
 use crate::common::{Component, Id, Input, InputPort, OutputType, Ports, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
+
+pub const REGISTER_IN_ID: &str = "r_in";
+
 #[derive(Serialize, Deserialize)]
 pub struct Register {
     pub id: Id,
     pub pos: (f32, f32),
-    pub r_in: InputPort,
-
-    #[cfg(feature = "gui-egui")]
-    #[serde(skip)]
-    pub egui_x: crate::common::EguiExtra,
-}
-impl Register {
-    pub fn new(id: &str, pos: (f32, f32), r_in: Input) -> Self {
-        Register {
-            id: id.to_string(),
-            pos,
-            r_in: InputPort {
-                port_id: String::from("r_in"),
-                input: r_in,
-            },
-            #[cfg(feature = "gui-egui")]
-            egui_x: crate::common::EguiExtra::default(),
-        }
-    }
+    pub r_in: Input,
 }
 
 #[typetag::serde]
@@ -37,7 +22,10 @@ impl Component for Register {
             self.id.clone(),
             Ports::new(
                 // Vector of inputs
-                vec![&self.r_in],
+                vec![&InputPort {
+                    port_id: REGISTER_IN_ID.to_string(),
+                    input: self.r_in.clone(),
+                }],
                 OutputType::Sequential,
                 vec!["out"],
             ),
@@ -47,7 +35,7 @@ impl Component for Register {
     // propagate input value to output
     fn clock(&self, simulator: &mut Simulator) {
         // get input value
-        let value = simulator.get_input_val(&self.r_in.input);
+        let value = simulator.get_input_val(&self.r_in);
         // set output
         simulator.set_out_val(&self.id, "out", value);
         trace!("eval: register id {} in {:?}", self.id, value);

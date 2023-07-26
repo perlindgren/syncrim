@@ -1,7 +1,8 @@
 use crate::gui_egui::component_ui::{
-    input_port, input_selector, pos_slider, properties_window, rect_with_hover,
+    input_change_id, input_selector, pos_slider, properties_window, rect_with_hover,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
+use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
 use crate::{
     common::{EguiComponent, Ports, Simulator},
@@ -14,6 +15,7 @@ impl EguiComponent for Add {
     fn render(
         &self,
         ui: &mut egui::Ui,
+        _context: &mut EguiExtra,
         _simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
@@ -75,6 +77,7 @@ impl EguiComponent for Add {
     fn render_editor(
         &mut self,
         ui: &mut egui::Ui,
+        context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
@@ -83,8 +86,17 @@ impl EguiComponent for Add {
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
-        let r_vec =
-            Add::render(self, ui, simulator, offset, scale, clip_rect, editor_mode).unwrap();
+        let r_vec = Add::render(
+            self,
+            ui,
+            context,
+            simulator,
+            offset,
+            scale,
+            clip_rect,
+            editor_mode,
+        )
+        .unwrap();
         let resp = &r_vec[0];
         if resp.dragged_by(PointerButton::Primary) {
             let delta = resp.drag_delta() / scale;
@@ -101,13 +113,23 @@ impl EguiComponent for Add {
             ui,
             self.id.clone(),
             resp,
-            &mut self.egui_x.properties_window,
+            &mut context.properties_window,
             |ui| {
                 let mut clicked_dropdown = false;
-                input_port(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
+                input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
-                clicked_dropdown |= input_selector(ui, &mut self.a_in, id_ports);
-                clicked_dropdown |= input_selector(ui, &mut self.b_in, id_ports);
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.a_in,
+                    crate::components::ADD_A_IN_ID.to_string(),
+                    id_ports,
+                );
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.b_in,
+                    crate::components::ADD_B_IN_ID.to_string(),
+                    id_ports,
+                );
                 clicked_dropdown
             },
         );
@@ -132,23 +154,25 @@ impl EguiComponent for Add {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![
             (
-                self.a_in.port_id.clone(),
+                crate::components::ADD_A_IN_ID.to_string(),
                 Pos2::new(-20f32, -20f32) + own_pos,
             ),
             (
-                self.b_in.port_id.clone(),
+                crate::components::ADD_B_IN_ID.to_string(),
                 Pos2::new(-20f32, 20f32) + own_pos,
             ),
-            (String::from("out"), Pos2::new(20f32, 0f32) + own_pos),
-            (String::from("overflow"), Pos2::new(0f32, -40f32) + own_pos),
+            (
+                crate::components::ADD_OUT_ID.to_string(),
+                Pos2::new(20f32, 0f32) + own_pos,
+            ),
+            (
+                crate::components::ADD_OVERFLOW_ID.to_string(),
+                Pos2::new(0f32, -40f32) + own_pos,
+            ),
         ]
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {
         self.pos = pos;
-    }
-
-    fn set_id_tmp(&mut self) {
-        self.egui_x.id_tmp = self.id.clone();
     }
 }

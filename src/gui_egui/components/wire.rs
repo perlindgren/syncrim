@@ -1,9 +1,8 @@
 use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
 use crate::components::Wire;
-use crate::gui_egui::component_ui::{
-    input_port, input_selector, pos_slider, properties_window, rect_with_hover,
-};
+use crate::gui_egui::component_ui::*;
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
+use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
 use egui::{Color32, PointerButton, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
 
@@ -12,6 +11,7 @@ impl EguiComponent for Wire {
     fn render(
         &self,
         ui: &mut Ui,
+        _context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
@@ -57,7 +57,7 @@ impl EguiComponent for Wire {
                 if let Some(s) = &simulator {
                     ui.label({
                         let r: Result<SignalUnsigned, String> =
-                            s.get_input_val(&self.input_port.input).try_into();
+                            s.get_input_val(&self.input).try_into();
                         match r {
                             Ok(data) => format!("{:#x}", data),
                             _ => format!("{:?}", r),
@@ -74,6 +74,7 @@ impl EguiComponent for Wire {
     fn render_editor(
         &mut self,
         ui: &mut Ui,
+        context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
@@ -82,8 +83,17 @@ impl EguiComponent for Wire {
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
-        let r_vec =
-            Wire::render(self, ui, simulator, offset, scale, clip_rect, editor_mode).unwrap();
+        let r_vec = Wire::render(
+            self,
+            ui,
+            context,
+            simulator,
+            offset,
+            scale,
+            clip_rect,
+            editor_mode,
+        )
+        .unwrap();
 
         for (i, resp) in r_vec.iter().enumerate() {
             if resp.dragged_by(PointerButton::Primary) {
@@ -100,13 +110,18 @@ impl EguiComponent for Wire {
                 ui,
                 self.id.clone(),
                 resp,
-                &mut self.egui_x.properties_window,
+                &mut context.properties_window,
                 |ui| {
                     let mut clicked_dropdown = false;
-                    input_port(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
+                    input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
                     pos_slider(ui, &mut self.pos[i]);
                     pos_slider(ui, &mut self.pos[i + 1]);
-                    clicked_dropdown |= input_selector(ui, &mut self.input_port, id_ports);
+                    clicked_dropdown |= input_selector(
+                        ui,
+                        &mut self.input,
+                        crate::components::WIRE_INPUT_ID.to_string(),
+                        id_ports,
+                    );
                     clicked_dropdown
                 },
             );
@@ -133,7 +148,7 @@ impl EguiComponent for Wire {
         let mut vec: Vec<(crate::common::Id, Pos2)> = vec![];
         for (i, pos) in self.pos.iter().enumerate() {
             vec.push((
-                format!("{}-{}", self.input_port.port_id, i),
+                format!("{}-{}", crate::components::WIRE_INPUT_ID, i),
                 Pos2 { x: pos.0, y: pos.1 },
             ));
         }
@@ -142,9 +157,5 @@ impl EguiComponent for Wire {
 
     fn snap_priority(&self) -> SnapPriority {
         SnapPriority::Wire
-    }
-
-    fn set_id_tmp(&mut self) {
-        self.egui_x.id_tmp = self.id.clone();
     }
 }

@@ -17,7 +17,7 @@ impl ViziaComponent for Probe {
     fn view(&self, cx: &mut Context) {
         trace!("---- Create Probe View");
         View::build(ProbeView {}, cx, |cx| {
-            let input = self.input_port.input.clone();
+            let input = self.input.clone();
 
             Binding::new(
                 cx,

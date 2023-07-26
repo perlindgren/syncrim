@@ -1,4 +1,4 @@
-use crate::common::{InputPort, Ports};
+use crate::common::{Input, Ports};
 use crate::gui_egui::editor::EditorMode;
 use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
 use egui::{ComboBox, Frame, Margin, PointerButton, Pos2, Rect, Response, Rounding, Ui, Window};
@@ -80,14 +80,16 @@ pub fn pos_slider(ui: &mut Ui, pos: &mut (f32, f32)) {
 
 pub fn input_selector(
     ui: &mut Ui,
-    input_port: &mut InputPort,
+    input: &mut Input,
+    // Why is this marked as unused, it's clearly being used?
+    #[allow(unused_variables)] port_id: crate::common::Id,
     id_ports: &[(crate::common::Id, Ports)],
 ) -> bool {
-    let mut port_id = input_port.input.id.clone();
-    let mut port_field = input_port.input.field.clone();
-    let label_port_id = format!("{}.id", input_port.port_id.clone());
+    let mut port_id = input.id.clone();
+    let mut port_field = input.field.clone();
+    let label_port_id = format!("{}.id", port_id.clone());
     let text_port_id = port_id.to_string();
-    let label_port_field = format!("{}.field", input_port.port_id.clone());
+    let label_port_field = format!("{}.field", port_id.clone());
     let text_port_field = port_field.to_string();
     ui.horizontal(|ui| {
         ComboBox::from_label(label_port_id)
@@ -113,14 +115,14 @@ pub fn input_selector(
                 }
             });
     });
-    let clicked_dropdown = input_port.input.id != port_id || input_port.input.field != port_field;
+    let clicked_dropdown = input.id != port_id || input.field != port_field;
 
-    input_port.input.id = port_id;
-    input_port.input.field = port_field;
+    input.id = port_id;
+    input.field = port_field;
     clicked_dropdown
 }
 
-pub fn input_port(
+pub fn input_change_id(
     ui: &mut Ui,
     id_tmp: &mut String,
     id: &mut String,

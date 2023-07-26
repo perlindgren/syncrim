@@ -1,6 +1,7 @@
 use crate::common::EguiComponent;
 use crate::components::*;
 use crate::gui_egui::editor::EditorMode;
+use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::{
     editor::Editor,
     helper::{id_ports_of_all_components, offset_reverse_helper_pos2, unique_component_name},
@@ -38,6 +39,7 @@ pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option
     );
     e.im.comp.as_ref().unwrap().render(
         &mut ui,
+        &mut EguiExtra::default(),
         None,
         Vec2::new(e.im.cursor_location.x, e.im.cursor_location.y),
         e.scale,
@@ -74,7 +76,18 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
         let size = c.size();
         padding.y -= e.scale * size.min.y;
         let r_vec = c
-            .render(ui, None, padding, e.scale, clip_rect, e.editor_mode)
+            .render(
+                ui,
+                &mut EguiExtra {
+                    properties_window: false,
+                    id_tmp: c.get_id_ports().0,
+                },
+                None,
+                padding,
+                e.scale,
+                clip_rect,
+                e.editor_mode,
+            )
             .unwrap();
         let rect = r_vec[0].rect;
         for resp in r_vec {
@@ -98,32 +111,45 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
 pub fn add_comp_to_editor(e: &mut Editor) {
     let pos = offset_reverse_helper_pos2(e.im.cursor_location, e.scale, e.offset);
     let id_ports = id_ports_of_all_components(&e.components);
+    let id;
     let mut comp: Rc<dyn EguiComponent> =
         match e.im.comp.as_mut().unwrap().get_id_ports().0.as_str() {
             "c" => {
-                let id = unique_component_name(&id_ports, "c");
-                Rc::new(Constant::new(id.as_str(), (0.0, 0.0), 0))
+                id = unique_component_name(&id_ports, "c");
+                Rc::new(Constant {
+                    id: id.clone(),
+                    pos: (0.0, 0.0),
+                    value: 0.into(),
+                })
             }
             "p" => {
-                let id = unique_component_name(&id_ports, "p");
-                Rc::new(Probe::new(id.as_str(), (0.0, 0.0), e.dummy_input.clone()))
+                id = unique_component_name(&id_ports, "p");
+                Rc::new(Probe {
+                    id: id.clone(),
+                    pos: (0.0, 0.0),
+                    input: e.dummy_input.clone(),
+                })
             }
             "add" => {
-                let id = unique_component_name(&id_ports, "add");
-                Rc::new(Add::new(
-                    id.as_str(),
-                    (0.0, 0.0),
-                    e.dummy_input.clone(),
-                    e.dummy_input.clone(),
-                ))
+                id = unique_component_name(&id_ports, "add");
+                Rc::new(Add {
+                    id: id.clone(),
+                    pos: (0.0, 0.0),
+                    a_in: e.dummy_input.clone(),
+                    b_in: e.dummy_input.clone(),
+                })
             }
             _ => todo!(),
         };
     Rc::<dyn EguiComponent>::get_mut(&mut comp)
         .unwrap()
         .set_pos((pos.x, pos.y));
-    Rc::<dyn EguiComponent>::get_mut(&mut comp)
-        .unwrap()
-        .set_id_tmp();
+    e.contexts.insert(
+        id.clone(),
+        EguiExtra {
+            properties_window: false,
+            id_tmp: id,
+        },
+    );
     e.components.push(comp);
 }

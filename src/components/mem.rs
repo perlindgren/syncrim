@@ -8,6 +8,15 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::{cell::RefCell, collections::HashMap, convert::TryFrom};
 
+pub const MEM_DATA_ID: &str = "data";
+pub const MEM_ADDR_ID: &str = "addr";
+pub const MEM_CTRL_ID: &str = "ctrl";
+pub const MEM_SIGN_ID: &str = "sign";
+pub const MEM_SIZE_ID: &str = "size";
+
+pub const MEM_DATA_OUT: &str = "data";
+pub const MEM_ERR_OUT: &str = "err";
+
 #[derive(Serialize, Deserialize)]
 pub struct Mem {
     pub id: Id,
@@ -19,18 +28,15 @@ pub struct Mem {
     pub big_endian: bool,
 
     // ports
-    pub data: InputPort,
-    pub addr: InputPort,
-    pub ctrl: InputPort,
-    pub sign: InputPort,
-    pub size: InputPort,
+    pub data: Input,
+    pub addr: Input,
+    pub ctrl: Input,
+    pub sign: Input,
+    pub size: Input,
 
     // memory
     pub memory: Memory,
     // later history... tbd
-    #[cfg(feature = "gui-egui")]
-    #[serde(skip)]
-    pub egui_x: crate::common::EguiExtra,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -41,54 +47,6 @@ pub struct Memory {
 impl Default for Memory {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-impl Mem {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        id: &str,
-        pos: (f32, f32),
-        width: f32,
-        height: f32,
-        big_endian: bool,
-        data: Input,
-        addr: Input,
-        ctrl: Input,
-        size: Input,
-        sign: Input,
-        memory: Memory,
-    ) -> Self {
-        Mem {
-            id: id.to_string(),
-            pos,
-            width,
-            height,
-            big_endian,
-            data: InputPort {
-                port_id: String::from("data"),
-                input: data,
-            },
-            addr: InputPort {
-                port_id: String::from("addr"),
-                input: addr,
-            },
-            ctrl: InputPort {
-                port_id: String::from("ctrl"),
-                input: ctrl,
-            },
-            size: InputPort {
-                port_id: String::from("size"),
-                input: size,
-            },
-            sign: InputPort {
-                port_id: String::from("sign"),
-                input: sign,
-            },
-            memory,
-            #[cfg(feature = "gui-egui")]
-            egui_x: crate::common::EguiExtra::default(),
-        }
     }
 }
 
@@ -243,34 +201,35 @@ impl Component for Mem {
         (
             self.id.clone(),
             Ports::new(
-                vec![&self.data, &self.addr, &self.ctrl],
+                vec![
+                    &InputPort {
+                        port_id: MEM_DATA_ID.to_string(),
+                        input: self.data.clone(),
+                    },
+                    &InputPort {
+                        port_id: MEM_ADDR_ID.to_string(),
+                        input: self.addr.clone(),
+                    },
+                    &InputPort {
+                        port_id: MEM_CTRL_ID.to_string(),
+                        input: self.ctrl.clone(),
+                    },
+                ],
                 OutputType::Combinatorial,
-                vec!["data", "err"],
+                vec![MEM_DATA_OUT, MEM_ERR_OUT],
             ),
         )
     }
 
     fn clock(&self, simulator: &mut Simulator) {
-        let data = simulator.get_input_val(&self.data.input);
-        let addr: SignalUnsigned = simulator
-            .get_input_val(&self.addr.input)
-            .try_into()
-            .unwrap();
+        let data = simulator.get_input_val(&self.data);
+        let addr: SignalUnsigned = simulator.get_input_val(&self.addr).try_into().unwrap();
         let addr = addr as usize;
-        let ctrl: SignalUnsigned = simulator
-            .get_input_val(&self.ctrl.input)
-            .try_into()
-            .unwrap();
+        let ctrl: SignalUnsigned = simulator.get_input_val(&self.ctrl).try_into().unwrap();
         let ctrl = MemCtrl::try_from(ctrl as u8).unwrap();
-        let size: SignalUnsigned = simulator
-            .get_input_val(&self.size.input)
-            .try_into()
-            .unwrap();
+        let size: SignalUnsigned = simulator.get_input_val(&self.size).try_into().unwrap();
         let size = size as usize;
-        let sign: SignalUnsigned = simulator
-            .get_input_val(&self.sign.input)
-            .try_into()
-            .unwrap();
+        let sign: SignalUnsigned = simulator.get_input_val(&self.sign).try_into().unwrap();
         let sign = sign != 0;
 
         match ctrl {
@@ -297,7 +256,6 @@ impl Component for Mem {
         trace!("memory {:?}", self.memory);
     }
 }
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -314,24 +272,27 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("size")),
                 Rc::new(ProbeOut::new("sign")),
-                Rc::new(Mem::new(
-                    "mem",
-                    (0.0, 0.0),
-                    0.0,
-                    0.0,
+                Rc::new(Mem {
+                    id: "mem".into(),
+                    pos: (0.0, 0.0),
+                    width: 0.0,
+                    height: 0.0,
+
                     // configuration
-                    true, // i.e., big endian
+                    big_endian: true, // i.e., big endian
+
                     // ports
-                    Input::new("data", "out"),
-                    Input::new("addr", "out"),
-                    Input::new("ctrl", "out"),
-                    Input::new("size", "out"),
-                    Input::new("sign", "out"),
+                    data: Input::new("data", "out"),
+                    addr: Input::new("addr", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    size: Input::new("size", "out"),
+                    sign: Input::new("sign", "out"),
+
                     // memory
-                    Memory {
+                    memory: Memory {
                         bytes: RefCell::new(HashMap::new()),
                     },
-                )),
+                }),
             ],
         };
 
@@ -491,25 +452,28 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("size")),
                 Rc::new(ProbeOut::new("sign")),
-                Rc::new(Mem::new(
-                    "mem",
-                    (0.0, 0.0),
-                    0.0,
-                    0.0,
+                Rc::new(Mem {
+                    id: "mem".into(),
+                    pos: (0.0, 0.0),
+                    width: 0.0,
+                    height: 0.0,
+
                     // configuration
-                    false, // i.e., little endian
+                    big_endian: false, // i.e., little endian
+
                     // ports
-                    Input::new("data", "out"),
-                    Input::new("addr", "out"),
-                    Input::new("ctrl", "out"),
-                    Input::new("size", "out"),
-                    Input::new("sign", "out"),
+                    data: Input::new("data", "out"),
+                    addr: Input::new("addr", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    size: Input::new("size", "out"),
+                    sign: Input::new("sign", "out"),
+
                     // memory
-                    Memory {
+                    memory: Memory {
                         bytes: RefCell::new(HashMap::new()),
                     },
                     // later history... tbd
-                )),
+                }),
             ],
         };
 

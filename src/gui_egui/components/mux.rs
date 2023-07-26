@@ -1,6 +1,7 @@
 use crate::common::{EguiComponent, SignalUnsigned, Simulator};
 use crate::components::Mux;
 use crate::gui_egui::editor::EditorMode;
+use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
 
 #[typetag::serde]
@@ -8,6 +9,7 @@ impl EguiComponent for Mux {
     fn render(
         &self,
         ui: &mut egui::Ui,
+        _context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
@@ -26,7 +28,7 @@ impl EguiComponent for Mux {
 
         // selector, here we can treat Signal better (see Vizia counterpart)
         let select: SignalUnsigned = match simulator {
-            Some(s) => s.get_input_val(&self.select.input).try_into().unwrap(),
+            Some(s) => s.get_input_val(&self.select).try_into().unwrap(),
             None => 0,
         };
 

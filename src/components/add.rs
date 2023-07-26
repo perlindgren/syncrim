@@ -5,35 +5,18 @@ use crate::common::{
 use log::*;
 use serde::{Deserialize, Serialize};
 
+pub const ADD_A_IN_ID: &str = "a_in";
+pub const ADD_B_IN_ID: &str = "b_in";
+
+pub const ADD_OUT_ID: &str = "out";
+pub const ADD_OVERFLOW_ID: &str = "overflow";
+
 #[derive(Serialize, Deserialize)]
 pub struct Add {
     pub id: Id,
     pub pos: (f32, f32),
-    pub a_in: InputPort,
-    pub b_in: InputPort,
-
-    #[cfg(feature = "gui-egui")]
-    #[serde(skip)]
-    pub egui_x: crate::common::EguiExtra,
-}
-
-impl Add {
-    pub fn new(id: &str, pos: (f32, f32), a_in: Input, b_in: Input) -> Self {
-        Add {
-            id: id.to_string(),
-            pos,
-            a_in: InputPort {
-                port_id: String::from("a_in"),
-                input: a_in,
-            },
-            b_in: InputPort {
-                port_id: String::from("b_in"),
-                input: b_in,
-            },
-            #[cfg(feature = "gui-egui")]
-            egui_x: crate::common::EguiExtra::default(),
-        }
-    }
+    pub a_in: Input,
+    pub b_in: Input,
 }
 
 #[typetag::serde]
@@ -46,9 +29,18 @@ impl Component for Add {
         (
             self.id.clone(),
             Ports::new(
-                vec![&self.a_in, &self.b_in],
+                vec![
+                    &InputPort {
+                        port_id: ADD_A_IN_ID.to_string(),
+                        input: self.a_in.clone(),
+                    },
+                    &InputPort {
+                        port_id: ADD_B_IN_ID.to_string(),
+                        input: self.b_in.clone(),
+                    },
+                ],
                 OutputType::Combinatorial,
-                vec!["out", "overflow"],
+                vec![ADD_OUT_ID, ADD_OVERFLOW_ID],
             ),
         )
     }
@@ -56,8 +48,8 @@ impl Component for Add {
     // propagate addition to output
     fn clock(&self, simulator: &mut Simulator) {
         // get input values
-        let a_in = u32::try_from(simulator.get_input_val(&self.a_in.input));
-        let b_in = u32::try_from(simulator.get_input_val(&self.b_in.input));
+        let a_in = u32::try_from(simulator.get_input_val(&self.a_in));
+        let b_in = u32::try_from(simulator.get_input_val(&self.b_in));
 
         let (value, overflow) = match (&a_in, &b_in) {
             (Ok(a), Ok(b)) => {
@@ -86,8 +78,8 @@ impl Component for Add {
 
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
-            "a_in" => self.a_in.input = new_input,
-            "b_in" => self.b_in.input = new_input,
+            ADD_A_IN_ID => self.a_in = new_input,
+            ADD_B_IN_ID => self.b_in = new_input,
             _ => (),
         }
     }
@@ -109,12 +101,12 @@ mod test {
             store: vec![
                 Rc::new(ProbeOut::new("po1")),
                 Rc::new(ProbeOut::new("po2")),
-                Rc::new(Add::new(
-                    "add",
-                    (0.0, 0.0),
-                    Input::new("po1", "out"),
-                    Input::new("po2", "out"),
-                )),
+                Rc::new(Add {
+                    id: "add".to_string(),
+                    pos: (0.0, 0.0),
+                    a_in: Input::new("po1", "out"),
+                    b_in: Input::new("po2", "out"),
+                }),
             ],
         };
         let mut simulator = Simulator::new(cs);

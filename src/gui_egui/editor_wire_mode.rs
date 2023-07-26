@@ -1,7 +1,7 @@
 use crate::common::{Components, Id, Input};
 use crate::components::Wire;
-use crate::gui_egui::editor::SnapPriority;
-use crate::gui_egui::editor::{get_component, CloseToComponent, Editor};
+use crate::gui_egui::editor::{get_component, CloseToComponent, Editor, SnapPriority};
+use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::{
     id_ports_of_all_components, offset_helper, offset_reverse_helper, offset_reverse_helper_pos2,
     unique_component_name,
@@ -83,7 +83,19 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
             if !Rc::ptr_eq(&in_c.comp, &out_c.comp) {
                 let comp = if is_input_in_comp_start { out_c } else { in_c };
                 println!("comp: {:?}", comp.port_id);
-                e.components.push(Rc::new(Wire::new(id, pos_v, i.clone())));
+                e.components.push(Rc::new(Wire {
+                    id: id.to_string(),
+                    pos: pos_v,
+                    input: i.clone(),
+                }));
+                e.contexts.insert(
+                    id.to_string(),
+                    EguiExtra {
+                        properties_window: false,
+                        id_tmp: id.to_string(),
+                    },
+                );
+
                 if let Some(c) = get_component(&e.components, comp) {
                     println!("setting id_port");
 

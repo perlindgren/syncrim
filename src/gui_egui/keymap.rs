@@ -1,11 +1,12 @@
 use crate::common::{ComponentStore, Simulator};
 use crate::gui_egui::editor::{Editor, EditorMode};
 use crate::gui_egui::editor_wire_mode::reset_wire_mode;
+use crate::gui_egui::gui::create_contexts;
 use crate::gui_egui::library::reset_input_mode;
 use crate::gui_egui::Gui;
 use egui::{Key, KeyboardShortcut, Modifiers};
 use rfd::FileDialog;
-use std::{path::PathBuf, rc::Rc};
+use std::path::PathBuf;
 
 #[derive(Copy, Clone)]
 pub struct Shortcuts {
@@ -274,6 +275,7 @@ pub fn file_editor_toggle_fn(gui: &mut Gui) {
             gui.editor_use = false;
             if let Some(e) = gui.editor.as_mut() {
                 let components = e.components.clone();
+                gui.contexts = create_contexts(&components);
                 let simulator = Simulator::new(ComponentStore { store: components });
                 gui.simulator = Some(simulator);
             }
@@ -282,13 +284,10 @@ pub fn file_editor_toggle_fn(gui: &mut Gui) {
             let editor_existed: bool = gui.editor.as_mut().is_some();
 
             let simulator = gui.simulator.take().unwrap();
-            let mut components = simulator.ordered_components;
+            let components = simulator.ordered_components;
 
             if !editor_existed {
-                for c in components.iter_mut() {
-                    (*Rc::get_mut(c).unwrap()).set_id_tmp();
-                }
-                let _ = gui.editor.insert(Editor::gui(components, &gui.path));
+                gui.editor = Some(Editor::gui(components, &gui.path));
             }
 
             gui.editor_use = true;

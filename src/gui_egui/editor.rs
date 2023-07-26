@@ -1,5 +1,6 @@
 use crate::common::{ComponentStore, Components, EguiComponent, Id, Input};
 use crate::components::*;
+use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::{
     editor_wire_mode::WireMode,
     gui::Gui,
@@ -10,7 +11,7 @@ use crate::gui_egui::{
 };
 use eframe::{egui, Frame};
 use egui::{Color32, Context, LayerId, PointerButton, Pos2, Rect, Vec2};
-use std::{path::Path, rc::Rc};
+use std::{collections::HashMap, path::Path, rc::Rc};
 
 pub struct Editor {
     pub components: Components,
@@ -26,6 +27,7 @@ pub struct Editor {
     pub editor_mode: EditorMode,
     pub wm: WireMode,
     pub im: InputMode,
+    pub contexts: HashMap<crate::common::Id, EguiExtra>,
 }
 
 #[derive(Clone)]
@@ -60,7 +62,7 @@ pub enum SnapPriority {
 impl Editor {
     pub fn gui(components: Components, _path: &Path) -> Self {
         let dummy_input = Input::new("id", "field");
-        Editor {
+        let mut e = Editor {
             components,
             scale: 1f32,
             pan: Vec2::new(0f32, 0f32),
@@ -77,14 +79,22 @@ impl Editor {
             ui_change: true,
             library: ComponentStore {
                 store: vec![
-                    Rc::new(Add::new(
-                        "add",
-                        (0.0, 0.0),
-                        dummy_input.clone(),
-                        dummy_input.clone(),
-                    )),
-                    Rc::new(Constant::new("c", (0.0, 0.0), 0)),
-                    Rc::new(Probe::new("p", (0.0, 0.0), dummy_input.clone())),
+                    Rc::new(Add {
+                        id: "add".to_string(),
+                        pos: (0.0, 0.0),
+                        a_in: dummy_input.clone(),
+                        b_in: dummy_input.clone(),
+                    }),
+                    Rc::new(Constant {
+                        id: "c".to_string(),
+                        pos: (0.0, 0.0),
+                        value: 0.into(),
+                    }),
+                    Rc::new(Probe {
+                        id: "p".to_string(),
+                        pos: (0.0, 0.0),
+                        input: dummy_input.clone(),
+                    }),
                 ],
             },
             dummy_input,
@@ -101,7 +111,10 @@ impl Editor {
                 comp: None,
                 cursor_location: Pos2::ZERO,
             },
-        }
+            contexts: HashMap::new(),
+        };
+        e.contexts = crate::gui_egui::gui::create_contexts(&e.components);
+        e
     }
 
     pub fn update(ctx: &Context, _frame: &mut Frame, gui: &mut Gui) {
@@ -216,29 +229,35 @@ impl Editor {
             match e.editor_mode {
                 EditorMode::Wire | EditorMode::Input => {
                     for c in &e.components {
+                        let old_key = c.as_ref().get_id_ports().0;
+                        let mut context = e.contexts.remove(&old_key).unwrap();
                         c.render(
                             ui,
+                            &mut context,
                             None,
                             e.offset + e.pan,
                             e.scale,
                             e.clip_rect,
                             e.editor_mode,
                         );
+                        e.contexts.insert(context.id_tmp.clone(), context);
                     }
                 }
                 _ => e.components.retain_mut(|c| {
-                    let delete = (*Rc::get_mut(c).unwrap())
-                        .render_editor(
-                            ui,
-                            None,
-                            e.offset_and_pan,
-                            e.scale,
-                            e.clip_rect,
-                            &id_ports,
-                            e.editor_mode,
-                        )
-                        .delete;
-                    !delete
+                    let old_key = c.as_ref().get_id_ports().0;
+                    let mut context = e.contexts.remove(&old_key).unwrap();
+                    let render_return = (*Rc::get_mut(c).unwrap()).render_editor(
+                        ui,
+                        &mut context,
+                        None,
+                        e.offset_and_pan,
+                        e.scale,
+                        e.clip_rect,
+                        &id_ports,
+                        e.editor_mode,
+                    );
+                    e.contexts.insert(context.id_tmp.clone(), context);
+                    !render_return.delete
                 }),
             }
         });

@@ -1,7 +1,8 @@
-use crate::common::{ComponentStore, Simulator};
+use crate::common::{ComponentStore, Components, Simulator};
 use crate::gui_egui::editor::EditorMode;
 use crate::gui_egui::{editor::Editor, keymap, keymap::Shortcuts, menu::Menu};
 use eframe::egui;
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 pub struct Gui {
@@ -18,13 +19,22 @@ pub struct Gui {
     pub pause: bool,
     pub editor: Option<Editor>,
     pub editor_use: bool,
+    pub contexts: HashMap<crate::common::Id, EguiExtra>,
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct EguiExtra {
+    pub properties_window: bool,
+    pub id_tmp: String,
 }
 
 pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
+    let contexts = create_contexts(&cs.store);
     let simulator = Simulator::new(cs);
     let options = eframe::NativeOptions::default();
     let path = path.to_owned();
     simulator.save_dot(&path);
+    println!("contexts: {:?}", contexts);
 
     let gui = Gui {
         path,
@@ -38,6 +48,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
         pause: true,
         editor: None,
         editor_use: false,
+        contexts,
     };
 
     eframe::run_native("SyncRim", options, Box::new(|_cc| Box::new(gui)))
@@ -119,14 +130,18 @@ impl Gui {
             ui.set_clip_rect(self.clip_rect);
             // Don't draw over the rest of the ui
             for c in &sim.ordered_components.clone() {
+                let old_key = c.as_ref().get_id_ports().0;
+                let mut context = self.contexts.remove(&old_key).unwrap();
                 c.render(
                     ui,
+                    &mut context,
                     Some(sim),
                     self.offset + self.pan,
                     self.scale,
                     self.clip_rect,
                     EditorMode::Default,
                 );
+                self.contexts.insert(context.id_tmp.clone(), context);
             }
         });
         let cpr = central_panel.response.interact(egui::Sense::drag());
@@ -158,4 +173,19 @@ impl Gui {
     fn top_bar(&mut self, ctx: &egui::Context) {
         egui::TopBottomPanel::top("topBar").show(ctx, |ui| Menu::new(ui, self));
     }
+}
+
+pub fn create_contexts(components: &Components) -> HashMap<crate::common::Id, EguiExtra> {
+    let mut contexts = HashMap::new();
+    for c in &components.clone() {
+        let id = c.get_id_ports().0;
+        contexts.insert(
+            id.clone(),
+            EguiExtra {
+                properties_window: false,
+                id_tmp: id,
+            },
+        );
+    }
+    contexts
 }

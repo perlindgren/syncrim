@@ -1,6 +1,7 @@
 use crate::common::{EguiComponent, Simulator};
 use crate::components::Register;
 use crate::gui_egui::editor::EditorMode;
+use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
 
 #[typetag::serde]
@@ -8,6 +9,7 @@ impl EguiComponent for Register {
     fn render(
         &self,
         ui: &mut egui::Ui,
+        _context: &mut EguiExtra,
         _simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,

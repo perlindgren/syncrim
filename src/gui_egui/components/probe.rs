@@ -1,9 +1,10 @@
 use crate::common::{EguiComponent, Ports, Signal, SignalUnsigned, Simulator};
 use crate::components::Probe;
 use crate::gui_egui::component_ui::{
-    input_port, input_selector, pos_slider, properties_window, rect_with_hover,
+    input_change_id, input_selector, pos_slider, properties_window, rect_with_hover,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
+use crate::gui_egui::gui::EguiExtra;
 use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, RichText, Vec2};
 
 #[typetag::serde]
@@ -11,6 +12,7 @@ impl EguiComponent for Probe {
     fn render(
         &self,
         ui: &mut egui::Ui,
+        _context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
@@ -20,9 +22,9 @@ impl EguiComponent for Probe {
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
-        let input_port = self.input_port.clone();
+        let input = self.input.clone();
         let value = match simulator {
-            Some(s) => s.get_input_val(&input_port.input),
+            Some(s) => s.get_input_val(&input),
             None => Signal::Data(0),
         };
         let area = Area::new(self.id.to_string())
@@ -65,6 +67,7 @@ impl EguiComponent for Probe {
     fn render_editor(
         &mut self,
         ui: &mut egui::Ui,
+        context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
@@ -73,8 +76,17 @@ impl EguiComponent for Probe {
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
-        let r_vec =
-            Probe::render(self, ui, simulator, offset, scale, clip_rect, editor_mode).unwrap();
+        let r_vec = Probe::render(
+            self,
+            ui,
+            context,
+            simulator,
+            offset,
+            scale,
+            clip_rect,
+            editor_mode,
+        )
+        .unwrap();
         let resp = &r_vec[0];
         if resp.dragged_by(egui::PointerButton::Primary) {
             let delta = resp.drag_delta() / scale;
@@ -91,12 +103,17 @@ impl EguiComponent for Probe {
             ui,
             self.id.clone(),
             resp,
-            &mut self.egui_x.properties_window,
+            &mut context.properties_window,
             |ui| {
                 let mut clicked_dropdown = false;
-                input_port(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
+                input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
-                clicked_dropdown |= input_selector(ui, &mut self.input_port, id_ports);
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.input,
+                    crate::components::PROBE_IN_ID.to_string(),
+                    id_ports,
+                );
                 clicked_dropdown
             },
         );
@@ -120,16 +137,12 @@ impl EguiComponent for Probe {
     fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![(
-            self.input_port.port_id.clone(),
+            crate::components::PROBE_IN_ID.to_string(),
             Pos2::new(-10f32, 0f32) + own_pos,
         )]
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {
         self.pos = pos;
-    }
-
-    fn set_id_tmp(&mut self) {
-        self.egui_x.id_tmp = self.id.clone();
     }
 }

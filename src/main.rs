@@ -24,7 +24,6 @@ fn main() {
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(cs, &_path);
 
-    // run headless
     #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
     syncrim::common::Simulator::new(cs);
 }

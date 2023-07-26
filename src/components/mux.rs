@@ -3,39 +3,16 @@ use crate::common::{
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+pub const MUX_SELECT_ID: &str = "select";
+pub const MUX_TEMPLATE_ID: &str = "in";
+pub const MUX_OUT_ID: &str = "out";
+
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
     pub id: Id,
     pub pos: (f32, f32),
-    pub select: InputPort,
-    pub m_in: Vec<InputPort>,
-
-    #[cfg(feature = "gui-egui")]
-    #[serde(skip)]
-    pub egui_x: crate::common::EguiExtra,
-}
-
-impl Mux {
-    pub fn new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Self {
-        let mut v = vec![];
-        for (i, input) in m_in.iter().enumerate() {
-            v.push(InputPort {
-                port_id: format!("in{}", i),
-                input: input.clone(),
-            });
-        }
-        Mux {
-            id: id.to_string(),
-            pos,
-            select: InputPort {
-                port_id: String::from("select"),
-                input: select,
-            },
-            m_in: v,
-            #[cfg(feature = "gui-egui")]
-            egui_x: crate::common::EguiExtra::default(),
-        }
-    }
+    pub select: Input,
+    pub m_in: Vec<Input>,
 }
 
 #[typetag::serde]
@@ -45,16 +22,24 @@ impl Component for Mux {
     }
 
     fn get_id_ports(&self) -> (Id, Ports) {
-        let mut inputs = vec![self.select.clone()];
-        let mut m = self.m_in.clone();
-        inputs.append(&mut m);
+        let mut inputs: Vec<InputPort> = Vec::with_capacity(self.m_in.len() + 1);
+        inputs.push(InputPort {
+            port_id: MUX_SELECT_ID.to_string(),
+            input: self.select.clone(),
+        });
+        for (i, item) in self.m_in.iter().enumerate() {
+            inputs.push(InputPort {
+                port_id: format!("{}{}", MUX_TEMPLATE_ID, i),
+                input: item.clone(),
+            });
+        }
 
         (
             self.id.clone(),
             Ports {
                 inputs,
                 out_type: OutputType::Combinatorial,
-                outputs: vec!["out".into()],
+                outputs: vec![MUX_OUT_ID.to_string()],
             },
         )
     }
@@ -62,14 +47,11 @@ impl Component for Mux {
     // propagate selected input value to output
     fn clock(&self, simulator: &mut Simulator) {
         // get input value
-        let select: SignalUnsigned = simulator
-            .get_input_val(&self.select.input)
-            .try_into()
-            .unwrap();
+        let select: SignalUnsigned = simulator.get_input_val(&self.select).try_into().unwrap();
         let select = select as usize;
         trace!("select {}", select);
         let value = if select < self.m_in.len() {
-            simulator.get_input_val(&self.m_in[select].input)
+            simulator.get_input_val(&self.m_in[select])
         } else {
             Signal::Unknown
         };

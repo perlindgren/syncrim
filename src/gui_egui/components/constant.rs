@@ -1,7 +1,10 @@
 use crate::common::{EguiComponent, Ports, Signal, SignalUnsigned, Simulator};
 use crate::components::Constant;
-use crate::gui_egui::component_ui::{input_port, pos_slider, properties_window, rect_with_hover};
+use crate::gui_egui::component_ui::{
+    input_change_id, pos_slider, properties_window, rect_with_hover,
+};
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
+use crate::gui_egui::gui::EguiExtra;
 use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, RichText, Vec2};
 
 #[typetag::serde]
@@ -9,6 +12,7 @@ impl EguiComponent for Constant {
     fn render(
         &self,
         ui: &mut egui::Ui,
+        _context: &mut EguiExtra,
         _simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
@@ -57,6 +61,7 @@ impl EguiComponent for Constant {
     fn render_editor(
         &mut self,
         ui: &mut egui::Ui,
+        context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: egui::Vec2,
         scale: f32,
@@ -65,8 +70,17 @@ impl EguiComponent for Constant {
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
-        let r_vec =
-            Constant::render(self, ui, simulator, offset, scale, clip_rect, editor_mode).unwrap();
+        let r_vec = Constant::render(
+            self,
+            ui,
+            context,
+            simulator,
+            offset,
+            scale,
+            clip_rect,
+            editor_mode,
+        )
+        .unwrap();
         let resp = &r_vec[0];
         if resp.dragged_by(PointerButton::Primary) {
             let delta = resp.drag_delta() / scale;
@@ -82,9 +96,9 @@ impl EguiComponent for Constant {
             ui,
             self.id.clone(),
             resp,
-            &mut self.egui_x.properties_window,
+            &mut context.properties_window,
             |ui| {
-                input_port(ui, &mut self.egui_x.id_tmp, &mut self.id, id_ports);
+                input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
                 if let Signal::Data(d) = &mut self.value {
                     ui.add(egui::Slider::new(d, u32::MIN..=u32::MAX).text("value"));
@@ -111,14 +125,13 @@ impl EguiComponent for Constant {
 
     fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
-        vec![(String::from("out"), Pos2::new(10f32, 0f32) + own_pos)]
+        vec![(
+            crate::components::CONSTANT_OUT_ID.to_string(),
+            Pos2::new(10f32, 0f32) + own_pos,
+        )]
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {
         self.pos = pos;
-    }
-
-    fn set_id_tmp(&mut self) {
-        self.egui_x.id_tmp = self.id.clone();
     }
 }
