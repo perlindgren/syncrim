@@ -66,11 +66,7 @@ fn main() {
                 pos: (280.0, 120.0),
                 input: Input::new("add", "out"),
             }),
-            Rc::new(Probe {
-                id: "p_reg".to_string(),
-                pos: (130.0, 120.0),
-                input: Input::new("reg", "out"),
-            }),
+            Probe::rc_new("p_reg", (130.0, 120.0), Input::new("reg", "out")),
         ],
     };
 
