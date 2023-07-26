@@ -1,7 +1,7 @@
 use crate::common::{Component, Id, Input, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
-use std::{convert::Into, rc::Rc};
+use std::rc::Rc;
 #[derive(Serialize, Deserialize)]
 pub struct Wire {
     pub id: Id,
@@ -30,15 +30,15 @@ impl Component for Wire {
 }
 
 impl Wire {
-    pub fn new(id: &str, pos: Vec<(impl Into<f32>, impl Into<f32>)>, input: Input) -> Self {
+    pub fn new(id: &str, pos: Vec<(f32, f32)>, input: Input) -> Self {
         Wire {
             id: id.to_string(),
-            pos: pos.into_iter().map(|p| (p.0.into(), p.1.into())).collect(),
+            pos,
             input,
         }
     }
 
-    pub fn rc_new(id: &str, pos: Vec<(impl Into<f32>, impl Into<f32>)>, input: Input) -> Rc<Wire> {
+    pub fn rc_new(id: &str, pos: Vec<(f32, f32)>, input: Input) -> Rc<Wire> {
         Rc::new(Wire::new(id, pos, input))
     }
 }

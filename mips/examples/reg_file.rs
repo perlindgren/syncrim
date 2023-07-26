@@ -1,12 +1,11 @@
 use mips::components::*;
-use std::{path::PathBuf, rc::Rc};
+use std::path::PathBuf;
 use syncrim::{
     common::{ComponentStore, Input, SignalFmt, SignalSize},
     components::*,
     fern::fern_setup,
 };
 
-// TODO: fix wires and layout
 fn main() {
     fern_setup();
     let cs = ComponentStore {
@@ -37,23 +36,18 @@ fn main() {
                 (4, SignalFmt::Binary(5)),
             ),
             // regfile
-            Rc::new(RegFile {
-                id: "reg_file".to_string(),
-                pos: (300.0, 200.0),
-                width: 200.0,
-                height: 300.0,
-
+            RegFile::rc_new(
+                "reg_file",
+                (300.0, 200.0),
+                200.0,
+                300.0,
                 // ports
-                read_addr1: Input::new("c_read_reg_1", "out"),
-                read_addr2: Input::new("c_read_reg_2", "out"),
-                write_data: Input::new("c_write_data", "out"),
-                write_addr: Input::new("c_write_addr", "out"),
-                write_enable: Input::new("c_write_enable", "out"),
-
-                // data
-                registers: RegStore::new(),
-                history: RegHistory::new(),
-            }),
+                Input::new("c_read_reg_1", "out"),
+                Input::new("c_read_reg_2", "out"),
+                Input::new("c_write_data", "out"),
+                Input::new("c_write_addr", "out"),
+                Input::new("c_write_enable", "out"),
+            ),
             Probe::rc_new("p_reg_a", (500.0, 100.0), Input::new("reg_file", "reg_a")),
             Probe::rc_new("p_reg_b", (500.0, 300.0), Input::new("reg_file", "reg_b")),
             Wire::rc_new(

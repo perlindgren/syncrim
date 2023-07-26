@@ -46,17 +46,17 @@ pub enum Reg {
 
 #[derive(Serialize, Deserialize)]
 pub struct RegFile {
-    pub id: String,
-    pub pos: (f32, f32),
-    pub width: f32,
-    pub height: f32,
+    pub(crate) id: String,
+    pub(crate) pos: (f32, f32),
+    pub(crate) width: f32,
+    pub(crate) height: f32,
 
     // ports
-    pub read_addr1: Input,
-    pub read_addr2: Input,
-    pub write_data: Input,
-    pub write_addr: Input,
-    pub write_enable: Input,
+    read_addr1: Input,
+    read_addr2: Input,
+    write_data: Input,
+    write_addr: Input,
+    write_enable: Input,
 
     // data
     pub registers: RegStore,
@@ -123,6 +123,62 @@ impl Deref for RegStore {
 }
 
 impl RegFile {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        read_addr1: Input,
+        read_addr2: Input,
+        write_data: Input,
+        write_addr: Input,
+        write_enable: Input,
+    ) -> Self {
+        RegFile {
+            id: id.to_string(),
+            pos,
+            width,
+            height,
+
+            // ports
+            read_addr1,
+            read_addr2,
+            write_data,
+            write_addr,
+            write_enable,
+
+            // data
+            registers: RegStore::new(),
+            history: RegHistory::new(),
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn rc_new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        read_addr1: Input,
+        read_addr2: Input,
+        write_data: Input,
+        write_addr: Input,
+        write_enable: Input,
+    ) -> Rc<Self> {
+        Rc::new(RegFile::new(
+            id,
+            pos,
+            width,
+            height,
+            read_addr1,
+            read_addr2,
+            write_data,
+            write_addr,
+            write_enable,
+        ))
+    }
+
     fn read_reg(&self, simulator: &Simulator, input: &Input) -> u32 {
         let read_addr: SignalUnsigned = simulator.get_input_val(input).try_into().unwrap();
         trace!("read_addr {}", read_addr);

@@ -1,12 +1,13 @@
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct InstrMem {
     pub id: String,
     pub pos: (f32, f32),
-    pub instr: Vec<u32>,
     pub pc: Input,
+    pub instr: Vec<u32>,
 }
 
 use log::*;
@@ -37,5 +38,20 @@ impl Component for InstrMem {
         // set output
         trace!("--- output {}", instr);
         simulator.set_out_val(&self.id, "out", instr);
+    }
+}
+
+impl InstrMem {
+    pub fn new(id: &str, pos: (f32, f32), pc: Input, instr: Vec<u32>) -> Self {
+        InstrMem {
+            id: id.to_string(),
+            pos,
+            pc,
+            instr,
+        }
+    }
+
+    pub fn rc_new(id: &str, pos: (f32, f32), pc: Input, instr: Vec<u32>) -> Rc<Self> {
+        Rc::new(InstrMem::new(id, pos, pc, instr))
     }
 }

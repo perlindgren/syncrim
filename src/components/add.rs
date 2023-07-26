@@ -3,6 +3,7 @@ use crate::common::{
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct Add {
@@ -58,6 +59,21 @@ impl Component for Add {
         // set output
         simulator.set_out_val(&self.id, "out", value);
         simulator.set_out_val(&self.id, "overflow", overflow);
+    }
+}
+
+impl Add {
+    pub fn new(id: &str, pos: (f32, f32), a_in: Input, b_in: Input) -> Self {
+        Add {
+            id: id.to_string(),
+            pos,
+            a_in,
+            b_in,
+        }
+    }
+
+    pub fn rc_new(id: &str, pos: (f32, f32), a_in: Input, b_in: Input) -> Rc<Self> {
+        Rc::new(Add::new(id, pos, a_in, b_in))
     }
 }
 

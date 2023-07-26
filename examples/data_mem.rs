@@ -30,73 +30,45 @@ fn main() {
                 memory: Memory::new(),
                 // later history... tbd
             }),
-            Rc::new(Constant {
-                id: "data".to_string(),
-                pos: (100.0, 100.0),
-                value: 3.into(),
-            }),
-            Rc::new(Constant {
-                id: "addr".to_string(),
-                pos: (120.0, 100.0),
-                value: 4.into(),
-            }),
-            Rc::new(Constant {
-                id: "ctrl".to_string(),
-                pos: (140.0, 100.0),
-                value: (MemCtrl::Write as SignalUnsigned).into(),
-            }),
-            Rc::new(Constant {
-                id: "sext".to_string(),
-                pos: (160.0, 100.0),
-                value: (false as SignalUnsigned).into(),
-            }),
-            Rc::new(Constant {
-                id: "size".to_string(),
-                pos: (180.0, 100.0),
-                value: 1.into(), // byte
-            }),
+            Constant::rc_new("data", (100.0, 100.0), 3),
+            Constant::rc_new("addr", (120.0, 100.0), 4),
+            Constant::rc_new("ctrl", (140.0, 100.0), MemCtrl::Write as SignalUnsigned),
+            Constant::rc_new("sext", (160.0, 100.0), false),
+            Constant::rc_new("size", (180.0, 100.0), 1), // byte
             // Wires
-            Rc::new(Wire {
-                id: "w1".to_string(),
-                pos: vec![(100.0, 110.0), (100.0, 150.0)],
-                input: Input::new("data", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w2".to_string(),
-                pos: vec![(120.0, 110.0), (120.0, 150.0)],
-                input: Input::new("addr", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w3".to_string(),
-                pos: vec![(140.0, 110.0), (140.0, 150.0)],
-                input: Input::new("sext", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w4".to_string(),
-                pos: vec![(160.0, 110.0), (160.0, 150.0)],
-                input: Input::new("size", "out"),
-            }),
-            Rc::new(Wire {
-                id: "w5".to_string(),
-                pos: vec![(220.0, 110.0), (220.0, 150.0)],
-                input: Input::new("mem", "data"),
-            }),
-            Rc::new(Wire {
-                id: "w6".to_string(),
-                pos: vec![(240.0, 110.0), (240.0, 150.0)],
-                input: Input::new("mem", "err"),
-            }),
+            Wire::rc_new(
+                "w1",
+                vec![(100.0, 110.0), (100.0, 150.0)],
+                Input::new("data", "out"),
+            ),
+            Wire::rc_new(
+                "w2",
+                vec![(120.0, 110.0), (120.0, 150.0)],
+                Input::new("addr", "out"),
+            ),
+            Wire::rc_new(
+                "w3",
+                vec![(140.0, 110.0), (140.0, 150.0)],
+                Input::new("sext", "out"),
+            ),
+            Wire::rc_new(
+                "w4",
+                vec![(160.0, 110.0), (160.0, 150.0)],
+                Input::new("size", "out"),
+            ),
+            Wire::rc_new(
+                "w5",
+                vec![(220.0, 110.0), (220.0, 150.0)],
+                Input::new("mem", "data"),
+            ),
+            Wire::rc_new(
+                "w6",
+                vec![(240.0, 110.0), (240.0, 150.0)],
+                Input::new("mem", "err"),
+            ),
             // probes
-            Rc::new(Probe {
-                id: "out".to_string(),
-                pos: (220.0, 100.0),
-                input: Input::new("mem", "data"),
-            }),
-            Rc::new(Probe {
-                id: "err".to_string(),
-                pos: (240.0, 100.0),
-                input: Input::new("mem", "err"),
-            }),
+            Probe::rc_new("out", (220.0, 100.0), Input::new("mem", "data")),
+            Probe::rc_new("err", (240.0, 100.0), Input::new("mem", "err")),
         ],
     };
 

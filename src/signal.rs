@@ -148,13 +148,13 @@ impl fmt::Display for Signal {
 
                     let bytes = &value.to_ne_bytes()[0..s as usize];
                     let s: String = bytes
-                        .into_iter()
+                        .iter()
                         .map(|b| {
                             let c = *b as char;
-                            if c.is_ascii_graphic() || c == ' ' as char {
+                            if c.is_ascii_graphic() || c == ' ' {
                                 c
                             } else {
-                                '¤' as char
+                                '¤'
                             }
                         })
                         .rev()
@@ -171,7 +171,7 @@ impl fmt::Display for Signal {
                     match size {
                         SignalSize::_8 => format!("{}", value as u8),
                         SignalSize::_16 => format!("{}", value as u16),
-                        SignalSize::_32 => format!("{}", value as u32),
+                        SignalSize::_32 => format!("{}", value),
                     }
                 ),
                 SignalFmt::Signed(size) => write!(
@@ -189,7 +189,7 @@ impl fmt::Display for Signal {
                     match size {
                         SignalSize::_8 => format!("{:#04x}", value as u8),
                         SignalSize::_16 => format!("{:#06x}", value as u16),
-                        SignalSize::_32 => format!("{:#010x}", value as u32),
+                        SignalSize::_32 => format!("{:#010x}", value),
                     }
                 ),
                 SignalFmt::Hex(size, false) => write!(
@@ -198,10 +198,10 @@ impl fmt::Display for Signal {
                     match size {
                         SignalSize::_8 => format!("{:#x}", value as u8),
                         SignalSize::_16 => format!("{:#x}", value as u16),
-                        SignalSize::_32 => format!("{:#x}", value as u32),
+                        SignalSize::_32 => format!("{:#x}", value),
                     }
                 ),
-                SignalFmt::Bool => write!(f, "{}", !(value == 0)),
+                SignalFmt::Bool => write!(f, "{}", value != 0),
             },
             _ => write!(f, "{:?}", self.data),
         }

@@ -33,19 +33,15 @@ impl Component for Constant {
 }
 
 impl Constant {
-    pub fn new(id: &str, pos: (impl Into<f32>, impl Into<f32>), value: impl Into<Signal>) -> Self {
+    pub fn new(id: &str, pos: (f32, f32), value: impl Into<Signal>) -> Self {
         Constant {
             id: id.to_string(),
-            pos: (pos.0.into(), pos.1.into()),
+            pos,
             value: value.into(),
         }
     }
 
-    pub fn rc_new(
-        id: &str,
-        pos: (impl Into<f32>, impl Into<f32>),
-        value: impl Into<Signal>,
-    ) -> Rc<Self> {
+    pub fn rc_new(id: &str, pos: (f32, f32), value: impl Into<Signal>) -> Rc<Self> {
         Rc::new(Constant::new(id, pos, value))
     }
 }

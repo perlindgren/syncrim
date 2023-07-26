@@ -4,6 +4,7 @@ use crate::common::{
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 #[derive(Serialize, Deserialize)]
 pub struct Sext {
     pub id: Id,
@@ -53,12 +54,32 @@ impl Component for Sext {
     }
 }
 
+impl Sext {
+    pub fn new(id: &str, pos: (f32, f32), sext_in: Input, in_size: u32, out_size: u32) -> Self {
+        Sext {
+            id: id.to_string(),
+            pos,
+            sext_in,
+            in_size,
+            out_size,
+        }
+    }
+
+    pub fn rc_new(
+        id: &str,
+        pos: (f32, f32),
+        sext_in: Input,
+        in_size: u32,
+        out_size: u32,
+    ) -> Rc<Self> {
+        Rc::new(Sext::new(id, pos, sext_in, in_size, out_size))
+    }
+}
+
 #[cfg(test)]
 mod test {
-
     use super::*;
     use crate::{common::ComponentStore, components::ProbeOut};
-    use std::rc::Rc;
 
     #[test]
     fn test_sext() {

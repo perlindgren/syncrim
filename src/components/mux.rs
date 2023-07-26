@@ -3,6 +3,8 @@ use crate::common::{
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
+
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
     pub id: Id,
@@ -36,16 +38,35 @@ impl Component for Mux {
     fn clock(&self, simulator: &mut Simulator) {
         // get input value
         let select: SignalData = simulator.get_input_val(&self.select);
-        let select: SignalUnsigned = select.try_into().unwrap();
-        let select = select as usize;
-        trace!("select {}", select);
-        let value = if select < self.m_in.len() {
-            simulator.get_input_val(&self.m_in[select])
+
+        let value = if let Ok(select) = TryInto::<SignalUnsigned>::try_into(select) {
+            let select = select as usize;
+            trace!("select {}", select);
+            if select < self.m_in.len() {
+                simulator.get_input_val(&self.m_in[select])
+            } else {
+                SignalData::Unknown
+            }
         } else {
             SignalData::Unknown
         };
 
         // set output
         simulator.set_out_val(&self.id, "out", value);
+    }
+}
+
+impl Mux {
+    pub fn new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Self {
+        Mux {
+            id: id.to_string(),
+            pos,
+            select,
+            m_in,
+        }
+    }
+
+    pub fn rc_new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Rc<Self> {
+        Rc::new(Mux::new(id, pos, select, m_in))
     }
 }
