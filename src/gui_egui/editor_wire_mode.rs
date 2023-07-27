@@ -1,6 +1,6 @@
 use crate::common::{Components, Id, Input};
 use crate::components::Wire;
-use crate::gui_egui::editor::{get_component, CloseToComponent, Editor, SnapPriority};
+use crate::gui_egui::editor::{get_component, CloseToComponent, Editor, EditorMode, SnapPriority};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::{
     id_ports_of_all_components, offset_helper, offset_reverse_helper, offset_reverse_helper_pos2,
@@ -117,6 +117,11 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
 
 pub fn wire_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<LayerId>) {
     ctx.output_mut(|o| o.cursor_icon = CursorIcon::Crosshair);
+    if e.wm.mode_ended && cpr.drag_started_by(PointerButton::Secondary) {
+        e.editor_mode = EditorMode::Default;
+        reset_wire_mode(&mut e.wm);
+        return;
+    }
 
     if cpr.drag_started_by(PointerButton::Primary) {
         drag_started(ctx, e, cpr);

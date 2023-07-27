@@ -17,6 +17,11 @@ pub struct InputMode {
 
 pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<LayerId>) {
     let layer_id = layer_id.unwrap();
+    if cpr.drag_started_by(PointerButton::Secondary) {
+        e.editor_mode = EditorMode::Default;
+        reset_input_mode(&mut e.im);
+        return;
+    }
     ctx.output_mut(|o| o.cursor_icon = CursorIcon::None);
     ctx.input_mut(|i| {
         e.im.cursor_location += i.pointer.delta();
