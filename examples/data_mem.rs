@@ -1,4 +1,4 @@
-use std::{path::PathBuf, rc::Rc};
+use std::path::PathBuf;
 use syncrim::{
     common::{ComponentStore, Input, SignalUnsigned},
     components::*,

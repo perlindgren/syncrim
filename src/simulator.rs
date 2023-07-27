@@ -107,12 +107,11 @@ impl Simulator {
         // topological order
         let top =
             toposort(&graph, None).expect("Topological sort failed, your model contains loops.");
-        trace!("--- top \n{:?}", top);
+        trace!("--- topologically ordered graph \n{:?}", top);
 
         let mut ordered_components = vec![];
         for node in &top {
-            // #[allow(clippy::clone_double_ref)] // old lint
-            #[allow(suspicious_double_ref_op)] // changed in Rust 1.71
+            #[allow(suspicious_double_ref_op)]
             let c = (**node_comp.get(node).unwrap()).clone();
             ordered_components.push(c);
         }
@@ -121,6 +120,11 @@ impl Simulator {
             .iter()
             .map(|c| c.get_id_ports().0)
             .collect();
+
+        trace!(
+            "--- topologically ordered component identifiers \n{:?}",
+            component_ids
+        );
 
         let mut simulator = Simulator {
             cycle: 0,
