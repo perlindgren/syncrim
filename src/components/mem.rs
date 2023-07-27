@@ -14,8 +14,8 @@ pub const MEM_CTRL_ID: &str = "ctrl";
 pub const MEM_SIGN_ID: &str = "sign";
 pub const MEM_SIZE_ID: &str = "size";
 
-pub const MEM_DATA_OUT: &str = "data";
-pub const MEM_ERR_OUT: &str = "err";
+pub const MEM_DATA_OUT_ID: &str = "data";
+pub const MEM_ERR_OUT_ID: &str = "err";
 
 #[derive(Serialize, Deserialize)]
 pub struct Mem {
@@ -216,7 +216,7 @@ impl Component for Mem {
                     },
                 ],
                 OutputType::Combinatorial,
-                vec![MEM_DATA_OUT, MEM_ERR_OUT],
+                vec![MEM_DATA_OUT_ID, MEM_ERR_OUT_ID],
             ),
         )
     }
@@ -254,6 +254,17 @@ impl Component for Mem {
         }
 
         trace!("memory {:?}", self.memory);
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            MEM_DATA_ID => self.data = new_input,
+            MEM_ADDR_ID => self.addr = new_input,
+            MEM_CTRL_ID => self.ctrl = new_input,
+            MEM_SIGN_ID => self.sign = new_input,
+            MEM_SIZE_ID => self.size = new_input,
+            _ => (),
+        }
     }
 }
 #[cfg(test)]

@@ -1,4 +1,4 @@
-use crate::common::{ComponentStore, Components, EguiComponent, Id, Input};
+use crate::common::{Components, EguiComponent, Id, Input};
 use crate::components::*;
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::{
@@ -22,7 +22,7 @@ pub struct Editor {
     pub clip_rect: Rect,
     pub side_panel_width: f32,
     pub ui_change: bool,
-    pub library: ComponentStore,
+    pub library: Components,
     pub dummy_input: Input,
     pub editor_mode: EditorMode,
     pub wm: WireMode,
@@ -62,6 +62,45 @@ pub enum SnapPriority {
 impl Editor {
     pub fn gui(components: Components, _path: &Path) -> Self {
         let dummy_input = Input::new("id", "field");
+        let library: Components = vec![
+            Rc::new(Add {
+                id: "add".to_string(),
+                pos: (0.0, 0.0),
+                a_in: dummy_input.clone(),
+                b_in: dummy_input.clone(),
+            }),
+            Rc::new(Constant {
+                id: "c".to_string(),
+                pos: (0.0, 0.0),
+                value: 0.into(),
+            }),
+            Rc::new(Probe {
+                id: "p".to_string(),
+                pos: (0.0, 0.0),
+                input: dummy_input.clone(),
+            }),
+            Rc::new(Sext {
+                id: "sext".to_string(),
+                pos: (0.0, 0.0),
+                sext_in: dummy_input.clone(),
+                in_size: 16,
+                out_size: 24,
+            }),
+            Rc::new(Mem {
+                id: "mem".into(),
+                pos: (0.0, 0.0),
+                width: 100.0,
+                height: 50.0,
+                big_endian: true,
+                data: dummy_input.clone(),
+                addr: dummy_input.clone(),
+                ctrl: dummy_input.clone(),
+                size: dummy_input.clone(),
+                sign: dummy_input.clone(),
+                memory: Memory::new(),
+            }),
+        ];
+        let library_contexts = crate::gui_egui::gui::create_contexts(&library);
         let mut e = Editor {
             components,
             scale: 1f32,
@@ -77,26 +116,7 @@ impl Editor {
             },
             side_panel_width: 400f32,
             ui_change: true,
-            library: ComponentStore {
-                store: vec![
-                    Rc::new(Add {
-                        id: "add".to_string(),
-                        pos: (0.0, 0.0),
-                        a_in: dummy_input.clone(),
-                        b_in: dummy_input.clone(),
-                    }),
-                    Rc::new(Constant {
-                        id: "c".to_string(),
-                        pos: (0.0, 0.0),
-                        value: 0.into(),
-                    }),
-                    Rc::new(Probe {
-                        id: "p".to_string(),
-                        pos: (0.0, 0.0),
-                        input: dummy_input.clone(),
-                    }),
-                ],
-            },
+            library,
             dummy_input,
             editor_mode: EditorMode::Default,
             wm: WireMode {
@@ -110,6 +130,7 @@ impl Editor {
             im: InputMode {
                 comp: None,
                 cursor_location: Pos2::ZERO,
+                library_contexts,
             },
             contexts: HashMap::new(),
         };

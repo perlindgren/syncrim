@@ -7,7 +7,7 @@ use crate::gui_egui::helper::{
     unique_component_name,
 };
 use egui::{
-    Color32, Context, CursorIcon, LayerId, PointerButton, Pos2, Response, Shape, Stroke, Vec2,
+    Color32, Context, CursorIcon, LayerId, PointerButton, Pos2, Rect, Response, Shape, Stroke, Vec2,
 };
 use std::rc::Rc;
 
@@ -93,6 +93,7 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
                     EguiExtra {
                         properties_window: false,
                         id_tmp: id.to_string(),
+                        size_rect: Rect::NAN,
                     },
                 );
 

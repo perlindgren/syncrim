@@ -1,7 +1,10 @@
 use crate::common::{Input, Ports};
 use crate::gui_egui::editor::EditorMode;
 use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
-use egui::{ComboBox, Frame, Margin, PointerButton, Pos2, Rect, Response, Rounding, Ui, Window};
+use egui::{
+    containers, ComboBox, Frame, Margin, PointerButton, Pos2, Rect, Response, Rounding, Slider, Ui,
+    Window,
+};
 use epaint::Shadow;
 
 pub fn rect_with_hover<P>(
@@ -19,7 +22,7 @@ where
     let r = ui.allocate_rect(rect, editor_mode_to_sense(editor_mode));
 
     if r.hovered() && !r.dragged() {
-        egui::containers::popup::show_tooltip_for(ui.ctx(), egui::Id::new(id), &rect, |ui| {
+        containers::popup::show_tooltip_for(ui.ctx(), egui::Id::new(id), &rect, |ui| {
             f(ui);
         });
     }
@@ -66,12 +69,12 @@ pub fn properties_window<P>(
 pub fn pos_slider(ui: &mut Ui, pos: &mut (f32, f32)) {
     ui.horizontal(|ui| {
         ui.add(
-            egui::Slider::new(&mut pos.0, 0f32..=1000f32)
+            Slider::new(&mut pos.0, 0f32..=1000f32)
                 .text("pos x")
                 .clamp_to_range(false),
         );
         ui.add(
-            egui::Slider::new(&mut pos.1, 0f32..=1000f32)
+            Slider::new(&mut pos.1, 0f32..=1000f32)
                 .text("pos y")
                 .clamp_to_range(false),
         );
@@ -81,15 +84,15 @@ pub fn pos_slider(ui: &mut Ui, pos: &mut (f32, f32)) {
 pub fn input_selector(
     ui: &mut Ui,
     input: &mut Input,
-    // Why is this marked as unused, it's clearly being used?
-    #[allow(unused_variables)] port_id: crate::common::Id,
+    port_name: crate::common::Id,
     id_ports: &[(crate::common::Id, Ports)],
+    own_id: crate::common::Id,
 ) -> bool {
     let mut port_id = input.id.clone();
     let mut port_field = input.field.clone();
-    let label_port_id = format!("{}.id", port_id.clone());
+    let label_port_id = format!("{}.id", port_name.clone());
     let text_port_id = port_id.to_string();
-    let label_port_field = format!("{}.field", port_id.clone());
+    let label_port_field = format!("{}.field", port_name.clone());
     let text_port_field = port_field.to_string();
     ui.horizontal(|ui| {
         ComboBox::from_label(label_port_id)
@@ -97,6 +100,9 @@ pub fn input_selector(
             .show_ui(ui, |ui| {
                 for c in id_ports {
                     let id = c.0.clone();
+                    if id == own_id {
+                        continue;
+                    }
                     ui.selectable_value(&mut port_id, id.clone(), id);
                 }
             });

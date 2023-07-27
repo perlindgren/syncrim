@@ -121,6 +121,7 @@ impl EguiComponent for Wire {
                         &mut self.input,
                         crate::components::WIRE_INPUT_ID.to_string(),
                         id_ports,
+                        self.id.clone(),
                     );
                     clicked_dropdown
                 },
@@ -130,17 +131,6 @@ impl EguiComponent for Wire {
         EditorRenderReturn {
             delete,
             resp: Some(r_vec),
-        }
-    }
-
-    // This isn't really it's true size
-    fn size(&self) -> Rect {
-        Rect {
-            min: Pos2 { x: 0f32, y: 0f32 },
-            max: Pos2 {
-                x: self.pos[1].0,
-                y: self.pos[1].1,
-            },
         }
     }
 

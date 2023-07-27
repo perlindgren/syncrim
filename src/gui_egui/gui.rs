@@ -2,6 +2,10 @@ use crate::common::{ComponentStore, Components, Simulator};
 use crate::gui_egui::editor::EditorMode;
 use crate::gui_egui::{editor::Editor, keymap, keymap::Shortcuts, menu::Menu};
 use eframe::egui;
+use egui::{
+    containers, CentralPanel, Color32, Context, PointerButton, Pos2, Rect, ScrollArea, Sense,
+    SidePanel, TopBottomPanel, Vec2,
+};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -12,9 +16,9 @@ pub struct Gui {
     pub scale: f32,
     // When the ui elements change size
     pub ui_change: bool,
-    pub offset: egui::Vec2,
-    pub pan: egui::Vec2,
-    pub clip_rect: egui::Rect,
+    pub offset: Vec2,
+    pub pan: Vec2,
+    pub clip_rect: Rect,
     pub shortcuts: Shortcuts,
     pub pause: bool,
     pub editor: Option<Editor>,
@@ -22,10 +26,11 @@ pub struct Gui {
     pub contexts: HashMap<crate::common::Id, EguiExtra>,
 }
 
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Debug)]
 pub struct EguiExtra {
     pub properties_window: bool,
     pub id_tmp: String,
+    pub size_rect: Rect,
 }
 
 pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
@@ -41,9 +46,9 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
         simulator: Some(simulator),
         scale: 1.0f32,
         ui_change: true,
-        offset: egui::Vec2 { x: 0f32, y: 0f32 },
-        pan: egui::Vec2 { x: 0f32, y: 0f32 },
-        clip_rect: egui::Rect::NOTHING,
+        offset: Vec2 { x: 0f32, y: 0f32 },
+        pan: Vec2 { x: 0f32, y: 0f32 },
+        clip_rect: Rect::NOTHING,
         shortcuts: Shortcuts::new(),
         pause: true,
         editor: None,
@@ -55,13 +60,13 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
 }
 
 impl eframe::App for Gui {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
         self.shortcuts.inputs(ctx, self);
         if self.editor_use {
             crate::gui_egui::editor::Editor::update(ctx, frame, self);
             return;
         }
-        let frame = egui::Frame::none().fill(egui::Color32::WHITE);
+        let frame = egui::Frame::none().fill(Color32::WHITE);
         //let frame = egui::Frame::canvas(&(*ctx.style()).clone());
 
         // For getting the correct offset for our drawing we need to get the top bar
@@ -69,26 +74,24 @@ impl eframe::App for Gui {
         if self.should_area_update(ctx) {
             // todo: Implement proper light and dark mode?
             // for testing light and dark mode
-            //ctx.set_visuals(egui::Visuals::dark());
-            //ctx.set_visuals(egui::Visuals::light());
+            //ctx.set_visuals(Visuals::dark());
+            //ctx.set_visuals(Visuals::light());
             self.top_bar(ctx);
             self.side_panel(ctx);
-            let top =
-                egui::containers::panel::PanelState::load(ctx, egui::Id::from("topBar")).unwrap();
-            let side =
-                egui::containers::panel::PanelState::load(ctx, egui::Id::from("leftGui")).unwrap();
-            self.offset = egui::Vec2 {
+            let top = containers::panel::PanelState::load(ctx, egui::Id::from("topBar")).unwrap();
+            let side = containers::panel::PanelState::load(ctx, egui::Id::from("leftGui")).unwrap();
+            self.offset = Vec2 {
                 x: side.rect.max.x,
                 y: top.rect.max.y,
             };
-            self.clip_rect = egui::Rect {
+            self.clip_rect = Rect {
                 min: self.offset.to_pos2(),
-                max: egui::Pos2 {
+                max: Pos2 {
                     x: f32::INFINITY,
                     y: f32::INFINITY,
                 },
             };
-            egui::Context::request_repaint(ctx);
+            Context::request_repaint(ctx);
         } else {
             self.top_bar(ctx);
             if self.simulator.is_some() {
@@ -100,12 +103,12 @@ impl eframe::App for Gui {
 }
 
 impl Gui {
-    fn should_area_update(&mut self, ctx: &egui::Context) -> bool {
+    fn should_area_update(&mut self, ctx: &Context) -> bool {
         if self.ui_change {
             self.ui_change = false;
             true
         } else {
-            (egui::containers::panel::PanelState::load(ctx, egui::Id::from("topBar"))
+            (containers::panel::PanelState::load(ctx, egui::Id::from("topBar"))
                 .unwrap()
                 .rect
                 .max
@@ -113,7 +116,7 @@ impl Gui {
                 - self.offset.y)
                 .abs()
                 > 0.1
-                || (egui::containers::panel::PanelState::load(ctx, egui::Id::from("leftGui"))
+                || (containers::panel::PanelState::load(ctx, egui::Id::from("leftGui"))
                     .unwrap()
                     .rect
                     .max
@@ -124,8 +127,8 @@ impl Gui {
         }
     }
 
-    fn draw_area(&mut self, ctx: &egui::Context, frame: egui::Frame) {
-        let central_panel = egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
+    fn draw_area(&mut self, ctx: &Context, frame: egui::Frame) {
+        let central_panel = CentralPanel::default().frame(frame).show(ctx, |ui| {
             let sim = self.simulator.as_mut().unwrap();
             ui.set_clip_rect(self.clip_rect);
             // Don't draw over the rest of the ui
@@ -144,8 +147,8 @@ impl Gui {
                 self.contexts.insert(context.id_tmp.clone(), context);
             }
         });
-        let cpr = central_panel.response.interact(egui::Sense::drag());
-        if cpr.dragged_by(egui::PointerButton::Middle) {
+        let cpr = central_panel.response.interact(Sense::drag());
+        if cpr.dragged_by(PointerButton::Middle) {
             self.pan += cpr.drag_delta();
         }
         if central_panel.response.hovered() {
@@ -159,9 +162,9 @@ impl Gui {
         }
     }
 
-    fn side_panel(&mut self, ctx: &egui::Context) {
-        egui::SidePanel::left("leftGui").show(ctx, |ui| {
-            egui::ScrollArea::vertical().show(ui, |ui| {
+    fn side_panel(&mut self, ctx: &Context) {
+        SidePanel::left("leftGui").show(ctx, |ui| {
+            ScrollArea::vertical().show(ui, |ui| {
                 ui.horizontal(|ui| {
                     ui.label("0x00000004\n0x00000008\n".repeat(100));
                     ui.label("100000\n20000\n".repeat(100));
@@ -170,8 +173,8 @@ impl Gui {
         });
     }
 
-    fn top_bar(&mut self, ctx: &egui::Context) {
-        egui::TopBottomPanel::top("topBar").show(ctx, |ui| Menu::new(ui, self));
+    fn top_bar(&mut self, ctx: &Context) {
+        TopBottomPanel::top("topBar").show(ctx, |ui| Menu::new(ui, self));
     }
 }
 
@@ -184,6 +187,7 @@ pub fn create_contexts(components: &Components) -> HashMap<crate::common::Id, Eg
             EguiExtra {
                 properties_window: false,
                 id_tmp: id,
+                size_rect: Rect::NAN,
             },
         );
     }

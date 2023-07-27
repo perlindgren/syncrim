@@ -8,6 +8,8 @@ use serde::{Deserialize, Serialize};
 
 pub const SEXT_IN_ID: &str = "sext_in";
 
+pub const SEXT_OUT_ID: &str = "out";
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Sext {
     pub id: Id,
@@ -32,9 +34,15 @@ impl Component for Sext {
                     input: self.sext_in.clone(),
                 }],
                 OutputType::Combinatorial,
-                vec!["out"],
+                vec![SEXT_OUT_ID],
             ),
         )
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        if target_port_id.as_str() == SEXT_IN_ID {
+            self.sext_in = new_input
+        }
     }
 
     // propagate sign extension to output

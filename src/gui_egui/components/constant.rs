@@ -5,20 +5,22 @@ use crate::gui_egui::component_ui::{
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
-use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, RichText, Vec2};
+use egui::{
+    Align2, Area, Color32, Order, PointerButton, Pos2, Rect, Response, RichText, Slider, Ui, Vec2,
+};
 
 #[typetag::serde]
 impl EguiComponent for Constant {
     fn render(
         &self,
-        ui: &mut egui::Ui,
+        ui: &mut Ui,
         _context: &mut EguiExtra,
         _simulator: Option<&mut Simulator>,
-        offset: egui::Vec2,
+        offset: Vec2,
         scale: f32,
         clip_rect: Rect,
         editor_mode: EditorMode,
-    ) -> Option<Vec<egui::Response>> {
+    ) -> Option<Vec<Response>> {
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
@@ -60,12 +62,12 @@ impl EguiComponent for Constant {
 
     fn render_editor(
         &mut self,
-        ui: &mut egui::Ui,
+        ui: &mut Ui,
         context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
-        offset: egui::Vec2,
+        offset: Vec2,
         scale: f32,
-        clip_rect: egui::Rect,
+        clip_rect: Rect,
         id_ports: &[(crate::common::Id, Ports)],
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
@@ -101,7 +103,7 @@ impl EguiComponent for Constant {
                 input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
                 if let Signal::Data(d) = &mut self.value {
-                    ui.add(egui::Slider::new(d, u32::MIN..=u32::MAX).text("value"));
+                    ui.add(Slider::new(d, u32::MIN..=u32::MAX).text("value"));
                 }
                 false
             },
@@ -113,22 +115,17 @@ impl EguiComponent for Constant {
         }
     }
 
-    fn size(&self) -> Rect {
-        Rect {
-            min: Pos2 {
-                x: -10f32,
-                y: -10f32,
-            },
-            max: Pos2 { x: 10f32, y: 10f32 },
-        }
-    }
-
     fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![(
             crate::components::CONSTANT_OUT_ID.to_string(),
             Pos2::new(10f32, 0f32) + own_pos,
         )]
+    }
+
+    fn top_padding(&self) -> f32 {
+        // todo: make this accurate?
+        10f32
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {

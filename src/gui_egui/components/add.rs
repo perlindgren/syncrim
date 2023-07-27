@@ -8,30 +8,30 @@ use crate::{
     common::{EguiComponent, Ports, Simulator},
     components::Add,
 };
-use egui::{PointerButton, Pos2, Rect, Vec2};
+use egui::{Color32, PointerButton, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Add {
     fn render(
         &self,
-        ui: &mut egui::Ui,
+        ui: &mut Ui,
         _context: &mut EguiExtra,
         _simulator: Option<&mut Simulator>,
-        offset: egui::Vec2,
+        offset: Vec2,
         scale: f32,
-        clip_rect: egui::Rect,
+        clip_rect: Rect,
         editor_mode: EditorMode,
-    ) -> Option<Vec<egui::Response>> {
+    ) -> Option<Vec<Response>> {
         // 41x81
         // middle: 21x 41y (0 0)
-        let oh: fn((f32, f32), f32, Vec2) -> egui::Pos2 = offset_helper;
+        let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
         let s = scale;
         let o = offset;
         // The shape
-        ui.painter().add(egui::Shape::closed_line(
+        ui.painter().add(Shape::closed_line(
             vec![
                 oh((-20f32, -40f32), s, o),
                 oh((0f32, -40f32), s, o),
@@ -43,27 +43,27 @@ impl EguiComponent for Add {
                 oh((-10f32, 0f32), s, o),
                 oh((-20f32, -20f32), s, o),
             ],
-            egui::Stroke {
+            Stroke {
                 width: scale,
-                color: egui::Color32::RED,
+                color: Color32::RED,
             },
         ));
         // plus sign
-        ui.painter().add(egui::Shape::line_segment(
+        ui.painter().add(Shape::line_segment(
             [oh((0f32, 0f32), s, o), oh((10f32, 0f32), s, o)],
-            egui::Stroke {
+            Stroke {
                 width: scale,
-                color: egui::Color32::BLACK,
+                color: Color32::BLACK,
             },
         ));
-        ui.painter().add(egui::Shape::line_segment(
+        ui.painter().add(Shape::line_segment(
             [oh((5f32, -5f32), s, o), oh((5f32, 5f32), s, o)],
-            egui::Stroke {
+            Stroke {
                 width: scale,
-                color: egui::Color32::BLACK,
+                color: Color32::BLACK,
             },
         ));
-        let rect = egui::Rect {
+        let rect = Rect {
             min: oh((-20f32, -40f32), s, o),
             max: oh((20f32, 40f32), s, o),
         };
@@ -76,12 +76,12 @@ impl EguiComponent for Add {
 
     fn render_editor(
         &mut self,
-        ui: &mut egui::Ui,
+        ui: &mut Ui,
         context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
-        offset: egui::Vec2,
+        offset: Vec2,
         scale: f32,
-        clip_rect: egui::Rect,
+        clip_rect: Rect,
         id_ports: &[(crate::common::Id, Ports)],
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
@@ -123,12 +123,14 @@ impl EguiComponent for Add {
                     &mut self.a_in,
                     crate::components::ADD_A_IN_ID.to_string(),
                     id_ports,
+                    self.id.clone(),
                 );
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.b_in,
                     crate::components::ADD_B_IN_ID.to_string(),
                     id_ports,
+                    self.id.clone(),
                 );
                 clicked_dropdown
             },
@@ -137,16 +139,6 @@ impl EguiComponent for Add {
         EditorRenderReturn {
             delete,
             resp: Some(r_vec),
-        }
-    }
-
-    fn size(&self) -> Rect {
-        Rect {
-            min: Pos2 {
-                x: -20f32,
-                y: -40f32,
-            },
-            max: Pos2 { x: 20f32, y: 40f32 },
         }
     }
 
@@ -170,6 +162,10 @@ impl EguiComponent for Add {
                 Pos2::new(0f32, -40f32) + own_pos,
             ),
         ]
+    }
+
+    fn top_padding(&self) -> f32 {
+        40f32
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {

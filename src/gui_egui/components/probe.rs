@@ -5,20 +5,20 @@ use crate::gui_egui::component_ui::{
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
-use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, RichText, Vec2};
+use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, Response, RichText, Ui, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Probe {
     fn render(
         &self,
-        ui: &mut egui::Ui,
+        ui: &mut Ui,
         _context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
-        offset: egui::Vec2,
+        offset: Vec2,
         scale: f32,
         clip_rect: Rect,
         editor_mode: EditorMode,
-    ) -> Option<Vec<egui::Response>> {
+    ) -> Option<Vec<Response>> {
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
@@ -66,12 +66,12 @@ impl EguiComponent for Probe {
 
     fn render_editor(
         &mut self,
-        ui: &mut egui::Ui,
+        ui: &mut Ui,
         context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
-        offset: egui::Vec2,
+        offset: Vec2,
         scale: f32,
-        clip_rect: egui::Rect,
+        clip_rect: Rect,
         id_ports: &[(crate::common::Id, Ports)],
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
@@ -88,7 +88,7 @@ impl EguiComponent for Probe {
         )
         .unwrap();
         let resp = &r_vec[0];
-        if resp.dragged_by(egui::PointerButton::Primary) {
+        if resp.dragged_by(PointerButton::Primary) {
             let delta = resp.drag_delta() / scale;
             self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
         }
@@ -113,6 +113,7 @@ impl EguiComponent for Probe {
                     &mut self.input,
                     crate::components::PROBE_IN_ID.to_string(),
                     id_ports,
+                    self.id.clone(),
                 );
                 clicked_dropdown
             },
@@ -124,22 +125,17 @@ impl EguiComponent for Probe {
         }
     }
 
-    fn size(&self) -> Rect {
-        Rect {
-            min: Pos2 {
-                x: -10f32,
-                y: -10f32,
-            },
-            max: Pos2 { x: 10f32, y: 10f32 },
-        }
-    }
-
     fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![(
             crate::components::PROBE_IN_ID.to_string(),
             Pos2::new(-10f32, 0f32) + own_pos,
         )]
+    }
+
+    fn top_padding(&self) -> f32 {
+        // todo: make this accurate?
+        10f32
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {

@@ -162,8 +162,8 @@ pub trait EguiComponent: Component {
         }
     }
 
-    fn size(&self) -> egui::Rect {
-        egui::Rect::NOTHING
+    fn top_padding(&self) -> f32 {
+        todo!("Create top_padding for this EguiComponent");
     }
 
     /// Get ports location relative to self, (inputs, outputs)
