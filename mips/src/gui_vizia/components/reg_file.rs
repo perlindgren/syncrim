@@ -22,7 +22,7 @@ fn range_view(cx: &mut Context, range: Range<u8>) {
             Label::new(cx, &format!("{:?}", Reg::try_from(i).unwrap()))
                 .width(Pixels(50.0))
                 .left(Pixels(10.0));
-            Label::new(cx, item);
+            Label::new(cx, &format!("{}", item.get(cx)));
         })
         .font_size(12.0)
         .size(Auto);

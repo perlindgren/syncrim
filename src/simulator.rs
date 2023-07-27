@@ -182,11 +182,15 @@ impl Simulator {
         *self.id_start_index.get(id).unwrap()
     }
 
-    // set value by index
+    // set signal value by index
     fn set_data(&mut self, index: usize, value: SignalData) {
         self.sim_state[index].set_data(value);
     }
 
+    // set signal by index
+    fn set_signal(&mut self, index: usize, value: Signal) {
+        self.sim_state[index] = value;
+    }
     /// set value by Id (instance) and Id (field)
     pub fn set_out_val(&mut self, id: &str, field: &str, value: impl Into<SignalData>) {
         let index = *self
@@ -195,6 +199,16 @@ impl Simulator {
             .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
         let start_index = self.get_id_start_index(id);
         self.set_data(start_index + index, value.into());
+    }
+
+    /// set signal by Id (instance) and Id (field)
+    pub fn set_out_signal(&mut self, id: &str, field: &str, signal: impl Into<Signal>) {
+        let index = *self
+            .id_field_index
+            .get(&(id.into(), field.into()))
+            .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
+        let start_index = self.get_id_start_index(id);
+        self.set_signal(start_index + index, signal.into());
     }
 
     /// iterate over the evaluators and increase clock by one

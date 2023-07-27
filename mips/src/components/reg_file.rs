@@ -3,11 +3,11 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
-use syncrim::common::{Component, Input, OutputType, Ports, SignalUnsigned, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Signal, SignalUnsigned, Simulator};
 
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
-#[derive(Copy, Clone, Debug, TryFromPrimitive)]
+#[derive(Copy, Clone, Debug, TryFromPrimitive, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum Reg {
     zero    = 0,    // Constant 0
@@ -65,9 +65,9 @@ pub struct RegFile {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct RegOp {
-    read_addr1: u8,
-    read_addr2: u8,
-    write_addr2: Option<(u8, u32)>,
+    read_addr1: Reg,
+    read_addr2: Reg,
+    write_addr2: Option<(Reg, Signal)>,
     old_data: Option<u8>,
 }
 // TODO: Perhaps we want registers to be of Signal type (containing potentially Signal::Unknown)
@@ -88,11 +88,11 @@ impl Default for RegHistory {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct RegStore(pub Rc<RefCell<[u32; 32]>>);
+pub struct RegStore(pub Rc<RefCell<[Signal; 32]>>);
 
 impl RegStore {
     pub fn new() -> Self {
-        RegStore(Rc::new(RefCell::new([0; 32])))
+        RegStore(Rc::new(RefCell::new([0.into(); 32])))
     }
 
     pub fn full_range() -> Range<u8> {
@@ -115,7 +115,7 @@ impl Default for RegStore {
 }
 
 impl Deref for RegStore {
-    type Target = RefCell<[u32; 32]>;
+    type Target = RefCell<[Signal; 32]>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -179,7 +179,7 @@ impl RegFile {
         ))
     }
 
-    fn read_reg(&self, simulator: &Simulator, input: &Input) -> u32 {
+    fn read_reg(&self, simulator: &Simulator, input: &Input) -> Signal {
         let read_addr: SignalUnsigned = simulator.get_input_val(input).try_into().unwrap();
         trace!("read_addr {}", read_addr);
 
@@ -187,7 +187,7 @@ impl RegFile {
         if read_addr > 0 {
             self.registers.borrow()[read_addr as usize]
         } else {
-            0
+            0.into()
         }
     }
 }
@@ -229,12 +229,12 @@ impl Component for RegFile {
 
         // read after write
         let reg_value_a = self.read_reg(simulator, &self.read_addr1);
-        trace!("reg_value {}", reg_value_a);
-        simulator.set_out_val(&self.id, "reg_a", reg_value_a);
+        trace!("reg_value_a {}", reg_value_a);
+        simulator.set_out_signal(&self.id, "reg_a", reg_value_a);
 
         let reg_value_b = self.read_reg(simulator, &self.read_addr2);
-        trace!("reg_value {}", reg_value_b);
-        simulator.set_out_val(&self.id, "reg_b", reg_value_b);
+        trace!("reg_value_b {}", reg_value_b);
+        simulator.set_out_signal(&self.id, "reg_b", reg_value_b);
     }
 }
 
