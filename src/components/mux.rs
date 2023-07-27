@@ -1,12 +1,16 @@
-use crate::common::{Component, Id, Input, OutputType, Ports, Signal, SignalUnsigned, Simulator};
+use crate::common::{
+    Component, Id, Input, OutputType, Ports, SignalData, SignalUnsigned, Simulator,
+};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
+
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub select: Input,
-    pub m_in: Vec<Input>,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) select: Input,
+    pub(crate) m_in: Vec<Input>,
 }
 
 #[typetag::serde]
@@ -33,16 +37,36 @@ impl Component for Mux {
     // propagate selected input value to output
     fn clock(&self, simulator: &mut Simulator) {
         // get input value
-        let select: SignalUnsigned = simulator.get_input_val(&self.select).try_into().unwrap();
-        let select = select as usize;
-        trace!("select {}", select);
-        let value = if select < self.m_in.len() {
-            simulator.get_input_val(&self.m_in[select])
+        let select: SignalData = simulator.get_input_val(&self.select);
+
+        let value = if let Ok(select) = TryInto::<SignalUnsigned>::try_into(select) {
+            let select = select as usize;
+            trace!("select {}", select);
+            if select < self.m_in.len() {
+                simulator.get_input_val(&self.m_in[select])
+            } else {
+                SignalData::Unknown
+            }
         } else {
-            Signal::Unknown
+            SignalData::Unknown
         };
 
         // set output
         simulator.set_out_val(&self.id, "out", value);
+    }
+}
+
+impl Mux {
+    pub fn new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Self {
+        Mux {
+            id: id.to_string(),
+            pos,
+            select,
+            m_in,
+        }
+    }
+
+    pub fn rc_new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Rc<Self> {
+        Rc::new(Mux::new(id, pos, select, m_in))
     }
 }

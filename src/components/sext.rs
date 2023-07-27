@@ -1,16 +1,17 @@
 // use std::fmt::Alignment;
 use crate::common::{
-    Component, Id, Input, OutputType, Ports, Signal, SignalSigned, SignalUnsigned, Simulator,
+    Component, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 #[derive(Serialize, Deserialize)]
 pub struct Sext {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub sext_in: Input,
-    pub in_size: u32,
-    pub out_size: u32,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) sext_in: Input,
+    pub(crate) in_size: u32,
+    pub(crate) out_size: u32,
 }
 
 #[typetag::serde]
@@ -49,16 +50,36 @@ impl Component for Sext {
         value >>= to_shr;
 
         // set output
-        simulator.set_out_val(&self.id, "out", Signal::Data(value));
+        simulator.set_out_val(&self.id, "out", value);
+    }
+}
+
+impl Sext {
+    pub fn new(id: &str, pos: (f32, f32), sext_in: Input, in_size: u32, out_size: u32) -> Self {
+        Sext {
+            id: id.to_string(),
+            pos,
+            sext_in,
+            in_size,
+            out_size,
+        }
+    }
+
+    pub fn rc_new(
+        id: &str,
+        pos: (f32, f32),
+        sext_in: Input,
+        in_size: u32,
+        out_size: u32,
+    ) -> Rc<Self> {
+        Rc::new(Sext::new(id, pos, sext_in, in_size, out_size))
     }
 }
 
 #[cfg(test)]
 mod test {
-
     use super::*;
     use crate::{common::ComponentStore, components::ProbeOut};
-    use std::rc::Rc;
 
     #[test]
     fn test_sext() {

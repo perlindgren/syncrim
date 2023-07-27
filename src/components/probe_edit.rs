@@ -8,9 +8,9 @@ use std::{
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeEdit {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub edit_history: Arc<RwLock<Vec<TextSignal>>>, // will contain the next editable value
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) edit_history: Arc<RwLock<Vec<TextSignal>>>, // will contain the next editable value
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -44,7 +44,7 @@ impl Component for ProbeEdit {
         trace!("{} history {:?}", self.id, history);
         let current = history.last().unwrap().clone();
         // set output to current value
-        simulator.set_out_val(&self.id, "out", current.signal);
+        simulator.set_out_val(&self.id, "out", current.signal.get_data());
         // push to prepare data for next;
         history.push(current);
     }
@@ -72,7 +72,7 @@ impl ProbeEdit {
             // initiate internal history
             edit_history: Arc::new(RwLock::new(vec![TextSignal {
                 text: "0".to_string(),
-                signal: Signal::Data(0),
+                signal: 0.into(),
             }])),
         }
     }

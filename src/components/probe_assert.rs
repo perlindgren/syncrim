@@ -5,10 +5,10 @@ use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct ProbeAssert {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub input: Input,
-    pub values: Vec<Signal>,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) input: Input,
+    pub(crate) values: Vec<Signal>,
 }
 
 #[typetag::serde]
@@ -30,7 +30,7 @@ impl Component for ProbeAssert {
         #[cfg(test)]
         assert_eq!(
             simulator.get_input_val(&self.input),
-            self.values[simulator.cycle]
+            self.values[simulator.cycle].get_data()
         );
     }
 

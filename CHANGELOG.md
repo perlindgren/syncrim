@@ -2,6 +2,14 @@
 
 Tracking changes per date:
 
+## 230727
+
+- `Signal` type now incorporates formatting. This allows the default formatting to be set on a signal on creation. The data and formatting can be read/written separately by setters/getters.
+  
+- Internal component fields are now `pub(crate)`. This allows internal component structure to be hidden outside the crate, thus examples and other users cannot affect the component state, also we are free to change internal repr without affecting examples/users (given that the API can remain stable).
+
+- `rc_new` implemented for all components. (Examples updated.) We might want to change `new` to `_new` and `rc_new` to `new`.
+  
 ## 230725
 
 - Implemented the `ProbeAssert` component, that assert a set sequence of inputs. Made some updates so reading outside of the assert/stim buffers gives `Signal::Unknown` instead of panic (if not in test mode).

@@ -25,7 +25,7 @@ impl ViziaComponent for Probe {
                 move |cx, _| {
                     Label::new(cx, {
                         let simulator = GuiData::simulator.get(cx);
-                        &format!(" {:?}", simulator.get_input_val(&input))
+                        &format!("{}", simulator.get_input_signal(&input))
                     })
                     .hoverable(false);
                 },
@@ -35,7 +35,8 @@ impl ViziaComponent for Probe {
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 10.0))
         .top(Pixels(self.pos.1 - 10.0))
-        .width(Pixels(20.0))
+        // .width(Pixels(20.0)) // TODO, max width?
+        .width(Auto)
         .height(Pixels(20.0))
         .on_press(|ex| ex.emit(PopupEvent::Switch))
         .tooltip(|cx| new_component_tooltip(cx, self));

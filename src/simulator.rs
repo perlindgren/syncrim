@@ -1,4 +1,6 @@
-use crate::common::{Component, ComponentStore, Id, Input, OutputType, Signal, Simulator};
+use crate::common::{
+    Component, ComponentStore, Id, Input, OutputType, Signal, SignalData, Simulator,
+};
 use petgraph::{
     algo::toposort,
     dot::{Config, Dot},
@@ -105,12 +107,11 @@ impl Simulator {
         // topological order
         let top =
             toposort(&graph, None).expect("Topological sort failed, your model contains loops.");
-        trace!("--- top \n{:?}", top);
+        trace!("--- topologically ordered graph \n{:?}", top);
 
         let mut ordered_components = vec![];
         for node in &top {
-            // #[allow(clippy::clone_double_ref)] // old lint
-            #[allow(suspicious_double_ref_op)] // changed in Rust 1.71
+            #[allow(suspicious_double_ref_op)]
             let c = (**node_comp.get(node).unwrap()).clone();
             ordered_components.push(c);
         }
@@ -119,6 +120,11 @@ impl Simulator {
             .iter()
             .map(|c| c.get_id_ports().0)
             .collect();
+
+        trace!(
+            "--- topologically ordered component identifiers \n{:?}",
+            component_ids
+        );
 
         let mut simulator = Simulator {
             cycle: 0,
@@ -143,8 +149,8 @@ impl Simulator {
         self.sim_state[index]
     }
 
-    /// get input value
-    pub fn get_input_val(&self, input: &Input) -> Signal {
+    /// get input signal
+    pub fn get_input_signal(&self, input: &Input) -> Signal {
         let nr_out = *self.id_nr_outputs.get(&input.id).unwrap();
         let index = *self
             .id_field_index
@@ -166,24 +172,29 @@ impl Simulator {
         }
     }
 
+    /// get input value
+    pub fn get_input_val(&self, input: &Input) -> SignalData {
+        self.get_input_signal(input).get_data()
+    }
+
     /// get start index by id
     pub(crate) fn get_id_start_index(&self, id: &str) -> usize {
         *self.id_start_index.get(id).unwrap()
     }
 
     // set value by index
-    fn set(&mut self, index: usize, value: Signal) {
-        self.sim_state[index] = value;
+    fn set_data(&mut self, index: usize, value: SignalData) {
+        self.sim_state[index].set_data(value);
     }
 
     /// set value by Id (instance) and Id (field)
-    pub fn set_out_val(&mut self, id: &str, field: &str, value: impl Into<Signal>) {
+    pub fn set_out_val(&mut self, id: &str, field: &str, value: impl Into<SignalData>) {
         let index = *self
             .id_field_index
             .get(&(id.into(), field.into()))
             .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
         let start_index = self.get_id_start_index(id);
-        self.set(start_index + index, value.into());
+        self.set_data(start_index + index, value.into());
     }
 
     /// iterate over the evaluators and increase clock by one

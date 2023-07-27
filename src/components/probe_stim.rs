@@ -1,13 +1,13 @@
-use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Id, OutputType, Ports, Signal, SignalData, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct ProbeStim {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub values: Vec<Signal>,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) values: Vec<Signal>,
 }
 
 #[typetag::serde]
@@ -30,10 +30,10 @@ impl Component for ProbeStim {
 
     fn clock(&self, simulator: &mut Simulator) {
         trace!("-- cycle {} --", simulator.cycle);
-        let out = if let Some(value) = self.values.get(simulator.cycle) {
-            *value
+        let out = if let Some(signal) = self.values.get(simulator.cycle) {
+            signal.get_data()
         } else {
-            Signal::Unknown
+            SignalData::Unknown
         };
         simulator.set_out_val(&self.id, "out", out);
     }

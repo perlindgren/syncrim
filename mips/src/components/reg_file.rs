@@ -3,7 +3,7 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
-use syncrim::common::{Component, Input, OutputType, Ports, Signal, SignalUnsigned, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, SignalUnsigned, Simulator};
 
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
@@ -46,21 +46,21 @@ pub enum Reg {
 
 #[derive(Serialize, Deserialize)]
 pub struct RegFile {
-    pub id: String,
-    pub pos: (f32, f32),
-    pub width: f32,
-    pub height: f32,
+    pub(crate) id: String,
+    pub(crate) pos: (f32, f32),
+    pub(crate) width: f32,
+    pub(crate) height: f32,
 
     // ports
-    pub read_addr1: Input,
-    pub read_addr2: Input,
-    pub write_data: Input,
-    pub write_addr: Input,
-    pub write_enable: Input,
+    pub(crate) read_addr1: Input,
+    pub(crate) read_addr2: Input,
+    pub(crate) write_data: Input,
+    pub(crate) write_addr: Input,
+    pub(crate) write_enable: Input,
 
     // data
-    pub registers: RegStore,
-    pub history: RegHistory,
+    pub(crate) registers: RegStore,
+    pub(crate) history: RegHistory,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -123,6 +123,62 @@ impl Deref for RegStore {
 }
 
 impl RegFile {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        read_addr1: Input,
+        read_addr2: Input,
+        write_data: Input,
+        write_addr: Input,
+        write_enable: Input,
+    ) -> Self {
+        RegFile {
+            id: id.to_string(),
+            pos,
+            width,
+            height,
+
+            // ports
+            read_addr1,
+            read_addr2,
+            write_data,
+            write_addr,
+            write_enable,
+
+            // data
+            registers: RegStore::new(),
+            history: RegHistory::new(),
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn rc_new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        read_addr1: Input,
+        read_addr2: Input,
+        write_data: Input,
+        write_addr: Input,
+        write_enable: Input,
+    ) -> Rc<Self> {
+        Rc::new(RegFile::new(
+            id,
+            pos,
+            width,
+            height,
+            read_addr1,
+            read_addr2,
+            write_data,
+            write_addr,
+            write_enable,
+        ))
+    }
+
     fn read_reg(&self, simulator: &Simulator, input: &Input) -> u32 {
         let read_addr: SignalUnsigned = simulator.get_input_val(input).try_into().unwrap();
         trace!("read_addr {}", read_addr);
@@ -146,7 +202,13 @@ impl Component for RegFile {
         (
             self.id.clone(),
             Ports {
-                inputs: vec![self.read_addr1.clone(), self.read_addr2.clone()],
+                inputs: vec![
+                    self.read_addr1.clone(),
+                    self.read_addr2.clone(),
+                    self.write_addr.clone(),
+                    self.write_data.clone(),
+                    self.write_enable.clone(),
+                ],
                 out_type: OutputType::Combinatorial,
                 outputs: vec!["reg_a".into(), "reg_b".into()],
             },
@@ -168,11 +230,11 @@ impl Component for RegFile {
         // read after write
         let reg_value_a = self.read_reg(simulator, &self.read_addr1);
         trace!("reg_value {}", reg_value_a);
-        simulator.set_out_val(&self.id, "reg_a", Signal::Data(reg_value_a));
+        simulator.set_out_val(&self.id, "reg_a", reg_value_a);
 
         let reg_value_b = self.read_reg(simulator, &self.read_addr2);
         trace!("reg_value {}", reg_value_b);
-        simulator.set_out_val(&self.id, "reg_b", Signal::Data(reg_value_b));
+        simulator.set_out_val(&self.id, "reg_b", reg_value_b);
     }
 }
 
