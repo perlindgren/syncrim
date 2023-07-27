@@ -7,11 +7,11 @@ use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 #[derive(Serialize, Deserialize)]
 pub struct Sext {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub sext_in: Input,
-    pub in_size: u32,
-    pub out_size: u32,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) sext_in: Input,
+    pub(crate) in_size: u32,
+    pub(crate) out_size: u32,
 }
 
 #[typetag::serde]

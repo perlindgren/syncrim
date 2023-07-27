@@ -1,4 +1,4 @@
-use std::{path::PathBuf, rc::Rc};
+use std::path::PathBuf;
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
@@ -16,11 +16,7 @@ fn main() {
                 Input::new("r1", "out"),
             ),
             Constant::rc_new("c", (100.0, 100.0), 1),
-            Rc::new(Register {
-                id: "r1".to_string(),
-                pos: (100.0, 140.0),
-                r_in: Input::new("add", "out"),
-            }),
+            Register::rc_new("r1", (100.0, 140.0), Input::new("add", "out")),
             Wire::rc_new(
                 "w1",
                 vec![(110.0, 100.0), (180.0, 100.0)],
@@ -58,17 +54,17 @@ fn main() {
             ),
             Probe::rc_new("p_add", (280.0, 120.0), Input::new("add", "out")),
             Probe::rc_new("p_reg", (130.0, 120.0), Input::new("r1", "out")),
-            Rc::new(Mux {
-                id: "mux".to_string(),
-                pos: (270.0, 300.0),
-                select: Input::new("add", "out"),
-                m_in: vec![
+            Mux::rc_new(
+                "mux",
+                (270.0, 300.0),
+                Input::new("add", "out"),
+                vec![
                     Input::new("mc1", "out"),
                     Input::new("mc2", "out"),
                     Input::new("mc3", "out"),
                     Input::new("mc4", "out"),
                 ],
-            }),
+            ),
             Constant::rc_new("mc1", (150.0, 270.0), 0),
             Constant::rc_new("mc2", (150.0, 290.0), 1),
             Constant::rc_new("mc3", (150.0, 310.0), 2),

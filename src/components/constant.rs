@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::{convert::Into, rc::Rc};
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
-    id: Id,
+    pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
     pub(crate) value: Signal,
 }

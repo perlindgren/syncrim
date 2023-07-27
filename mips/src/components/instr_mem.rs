@@ -4,10 +4,10 @@ use syncrim::common::{Component, Input, OutputType, Ports, SignalData, SignalUns
 
 #[derive(Serialize, Deserialize)]
 pub struct InstrMem {
-    id: String,
+    pub(crate) id: String,
     pub(crate) pos: (f32, f32),
-    pc: Input,
-    instr: Vec<u32>,
+    pub(crate) pc: Input,
+    pub(crate) instr: Vec<u32>,
 }
 
 use log::*;

@@ -5,9 +5,9 @@ use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct ProbeStim {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub values: Vec<Signal>,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) values: Vec<Signal>,
 }
 
 #[typetag::serde]

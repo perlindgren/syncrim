@@ -7,10 +7,10 @@ use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub select: Input,
-    pub m_in: Vec<Input>,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) select: Input,
+    pub(crate) m_in: Vec<Input>,
 }
 
 #[typetag::serde]

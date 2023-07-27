@@ -46,21 +46,21 @@ pub enum Reg {
 
 #[derive(Serialize, Deserialize)]
 pub struct RegFile {
-    id: String,
+    pub(crate) id: String,
     pub(crate) pos: (f32, f32),
     pub(crate) width: f32,
     pub(crate) height: f32,
 
     // ports
-    read_addr1: Input,
-    read_addr2: Input,
-    write_data: Input,
-    write_addr: Input,
-    write_enable: Input,
+    pub(crate) read_addr1: Input,
+    pub(crate) read_addr2: Input,
+    pub(crate) write_data: Input,
+    pub(crate) write_addr: Input,
+    pub(crate) write_enable: Input,
 
     // data
-    pub registers: RegStore,
-    pub history: RegHistory,
+    pub(crate) registers: RegStore,
+    pub(crate) history: RegHistory,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

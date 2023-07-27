@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct ProbeOut {
-    pub id: Id,
+    pub(crate) id: Id,
 }
 
 #[typetag::serde]

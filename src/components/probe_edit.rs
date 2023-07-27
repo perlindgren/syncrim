@@ -8,9 +8,9 @@ use std::{
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeEdit {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub edit_history: Arc<RwLock<Vec<TextSignal>>>, // will contain the next editable value
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) edit_history: Arc<RwLock<Vec<TextSignal>>>, // will contain the next editable value
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

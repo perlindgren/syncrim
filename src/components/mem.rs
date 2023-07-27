@@ -9,7 +9,7 @@ use std::{cell::RefCell, collections::HashMap, convert::TryFrom, rc::Rc};
 
 #[derive(Serialize, Deserialize)]
 pub struct Mem {
-    id: Id,
+    pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
     pub(crate) width: f32,
     pub(crate) height: f32,
@@ -18,18 +18,19 @@ pub struct Mem {
     pub big_endian: bool,
 
     // ports
-    data: Input,
-    addr: Input,
-    ctrl: Input,
-    sext: Input,
-    size: Input,
+    pub(crate) data: Input,
+    pub(crate) addr: Input,
+    pub(crate) ctrl: Input,
+    pub(crate) sext: Input,
+    pub(crate) size: Input,
 
     // memory
-    memory: Memory,
+    pub(crate) memory: Memory,
     // later history... tbd
 }
 
 impl Mem {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: &str,
         pos: (f32, f32),
@@ -57,6 +58,7 @@ impl Mem {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn rc_new(
         id: &str,
         pos: (f32, f32),

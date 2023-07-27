@@ -5,9 +5,9 @@ use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct Register {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub r_in: Input,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) r_in: Input,
 }
 
 #[typetag::serde]
