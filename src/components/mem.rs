@@ -21,7 +21,7 @@ pub struct Mem {
     data: Input,
     addr: Input,
     ctrl: Input,
-    sign: Input,
+    sext: Input,
     size: Input,
 
     // memory
@@ -39,7 +39,7 @@ impl Mem {
         data: Input,
         addr: Input,
         ctrl: Input,
-        sign: Input,
+        sext: Input,
         size: Input,
     ) -> Self {
         Mem {
@@ -51,7 +51,7 @@ impl Mem {
             data,
             addr,
             ctrl,
-            sign,
+            sext,
             size,
             memory: Memory::new(),
         }
@@ -66,11 +66,11 @@ impl Mem {
         data: Input,
         addr: Input,
         ctrl: Input,
-        sign: Input,
+        sext: Input,
         size: Input,
     ) -> Rc<Self> {
         Rc::new(Mem::new(
-            id, pos, width, height, big_endian, data, addr, ctrl, sign, size,
+            id, pos, width, height, big_endian, data, addr, ctrl, sext, size,
         ))
     }
 }
@@ -238,7 +238,7 @@ impl Component for Mem {
         (
             self.id.clone(),
             Ports::new(
-                vec![&self.data, &self.addr, &self.ctrl],
+                vec![&self.data, &self.addr, &self.ctrl, &self.sext, &self.size],
                 OutputType::Combinatorial,
                 vec!["data", "err"],
             ),
@@ -253,7 +253,7 @@ impl Component for Mem {
         let ctrl = MemCtrl::try_from(ctrl as u8).unwrap();
         let size: SignalUnsigned = simulator.get_input_val(&self.size).try_into().unwrap();
         let size = size as usize;
-        let sign: SignalUnsigned = simulator.get_input_val(&self.sign).try_into().unwrap();
+        let sign: SignalUnsigned = simulator.get_input_val(&self.sext).try_into().unwrap();
         let sign = sign != 0;
 
         match ctrl {
@@ -311,7 +311,7 @@ mod test {
                     addr: Input::new("addr", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     size: Input::new("size", "out"),
-                    sign: Input::new("sign", "out"),
+                    sext: Input::new("sign", "out"),
 
                     // memory
                     memory: Memory {
@@ -491,7 +491,7 @@ mod test {
                     addr: Input::new("addr", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     size: Input::new("size", "out"),
-                    sign: Input::new("sign", "out"),
+                    sext: Input::new("sign", "out"),
 
                     // memory
                     memory: Memory {

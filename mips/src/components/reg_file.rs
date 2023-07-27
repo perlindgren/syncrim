@@ -202,7 +202,13 @@ impl Component for RegFile {
         (
             self.id.clone(),
             Ports {
-                inputs: vec![self.read_addr1.clone(), self.read_addr2.clone()],
+                inputs: vec![
+                    self.read_addr1.clone(),
+                    self.read_addr2.clone(),
+                    self.write_addr.clone(),
+                    self.write_data.clone(),
+                    self.write_enable.clone(),
+                ],
                 out_type: OutputType::Combinatorial,
                 outputs: vec!["reg_a".into(), "reg_b".into()],
             },

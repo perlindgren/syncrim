@@ -31,32 +31,37 @@ fn main() {
             Constant::rc_new("size", (180.0, 100.0), 1), // byte
             // Wires
             Wire::rc_new(
-                "w1",
+                "w_data",
                 vec![(100.0, 110.0), (100.0, 150.0)],
                 Input::new("data", "out"),
             ),
             Wire::rc_new(
-                "w2",
+                "w_addr",
                 vec![(120.0, 110.0), (120.0, 150.0)],
                 Input::new("addr", "out"),
             ),
             Wire::rc_new(
-                "w3",
+                "w_ctrl",
                 vec![(140.0, 110.0), (140.0, 150.0)],
+                Input::new("ctrl", "out"),
+            ),
+            Wire::rc_new(
+                "w_sext",
+                vec![(160.0, 110.0), (160.0, 150.0)],
                 Input::new("sext", "out"),
             ),
             Wire::rc_new(
-                "w4",
-                vec![(160.0, 110.0), (160.0, 150.0)],
+                "w_size",
+                vec![(180.0, 110.0), (180.0, 150.0)],
                 Input::new("size", "out"),
             ),
             Wire::rc_new(
-                "w5",
+                "w_mem_data",
                 vec![(220.0, 110.0), (220.0, 150.0)],
                 Input::new("mem", "data"),
             ),
             Wire::rc_new(
-                "w6",
+                "w_mem_err",
                 vec![(240.0, 110.0), (240.0, 150.0)],
                 Input::new("mem", "err"),
             ),
