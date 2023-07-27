@@ -1,7 +1,8 @@
-use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
+use crate::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
 use crate::components::Mux;
 use crate::gui_egui::component_ui::{
-    input_change_id, input_selector, pos_slider, properties_window, rect_with_hover,
+    input_change_id, input_selector, input_selector_removeable, pos_slider, properties_window,
+    rect_with_hover,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
@@ -128,14 +129,26 @@ impl EguiComponent for Mux {
                     id_ports,
                     self.id.clone(),
                 );
-                for i in 0..=self.m_in.len() - 1 {
-                    clicked_dropdown |= input_selector(
+                let mut i = 0;
+                //for i in 0..=self.m_in.len() - 1 {
+                self.m_in.retain_mut(|inp| {
+                    let (clicked, delete) = input_selector_removeable(
                         ui,
-                        &mut self.m_in[i],
+                        inp,
                         format!("{}{}", crate::components::MUX_TEMPLATE_ID, i),
                         id_ports,
                         self.id.clone(),
+                        i != 0,
                     );
+                    i += 1;
+                    clicked_dropdown |= clicked;
+                    !delete
+                });
+                if ui.button("+ Add new input").clicked() {
+                    self.m_in.push(Input {
+                        id: "id".to_string(),
+                        field: "field".to_string(),
+                    });
                 }
                 clicked_dropdown
             },

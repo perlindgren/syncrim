@@ -81,19 +81,21 @@ pub fn pos_slider(ui: &mut Ui, pos: &mut (f32, f32)) {
     });
 }
 
-pub fn input_selector(
+pub fn input_selector_removeable(
     ui: &mut Ui,
     input: &mut Input,
     port_name: crate::common::Id,
     id_ports: &[(crate::common::Id, Ports)],
     own_id: crate::common::Id,
-) -> bool {
+    removable: bool,
+) -> (bool, bool) {
     let mut port_id = input.id.clone();
     let mut port_field = input.field.clone();
     let label_port_id = format!("{}.id", port_name.clone());
     let text_port_id = port_id.to_string();
     let label_port_field = format!("{}.field", port_name.clone());
     let text_port_field = port_field.to_string();
+    let mut should_be_removed = false;
     ui.horizontal(|ui| {
         ComboBox::from_label(label_port_id)
             .selected_text(text_port_id)
@@ -120,12 +122,25 @@ pub fn input_selector(
                     }
                 }
             });
+        if removable && ui.button("🗙").clicked() {
+            should_be_removed = true;
+        }
     });
     let clicked_dropdown = input.id != port_id || input.field != port_field;
 
     input.id = port_id;
     input.field = port_field;
-    clicked_dropdown
+    (clicked_dropdown, should_be_removed)
+}
+
+pub fn input_selector(
+    ui: &mut Ui,
+    input: &mut Input,
+    port_name: crate::common::Id,
+    id_ports: &[(crate::common::Id, Ports)],
+    own_id: crate::common::Id,
+) -> bool {
+    input_selector_removeable(ui, input, port_name, id_ports, own_id, false).0
 }
 
 pub fn input_change_id(
