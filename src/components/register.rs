@@ -2,7 +2,9 @@ use crate::common::{Component, Id, Input, InputPort, OutputType, Ports, Simulato
 use log::*;
 use serde::{Deserialize, Serialize};
 
-pub const REGISTER_IN_ID: &str = "r_in";
+pub const REGISTER_R_IN_ID: &str = "r_in";
+
+pub const REGISTER_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize)]
 pub struct Register {
@@ -23,11 +25,11 @@ impl Component for Register {
             Ports::new(
                 // Vector of inputs
                 vec![&InputPort {
-                    port_id: REGISTER_IN_ID.to_string(),
+                    port_id: REGISTER_R_IN_ID.to_string(),
                     input: self.r_in.clone(),
                 }],
                 OutputType::Sequential,
-                vec!["out"],
+                vec![REGISTER_OUT_ID],
             ),
         )
     }
@@ -39,5 +41,11 @@ impl Component for Register {
         // set output
         simulator.set_out_val(&self.id, "out", value);
         trace!("eval: register id {} in {:?}", self.id, value);
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        if target_port_id == REGISTER_R_IN_ID {
+            self.r_in = new_input;
+        }
     }
 }

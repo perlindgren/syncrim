@@ -180,6 +180,14 @@ pub fn add_comp_to_editor(e: &mut Editor) {
                     m_in: vec![e.dummy_input.clone(), e.dummy_input.clone()],
                 })
             }
+            "reg" => {
+                id = unique_component_name(&id_ports, "reg");
+                Rc::new(Register {
+                    id: id.clone(),
+                    pos: (0.0, 0.0),
+                    r_in: e.dummy_input.clone(),
+                })
+            }
             _ => todo!(),
         };
     Rc::<dyn EguiComponent>::get_mut(&mut comp)

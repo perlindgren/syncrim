@@ -105,6 +105,11 @@ impl Editor {
                 select: dummy_input.clone(),
                 m_in: vec![dummy_input.clone(), dummy_input.clone()],
             }),
+            Rc::new(Register {
+                id: "reg".to_string(),
+                pos: (0.0, 0.0),
+                r_in: dummy_input.clone(),
+            }),
         ];
         let library_contexts = crate::gui_egui::gui::create_contexts(&library);
         let mut e = Editor {
