@@ -171,6 +171,15 @@ pub fn add_comp_to_editor(e: &mut Editor) {
                     memory: Memory::new(),
                 })
             }
+            "mux" => {
+                id = unique_component_name(&id_ports, "mux");
+                Rc::new(Mux {
+                    id: id.clone(),
+                    pos: (0.0, 0.0),
+                    select: e.dummy_input.clone(),
+                    m_in: vec![e.dummy_input.clone(), e.dummy_input.clone()],
+                })
+            }
             _ => todo!(),
         };
     Rc::<dyn EguiComponent>::get_mut(&mut comp)

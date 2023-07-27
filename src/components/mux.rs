@@ -59,4 +59,18 @@ impl Component for Mux {
         // set output
         simulator.set_out_val(&self.id, "out", value);
     }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        let target_port_id = target_port_id.as_str();
+        if target_port_id == MUX_SELECT_ID {
+            self.select = new_input;
+            return;
+        }
+        for i in 0..=self.m_in.len() - 1 {
+            if target_port_id == format!("{}{}", MUX_TEMPLATE_ID, i) {
+                self.m_in[i] = new_input;
+                return;
+            }
+        }
+    }
 }

@@ -87,7 +87,7 @@ impl Editor {
                 out_size: 24,
             }),
             Rc::new(Mem {
-                id: "mem".into(),
+                id: "mem".to_string(),
                 pos: (0.0, 0.0),
                 width: 100.0,
                 height: 50.0,
@@ -98,6 +98,12 @@ impl Editor {
                 size: dummy_input.clone(),
                 sign: dummy_input.clone(),
                 memory: Memory::new(),
+            }),
+            Rc::new(Mux {
+                id: "mux".to_string(),
+                pos: (0.0, 0.0),
+                select: dummy_input.clone(),
+                m_in: vec![dummy_input.clone(), dummy_input.clone()],
             }),
         ];
         let library_contexts = crate::gui_egui::gui::create_contexts(&library);
