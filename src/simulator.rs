@@ -1,5 +1,5 @@
 use crate::common::{
-    Component, ComponentStore, Id, Input, OutputType, Signal, SignalData, Simulator,
+    Component, ComponentStore, Id, Input, OutputType, Signal, SignalValue, Simulator,
 };
 use petgraph::{
     algo::toposort,
@@ -173,8 +173,8 @@ impl Simulator {
     }
 
     /// get input value
-    pub fn get_input_val(&self, input: &Input) -> SignalData {
-        self.get_input_signal(input).get_data()
+    pub fn get_input_val(&self, input: &Input) -> SignalValue {
+        self.get_input_signal(input).get_value()
     }
 
     /// get start index by id
@@ -183,18 +183,18 @@ impl Simulator {
     }
 
     // set value by index
-    fn set_data(&mut self, index: usize, value: SignalData) {
-        self.sim_state[index].set_data(value);
+    fn set_value(&mut self, index: usize, value: SignalValue) {
+        self.sim_state[index].set_value(value);
     }
 
     /// set value by Id (instance) and Id (field)
-    pub fn set_out_val(&mut self, id: &str, field: &str, value: impl Into<SignalData>) {
+    pub fn set_out_value(&mut self, id: &str, field: &str, value: impl Into<SignalValue>) {
         let index = *self
             .id_field_index
             .get(&(id.into(), field.into()))
             .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
         let start_index = self.get_id_start_index(id);
-        self.set_data(start_index + index, value.into());
+        self.set_value(start_index + index, value.into());
     }
 
     /// iterate over the evaluators and increase clock by one

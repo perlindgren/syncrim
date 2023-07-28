@@ -50,7 +50,7 @@ impl Component for Sext {
         value >>= to_shr;
 
         // set output
-        simulator.set_out_val(&self.id, "out", value);
+        simulator.set_out_value(&self.id, "out", value);
     }
 }
 
@@ -117,7 +117,7 @@ mod test {
 
         // Sign-extended
         println!("<setup for clock 2>");
-        simulator.set_out_val("po", "out", 0b1111);
+        simulator.set_out_value("po", "out", 0b1111);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock();
@@ -128,7 +128,7 @@ mod test {
 
         // Zero-extended
         println!("<setup for clock 3>");
-        simulator.set_out_val("po", "out", 0b111);
+        simulator.set_out_value("po", "out", 0b111);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock();
@@ -139,7 +139,7 @@ mod test {
 
         // Unclean upper bits
         println!("<setup for clock 4>");
-        simulator.set_out_val("po", "out", 0b10111);
+        simulator.set_out_value("po", "out", 0b10111);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock();

@@ -1,5 +1,5 @@
 use crate::common::{
-    Component, Id, Input, OutputType, Ports, SignalData, SignalSigned, SignalUnsigned, Simulator,
+    Component, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, SignalValue, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -45,7 +45,7 @@ impl Component for Add {
                     (overflow as SignalUnsigned).into(),
                 )
             }
-            _ => (SignalData::Unknown, SignalData::Unknown),
+            _ => (SignalValue::Unknown, SignalValue::Unknown),
         };
 
         trace!(
@@ -57,8 +57,8 @@ impl Component for Add {
         );
 
         // set output
-        simulator.set_out_val(&self.id, "out", value);
-        simulator.set_out_val(&self.id, "overflow", overflow);
+        simulator.set_out_value(&self.id, "out", value);
+        simulator.set_out_value(&self.id, "overflow", overflow);
     }
 }
 
@@ -117,8 +117,8 @@ mod test {
         );
 
         println!("<setup for clock 2>");
-        simulator.set_out_val("po1", "out", 42);
-        simulator.set_out_val("po2", "out", 1337);
+        simulator.set_out_value("po1", "out", 42);
+        simulator.set_out_value("po2", "out", 1337);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock();
@@ -133,8 +133,8 @@ mod test {
 
         // trigger positive overflow
         println!("<setup for clock 3>");
-        simulator.set_out_val("po1", "out", SignalUnsigned::MAX / 2);
-        simulator.set_out_val("po2", "out", 1);
+        simulator.set_out_value("po1", "out", SignalUnsigned::MAX / 2);
+        simulator.set_out_value("po2", "out", 1);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock();
