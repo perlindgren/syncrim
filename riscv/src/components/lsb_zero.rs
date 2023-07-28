@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
-use syncrim::{common::{Component, Input, OutputType, Ports, Simulator}, signal::SignalValue};
+use syncrim::{
+    common::{Component, Input, OutputType, Ports, Simulator},
+    signal::SignalValue,
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct LSBZero {

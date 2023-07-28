@@ -95,7 +95,7 @@ impl Component for Decoder {
                 //OP
                 alu_operand_a_sel = SignalValue::from(0); //rs1
                 alu_operand_b_sel = SignalValue::from(0); //rs2
-                                                         //rs1 [19:15] rs2 [24:20] rd [11:7]
+                                                          //rs1 [19:15] rs2 [24:20] rd [11:7]
                 regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                 regfile_rs2 = SignalValue::from((instruction & (0b11111 << 20)) >> 20);
@@ -283,8 +283,8 @@ impl Component for Decoder {
                 regfile_we = SignalValue::from(1); //enable write
                 wb_mux = SignalValue::from(0); //ALU source
                 alu_operator = SignalValue::from(1); //ADD
-                                                    //sign_zero_ext_data = SignalValue::from(0); //don't care
-                                                    //sign_zero_ext_sel = SignalValue::from(1); //don't care
+                                                     //sign_zero_ext_data = SignalValue::from(0); //don't care
+                                                     //sign_zero_ext_sel = SignalValue::from(1); //don't care
                 imm_a_mux_data = SignalValue::from(imm_big);
             }
             0b1101111 => {
@@ -297,8 +297,8 @@ impl Component for Decoder {
                 regfile_we = SignalValue::from(1); //enable write
                 wb_mux = SignalValue::from(0); //ALU source
                 alu_operator = SignalValue::from(1); //ADD
-                                                    //sign_zero_ext_data = 0; //don't care
-                                                    //sign_zero_ext_sel = 1; //don't care
+                                                     //sign_zero_ext_data = 0; //don't care
+                                                     //sign_zero_ext_sel = 1; //don't care
                 big_imm = SignalValue::from(imm_big_shuffled);
                 pc_imm_sel = SignalValue::from(0);
                 branch_logic_ctl = SignalValue::from(0b010); //jal
@@ -314,10 +314,10 @@ impl Component for Decoder {
                 regfile_we = SignalValue::from(1); //enable write
                 wb_mux = SignalValue::from(0); //ALU source
                 alu_operator = SignalValue::from(1); //ADD
-                                                    //sign_zero_ext_data = 0; //don't care
-                                                    //sign_zero_ext_sel = 1; //don't care
-                                                    //big_imm = imm_big_shuffled; //don't care
-                                                    //pc_imm_sel = 0; //don't care
+                                                     //sign_zero_ext_data = 0; //don't care
+                                                     //sign_zero_ext_sel = 1; //don't care
+                                                     //big_imm = imm_big_shuffled; //don't care
+                                                     //pc_imm_sel = 0; //don't care
                 branch_logic_ctl = SignalValue::from(0b011); //jalr
                 branch_logic_enable = SignalValue::from(0b1);
                 jalr_imm = SignalValue::from(imm);
@@ -533,7 +533,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x40410133); //sub x2, x2, x4
         simulator.clock();
@@ -580,7 +583,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x004121b3); //slt x3, x2, x4
         simulator.clock();
@@ -627,7 +633,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x004131b3); //sltu x3, x2, x4
         simulator.clock();
@@ -674,7 +683,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x001151b3); //srl x3, x2, x1
         simulator.clock();
@@ -721,7 +733,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x401151b3); //sra x3, x2, x1
         simulator.clock();
@@ -768,7 +783,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x001111b3); //sll x3, x2, x1
         simulator.clock();
@@ -815,7 +833,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x0020c1b3); //xor x3, x1, x2
         simulator.clock();
@@ -862,7 +883,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x0020f1b3); //and x3, x1, x2)
         simulator.clock();
@@ -909,7 +933,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x0060e1b3); //or x3, x1, x6
         simulator.clock();
@@ -956,7 +983,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
     }
     #[test]
     fn test_op_imm() {
@@ -1036,7 +1066,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0xffd0a093); //slti x1, x1, -3
         simulator.clock();
@@ -1083,7 +1116,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0xffd0b093); //sltiu x1, x1, -3
         simulator.clock();
@@ -1130,7 +1166,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x00324093); //xori x1, x4, 3
         simulator.clock();
@@ -1174,7 +1213,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x00326093); //ori x1, x4, 3
         simulator.clock();
@@ -1218,7 +1260,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x00327093); //andi x1, x4, 3
         simulator.clock();
@@ -1262,7 +1307,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x00c19093); //slli x1, x3, 12
         simulator.clock();
@@ -1306,7 +1354,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x0011d093); //srli x1, x3, 1
         simulator.clock();
@@ -1350,7 +1401,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x4020d093); //srai x1, x1, 2
         simulator.clock();
@@ -1394,7 +1448,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
     }
     #[test]
     fn test_lui_auipc_store_load() {
@@ -1474,7 +1531,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0xfffff097); //auipc x1, 0xFFFFF
         simulator.clock();
@@ -1524,7 +1584,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x0082a223); //sw x8, 4(x5)
         simulator.clock();
@@ -1565,7 +1628,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x00829223); //sh x8, 4(x5)
         simulator.clock();
@@ -1606,7 +1672,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x00828223); //sb x8, 4(x5)
         simulator.clock();
@@ -1647,7 +1716,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x0042a403); //lw x8, 4(x5)
         simulator.clock();
@@ -1688,7 +1760,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x00429403); //lh x8, 4(x5)
         simulator.clock();
@@ -1729,7 +1804,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x00428403); //lb x8, 4(x5)
         simulator.clock();
@@ -1770,7 +1848,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x0042d403); //lhu x8, 4(x5)
         simulator.clock();
@@ -1811,7 +1892,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x0042c403); //lbu x8, 4(x5)
         simulator.clock();
@@ -1852,7 +1936,10 @@ mod test {
             SignalValue::Uninitialized
         );
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
     }
 
     #[test]
@@ -1936,7 +2023,10 @@ mod test {
         );
         assert_eq!(simulator.get_input_val(branch_logic_ctl), 2.into());
         assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x00410167); //jalr x2, x2, 4
         simulator.clock();
@@ -2036,7 +2126,10 @@ mod test {
         );
         assert_eq!(simulator.get_input_val(branch_logic_ctl), 1.into());
         assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0x00208463); //beq, x1, x2, 8
         simulator.clock();
@@ -2089,7 +2182,10 @@ mod test {
         );
         assert_eq!(simulator.get_input_val(branch_logic_ctl), 0.into());
         assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0xfe20cee3); //blt x1, x2, -4
         simulator.clock();
@@ -2142,7 +2238,10 @@ mod test {
         );
         assert_eq!(simulator.get_input_val(branch_logic_ctl), 0b100.into());
         assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0xfe116ee3); //bltu, x2, x1, -4
         simulator.clock();
@@ -2195,7 +2294,10 @@ mod test {
         );
         assert_eq!(simulator.get_input_val(branch_logic_ctl), 0b110.into());
         assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0xfe115ee3); //bge x2, x1, -4
         simulator.clock();
@@ -2248,7 +2350,10 @@ mod test {
         );
         assert_eq!(simulator.get_input_val(branch_logic_ctl), 0b101.into());
         assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
 
         simulator.set_out_value("instruction", "out", 0xfe20fee3); //bgeu x1, x2, -4
         simulator.clock();
@@ -2301,7 +2406,10 @@ mod test {
         );
         assert_eq!(simulator.get_input_val(branch_logic_ctl), 0b111.into());
         assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
-        assert_eq!(simulator.get_input_val(jalr_imm), SignalValue::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(jalr_imm),
+            SignalValue::Uninitialized
+        );
     }
 }
 

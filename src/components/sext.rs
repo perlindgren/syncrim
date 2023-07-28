@@ -1,6 +1,7 @@
 // use std::fmt::Alignment;
 use crate::{
-    common::{Component, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, Simulator}, signal::SignalValue,
+    common::{Component, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, Simulator},
+    signal::SignalValue,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
