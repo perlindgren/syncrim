@@ -1,32 +1,80 @@
 use crate::common::{
-    Component, Id, Input, OutputType, Ports, Signal, SignalSigned, SignalUnsigned, Simulator,
+    Component, Id, Input, OutputType, Ports, SignalData, SignalSigned, SignalUnsigned, Simulator,
 };
 use log::*;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
-use std::{cell::RefCell, collections::HashMap, convert::TryFrom};
+use std::{cell::RefCell, collections::HashMap, convert::TryFrom, rc::Rc};
 
 #[derive(Serialize, Deserialize)]
 pub struct Mem {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub width: f32,
-    pub height: f32,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) width: f32,
+    pub(crate) height: f32,
 
     // configuration
     pub big_endian: bool,
 
     // ports
-    pub data: Input,
-    pub addr: Input,
-    pub ctrl: Input,
-    pub sign: Input,
-    pub size: Input,
+    pub(crate) data: Input,
+    pub(crate) addr: Input,
+    pub(crate) ctrl: Input,
+    pub(crate) sext: Input,
+    pub(crate) size: Input,
 
     // memory
-    pub memory: Memory,
+    pub(crate) memory: Memory,
     // later history... tbd
+}
+
+impl Mem {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        big_endian: bool,
+        data: Input,
+        addr: Input,
+        ctrl: Input,
+        sext: Input,
+        size: Input,
+    ) -> Self {
+        Mem {
+            id: id.to_string(),
+            pos,
+            width,
+            height,
+            big_endian,
+            data,
+            addr,
+            ctrl,
+            sext,
+            size,
+            memory: Memory::new(),
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn rc_new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        big_endian: bool,
+        data: Input,
+        addr: Input,
+        ctrl: Input,
+        sext: Input,
+        size: Input,
+    ) -> Rc<Self> {
+        Rc::new(Mem::new(
+            id, pos, width, height, big_endian, data, addr, ctrl, sext, size,
+        ))
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -47,11 +95,11 @@ impl Memory {
         }
     }
 
-    fn align(&self, addr: usize, size: usize) -> Signal {
-        Signal::Data((addr % size != 0) as SignalUnsigned)
+    fn align(&self, addr: usize, size: usize) -> SignalData {
+        ((addr % size != 0) as SignalUnsigned).into()
     }
 
-    fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> Signal {
+    fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> SignalData {
         let data: Vec<u8> = (0..size)
             .map(|i| *self.bytes.borrow().get(&(addr + i)).unwrap_or(&0))
             .collect();
@@ -60,7 +108,7 @@ impl Memory {
 
         trace!("{:x?}", data);
 
-        Signal::Data(match size {
+        match size {
             1 => {
                 if sign {
                     data[0] as i8 as SignalSigned as SignalUnsigned
@@ -115,10 +163,11 @@ impl Memory {
                 }
             }
             _ => panic!("illegal sized memory operation"),
-        })
+        }
+        .into()
     }
 
-    fn write(&self, addr: usize, size: usize, big_endian: bool, data: Signal) {
+    fn write(&self, addr: usize, size: usize, big_endian: bool, data: SignalData) {
         let data: SignalUnsigned = data.try_into().unwrap();
         match size {
             1 => {
@@ -190,7 +239,7 @@ impl Component for Mem {
         (
             self.id.clone(),
             Ports::new(
-                vec![&self.data, &self.addr, &self.ctrl],
+                vec![&self.data, &self.addr, &self.ctrl, &self.sext, &self.size],
                 OutputType::Combinatorial,
                 vec!["data", "err"],
             ),
@@ -280,7 +329,7 @@ mod test {
                     addr: Input::new("addr", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     size: Input::new("size", "out"),
-                    sign: Input::new("sign", "out"),
+                    sext: Input::new("sign", "out"),
 
                     // memory
                     memory: Memory {
@@ -460,7 +509,7 @@ mod test {
                     addr: Input::new("addr", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     size: Input::new("size", "out"),
-                    sign: Input::new("sign", "out"),
+                    sext: Input::new("sign", "out"),
 
                     // memory
                     memory: Memory {

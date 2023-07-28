@@ -4,10 +4,7 @@ use crate::{
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
 };
 
-use vizia::{
-    prelude::*,
-    vg::{Paint, Path},
-};
+use vizia::prelude::*;
 
 use log::*;
 
@@ -17,14 +14,16 @@ impl ViziaComponent for Constant {
     fn view(&self, cx: &mut Context) {
         trace!("---- Create Constant View");
         View::build(ConstantView {}, cx, |cx| {
-            Label::new(cx, &format!("{:?}", self.value)).hoverable(false);
+            Label::new(cx, &format!("{}", self.value)).hoverable(false);
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 10.0))
         .top(Pixels(self.pos.1 - 10.0))
-        .width(Pixels(20.0))
+        //.width(Pixels(20.0)) // TODO, max width?
+        .width(Auto)
         .height(Pixels(20.0))
+        .background_color(Color::lightblue())
         // TODO: do we want/need tooltip/popup for constants
         .on_press(|ex| ex.emit(PopupEvent::Switch))
         .tooltip(|cx| new_component_tooltip(cx, self));
@@ -35,22 +34,5 @@ pub struct ConstantView {}
 impl View for ConstantView {
     fn element(&self) -> Option<&'static str> {
         Some("Constant")
-    }
-
-    fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
-        let bounds = cx.bounds();
-        // trace!("Constant draw {:?}", bounds);
-
-        let mut path = Path::new();
-        let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 1.0, 0.0));
-        paint.set_line_width(cx.logical_to_physical(1.0));
-
-        path.move_to(bounds.left() + 0.5, bounds.top() + 0.5);
-        path.line_to(bounds.right() + 0.5, bounds.top() + 0.5);
-        path.line_to(bounds.right() + 0.5, bounds.bottom() + 0.5);
-        path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
-        path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
-
-        canvas.fill_path(&path, &paint);
     }
 }

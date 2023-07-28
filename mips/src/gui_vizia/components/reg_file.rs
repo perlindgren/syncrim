@@ -104,6 +104,7 @@ impl ViziaComponent for RegFile {
             },
         )
         .position_type(PositionType::SelfDirected)
+        .overflow(Overflow::Hidden)
         .left(Pixels(self.pos.0 - self.width / 2.0))
         .top(Pixels(self.pos.1 - self.height / 2.0))
         .background_color(Color::lightgrey())

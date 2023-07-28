@@ -1,15 +1,16 @@
 use crate::common::{
-    Component, Id, Input, OutputType, Ports, Signal, SignalSigned, SignalUnsigned, Simulator,
+    Component, Id, Input, OutputType, Ports, SignalData, SignalSigned, SignalUnsigned, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct Add {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub a_in: Input,
-    pub b_in: Input,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) a_in: Input,
+    pub(crate) b_in: Input,
 }
 
 #[typetag::serde]
@@ -40,11 +41,11 @@ impl Component for Add {
                 let (res, overflow) =
                     SignalSigned::overflowing_add(*a as SignalSigned, *b as SignalSigned);
                 (
-                    Signal::Data(res as SignalUnsigned),
-                    Signal::Data(overflow as SignalUnsigned),
+                    (res as SignalUnsigned).into(),
+                    (overflow as SignalUnsigned).into(),
                 )
             }
-            _ => (Signal::Unknown, Signal::Unknown),
+            _ => (SignalData::Unknown, SignalData::Unknown),
         };
 
         trace!(
@@ -58,6 +59,21 @@ impl Component for Add {
         // set output
         simulator.set_out_val(&self.id, "out", value);
         simulator.set_out_val(&self.id, "overflow", overflow);
+    }
+}
+
+impl Add {
+    pub fn new(id: &str, pos: (f32, f32), a_in: Input, b_in: Input) -> Self {
+        Add {
+            id: id.to_string(),
+            pos,
+            a_in,
+            b_in,
+        }
+    }
+
+    pub fn rc_new(id: &str, pos: (f32, f32), a_in: Input, b_in: Input) -> Rc<Self> {
+        Rc::new(Add::new(id, pos, a_in, b_in))
     }
 }
 

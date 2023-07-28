@@ -1,11 +1,13 @@
 use crate::common::{Component, Id, Input, OutputType, Ports, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
+
 #[derive(Serialize, Deserialize)]
 pub struct Register {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub r_in: Input,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) r_in: Input,
 }
 
 #[typetag::serde]
@@ -32,5 +34,19 @@ impl Component for Register {
         // set output
         simulator.set_out_val(&self.id, "out", value);
         trace!("eval: register id {} in {:?}", self.id, value);
+    }
+}
+
+impl Register {
+    pub fn new(id: &str, pos: (f32, f32), r_in: Input) -> Self {
+        Register {
+            id: id.to_string(),
+            pos,
+            r_in,
+        }
+    }
+
+    pub fn rc_new(id: &str, pos: (f32, f32), r_in: Input) -> Rc<Self> {
+        Rc::new(Register::new(id, pos, r_in))
     }
 }

@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 #[derive(Serialize, Deserialize)]
 pub struct Probe {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub input: Input,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) input: Input,
 }
 
 #[typetag::serde]

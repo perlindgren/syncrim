@@ -60,7 +60,7 @@ name = "component_tests"
 required-features = ["components"]
 
 [[example]]
-name = "add"
+name = "add_edit"
 required-features = ["components"]
 
 [[example]]
@@ -68,19 +68,15 @@ name = "add_mux"
 required-features = ["components"]
 
 [[example]]
+name = "add_reg_compound_wire"
+required-features = ["components"]
+
+[[example]]
 name = "add_reg"
 required-features = ["components"]
 
 [[example]]
-name = "mux"
-required-features = ["components"]
-
-[[example]]
-name = "reg"
-required-features = ["components"]
-
-[[example]]
-name = "sext"
+name = "add"
 required-features = ["components"]
 
 [[example]]
@@ -88,5 +84,17 @@ name = "data_mem"
 required-features = ["components"]
 
 [[example]]
-name = "add_reg_compound_wire"
+name = "mux_edit"
+required-features = ["components"]
+
+[[example]]
+name = "probe_edit"
+required-features = ["components"]
+
+[[example]]
+name = "probe_stim_assert"
+required-features = ["components"]
+
+[[example]]
+name = "sext"
 required-features = ["components"]

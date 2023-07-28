@@ -1,12 +1,14 @@
 use crate::common::{Component, Id, Input, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
+
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub select: Input,
-    pub m_in: Vec<Input>,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) select: Input,
+    pub(crate) m_in: Vec<Input>,
 }
 
 #[typetag::serde]
@@ -41,7 +43,6 @@ impl Component for Mux {
                 } else {
                     Signal::Unknown
                 };
-
                 // set output
                 simulator.set_out_val(&self.id, "out", value);
             }
@@ -50,5 +51,20 @@ impl Component for Mux {
                 simulator.set_out_val(&self.id, "out", Signal::Unknown);
             }
         }
+    }
+}
+
+impl Mux {
+    pub fn new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Self {
+        Mux {
+            id: id.to_string(),
+            pos,
+            select,
+            m_in,
+        }
+    }
+
+    pub fn rc_new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Rc<Self> {
+        Rc::new(Mux::new(id, pos, select, m_in))
     }
 }

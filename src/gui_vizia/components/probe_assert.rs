@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, Signal, Simulator, ViziaComponent},
+    common::{Component, SignalData, Simulator, ViziaComponent},
     components::ProbeAssert,
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
 };
@@ -22,22 +22,26 @@ impl ViziaComponent for ProbeAssert {
                 crate::gui_vizia::GuiData::simulator.then(Simulator::cycle),
                 move |cx, cycle| {
                     let cycle = cycle.get(cx);
-                    let rhs = if let Some(value) = values.get(cycle - 1) {
+                    let assert = if let Some(value) = values.get(cycle - 1) {
                         *value
                     } else {
-                        Signal::Unknown
+                        (SignalData::Unknown).into()
                     };
-                    Label::new(cx, {
-                        let simulator = GuiData::simulator.get(cx);
-                        &format!("{:?} == {:?}", simulator.get_input_val(&input), rhs)
-                    })
+                    let simulator = GuiData::simulator.get(cx);
+                    let signal = simulator.get_input_signal(&input);
+                    if signal == assert {
+                        Label::new(cx, &format!("{} == {}", signal, assert))
+                            .background_color(Color::lightgreen())
+                    } else {
+                        Label::new(cx, &format!("{} != {}", signal, assert))
+                            .background_color(Color::lightcoral())
+                    }
                     .hoverable(false);
                 },
             );
             NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
         })
         .position_type(PositionType::SelfDirected)
-        .background_color(Color::lightcoral())
         .left(Pixels(self.pos.0 - 10.0))
         .top(Pixels(self.pos.1 - 10.0))
         // .width(Pixels(20.0)) // TODO, maybe some max width

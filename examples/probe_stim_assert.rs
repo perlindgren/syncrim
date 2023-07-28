@@ -9,7 +9,7 @@ fn main() {
     fern_setup();
     let cs = ComponentStore {
         store: vec![
-            ProbeStim::rc_new("stim", (100.0, 100.0), vec![0, 1, 2]),
+            ProbeStim::rc_new("stim", (100.0, 100.0), vec![42, 1, 2]),
             ProbeAssert::rc_new(
                 "assert",
                 (200.0, 100.0),
