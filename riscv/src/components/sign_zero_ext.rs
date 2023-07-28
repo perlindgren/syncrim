@@ -58,3 +58,47 @@ impl Component for SZExt {
         }
     }
 }
+
+mod test {
+    #![allow(unused_imports)]
+    use super::*;
+
+    use std::rc::Rc;
+    use syncrim::{
+        common::{ComponentStore, Input, Simulator},
+        components::ProbeOut,
+    };
+    #[test]
+    fn test_szext() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("input")),
+                Rc::new(ProbeOut::new("sel")),
+                Rc::new(SZExt {
+                    id: "szext".to_string(),
+                    pos: (0.0, 0.0),
+                    data_i: Input::new("input", "out"),
+                    sel_i: Input::new("sel", "out"),
+                }),
+            ],
+        };
+
+        let mut simulator = Simulator::new(&cs);
+        assert_eq!(simulator.cycle, 1);
+        let szext = &Input::new("szext", "out");
+        let val = 0b100000000000;
+
+        simulator.set_out_val("input", "out", val);
+        simulator.set_out_val("sel", "out", 0);
+        simulator.clock();
+        assert_eq!(
+            simulator.get_input_val(szext),
+            ((!0b11111111111) as u32).into()
+        );
+
+        simulator.set_out_val("input", "out", val);
+        simulator.set_out_val("sel", "out", 1);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(szext), 0b100000000000.into());
+    }
+}
