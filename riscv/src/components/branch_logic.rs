@@ -135,3 +135,457 @@ impl Component for BranchLogic {
         simulator.set_out_val(&self.id, "out", out);
     }
 }
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use std::rc::Rc;
+    use syncrim::{
+        common::{ComponentStore, Input, Simulator},
+        components::ProbeOut,
+    };
+
+    #[test]
+    fn test_beq() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("rs1")),
+                Rc::new(ProbeOut::new("rs2")),
+                Rc::new(ProbeOut::new("ctrl")),
+                Rc::new(ProbeOut::new("enable")),
+                Rc::new(BranchLogic {
+                    id: "blu".to_string(),
+                    pos: (0.0, 0.0),
+                    rs1: Input::new("rs1", "out"),
+                    rs2: Input::new("rs2", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    enable: Input::new("enable", "out"),
+                }),
+            ],
+        };
+
+        let mut simulator = Simulator::new(&cs);
+        assert_eq!(simulator.cycle, 1);
+
+        // outputs
+        let blu_out = &Input::new("blu", "out");
+
+        simulator.set_out_val("ctrl", "out", 0b001);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 2>");
+        simulator.set_out_val("ctrl", "out", 0b001);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 1337);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 3>");
+        simulator.set_out_val("ctrl", "out", 0b001);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 1337);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 2.into());
+
+        println!("<setup for clock 4>");
+        simulator.set_out_val("ctrl", "out", 0b001);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+    }
+    #[test]
+    fn test_bne() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("rs1")),
+                Rc::new(ProbeOut::new("rs2")),
+                Rc::new(ProbeOut::new("ctrl")),
+                Rc::new(ProbeOut::new("enable")),
+                Rc::new(BranchLogic {
+                    id: "blu".to_string(),
+                    pos: (0.0, 0.0),
+                    rs1: Input::new("rs1", "out"),
+                    rs2: Input::new("rs2", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    enable: Input::new("enable", "out"),
+                }),
+            ],
+        };
+
+        let mut simulator = Simulator::new(&cs);
+        assert_eq!(simulator.cycle, 1);
+
+        // outputs
+        let blu_out = &Input::new("blu", "out");
+
+        simulator.set_out_val("ctrl", "out", 0b000); //beq
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 2>");
+        simulator.set_out_val("ctrl", "out", 0b000); //beq
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 3>");
+        simulator.set_out_val("ctrl", "out", 0b000); //beq
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 2.into());
+
+        println!("<setup for clock 4>");
+        simulator.set_out_val("ctrl", "out", 0b000); //beq
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 1337);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+    }
+    #[test]
+    fn test_blt() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("rs1")),
+                Rc::new(ProbeOut::new("rs2")),
+                Rc::new(ProbeOut::new("ctrl")),
+                Rc::new(ProbeOut::new("enable")),
+                Rc::new(BranchLogic {
+                    id: "blu".to_string(),
+                    pos: (0.0, 0.0),
+                    rs1: Input::new("rs1", "out"),
+                    rs2: Input::new("rs2", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    enable: Input::new("enable", "out"),
+                }),
+            ],
+        };
+
+        let mut simulator = Simulator::new(&cs);
+        assert_eq!(simulator.cycle, 1);
+
+        // outputs
+        let blu_out = &Input::new("blu", "out");
+
+        simulator.set_out_val("ctrl", "out", 0b100);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 2>");
+        simulator.set_out_val("ctrl", "out", 0b100);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 41);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 3>");
+        simulator.set_out_val("ctrl", "out", 0b100);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 41);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 2.into());
+
+        println!("<setup for clock 4>");
+        simulator.set_out_val("ctrl", "out", 0b100);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+        println!("<setup for clock 5>");
+        simulator.set_out_val("ctrl", "out", 0b100);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 43);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+    }
+    #[test]
+    fn test_bge() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("rs1")),
+                Rc::new(ProbeOut::new("rs2")),
+                Rc::new(ProbeOut::new("ctrl")),
+                Rc::new(ProbeOut::new("enable")),
+                Rc::new(BranchLogic {
+                    id: "blu".to_string(),
+                    pos: (0.0, 0.0),
+                    rs1: Input::new("rs1", "out"),
+                    rs2: Input::new("rs2", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    enable: Input::new("enable", "out"),
+                }),
+            ],
+        };
+
+        let mut simulator = Simulator::new(&cs);
+        assert_eq!(simulator.cycle, 1);
+
+        // outputs
+        let blu_out = &Input::new("blu", "out");
+
+        simulator.set_out_val("ctrl", "out", 0b101);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 2>");
+        simulator.set_out_val("ctrl", "out", 0b101);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 41);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 3>");
+        simulator.set_out_val("ctrl", "out", 0b101);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 2.into());
+
+        println!("<setup for clock 4>");
+        simulator.set_out_val("ctrl", "out", 0b101);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 43);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 2.into());
+        println!("<setup for clock 5>");
+        simulator.set_out_val("ctrl", "out", 0b101);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 41);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+    }
+    #[test]
+    fn test_bltu() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("rs1")),
+                Rc::new(ProbeOut::new("rs2")),
+                Rc::new(ProbeOut::new("ctrl")),
+                Rc::new(ProbeOut::new("enable")),
+                Rc::new(BranchLogic {
+                    id: "blu".to_string(),
+                    pos: (0.0, 0.0),
+                    rs1: Input::new("rs1", "out"),
+                    rs2: Input::new("rs2", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    enable: Input::new("enable", "out"),
+                }),
+            ],
+        };
+
+        let mut simulator = Simulator::new(&cs);
+        assert_eq!(simulator.cycle, 1);
+
+        // outputs
+        let blu_out = &Input::new("blu", "out");
+
+        simulator.set_out_val("ctrl", "out", 0b110);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 2>");
+        simulator.set_out_val("ctrl", "out", 0b110);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 41);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 3>");
+        simulator.set_out_val("ctrl", "out", 0b110);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 1);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 2.into());
+
+        println!("<setup for clock 4>");
+        simulator.set_out_val("ctrl", "out", 0b110);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", -1i32 as u32);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+        println!("<setup for clock 5>");
+        simulator.set_out_val("ctrl", "out", 0b110);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 43);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+    }
+    #[test]
+    fn test_bgeu() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("rs1")),
+                Rc::new(ProbeOut::new("rs2")),
+                Rc::new(ProbeOut::new("ctrl")),
+                Rc::new(ProbeOut::new("enable")),
+                Rc::new(BranchLogic {
+                    id: "blu".to_string(),
+                    pos: (0.0, 0.0),
+                    rs1: Input::new("rs1", "out"),
+                    rs2: Input::new("rs2", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    enable: Input::new("enable", "out"),
+                }),
+            ],
+        };
+
+        let mut simulator = Simulator::new(&cs);
+        assert_eq!(simulator.cycle, 1);
+
+        // outputs
+        let blu_out = &Input::new("blu", "out");
+
+        simulator.set_out_val("ctrl", "out", 0b111);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 2>");
+        simulator.set_out_val("ctrl", "out", 0b111);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", 41);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 3>");
+        simulator.set_out_val("ctrl", "out", 0b111);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 1);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 4>");
+        simulator.set_out_val("ctrl", "out", 0b111);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", -1i32 as u32);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 2.into());
+        println!("<setup for clock 5>");
+        simulator.set_out_val("ctrl", "out", 0b111);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 43);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 2.into());
+        println!("<setup for clock 5>");
+        simulator.set_out_val("ctrl", "out", 0b111);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", 42);
+        simulator.set_out_val("rs2", "out", 42);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 2.into());
+    }
+    #[test]
+    fn test_jalr() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("rs1")),
+                Rc::new(ProbeOut::new("rs2")),
+                Rc::new(ProbeOut::new("ctrl")),
+                Rc::new(ProbeOut::new("enable")),
+                Rc::new(BranchLogic {
+                    id: "blu".to_string(),
+                    pos: (0.0, 0.0),
+                    rs1: Input::new("rs1", "out"),
+                    rs2: Input::new("rs2", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    enable: Input::new("enable", "out"),
+                }),
+            ],
+        };
+
+        let mut simulator = Simulator::new(&cs);
+        assert_eq!(simulator.cycle, 1);
+
+        // outputs
+        let blu_out = &Input::new("blu", "out");
+
+        simulator.set_out_val("ctrl", "out", 0b011);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", SignalData::Unknown);
+        simulator.set_out_val("rs2", "out", SignalData::Unknown);
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 2>");
+        simulator.set_out_val("ctrl", "out", 0b011);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", SignalData::Unknown);
+        simulator.set_out_val("rs2", "out", SignalData::Unknown);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 1.into());
+    }
+    #[test]
+    fn test_jal() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("rs1")),
+                Rc::new(ProbeOut::new("rs2")),
+                Rc::new(ProbeOut::new("ctrl")),
+                Rc::new(ProbeOut::new("enable")),
+                Rc::new(BranchLogic {
+                    id: "blu".to_string(),
+                    pos: (0.0, 0.0),
+                    rs1: Input::new("rs1", "out"),
+                    rs2: Input::new("rs2", "out"),
+                    ctrl: Input::new("ctrl", "out"),
+                    enable: Input::new("enable", "out"),
+                }),
+            ],
+        };
+
+        let mut simulator = Simulator::new(&cs);
+        assert_eq!(simulator.cycle, 1);
+
+        // outputs
+        let blu_out = &Input::new("blu", "out");
+
+        simulator.set_out_val("ctrl", "out", 0b010);
+        simulator.set_out_val("enable", "out", 0); //not enabled
+        simulator.set_out_val("rs1", "out", SignalData::Unknown);
+        simulator.set_out_val("rs2", "out", SignalData::Unknown);
+        assert_eq!(simulator.get_input_val(blu_out), 0.into());
+
+        println!("<setup for clock 2>");
+        simulator.set_out_val("ctrl", "out", 0b010);
+        simulator.set_out_val("enable", "out", 1); //enabled
+        simulator.set_out_val("rs1", "out", SignalData::Unknown);
+        simulator.set_out_val("rs2", "out", SignalData::Unknown);
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(blu_out), 2.into());
+    }
+}
