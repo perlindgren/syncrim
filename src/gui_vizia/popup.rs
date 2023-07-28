@@ -28,7 +28,7 @@ impl NewPopup {
                                             cx,
                                             &format!(
                                                 "{:?}",
-                                                GuiData::simulator.get(cx).get_input_val(&input)
+                                                GuiData::simulator.get(cx).get_input_value(&input)
                                             ),
                                         )
                                         .class("tt_shortcut");
@@ -77,4 +77,3 @@ impl NewPopup {
 }
 
 impl View for NewPopup {}
-

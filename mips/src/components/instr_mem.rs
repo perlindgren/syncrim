@@ -33,7 +33,7 @@ impl Component for InstrMem {
 
     fn clock(&self, simulator: &mut Simulator) {
         let instr: SignalValue =
-            match TryInto::<SignalUnsigned>::try_into(simulator.get_input_val(&self.pc)) {
+            match TryInto::<SignalUnsigned>::try_into(simulator.get_input_value(&self.pc)) {
                 Ok(pc) => {
                     trace!("--- evaluate instr mem: pc {:?}", pc);
                     // get instr at pc/4

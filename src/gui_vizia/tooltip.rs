@@ -18,7 +18,7 @@ pub fn new_component_tooltip(cx: &mut Context, component: &dyn Component) {
                     move |cx, _| {
                         Label::new(
                             cx,
-                            &format!("{:?}", GuiData::simulator.get(cx).get_input_val(&input)),
+                            &format!("{:?}", GuiData::simulator.get(cx).get_input_value(&input)),
                         )
                         .class("tt_shortcut");
                     },

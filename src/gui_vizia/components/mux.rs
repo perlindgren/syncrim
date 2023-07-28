@@ -84,7 +84,7 @@ impl View for MuxView {
         let simulator = GuiData::simulator.get(cx);
 
         let select: Result<SignalUnsigned, String> =
-            simulator.get_input_val(&self.select).try_into();
+            simulator.get_input_value(&self.select).try_into();
 
         trace!("----- select = {:?}", select);
         if let Ok(select) = select {
