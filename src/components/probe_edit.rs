@@ -1,4 +1,4 @@
-use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Id, OutputType, Ports, Signal, SignalData, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -16,7 +16,7 @@ pub struct ProbeEdit {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TextSignal {
     pub text: String,
-    pub signal: Signal,
+    pub signal: SignalData,
 }
 
 #[typetag::serde]
@@ -44,7 +44,7 @@ impl Component for ProbeEdit {
         trace!("{} history {:?}", self.id, history);
         let current = history.last().unwrap().clone();
         // set output to current value
-        simulator.set_out_val(&self.id, "out", current.signal.get_data());
+        simulator.set_out_val(&self.id, "out", current.signal);
         // push to prepare data for next;
         history.push(current);
     }

@@ -25,10 +25,10 @@ impl ViziaComponent for ProbeAssert {
                     let assert = if let Some(value) = values.get(cycle - 1) {
                         *value
                     } else {
-                        (SignalData::Unknown).into()
+                        SignalData::Unknown
                     };
                     let simulator = GuiData::simulator.get(cx);
-                    let signal = simulator.get_input_signal(&input);
+                    let signal = simulator.get_input_val(&input);
                     if signal == assert {
                         Label::new(cx, &format!("{} == {}", signal, assert))
                             .background_color(Color::lightgreen())

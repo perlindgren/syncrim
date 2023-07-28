@@ -1,4 +1,4 @@
-use crate::common::{Component, Id, Input, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Id, Input, OutputType, Ports, Signal, SignalData, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -8,7 +8,7 @@ pub struct ProbeAssert {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
     pub(crate) input: Input,
-    pub(crate) values: Vec<Signal>,
+    pub(crate) values: Vec<SignalData>,
 }
 
 #[typetag::serde]
@@ -30,7 +30,7 @@ impl Component for ProbeAssert {
         #[cfg(test)]
         assert_eq!(
             simulator.get_input_val(&self.input),
-            self.values[simulator.cycle].get_data()
+            self.values[simulator.cycle]
         );
     }
 
@@ -38,7 +38,12 @@ impl Component for ProbeAssert {
 }
 
 impl ProbeAssert {
-    pub fn new(id: &str, pos: (f32, f32), input: Input, values: Vec<impl Into<Signal>>) -> Self {
+    pub fn new(
+        id: &str,
+        pos: (f32, f32),
+        input: Input,
+        values: Vec<impl Into<SignalData>>,
+    ) -> Self {
         ProbeAssert {
             id: id.to_string(),
             pos,
@@ -51,7 +56,7 @@ impl ProbeAssert {
         id: &str,
         pos: (f32, f32),
         input: Input,
-        values: Vec<impl Into<Signal>>,
+        values: Vec<impl Into<SignalData>>,
     ) -> Rc<Self> {
         Rc::new(ProbeAssert::new(id, pos, input, values))
     }

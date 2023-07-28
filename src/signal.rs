@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     convert::{From, TryFrom},
     fmt,
+    rc::Rc,
 };
 
 // pub type Signal = u32;
@@ -13,7 +14,7 @@ pub type Id = String;
 pub type SignalUnsigned = u32;
 pub type SignalSigned = i32;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Signal {
     data: SignalData,
     fmt: SignalFmt,
@@ -53,10 +54,7 @@ impl TryFrom<Signal> for SignalUnsigned {
         if let SignalData::Data(data) = signal.data {
             Ok(data)
         } else {
-            Err(format!(
-                "Could not convert {:?} into SignalUnsigned",
-                signal
-            ))
+            Err(format!("Could not convert {} into SignalUnsigned", signal))
         }
     }
 }
@@ -121,7 +119,13 @@ impl From<bool> for SignalData {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone)]
+// How would we get a generic formatting here
+// Custom(dyn Fn(SignalUnsigned) -> &'static str),
+
+#[typetag::serde(tag = "type")]
+pub trait CustomFmt: fmt::Debug + fmt::Display {}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum SignalFmt {
     Ascii(SignalSize),
     Unsigned(SignalSize),
@@ -129,6 +133,7 @@ pub enum SignalFmt {
     Hex(SignalSize, bool), // bool == true for padding
     Binary(u8),            // just to set a limit to the number of bits
     Bool,                  // treats it as true/false
+    Custom(Rc<dyn CustomFmt>),
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone, IntoPrimitive)]
@@ -202,6 +207,7 @@ impl fmt::Display for Signal {
                     }
                 ),
                 SignalFmt::Bool => write!(f, "{}", value != 0),
+                _ => unimplemented!(),
             },
             _ => write!(f, "{:?}", self.data),
         }
