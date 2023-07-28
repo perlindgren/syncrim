@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
 use syncrim::common::{Component, Input, OutputType, Ports, SignalUnsigned, Simulator};
-use syncrim::signal::SignalData;
+use syncrim::signal::SignalValue;
 
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
@@ -124,18 +124,18 @@ impl Deref for RegStore {
 }
 
 impl RegFile {
-    fn read_reg(&self, simulator: &Simulator, input: &Input) -> SignalData {
+    fn read_reg(&self, simulator: &Simulator, input: &Input) -> SignalValue {
         match simulator.get_input_val(input) {
-            SignalData::Data(read_addr) => {
+            SignalValue::Data(read_addr) => {
                 if read_addr > 0 {
                     trace!("read_addr {}", read_addr);
-                    return SignalData::from(self.registers.borrow()[read_addr as usize]);
+                    return SignalValue::from(self.registers.borrow()[read_addr as usize]);
                 } else {
                     trace!("read_addr {}", read_addr);
-                    return SignalData::from(0);
+                    return SignalValue::from(0);
                 }
             }
-            _ => return SignalData::Unknown,
+            _ => return SignalValue::Unknown,
         }
     }
 }
@@ -172,11 +172,11 @@ impl Component for RegFile {
         // read after write
         let reg_value_a = self.read_reg(simulator, &self.read_addr1);
         trace!("reg_value_a {:?}", reg_value_a);
-        simulator.set_out_val(&self.id, "reg_a", reg_value_a);
+        simulator.set_out_value(&self.id, "reg_a", reg_value_a);
 
         let reg_value_b = self.read_reg(simulator, &self.read_addr2);
         trace!("reg_value_b {:?}", reg_value_b);
-        simulator.set_out_val(&self.id, "reg_b", reg_value_b);
+        simulator.set_out_value(&self.id, "reg_b", reg_value_b);
     }
 }
 
@@ -233,11 +233,11 @@ mod test {
         assert_eq!(simulator.get_input_val(out_reg_2), 0.into());
 
         println!("<setup for clock 2>");
-        simulator.set_out_val("read_reg_1", "out", 0);
-        simulator.set_out_val("read_reg_2", "out", 1);
-        simulator.set_out_val("write_data", "out", 1337);
-        simulator.set_out_val("write_addr", "out", 1);
-        simulator.set_out_val("write_enable", "out", true as SignalUnsigned);
+        simulator.set_out_value("read_reg_1", "out", 0);
+        simulator.set_out_value("read_reg_2", "out", 1);
+        simulator.set_out_value("write_data", "out", 1337);
+        simulator.set_out_value("write_addr", "out", 1);
+        simulator.set_out_value("write_enable", "out", true as SignalUnsigned);
 
         // test write and read to reg # 1 in same cycle
         println!("sim_state {:?}", simulator.sim_state);
@@ -250,11 +250,11 @@ mod test {
 
         // test write and read to reg # 0 in same cycle (red #0 should always read 0)
         println!("<setup for clock 3>");
-        simulator.set_out_val("read_reg_1", "out", 0);
-        simulator.set_out_val("read_reg_2", "out", 1);
-        simulator.set_out_val("write_data", "out", 42);
-        simulator.set_out_val("write_addr", "out", 0);
-        simulator.set_out_val("write_enable", "out", true as SignalUnsigned);
+        simulator.set_out_value("read_reg_1", "out", 0);
+        simulator.set_out_value("read_reg_2", "out", 1);
+        simulator.set_out_value("write_data", "out", 42);
+        simulator.set_out_value("write_addr", "out", 0);
+        simulator.set_out_value("write_enable", "out", true as SignalUnsigned);
         println!("<clock>");
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);

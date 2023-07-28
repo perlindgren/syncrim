@@ -44,7 +44,7 @@ impl Component for ProbeEdit {
         trace!("{} history {:?}", self.id, history);
         let current = history.last().unwrap().clone();
         // set output to current value
-        simulator.set_out_val(&self.id, "out", current.signal.get_data());
+        simulator.set_out_value(&self.id, "out", current.signal.get_value());
         // push to prepare data for next;
         history.push(current);
     }

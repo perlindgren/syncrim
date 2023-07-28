@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, SignalData, Simulator, ViziaComponent},
+    common::{Component, SignalValue, Simulator, ViziaComponent},
     components::ProbeAssert,
     gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
 };
@@ -25,7 +25,7 @@ impl ViziaComponent for ProbeAssert {
                     let assert = if let Some(value) = values.get(cycle - 1) {
                         *value
                     } else {
-                        (SignalData::Unknown).into()
+                        (SignalValue::Unknown).into()
                     };
                     let simulator = GuiData::simulator.get(cx);
                     let signal = simulator.get_input_signal(&input);

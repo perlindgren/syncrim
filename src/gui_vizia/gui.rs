@@ -78,17 +78,17 @@ impl Model for GuiData {
             GuiEvent::ShowAbout => self.show_about = true,
             GuiEvent::HideAbout => self.show_about = false,
             GuiEvent::ShowLeftPanel(i) => {
-                error!("Show Left Panel {:?}", i);
+                trace!("Show Left Panel {:?}", i);
                 self.visible.insert(*i);
-                error!("visible {:?}", self.visible);
+                trace!("visible {:?}", self.visible);
             }
             GuiEvent::HideLeftPanel(i) => {
-                error!("Hide Left Panel {:?}", i);
+                trace!("Hide Left Panel {:?}", i);
                 self.visible.remove(i);
             }
             GuiEvent::ToggleExpandLeftPanel(i) => {
-                error!("Toggle Expand Left Panel {:?}", i);
-                error!("expanded {:?}", self.visible);
+                trace!("Toggle Expand Left Panel {:?}", i);
+                trace!("expanded {:?}", self.visible);
                 if self.expanded.contains(i) {
                     self.expanded.remove(i);
                 } else {
@@ -258,7 +258,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                                 VStack::new(cx, |cx| {
                                     let oc = wrapper_oc.get(cx);
                                     for (i, c) in oc.iter().enumerate() {
-                                        error!("comp id {}", i);
+                                        trace!("build view comp id {}", i);
                                         VStack::new(cx, |cx| {
                                             c.view(cx);
                                         })
@@ -267,7 +267,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                                         .on_mouse_down(
                                             move |ex, button| {
                                                 if button == MouseButton::Right {
-                                                    error!("on_mouse_down {:?}", i);
+                                                    trace!("on_mouse_down {:?}", i);
                                                     ex.emit(GuiEvent::ShowLeftPanel(i))
                                                 }
                                             },

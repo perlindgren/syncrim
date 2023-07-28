@@ -1,6 +1,6 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, SignalData, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, SignalValue, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct SZExt {
@@ -32,7 +32,7 @@ impl Component for SZExt {
 
         match simulator.get_input_val(&self.data_i) {
             //if there is data, sel should be defined, otherwise panic is good.
-            SignalData::Data(data) => {
+            SignalValue::Data(data) => {
                 let mut data: u32 = data.try_into().unwrap();
                 let sel: u32 = simulator.get_input_val(&self.sel_i).try_into().unwrap();
                 //println!("SZEDATA:{:x}", data);
@@ -52,9 +52,9 @@ impl Component for SZExt {
                         panic!("Invalid sel on SZExt:{}", sel)
                     }
                 }
-                simulator.set_out_val(&self.id, "out", data);
+                simulator.set_out_value(&self.id, "out", data);
             }
-            _ => simulator.set_out_val(&self.id, "out", SignalData::Unknown),
+            _ => simulator.set_out_value(&self.id, "out", SignalValue::Unknown),
         }
     }
 }
@@ -88,16 +88,16 @@ mod test {
         let szext = &Input::new("szext", "out");
         let val = 0b100000000000;
 
-        simulator.set_out_val("input", "out", val);
-        simulator.set_out_val("sel", "out", 0);
+        simulator.set_out_value("input", "out", val);
+        simulator.set_out_value("sel", "out", 0);
         simulator.clock();
         assert_eq!(
             simulator.get_input_val(szext),
             ((!0b11111111111) as u32).into()
         );
 
-        simulator.set_out_val("input", "out", val);
-        simulator.set_out_val("sel", "out", 1);
+        simulator.set_out_value("input", "out", val);
+        simulator.set_out_value("sel", "out", 1);
         simulator.clock();
         assert_eq!(simulator.get_input_val(szext), 0b100000000000.into());
     }

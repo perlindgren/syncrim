@@ -34,7 +34,7 @@ impl Component for InstrMem {
         trace!("instruction: {:032b}", instr);
         trace!("pc:0x{:08x}", pc);
         // set output
-        simulator.set_out_val(&self.id, "instruction", instr);
+        simulator.set_out_value(&self.id, "instruction", instr);
     }
 }
 mod test {
@@ -66,7 +66,7 @@ mod test {
         // outputs
         let imem_out = &Input::new("imem", "instruction");
         for i in 0..6 {
-            simulator.set_out_val("pc", "out", i * 4);
+            simulator.set_out_value("pc", "out", i * 4);
             simulator.clock();
             assert_eq!(simulator.get_input_val(imem_out), i.into());
         }

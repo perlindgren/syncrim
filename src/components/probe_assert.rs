@@ -30,7 +30,7 @@ impl Component for ProbeAssert {
         #[cfg(test)]
         assert_eq!(
             simulator.get_input_val(&self.input),
-            self.values[simulator.cycle].get_data()
+            self.values[simulator.cycle].get_value()
         );
     }
 

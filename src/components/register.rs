@@ -32,7 +32,7 @@ impl Component for Register {
         // get input value
         let value = simulator.get_input_val(&self.r_in);
         // set output
-        simulator.set_out_val(&self.id, "out", value);
+        simulator.set_out_value(&self.id, "out", value);
         trace!("eval: register id {} in {:?}", self.id, value);
     }
 }
