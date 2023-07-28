@@ -37,3 +37,38 @@ impl Component for InstrMem {
         simulator.set_out_val(&self.id, "instruction", instr);
     }
 }
+mod test {
+    #![allow(unused_imports)]
+    use super::*;
+
+    use std::rc::Rc;
+    use syncrim::{
+        common::{ComponentStore, Input, Simulator},
+        components::ProbeOut,
+    };
+    #[test]
+    fn test_inst_mem() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("pc")),
+                Rc::new(InstrMem {
+                    id: "imem".to_string(),
+                    pos: (0.0, 0.0),
+                    pc: Input::new("pc", "out"),
+                    instr: vec![0x0, 0x1, 0x2, 0x3, 0x4, 0x5],
+                }),
+            ],
+        };
+
+        let mut simulator = Simulator::new(&cs);
+        assert_eq!(simulator.cycle, 1);
+
+        // outputs
+        let imem_out = &Input::new("imem", "instruction");
+        for i in 0..6 {
+            simulator.set_out_val("pc", "out", i * 4);
+            simulator.clock();
+            assert_eq!(simulator.get_input_val(imem_out), i.into());
+        }
+    }
+}
