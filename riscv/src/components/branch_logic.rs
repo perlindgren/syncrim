@@ -52,8 +52,10 @@ impl Component for BranchLogic {
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 == rs2 {
                                 out = SignalData::from(2);
+                                trace!("beq ok");
                             } else {
                                 out = SignalData::from(0);
+                                trace!("beq failed");
                             }
                         } //beq
                         0b001 => {
@@ -61,8 +63,10 @@ impl Component for BranchLogic {
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 != rs2 {
                                 out = SignalData::from(2);
+                                trace!("bne ok");
                             } else {
                                 out = SignalData::from(0);
+                                trace!("bne failed");
                             }
                         } //bne
                         0b100 => {
@@ -70,8 +74,10 @@ impl Component for BranchLogic {
                             let rs2: u32 = rs2.try_into().unwrap();
                             if (rs1 as i32) < (rs2 as i32) {
                                 out = SignalData::from(2);
+                                trace!("blt ok");
                             } else {
                                 out = SignalData::from(0);
+                                trace!("blt failed")
                             }
                         } //blt
                         0b101 => {
@@ -79,8 +85,10 @@ impl Component for BranchLogic {
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 as i32 >= rs2 as i32 {
                                 out = SignalData::from(2);
+                                trace!("bge ok");
                             } else {
                                 out = SignalData::from(0);
+                                trace!("bge failed");
                             }
                         } //bge
                         0b110 => {
@@ -88,26 +96,33 @@ impl Component for BranchLogic {
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 < rs2 {
                                 out = SignalData::from(2);
+                                trace!("bltu ok");
                             } else {
                                 out = SignalData::from(0);
+                                trace!("bltu failed");
                             }
                         } //bltu
                         0b111 => {
                             let rs1: u32 = rs1.try_into().unwrap();
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 >= rs2 {
+                                trace!("bgeu ok");
                                 out = SignalData::from(2);
                             } else {
+                                trace!("bgeu failed");
                                 out = SignalData::from(0);
                             }
                         } //bgeu
                         0b011 => {
+                            trace!("jalr ok");
                             out = SignalData::from(1);
                         } //jalr
                         0b010 => {
+                            trace!("jal ok");
                             out = SignalData::from(2); //jal
                         }
                         _ => {
+                            trace!("no control transfer");
                             out = SignalData::from(0);
                         }
                     }
@@ -117,9 +132,6 @@ impl Component for BranchLogic {
             out = SignalData::from(0); // pick pc+4 signal if disabled
         }
         trace!("BranchLogic Out:{:?}", out);
-        println!(
-            "HIDFAJSDFPIJWAPEOFKOWAPEFKPOEWKFPAWEFPIAWJEFPOAWKEFWAEMFPOWEFPOWAMEFAOWEMFXDDDDD"
-        );
         simulator.set_out_val(&self.id, "out", out);
     }
 }
