@@ -1854,15 +1854,462 @@ mod test {
         assert_eq!(simulator.get_input_val(branch_logic_enable), 0.into());
         assert_eq!(simulator.get_input_val(jalr_imm), SignalData::Uninitialized);
     }
+
+    #[test]
+    fn test_jal_jalr_branch() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("instruction")),
+                Rc::new(Decoder {
+                    id: "decoder".to_string(),
+                    pos: (0.0, 0.0),
+                    instruction: Input::new("instruction", "out"),
+                }),
+            ],
+        };
+        let mut simulator = Simulator::new(&cs);
+
+        // outputs
+        let wb_mux = &Input::new("decoder", "wb_mux");
+        let alu_operand_a_sel = &Input::new("decoder", "alu_operand_a_sel");
+        let alu_operand_b_sel = &Input::new("decoder", "alu_operand_b_sel");
+        let regfile_rs1 = &Input::new("decoder", "regfile_rs1");
+        let regfile_rs2 = &Input::new("decoder", "regfile_rs2");
+        let regfile_rd = &Input::new("decoder", "regfile_rd");
+        let regfile_we = &Input::new("decoder", "regfile_we");
+        let alu_operator = &Input::new("decoder", "alu_operator");
+        let sign_zero_ext_sel = &Input::new("decoder", "sign_zero_ext_sel");
+        let sign_zero_ext_data = &Input::new("decoder", "sign_zero_ext_data");
+        let imm_a_mux_data = &Input::new("decoder", "imm_a_mux_data");
+        let data_mem_size = &Input::new("decoder", "data_mem_size");
+        let data_se = &Input::new("decoder", "data_se");
+        let data_mem_ctrl = &Input::new("decoder", "data_mem_ctrl");
+        let big_imm = &Input::new("decoder", "big_imm");
+        let pc_imm_sel = &Input::new("decoder", "pc_imm_sel");
+        let branch_imm = &Input::new("decoder", "branch_imm");
+        let branch_logic_ctl = &Input::new("decoder", "branch_logic_ctl");
+        let branch_logic_enable = &Input::new("decoder", "branch_logic_enable");
+        let jalr_imm = &Input::new("decoder", "jalr_imm");
+
+        simulator.set_out_val("instruction", "out", 0x0080016f); //jal x2, 8
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(wb_mux), 0.into());
+        assert_eq!(simulator.get_input_val(alu_operand_a_sel), 2.into());
+        assert_eq!(simulator.get_input_val(alu_operand_b_sel), 2.into());
+        assert_eq!(
+            simulator.get_input_val(regfile_rs1),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(regfile_rs2),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_rd), 2.into());
+        assert_eq!(simulator.get_input_val(regfile_we), 1.into());
+        assert_eq!(simulator.get_input_val(alu_operator), 1.into());
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(imm_a_mux_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(data_mem_size),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(data_se), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(data_mem_ctrl),
+            (MemCtrl::None as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(big_imm), 8.into());
+        assert_eq!(simulator.get_input_val(pc_imm_sel), 0.into());
+        assert_eq!(
+            simulator.get_input_val(branch_imm),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(branch_logic_ctl), 2.into());
+        assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
+        assert_eq!(simulator.get_input_val(jalr_imm), SignalData::Uninitialized);
+
+        simulator.set_out_val("instruction", "out", 0x00410167); //jalr x2, x2, 4
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(wb_mux), 0.into());
+        assert_eq!(simulator.get_input_val(alu_operand_a_sel), 2.into());
+        assert_eq!(simulator.get_input_val(alu_operand_b_sel), 2.into());
+        assert_eq!(simulator.get_input_val(regfile_rs1), 2.into());
+        assert_eq!(
+            simulator.get_input_val(regfile_rs2),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_rd), 2.into());
+        assert_eq!(simulator.get_input_val(regfile_we), 1.into());
+        assert_eq!(simulator.get_input_val(alu_operator), 1.into());
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(imm_a_mux_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(data_mem_size),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(data_se), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(data_mem_ctrl),
+            (MemCtrl::None as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(big_imm), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(pc_imm_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(branch_imm),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(branch_logic_ctl), 3.into());
+        assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
+        assert_eq!(simulator.get_input_val(jalr_imm), 4.into());
+
+        simulator.set_out_val("instruction", "out", 0xfe209ee3); //bne x1, x2, -4
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(wb_mux), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(alu_operand_a_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(alu_operand_b_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_rs1), 1.into());
+        assert_eq!(simulator.get_input_val(regfile_rs2), 2.into());
+        assert_eq!(
+            simulator.get_input_val(regfile_rd),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_we), 0.into());
+        assert_eq!(
+            simulator.get_input_val(alu_operator),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(imm_a_mux_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(data_mem_size),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(data_se), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(data_mem_ctrl),
+            (MemCtrl::None as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(big_imm), SignalData::Uninitialized);
+        assert_eq!(simulator.get_input_val(pc_imm_sel), 1.into());
+        assert_eq!(
+            simulator.get_input_val(branch_imm),
+            ((-4i32 & 0b1111111111111) as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(branch_logic_ctl), 1.into());
+        assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
+        assert_eq!(simulator.get_input_val(jalr_imm), SignalData::Uninitialized);
+
+        simulator.set_out_val("instruction", "out", 0x00208463); //beq, x1, x2, 8
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(wb_mux), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(alu_operand_a_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(alu_operand_b_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_rs1), 1.into());
+        assert_eq!(simulator.get_input_val(regfile_rs2), 2.into());
+        assert_eq!(
+            simulator.get_input_val(regfile_rd),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_we), 0.into());
+        assert_eq!(
+            simulator.get_input_val(alu_operator),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(imm_a_mux_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(data_mem_size),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(data_se), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(data_mem_ctrl),
+            (MemCtrl::None as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(big_imm), SignalData::Uninitialized);
+        assert_eq!(simulator.get_input_val(pc_imm_sel), 1.into());
+        assert_eq!(
+            simulator.get_input_val(branch_imm),
+            ((8i32 & 0b1111111111111) as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(branch_logic_ctl), 0.into());
+        assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
+        assert_eq!(simulator.get_input_val(jalr_imm), SignalData::Uninitialized);
+
+        simulator.set_out_val("instruction", "out", 0xfe20cee3); //blt x1, x2, -4
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(wb_mux), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(alu_operand_a_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(alu_operand_b_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_rs1), 1.into());
+        assert_eq!(simulator.get_input_val(regfile_rs2), 2.into());
+        assert_eq!(
+            simulator.get_input_val(regfile_rd),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_we), 0.into());
+        assert_eq!(
+            simulator.get_input_val(alu_operator),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(imm_a_mux_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(data_mem_size),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(data_se), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(data_mem_ctrl),
+            (MemCtrl::None as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(big_imm), SignalData::Uninitialized);
+        assert_eq!(simulator.get_input_val(pc_imm_sel), 1.into());
+        assert_eq!(
+            simulator.get_input_val(branch_imm),
+            ((-4i32 & 0b1111111111111) as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(branch_logic_ctl), 0b100.into());
+        assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
+        assert_eq!(simulator.get_input_val(jalr_imm), SignalData::Uninitialized);
+
+        simulator.set_out_val("instruction", "out", 0xfe116ee3); //bltu, x2, x1, -4
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(wb_mux), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(alu_operand_a_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(alu_operand_b_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_rs1), 2.into());
+        assert_eq!(simulator.get_input_val(regfile_rs2), 1.into());
+        assert_eq!(
+            simulator.get_input_val(regfile_rd),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_we), 0.into());
+        assert_eq!(
+            simulator.get_input_val(alu_operator),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(imm_a_mux_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(data_mem_size),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(data_se), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(data_mem_ctrl),
+            (MemCtrl::None as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(big_imm), SignalData::Uninitialized);
+        assert_eq!(simulator.get_input_val(pc_imm_sel), 1.into());
+        assert_eq!(
+            simulator.get_input_val(branch_imm),
+            ((-4i32 & 0b1111111111111) as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(branch_logic_ctl), 0b110.into());
+        assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
+        assert_eq!(simulator.get_input_val(jalr_imm), SignalData::Uninitialized);
+
+        simulator.set_out_val("instruction", "out", 0xfe115ee3); //bge x2, x1, -4
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(wb_mux), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(alu_operand_a_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(alu_operand_b_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_rs1), 2.into());
+        assert_eq!(simulator.get_input_val(regfile_rs2), 1.into());
+        assert_eq!(
+            simulator.get_input_val(regfile_rd),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_we), 0.into());
+        assert_eq!(
+            simulator.get_input_val(alu_operator),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(imm_a_mux_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(data_mem_size),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(data_se), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(data_mem_ctrl),
+            (MemCtrl::None as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(big_imm), SignalData::Uninitialized);
+        assert_eq!(simulator.get_input_val(pc_imm_sel), 1.into());
+        assert_eq!(
+            simulator.get_input_val(branch_imm),
+            ((-4i32 & 0b1111111111111) as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(branch_logic_ctl), 0b101.into());
+        assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
+        assert_eq!(simulator.get_input_val(jalr_imm), SignalData::Uninitialized);
+
+        simulator.set_out_val("instruction", "out", 0xfe20fee3); //bgeu x1, x2, -4
+        simulator.clock();
+        assert_eq!(simulator.get_input_val(wb_mux), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(alu_operand_a_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(alu_operand_b_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_rs1), 1.into());
+        assert_eq!(simulator.get_input_val(regfile_rs2), 2.into());
+        assert_eq!(
+            simulator.get_input_val(regfile_rd),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(regfile_we), 0.into());
+        assert_eq!(
+            simulator.get_input_val(alu_operator),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_sel),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(sign_zero_ext_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(imm_a_mux_data),
+            SignalData::Uninitialized
+        );
+        assert_eq!(
+            simulator.get_input_val(data_mem_size),
+            SignalData::Uninitialized
+        );
+        assert_eq!(simulator.get_input_val(data_se), SignalData::Uninitialized);
+        assert_eq!(
+            simulator.get_input_val(data_mem_ctrl),
+            (MemCtrl::None as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(big_imm), SignalData::Uninitialized);
+        assert_eq!(simulator.get_input_val(pc_imm_sel), 1.into());
+        assert_eq!(
+            simulator.get_input_val(branch_imm),
+            ((-4i32 & 0b1111111111111) as u32).into()
+        );
+        assert_eq!(simulator.get_input_val(branch_logic_ctl), 0b111.into());
+        assert_eq!(simulator.get_input_val(branch_logic_enable), 1.into());
+        assert_eq!(simulator.get_input_val(jalr_imm), SignalData::Uninitialized);
+    }
 }
 
-// 0xfffff0b7);//lui x1, 0xFFFFF #x1=0xFFFFF000
-// 0xfffff097);//auipc x1, 0xFFFFF #x1=0xFFFFF040
-// //0x00828223);//sb x8, 4(x5) # should panic over opcode for now
-// 0x0082a223);//sw x8, 4(x5) store x1=4 at 0
-// 0x00829223);//sh x8, 4(x5)
-// 0x0042a403);//lw x8, 4(x5) x5=4
-// 0x00429403);//lh x8, 4(x5)
-// 0x00428403);//lb x8, 4(x5)
-// 0x0042d403);//lhu x8, 4(x5)
-// 0x0042c403);//lbu x8, 4(x5)
+// 0x0080016f, //jal x2, 8
+// 0x00410167, //jalr x2, x2, 4
+// 0xfe209ee3, //bne x1, x2, -4
+// 0x00208463, //beq, x1, x2, 8
+// 0xfe20cee3, //blt x1, x2, -4
+// 0xfe116ee3, //bltu, x2, x1, -4
+// 0xfe115ee3, //bge x2, x1, -4
+// 0xfe20fee3, //bgeu x1, x2, -4
