@@ -23,7 +23,7 @@ impl EguiComponent for Mux {
         let pa = self.m_in.len() as f32;
 
         // selector, here we can treat Signal better (see Vizia counterpart)
-        let select: SignalUnsigned = simulator.get_input_val(&self.select).try_into().unwrap();
+        let select: SignalUnsigned = simulator.get_input_value(&self.select).try_into().unwrap();
 
         // The shape
         ui.painter().add(egui::Shape::closed_line(
