@@ -1,6 +1,7 @@
 // use std::fmt::Alignment;
-use crate::common::{
-    Component, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, Simulator,
+use crate::{
+    common::{Component, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, Simulator},
+    signal::SignalData,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -39,11 +40,7 @@ impl Component for Sext {
 
         // get input values
         match simulator.get_input_val(&self.sext_in) {
-            Signal::DontCare | Signal::Uninitialized | Signal::Unknown => {
-                simulator.set_out_val(&self.id, "out", Signal::Unknown);
-                trace!("{} unknown input", self.id);
-            }
-            Signal::Data(mut value) => {
+            SignalData::Data(mut value) => {
                 let to_sext = self.out_size - self.in_size; // Amount to be arithmetically shifted
                 let to_shl = SignalUnsigned::BITS - self.in_size; // To move input to MSB
                 let to_shr = to_shl - to_sext; // To shift the result back to LSB
@@ -53,7 +50,11 @@ impl Component for Sext {
                 value >>= to_shr;
 
                 // set output
-                simulator.set_out_val(&self.id, "out", Signal::Data(value));
+                simulator.set_out_val(&self.id, "out", SignalData::Data(value));
+            }
+            _ => {
+                simulator.set_out_val(&self.id, "out", SignalData::Unknown);
+                trace!("{} unknown input", self.id);
             }
         }
     }

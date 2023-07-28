@@ -11,38 +11,30 @@ fn main() {
     fern_setup_riscv();
     let cs = ComponentStore {
         store: vec![
-            Rc::new(Add {
-                id: "pc_adder".to_string(),
-                pos: (150.0, 120.0),
-                a_in: Input::new("pc_adder_c", "out"),
-                b_in: Input::new("reg", "out"),
-            }),
-            Rc::new(Constant {
-                id: "pc_adder_c".to_string(),
-                pos: (100.0, 100.0),
-                value: 4.try_into().unwrap(),
-            }),
-            Rc::new(Register {
-                id: "reg".to_string(),
-                pos: (100.0, 140.0),
-                r_in: Input::new("pc_adder_mux", "out"),
-            }),
-            Rc::new(Mux {
-                id: "pc_adder_mux".to_string(),
-                pos: (100.0, 120.0),
-                select: Input::new("branch_logic", "out"),
-                m_in: vec![
+            Add::rc_new(
+                "pc_adder",
+                (150.0, 120.0),
+                Input::new("pc_adder_c", "out"),
+                Input::new("reg", "out"),
+            ),
+            Constant::rc_new("pc_adder_c", (100.0, 100.0), 4),
+            Register::rc_new("reg", (100.0, 140.0), Input::new("pc_adder_mux", "out")),
+            Mux::rc_new(
+                "pc_adder_mux",
+                (100.0, 120.0),
+                Input::new("branch_logic", "out"),
+                vec![
                     Input::new("pc_adder", "out"),
                     Input::new("jalr_stripper", "out"),
                     Input::new("branch_adder", "out"),
                 ],
-            }),
-            Rc::new(Add {
-                id: "jalr_adder".to_string(),
-                pos: (100.0, 200.0),
-                a_in: Input::new("reg_file", "reg_a"),
-                b_in: Input::new("jalr_se", "out"),
-            }),
+            ),
+            Add::rc_new(
+                "jalr_adder",
+                (100.0, 200.0),
+                Input::new("reg_file", "reg_a"),
+                Input::new("jalr_se", "out"),
+            ),
             Rc::new(BranchLogic {
                 id: "branch_logic".to_string(),
                 pos: (725.0, 300.0),
@@ -56,42 +48,42 @@ fn main() {
                 pos: (600.0, 1000.0),
                 data_i: Input::new("jalr_adder", "out"),
             }),
-            Rc::new(Sext {
-                id: "jalr_se".to_string(),
-                pos: (900.0, 900.0),
-                sext_in: Input::new("decoder", "jalr_imm"),
-                in_size: 12,
-                out_size: 32,
-            }),
-            Rc::new(Mux {
-                id: "branch_adder_mux".to_string(),
-                pos: (500.0, 1000.0),
-                select: Input::new("decoder", "pc_imm_sel"),
-                m_in: vec![
+            Sext::rc_new(
+                "jalr_se",
+                (900.0, 900.0),
+                Input::new("decoder", "jalr_imm"),
+                12,
+                32,
+            ),
+            Mux::rc_new(
+                "branch_adder_mux",
+                (500.0, 1000.0),
+                Input::new("decoder", "pc_imm_sel"),
+                vec![
                     Input::new("jal_imm_sext", "out"),
                     Input::new("branch_imm_sext", "out"),
                 ],
-            }),
-            Rc::new(Add {
-                id: "branch_adder".to_string(),
-                pos: (500.0, 1000.0),
-                a_in: Input::new("reg", "out"),
-                b_in: Input::new("branch_adder_mux", "out"),
-            }),
-            Rc::new(Sext {
-                id: "jal_imm_sext".to_string(),
-                pos: (500.0, 1000.0),
-                sext_in: Input::new("decoder", "big_imm"),
-                in_size: 21,
-                out_size: 32,
-            }),
-            Rc::new(Sext {
-                id: "branch_imm_sext".to_string(),
-                pos: (500.0, 1000.0),
-                sext_in: Input::new("decoder", "branch_imm"),
-                in_size: 13,
-                out_size: 32,
-            }),
+            ),
+            Add::rc_new(
+                "branch_adder",
+                (500.0, 1000.0),
+                Input::new("reg", "out"),
+                Input::new("branch_adder_mux", "out"),
+            ),
+            Sext::rc_new(
+                "jal_imm_sext",
+                (500.0, 1000.0),
+                Input::new("decoder", "big_imm"),
+                21,
+                32,
+            ),
+            Sext::rc_new(
+                "branch_imm_sext",
+                (500.0, 1000.0),
+                Input::new("decoder", "branch_imm"),
+                13,
+                32,
+            ),
             Rc::new(InstrMem {
                 id: "instr_mem".to_string(),
                 pos: (180.0, 400.0),
@@ -183,16 +175,16 @@ fn main() {
                 pos: (300.0, 150.0),
                 instruction: Input::new("instr_mem", "instruction"),
             }),
-            Rc::new(Register {
-                id: "regfile_we_reg".to_string(),
-                pos: (450.0, 50.0),
-                r_in: Input::new("decoder", "regfile_we"),
-            }),
-            Rc::new(Register {
-                id: "regfile_rd_reg".to_string(),
-                pos: (480.0, 50.0),
-                r_in: Input::new("decoder", "regfile_rd"),
-            }),
+            Register::rc_new(
+                "regfile_we_reg",
+                (450.0, 50.0),
+                Input::new("decoder", "regfile_we"),
+            ),
+            Register::rc_new(
+                "regfile_rd_reg",
+                (480.0, 50.0),
+                Input::new("decoder", "regfile_rd"),
+            ),
             Rc::new(SZExt {
                 id: "imm_szext".to_string(),
                 pos: (450.0, 1000.0),
@@ -248,46 +240,39 @@ fn main() {
                 // ],
                 history: RegHistory::new(),
             }),
-            Rc::new({
-                Mem {
-                    id: "data_memory".to_string(),
-                    pos: (700.0, 600.0),
-                    width: 100.0,
-                    height: 100.0,
-                    big_endian: false,
-                    data: Input::new("reg_file", "reg_b"),
-                    addr: Input::new("alu", "result_o"),
-                    ctrl: Input::new("decoder", "data_mem_ctrl"),
-                    sign: Input::new("decoder", "data_se"),
-                    size: Input::new("decoder", "data_mem_size"),
-                    memory: Memory::new(),
-                }
-            }),
-            Rc::new(Constant {
-                id: "zero_c".to_string(),
-                pos: (680.0, 150.0),
-                value: 0.try_into().unwrap(),
-            }),
-            Rc::new(Mux {
-                id: "alu_operand_a_mux".to_string(),
-                pos: (700.0, 150.0),
-                select: Input::new("decoder", "alu_operand_a_sel"),
-                m_in: vec![
+            Mem::rc_new(
+                "data_memory",
+                (700.0, 600.0),
+                100.0,
+                100.0,
+                false,
+                Input::new("reg_file", "reg_b"),
+                Input::new("alu", "result_o"),
+                Input::new("decoder", "data_mem_ctrl"),
+                Input::new("decoder", "data_se"),
+                Input::new("decoder", "data_mem_size"),
+            ),
+            Constant::rc_new("zero_c", (680.0, 150.0), 0),
+            Mux::rc_new(
+                "alu_operand_a_mux",
+                (700.0, 150.0),
+                Input::new("decoder", "alu_operand_a_sel"),
+                vec![
                     Input::new("reg_file", "reg_a"),
                     Input::new("decoder", "imm_a_mux_data"),
                     Input::new("zero_c", "out"),
                 ],
-            }),
-            Rc::new(Mux {
-                id: "alu_operand_b_mux".to_string(),
-                pos: (700.0, 300.0),
-                select: Input::new("decoder", "alu_operand_b_sel"),
-                m_in: vec![
+            ),
+            Mux::rc_new(
+                "alu_operand_b_mux",
+                (700.0, 300.0),
+                Input::new("decoder", "alu_operand_b_sel"),
+                vec![
                     Input::new("reg_file", "reg_b"),
                     Input::new("imm_szext", "out"),
                     Input::new("pc_adder", "out"),
                 ],
-            }),
+            ),
             Rc::new(ALU {
                 id: "alu".to_string(),
                 pos: (800.0, 225.0),
@@ -295,15 +280,15 @@ fn main() {
                 operand_a_i: Input::new("alu_operand_a_mux", "out"),
                 operand_b_i: Input::new("alu_operand_b_mux", "out"),
             }),
-            Rc::new(Mux {
-                id: "wb_mux".to_string(),
-                pos: (900.0, 225.0),
-                select: Input::new("decoder", "wb_mux"),
-                m_in: vec![
+            Mux::rc_new(
+                "wb_mux",
+                (900.0, 225.0),
+                Input::new("decoder", "wb_mux"),
+                vec![
                     Input::new("alu", "result_o"),
                     Input::new("data_memory", "data"),
                 ],
-            }),
+            ),
         ],
     };
 

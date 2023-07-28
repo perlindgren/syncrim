@@ -3,7 +3,8 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
-use syncrim::common::{Component, Input, OutputType, Ports, Signal, SignalUnsigned, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, SignalUnsigned, Simulator};
+use syncrim::signal::SignalData;
 
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
@@ -123,18 +124,18 @@ impl Deref for RegStore {
 }
 
 impl RegFile {
-    fn read_reg(&self, simulator: &Simulator, input: &Input) -> Signal {
+    fn read_reg(&self, simulator: &Simulator, input: &Input) -> SignalData {
         match simulator.get_input_val(input) {
-            Signal::DontCare | Signal::Unknown | Signal::Uninitialized => return Signal::Unknown,
-            Signal::Data(read_addr) => {
+            SignalData::Data(read_addr) => {
                 if read_addr > 0 {
                     trace!("read_addr {}", read_addr);
-                    return Signal::from(self.registers.borrow()[read_addr as usize]);
+                    return SignalData::from(self.registers.borrow()[read_addr as usize]);
                 } else {
                     trace!("read_addr {}", read_addr);
-                    return Signal::from(0);
+                    return SignalData::from(0);
                 }
             }
+            _ => return SignalData::Unknown,
         }
     }
 }

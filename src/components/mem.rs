@@ -251,11 +251,11 @@ impl Component for Mem {
         let addr = simulator.get_input_val(&self.addr);
         let size = simulator.get_input_val(&self.size);
         //let size = size as usize;
-        let sign = simulator.get_input_val(&self.sign);
+        let sign = simulator.get_input_val(&self.sext);
         //let sign = sign != 0;
 
         match simulator.get_input_val(&self.ctrl) {
-            Signal::Data(ctrl) => {
+            SignalData::Data(ctrl) => {
                 let ctrl = MemCtrl::try_from(ctrl as u8).unwrap();
                 match ctrl {
                     MemCtrl::Read => {
@@ -290,8 +290,8 @@ impl Component for Mem {
                 }
             }
             _ => {
-                simulator.set_out_val(&self.id, "data", Signal::Unknown);
-                simulator.set_out_val(&self.id, "err", Signal::Unknown); // align
+                simulator.set_out_val(&self.id, "data", SignalData::Unknown);
+                simulator.set_out_val(&self.id, "err", SignalData::Unknown); // align
             }
         }
 

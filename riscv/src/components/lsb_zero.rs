@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, SignalData, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct LSBZero {
@@ -27,12 +27,12 @@ impl Component for LSBZero {
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) {
         match simulator.get_input_val(&self.data_i) {
-            Signal::Data(mut data) => {
+            SignalData::Data(mut data) => {
                 let mask: u32 = !0b1;
                 data &= mask;
                 simulator.set_out_val(&self.id, "out", data);
             }
-            _ => simulator.set_out_val(&self.id, "out", Signal::Unknown),
+            _ => simulator.set_out_val(&self.id, "out", SignalData::Unknown),
         }
     }
 }

@@ -1,6 +1,6 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, SignalData, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct ALU {
@@ -41,9 +41,9 @@ impl Component for ALU {
     fn clock(&self, simulator: &mut Simulator) {
         let operator_i: u32;
         match simulator.get_input_val(&self.operator_i) {
-            Signal::Data(data) => operator_i = data,
+            SignalData::Data(data) => operator_i = data,
             _ => {
-                simulator.set_out_val(&self.id, "result_o", Signal::Unknown);
+                simulator.set_out_val(&self.id, "result_o", SignalData::Unknown);
                 return;
             }
         }

@@ -1,6 +1,6 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, SignalData, Simulator};
 use syncrim::components::MemCtrl;
 
 #[derive(Serialize, Deserialize)]
@@ -73,50 +73,50 @@ impl Component for Decoder {
             | ((instruction & (0b111111 << 25)) >> 20)
             | ((instruction & (0b1111 << 8)) >> 7)
             | ((instruction & (0b1 << 7)) << 4);
-        let mut wb_mux = Signal::Uninitialized;
-        let mut alu_operand_a_sel = Signal::Uninitialized;
-        let mut alu_operand_b_sel = Signal::Uninitialized;
-        let mut regfile_rd = Signal::Uninitialized;
-        let mut regfile_rs1 = Signal::Uninitialized;
-        let mut regfile_rs2 = Signal::Uninitialized;
-        let mut regfile_we = Signal::from(0); //this must be 0
-        let mut alu_operator = Signal::Uninitialized;
-        let mut sign_zero_ext_sel = Signal::Uninitialized;
-        let mut sign_zero_ext_data = Signal::Uninitialized;
-        let mut imm_a_mux_data = Signal::Uninitialized;
+        let mut wb_mux = SignalData::Uninitialized;
+        let mut alu_operand_a_sel = SignalData::Uninitialized;
+        let mut alu_operand_b_sel = SignalData::Uninitialized;
+        let mut regfile_rd = SignalData::Uninitialized;
+        let mut regfile_rs1 = SignalData::Uninitialized;
+        let mut regfile_rs2 = SignalData::Uninitialized;
+        let mut regfile_we = SignalData::from(0); //this must be 0
+        let mut alu_operator = SignalData::Uninitialized;
+        let mut sign_zero_ext_sel = SignalData::Uninitialized;
+        let mut sign_zero_ext_data = SignalData::Uninitialized;
+        let mut imm_a_mux_data = SignalData::Uninitialized;
         // let mut pc_mux_sel = 0;
         // let mut pc_se_data = 0;
-        let mut data_mem_size = Signal::Uninitialized;
-        let mut data_se = Signal::Uninitialized;
-        let mut data_mem_ctrl = Signal::from(MemCtrl::None as u32);
-        let mut big_imm = Signal::Uninitialized;
-        let mut pc_imm_sel = Signal::Uninitialized;
+        let mut data_mem_size = SignalData::Uninitialized;
+        let mut data_se = SignalData::Uninitialized;
+        let mut data_mem_ctrl = SignalData::from(MemCtrl::None as u32);
+        let mut big_imm = SignalData::Uninitialized;
+        let mut pc_imm_sel = SignalData::Uninitialized;
         //let mut branch_imm = 0;
-        let mut branch_logic_ctl = Signal::Uninitialized;
-        let mut branch_logic_enable = Signal::from(0); //this must be 0
-        let mut jalr_imm = Signal::Uninitialized;
+        let mut branch_logic_ctl = SignalData::Uninitialized;
+        let mut branch_logic_enable = SignalData::from(0); //this must be 0
+        let mut jalr_imm = SignalData::Uninitialized;
 
         match opcode {
             0b0110011 => {
                 //OP
-                alu_operand_a_sel = Signal::from(0); //rs1
-                alu_operand_b_sel = Signal::from(0); //rs2
-                                                     //rs1 [19:15] rs2 [24:20] rd [11:7]
-                regfile_rd = Signal::from((instruction & (0b11111 << 7)) >> 7);
-                regfile_rs1 = Signal::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_rs2 = Signal::from((instruction & (0b11111 << 20)) >> 20);
-                regfile_we = Signal::from(1); //enable write
-                wb_mux = Signal::from(0); //ALU source
+                alu_operand_a_sel = SignalData::from(0); //rs1
+                alu_operand_b_sel = SignalData::from(0); //rs2
+                                                         //rs1 [19:15] rs2 [24:20] rd [11:7]
+                regfile_rd = SignalData::from((instruction & (0b11111 << 7)) >> 7);
+                regfile_rs1 = SignalData::from((instruction & (0b11111 << 15)) >> 15);
+                regfile_rs2 = SignalData::from((instruction & (0b11111 << 20)) >> 20);
+                regfile_we = SignalData::from(1); //enable write
+                wb_mux = SignalData::from(0); //ALU source
                 trace!("opcode=OP");
                 match funct3 {
                     0b000 => {
                         // add/sub
                         match funct7 {
                             0b0000000 => {
-                                alu_operator = Signal::from(1);
+                                alu_operator = SignalData::from(1);
                             } //add
                             0b0100000 => {
-                                alu_operator = Signal::from(2);
+                                alu_operator = SignalData::from(2);
                             } //sub
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -125,7 +125,7 @@ impl Component for Decoder {
                         match funct7 {
                             // sll
                             0b0000000 => {
-                                alu_operator = Signal::from(3);
+                                alu_operator = SignalData::from(3);
                             } //sll
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -134,7 +134,7 @@ impl Component for Decoder {
                         match funct7 {
                             // slt
                             0b0000000 => {
-                                alu_operator = Signal::from(10);
+                                alu_operator = SignalData::from(10);
                             } //slt
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -143,7 +143,7 @@ impl Component for Decoder {
                         match funct7 {
                             // sltu
                             0b0000000 => {
-                                alu_operator = Signal::from(9);
+                                alu_operator = SignalData::from(9);
                             } //sltu
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -152,7 +152,7 @@ impl Component for Decoder {
                         match funct7 {
                             // xor
                             0b0000000 => {
-                                alu_operator = Signal::from(6);
+                                alu_operator = SignalData::from(6);
                             } //xor
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -161,10 +161,10 @@ impl Component for Decoder {
                         match funct7 {
                             // srl
                             0b0000000 => {
-                                alu_operator = Signal::from(4);
+                                alu_operator = SignalData::from(4);
                             } //srl
                             0b0100000 => {
-                                alu_operator = Signal::from(5);
+                                alu_operator = SignalData::from(5);
                             } //sra
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -173,7 +173,7 @@ impl Component for Decoder {
                         match funct7 {
                             // or
                             0b0000000 => {
-                                alu_operator = Signal::from(7);
+                                alu_operator = SignalData::from(7);
                             } //or
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -182,7 +182,7 @@ impl Component for Decoder {
                         //and
                         match funct7 {
                             0b0000000 => {
-                                alu_operator = Signal::from(8);
+                                alu_operator = SignalData::from(8);
                             } //and
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -194,68 +194,68 @@ impl Component for Decoder {
             }
             0b0010011 => {
                 //OP_IMM
-                alu_operand_a_sel = Signal::from(0); //rs1
-                alu_operand_b_sel = Signal::from(1); //imm
-                regfile_rd = Signal::from((instruction & (0b11111 << 7)) >> 7);
-                regfile_rs1 = Signal::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_we = Signal::from(1); //enable write
-                wb_mux = Signal::from(0); //ALU source
+                alu_operand_a_sel = SignalData::from(0); //rs1
+                alu_operand_b_sel = SignalData::from(1); //imm
+                regfile_rd = SignalData::from((instruction & (0b11111 << 7)) >> 7);
+                regfile_rs1 = SignalData::from((instruction & (0b11111 << 15)) >> 15);
+                regfile_we = SignalData::from(1); //enable write
+                wb_mux = SignalData::from(0); //ALU source
                 trace!("opcode=OP_IMM");
                 match funct3 {
                     0b000 => {
                         //ADDI
-                        alu_operator = Signal::from(1);
-                        sign_zero_ext_sel = Signal::from(0);
-                        sign_zero_ext_data = Signal::from(imm);
+                        alu_operator = SignalData::from(1);
+                        sign_zero_ext_sel = SignalData::from(0);
+                        sign_zero_ext_data = SignalData::from(imm);
                     }
                     0b010 => {
                         //SLTI
-                        alu_operator = Signal::from(10);
-                        sign_zero_ext_sel = Signal::from(0);
-                        sign_zero_ext_data = Signal::from(imm);
+                        alu_operator = SignalData::from(10);
+                        sign_zero_ext_sel = SignalData::from(0);
+                        sign_zero_ext_data = SignalData::from(imm);
                     }
                     0b011 => {
                         //SLTIU
-                        alu_operator = Signal::from(9);
-                        sign_zero_ext_sel = Signal::from(1);
-                        sign_zero_ext_data = Signal::from(imm);
+                        alu_operator = SignalData::from(9);
+                        sign_zero_ext_sel = SignalData::from(1);
+                        sign_zero_ext_data = SignalData::from(imm);
                     }
                     0b100 => {
                         //XORI
-                        alu_operator = Signal::from(6);
-                        sign_zero_ext_sel = Signal::from(1);
-                        sign_zero_ext_data = Signal::from(imm);
+                        alu_operator = SignalData::from(6);
+                        sign_zero_ext_sel = SignalData::from(1);
+                        sign_zero_ext_data = SignalData::from(imm);
                     }
                     0b110 => {
                         //ORI
-                        alu_operator = Signal::from(7);
-                        sign_zero_ext_sel = Signal::from(1);
-                        sign_zero_ext_data = Signal::from(imm);
+                        alu_operator = SignalData::from(7);
+                        sign_zero_ext_sel = SignalData::from(1);
+                        sign_zero_ext_data = SignalData::from(imm);
                     }
                     0b111 => {
                         //ANDI
-                        alu_operator = Signal::from(8);
-                        sign_zero_ext_sel = Signal::from(1);
-                        sign_zero_ext_data = Signal::from(imm);
+                        alu_operator = SignalData::from(8);
+                        sign_zero_ext_sel = SignalData::from(1);
+                        sign_zero_ext_data = SignalData::from(imm);
                     }
                     0b001 => {
                         //SLLI
-                        alu_operator = Signal::from(3);
-                        sign_zero_ext_sel = Signal::from(1);
-                        sign_zero_ext_data = Signal::from(shamt);
+                        alu_operator = SignalData::from(3);
+                        sign_zero_ext_sel = SignalData::from(1);
+                        sign_zero_ext_data = SignalData::from(shamt);
                     }
                     0b101 => {
                         //SRLI SRAI
                         match funct7 {
                             0b0000000 => {
-                                alu_operator = Signal::from(4);
-                                sign_zero_ext_sel = Signal::from(1);
-                                sign_zero_ext_data = Signal::from(shamt);
+                                alu_operator = SignalData::from(4);
+                                sign_zero_ext_sel = SignalData::from(1);
+                                sign_zero_ext_data = SignalData::from(shamt);
                             } //SRLI
                             0b0100000 => {
-                                alu_operator = Signal::from(5);
-                                sign_zero_ext_sel = Signal::from(1);
-                                sign_zero_ext_data = Signal::from(shamt);
+                                alu_operator = SignalData::from(5);
+                                sign_zero_ext_sel = SignalData::from(1);
+                                sign_zero_ext_data = SignalData::from(shamt);
                             } //SRAI
                             _ => panic!("Invalid funct7! {:b}", funct7),
                         }
@@ -268,71 +268,71 @@ impl Component for Decoder {
             0b0110111 => {
                 //LUI
                 trace!("opcode=LUI");
-                alu_operand_a_sel = Signal::from(1); //big-imm
-                alu_operand_b_sel = Signal::from(1); //imm
-                regfile_rd = Signal::from((instruction & (0b11111 << 7)) >> 7);
+                alu_operand_a_sel = SignalData::from(1); //big-imm
+                alu_operand_b_sel = SignalData::from(1); //imm
+                regfile_rd = SignalData::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = 0; //x0 dont care
-                regfile_we = Signal::from(1); //enable write
-                wb_mux = Signal::from(0); //ALU source
-                alu_operator = Signal::from(1); //ADD
-                sign_zero_ext_data = Signal::from(0); //add 0
-                sign_zero_ext_sel = Signal::from(1); //zero-extend
-                imm_a_mux_data = Signal::from(imm_big);
+                regfile_we = SignalData::from(1); //enable write
+                wb_mux = SignalData::from(0); //ALU source
+                alu_operator = SignalData::from(1); //ADD
+                sign_zero_ext_data = SignalData::from(0); //add 0
+                sign_zero_ext_sel = SignalData::from(1); //zero-extend
+                imm_a_mux_data = SignalData::from(imm_big);
             }
             0b0010111 => {
                 //AUIPC
                 trace!("opcode=AUIPC");
-                alu_operand_a_sel = Signal::from(1); //big-imm
-                alu_operand_b_sel = Signal::from(2); //PC
-                regfile_rd = Signal::from((instruction & (0b11111 << 7)) >> 7);
-                //regfile_rs1 = Signal::from(0); //x0 dont care
-                regfile_we = Signal::from(1); //enable write
-                wb_mux = Signal::from(0); //ALU source
-                alu_operator = Signal::from(1); //ADD
-                                                //sign_zero_ext_data = Signal::from(0); //don't care
-                                                //sign_zero_ext_sel = Signal::from(1); //don't care
-                imm_a_mux_data = Signal::from(imm_big);
+                alu_operand_a_sel = SignalData::from(1); //big-imm
+                alu_operand_b_sel = SignalData::from(2); //PC
+                regfile_rd = SignalData::from((instruction & (0b11111 << 7)) >> 7);
+                //regfile_rs1 = SignalData::from(0); //x0 dont care
+                regfile_we = SignalData::from(1); //enable write
+                wb_mux = SignalData::from(0); //ALU source
+                alu_operator = SignalData::from(1); //ADD
+                                                    //sign_zero_ext_data = SignalData::from(0); //don't care
+                                                    //sign_zero_ext_sel = SignalData::from(1); //don't care
+                imm_a_mux_data = SignalData::from(imm_big);
             }
             0b1101111 => {
                 //JAL
                 trace!("opcode=JAL");
-                alu_operand_a_sel = Signal::from(2); //0
-                alu_operand_b_sel = Signal::from(2); //PC
-                regfile_rd = Signal::from((instruction & (0b11111 << 7)) >> 7);
-                //regfile_rs1 = Signal::from(0); //dont care
-                regfile_we = Signal::from(1); //enable write
-                wb_mux = Signal::from(0); //ALU source
-                alu_operator = Signal::from(1); //ADD
-                                                //sign_zero_ext_data = 0; //don't care
-                                                //sign_zero_ext_sel = 1; //don't care
-                big_imm = Signal::from(imm_big_shuffled);
-                pc_imm_sel = Signal::from(0);
-                branch_logic_ctl = Signal::from(0b010); //jal
-                branch_logic_enable = Signal::from(0b1);
+                alu_operand_a_sel = SignalData::from(2); //0
+                alu_operand_b_sel = SignalData::from(2); //PC
+                regfile_rd = SignalData::from((instruction & (0b11111 << 7)) >> 7);
+                //regfile_rs1 = SignalData::from(0); //dont care
+                regfile_we = SignalData::from(1); //enable write
+                wb_mux = SignalData::from(0); //ALU source
+                alu_operator = SignalData::from(1); //ADD
+                                                    //sign_zero_ext_data = 0; //don't care
+                                                    //sign_zero_ext_sel = 1; //don't care
+                big_imm = SignalData::from(imm_big_shuffled);
+                pc_imm_sel = SignalData::from(0);
+                branch_logic_ctl = SignalData::from(0b010); //jal
+                branch_logic_enable = SignalData::from(0b1);
             }
             0b1100111 => {
                 //JALR
                 trace!("opcode=JALR");
-                alu_operand_a_sel = Signal::from(2); //0
-                alu_operand_b_sel = Signal::from(2); //PC
-                regfile_rd = Signal::from((instruction & (0b11111 << 7)) >> 7);
-                regfile_rs1 = Signal::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_we = Signal::from(1); //enable write
-                wb_mux = Signal::from(0); //ALU source
-                alu_operator = Signal::from(1); //ADD
-                                                //sign_zero_ext_data = 0; //don't care
-                                                //sign_zero_ext_sel = 1; //don't care
-                                                //big_imm = imm_big_shuffled; //don't care
-                                                //pc_imm_sel = 0; //don't care
-                branch_logic_ctl = Signal::from(0b011); //jalr
-                branch_logic_enable = Signal::from(0b1);
-                jalr_imm = Signal::from(imm);
+                alu_operand_a_sel = SignalData::from(2); //0
+                alu_operand_b_sel = SignalData::from(2); //PC
+                regfile_rd = SignalData::from((instruction & (0b11111 << 7)) >> 7);
+                regfile_rs1 = SignalData::from((instruction & (0b11111 << 15)) >> 15);
+                regfile_we = SignalData::from(1); //enable write
+                wb_mux = SignalData::from(0); //ALU source
+                alu_operator = SignalData::from(1); //ADD
+                                                    //sign_zero_ext_data = 0; //don't care
+                                                    //sign_zero_ext_sel = 1; //don't care
+                                                    //big_imm = imm_big_shuffled; //don't care
+                                                    //pc_imm_sel = 0; //don't care
+                branch_logic_ctl = SignalData::from(0b011); //jalr
+                branch_logic_enable = SignalData::from(0b1);
+                jalr_imm = SignalData::from(imm);
             }
             0b1100011 => {
                 //BRANCH
                 trace!("opcode=BRANCH");
-                regfile_rs1 = Signal::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_rs2 = Signal::from((instruction & (0b11111 << 20)) >> 20);
+                regfile_rs1 = SignalData::from((instruction & (0b11111 << 15)) >> 15);
+                regfile_rs2 = SignalData::from((instruction & (0b11111 << 20)) >> 20);
                 //pc_imm_sel = 1;
                 //branch_imm = imm;
                 //regfile_rd = 0; //don't care
@@ -341,45 +341,45 @@ impl Component for Decoder {
                 //alu_operator = 0; //don't care
                 //sign_zero_ext_data = 0; //don't care
                 //big_imm = 0; //don't care
-                pc_imm_sel = Signal::from(1); //branch imm
-                branch_logic_ctl = Signal::from(funct3); //use funct3
-                branch_logic_enable = Signal::from(0b1); //enable branch logic
+                pc_imm_sel = SignalData::from(1); //branch imm
+                branch_logic_ctl = SignalData::from(funct3); //use funct3
+                branch_logic_enable = SignalData::from(0b1); //enable branch logic
             }
 
             0b0000011 => {
                 //LOAD
                 trace!("opcode=LOAD");
-                alu_operand_a_sel = Signal::from(0); //rs1
-                alu_operand_b_sel = Signal::from(1); //imm
-                regfile_rd = Signal::from((instruction & (0b11111 << 7)) >> 7);
-                regfile_rs1 = Signal::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_we = Signal::from(1);
-                wb_mux = Signal::from(1); //data memory
-                alu_operator = Signal::from(1); //ADD
-                sign_zero_ext_data = Signal::from(imm); //immediate
-                sign_zero_ext_sel = Signal::from(0); //sign extend
+                alu_operand_a_sel = SignalData::from(0); //rs1
+                alu_operand_b_sel = SignalData::from(1); //imm
+                regfile_rd = SignalData::from((instruction & (0b11111 << 7)) >> 7);
+                regfile_rs1 = SignalData::from((instruction & (0b11111 << 15)) >> 15);
+                regfile_we = SignalData::from(1);
+                wb_mux = SignalData::from(1); //data memory
+                alu_operator = SignalData::from(1); //ADD
+                sign_zero_ext_data = SignalData::from(imm); //immediate
+                sign_zero_ext_sel = SignalData::from(0); //sign extend
 
-                data_mem_ctrl = Signal::from(MemCtrl::Read as u32);
+                data_mem_ctrl = SignalData::from(MemCtrl::Read as u32);
                 match funct3 {
                     0b000 => {
-                        data_mem_size = Signal::from(1);
-                        data_se = Signal::from(1)
+                        data_mem_size = SignalData::from(1);
+                        data_se = SignalData::from(1)
                     } //lb
                     0b001 => {
-                        data_mem_size = Signal::from(2);
-                        data_se = Signal::from(1)
+                        data_mem_size = SignalData::from(2);
+                        data_se = SignalData::from(1)
                     } //lh
                     0b010 => {
-                        data_mem_size = Signal::from(4);
-                        data_se = Signal::from(1)
+                        data_mem_size = SignalData::from(4);
+                        data_se = SignalData::from(1)
                     } //lw
                     0b100 => {
-                        data_mem_size = Signal::from(1);
-                        data_se = Signal::from(0)
+                        data_mem_size = SignalData::from(1);
+                        data_se = SignalData::from(0)
                     } //lbu
                     0b101 => {
-                        data_mem_size = Signal::from(2);
-                        data_se = Signal::from(0)
+                        data_mem_size = SignalData::from(2);
+                        data_se = SignalData::from(0)
                     } //lhu
                     _ => {
                         panic!("Unsupported funct3 {:b}", funct3)
@@ -389,28 +389,28 @@ impl Component for Decoder {
             0b0100011 => {
                 //STORE
                 trace!("opcode=STORE");
-                alu_operand_a_sel = Signal::from(0); //rs1
-                alu_operand_b_sel = Signal::from(1); //imm
-                regfile_rd = Signal::from((instruction & (0b11111 << 7)) >> 7);
-                regfile_rs1 = Signal::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_rs2 = Signal::from((instruction & (0b11111 << 20)) >> 20);
-                regfile_we = Signal::from(0);
+                alu_operand_a_sel = SignalData::from(0); //rs1
+                alu_operand_b_sel = SignalData::from(1); //imm
+                regfile_rd = SignalData::from((instruction & (0b11111 << 7)) >> 7);
+                regfile_rs1 = SignalData::from((instruction & (0b11111 << 15)) >> 15);
+                regfile_rs2 = SignalData::from((instruction & (0b11111 << 20)) >> 20);
+                regfile_we = SignalData::from(0);
                 //wb_mux = 0; //don't care
-                alu_operator = Signal::from(1); //ADD
-                sign_zero_ext_data = Signal::from(imm_store); //immediate store type
-                sign_zero_ext_sel = Signal::from(0); //sign extend
+                alu_operator = SignalData::from(1); //ADD
+                sign_zero_ext_data = SignalData::from(imm_store); //immediate store type
+                sign_zero_ext_sel = SignalData::from(0); //sign extend
 
-                data_mem_ctrl = Signal::from(MemCtrl::Write as u32);
+                data_mem_ctrl = SignalData::from(MemCtrl::Write as u32);
                 match funct3 {
                     //size
                     0b000 => {
-                        data_mem_size = Signal::from(1);
+                        data_mem_size = SignalData::from(1);
                     }
                     0b001 => {
-                        data_mem_size = Signal::from(2);
+                        data_mem_size = SignalData::from(2);
                     }
                     0b010 => {
-                        data_mem_size = Signal::from(4);
+                        data_mem_size = SignalData::from(4);
                     }
                     _ => panic!("Unsupported funct3 {:b}", funct3),
                 }

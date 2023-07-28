@@ -1,6 +1,6 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, SignalData, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct SZExt {
@@ -32,7 +32,7 @@ impl Component for SZExt {
 
         match simulator.get_input_val(&self.data_i) {
             //if there is data, sel should be defined, otherwise panic is good.
-            Signal::Data(data) => {
+            SignalData::Data(data) => {
                 let mut data: u32 = data.try_into().unwrap();
                 let sel: u32 = simulator.get_input_val(&self.sel_i).try_into().unwrap();
                 //println!("SZEDATA:{:x}", data);
@@ -54,7 +54,7 @@ impl Component for SZExt {
                 }
                 simulator.set_out_val(&self.id, "out", data);
             }
-            _ => simulator.set_out_val(&self.id, "out", Signal::Unknown),
+            _ => simulator.set_out_val(&self.id, "out", SignalData::Unknown),
         }
     }
 }

@@ -1,4 +1,7 @@
-use crate::common::{Component, Id, Input, OutputType, Ports, Signal, Simulator};
+use crate::{
+    common::{Component, Id, Input, OutputType, Ports, Simulator},
+    signal::SignalData,
+};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -35,20 +38,20 @@ impl Component for Mux {
     fn clock(&self, simulator: &mut Simulator) {
         // get input value
         match simulator.get_input_val(&self.select) {
-            Signal::Data(select) => {
+            SignalData::Data(select) => {
                 let select = select as usize;
                 trace!("{} select {}", &self.id, select);
                 let value = if select < self.m_in.len() {
                     simulator.get_input_val(&self.m_in[select])
                 } else {
-                    Signal::Unknown
+                    SignalData::Unknown
                 };
                 // set output
                 simulator.set_out_val(&self.id, "out", value);
             }
             _ => {
                 trace!("{} select unknown", &self.id);
-                simulator.set_out_val(&self.id, "out", Signal::Unknown);
+                simulator.set_out_val(&self.id, "out", SignalData::Unknown);
             }
         }
     }
