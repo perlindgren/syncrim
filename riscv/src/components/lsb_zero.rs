@@ -36,3 +36,38 @@ impl Component for LSBZero {
         }
     }
 }
+
+mod test {
+    #![allow(unused_imports)]
+    use super::*;
+
+    use std::rc::Rc;
+    use syncrim::{
+        common::{ComponentStore, Input, Simulator},
+        components::ProbeOut,
+    };
+    #[test]
+    fn lsb_zero_test() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("input")),
+                Rc::new(LSBZero {
+                    id: "lzero".to_string(),
+                    pos: (0.0, 0.0),
+                    data_i: Input::new("input", "out"),
+                }),
+            ],
+        };
+
+        let mut simulator = Simulator::new(&cs);
+        assert_eq!(simulator.cycle, 1);
+
+        // outputs
+        let lout = &Input::new("lzero", "out");
+        for i in 0..100 {
+            simulator.set_out_val("input", "out", i);
+            simulator.clock();
+            assert_eq!(simulator.get_input_val(lout), (i & (!0b1)).into());
+        }
+    }
+}
