@@ -2,7 +2,7 @@ name: Rust
 
 on:
   push:
-    branches: ["master", "ci"]
+    branches: ["master"]
   pull_request:
     branches: ["master"]
 
@@ -34,7 +34,6 @@ jobs:
         run: cargo test --workspace --no-default-features --features components --verbose
   rustfmt:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
 
