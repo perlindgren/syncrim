@@ -1,6 +1,6 @@
 use crate::gui_vizia::GuiData;
 use crate::{
-    common::{SignalData, SignalSigned, SignalUnsigned, Simulator, ViziaComponent},
+    common::{SignalSigned, SignalUnsigned, SignalValue, Simulator, ViziaComponent},
     components::{ProbeEdit, TextSignal},
 };
 use vizia::prelude::*;
@@ -57,7 +57,7 @@ pub struct ProbeEditView {
     editable_text: String,
 }
 
-fn parse_signal(text: &str) -> SignalData {
+fn parse_signal(text: &str) -> SignalValue {
     let text = text.trim();
 
     if let Ok(signal) = text.parse::<SignalSigned>() {
@@ -66,9 +66,9 @@ fn parse_signal(text: &str) -> SignalData {
         if let Ok(signal) = SignalUnsigned::from_str_radix(hex, 16) {
             signal.into()
         } else {
-            SignalData::Unknown
+            SignalValue::Unknown
         }
     } else {
-        SignalData::Unknown
+        SignalValue::Unknown
     }
 }

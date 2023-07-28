@@ -28,7 +28,7 @@ impl Component for Constant {
     }
 
     fn clock(&self, simulator: &mut Simulator) {
-        simulator.set_out_val(&self.id, "out", self.value.get_data());
+        simulator.set_out_value(&self.id, "out", self.value.get_value());
     }
 }
 

@@ -6,8 +6,6 @@ use std::{
     fmt,
 };
 
-// pub type Signal = u32;
-// pub type SignedSignal = i32;
 pub type Id = String;
 
 pub type SignalUnsigned = u32;
@@ -15,21 +13,21 @@ pub type SignalSigned = i32;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Signal {
-    data: SignalData,
+    data: SignalValue,
     fmt: SignalFmt,
 }
 
 impl Signal {
-    /// set data field
-    pub fn set_data(&mut self, data: SignalData) {
+    /// set value field
+    pub fn set_value(&mut self, data: SignalValue) {
         self.data = data
     }
     /// set fmt field
     pub fn set_fmt(&mut self, fmt: SignalFmt) {
         self.fmt = fmt
     }
-    /// get data field
-    pub fn get_data(&self) -> SignalData {
+    /// get value field
+    pub fn get_value(&self) -> SignalValue {
         self.data
     }
     /// get fmt field
@@ -39,7 +37,7 @@ impl Signal {
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq)]
-pub enum SignalData {
+pub enum SignalValue {
     Uninitialized,
     Unknown,
     DontCare,
@@ -50,7 +48,7 @@ impl TryFrom<Signal> for SignalUnsigned {
     type Error = String;
 
     fn try_from(signal: Signal) -> Result<Self, Self::Error> {
-        if let SignalData::Data(data) = signal.data {
+        if let SignalValue::Data(data) = signal.data {
             Ok(data)
         } else {
             Err(format!(
@@ -61,11 +59,11 @@ impl TryFrom<Signal> for SignalUnsigned {
     }
 }
 
-impl TryFrom<SignalData> for SignalUnsigned {
+impl TryFrom<SignalValue> for SignalUnsigned {
     type Error = String;
 
-    fn try_from(data: SignalData) -> Result<Self, Self::Error> {
-        if let SignalData::Data(data) = data {
+    fn try_from(data: SignalValue) -> Result<Self, Self::Error> {
+        if let SignalValue::Data(data) = data {
             Ok(data)
         } else {
             Err(format!("Could not convert {:?} into SignalUnsigned", data))
@@ -73,8 +71,8 @@ impl TryFrom<SignalData> for SignalUnsigned {
     }
 }
 
-impl From<SignalData> for Signal {
-    fn from(data: SignalData) -> Signal {
+impl From<SignalValue> for Signal {
+    fn from(data: SignalValue) -> Signal {
         Signal {
             data,
             fmt: SignalFmt::Hex(SignalSize::_32, false),
@@ -94,7 +92,7 @@ impl From<(SignalUnsigned, SignalFmt)> for Signal {
 impl From<SignalUnsigned> for Signal {
     fn from(data: u32) -> Signal {
         Signal {
-            data: SignalData::Data(data),
+            data: SignalValue::Data(data),
             fmt: SignalFmt::Hex(SignalSize::_32, false),
         }
     }
@@ -103,21 +101,21 @@ impl From<SignalUnsigned> for Signal {
 impl From<bool> for Signal {
     fn from(b: bool) -> Signal {
         Signal {
-            data: SignalData::Data(b as SignalUnsigned),
+            data: SignalValue::Data(b as SignalUnsigned),
             fmt: SignalFmt::Bool,
         }
     }
 }
 
-impl From<SignalUnsigned> for SignalData {
-    fn from(data: u32) -> SignalData {
-        SignalData::Data(data)
+impl From<SignalUnsigned> for SignalValue {
+    fn from(data: u32) -> SignalValue {
+        SignalValue::Data(data)
     }
 }
 
-impl From<bool> for SignalData {
-    fn from(b: bool) -> SignalData {
-        SignalData::Data(b as SignalUnsigned)
+impl From<bool> for SignalValue {
+    fn from(b: bool) -> SignalValue {
+        SignalValue::Data(b as SignalUnsigned)
     }
 }
 
@@ -142,7 +140,7 @@ pub enum SignalSize {
 impl fmt::Display for Signal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.data {
-            SignalData::Data(value) => match self.fmt {
+            SignalValue::Data(value) => match self.fmt {
                 SignalFmt::Ascii(signal_size) => {
                     let s: u8 = signal_size.into();
 
@@ -222,7 +220,7 @@ mod test {
         println!("{}", s);
         assert_eq!(&s, "false");
 
-        signal.set_data(true.into());
+        signal.set_value(true.into());
         let s = format!("{}", signal);
         println!("{}", s);
         assert_eq!(&s, "true");
@@ -281,13 +279,13 @@ mod test {
         assert_eq!(&s, "4026531840");
 
         signal.set_fmt(SignalFmt::Unsigned(SignalSize::_16));
-        signal.set_data(0xF000_E000.into());
+        signal.set_value(0xF000_E000.into());
         let s = format!("{}", signal);
         println!("{}", s);
         assert_eq!(&s, "57344");
 
         signal.set_fmt(SignalFmt::Unsigned(SignalSize::_8));
-        signal.set_data(0xF000_E0D0.into());
+        signal.set_value(0xF000_E0D0.into());
         let s = format!("{}", signal);
         println!("{}", s);
         assert_eq!(&s, "208");
@@ -304,13 +302,13 @@ mod test {
         assert_eq!(&s, "-268435456");
 
         signal.set_fmt(SignalFmt::Signed(SignalSize::_16));
-        signal.set_data(0xF000_E000.into());
+        signal.set_value(0xF000_E000.into());
         let s = format!("{}", signal);
         println!("{}", s);
         assert_eq!(&s, "-8192");
 
         signal.set_fmt(SignalFmt::Signed(SignalSize::_8));
-        signal.set_data(0xF000_E0D0.into());
+        signal.set_value(0xF000_E0D0.into());
         let s = format!("{}", signal);
         println!("{}", s);
         assert_eq!(&s, "-48");

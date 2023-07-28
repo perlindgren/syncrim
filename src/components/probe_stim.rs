@@ -1,4 +1,4 @@
-use crate::common::{Component, Id, OutputType, Ports, Signal, SignalData, Simulator};
+use crate::common::{Component, Id, OutputType, Ports, Signal, SignalValue, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -31,11 +31,11 @@ impl Component for ProbeStim {
     fn clock(&self, simulator: &mut Simulator) {
         trace!("-- cycle {} --", simulator.cycle);
         let out = if let Some(signal) = self.values.get(simulator.cycle) {
-            signal.get_data()
+            signal.get_value()
         } else {
-            SignalData::Unknown
+            SignalValue::Unknown
         };
-        simulator.set_out_val(&self.id, "out", out);
+        simulator.set_out_value(&self.id, "out", out);
     }
 
     // notice we don't implement `un_clock` since the state is already kept in history
