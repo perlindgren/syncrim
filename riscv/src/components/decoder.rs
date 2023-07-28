@@ -431,8 +431,6 @@ impl Component for Decoder {
         simulator.set_out_val(&self.id, "sign_zero_ext_sel", sign_zero_ext_sel);
         simulator.set_out_val(&self.id, "sign_zero_ext_data", sign_zero_ext_data);
         simulator.set_out_val(&self.id, "imm_a_mux_data", imm_a_mux_data);
-        //simulator.set_out_val(&self.id, "pc_se_data", pc_se_data);
-        //simulator.set_out_val(&self.id, "pc_mux_sel", pc_mux_sel);
         simulator.set_out_val(&self.id, "data_mem_size", data_mem_size);
         simulator.set_out_val(&self.id, "data_se", data_se);
         simulator.set_out_val(&self.id, "data_mem_ctrl", data_mem_ctrl);
