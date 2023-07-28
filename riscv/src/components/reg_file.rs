@@ -123,15 +123,18 @@ impl Deref for RegStore {
 }
 
 impl RegFile {
-    fn read_reg(&self, simulator: &Simulator, input: &Input) -> u32 {
-        let read_addr: SignalUnsigned = simulator.get_input_val(input).try_into().unwrap();
-        trace!("read_addr {}", read_addr);
-
-        // mips always reads 0;
-        if read_addr > 0 {
-            self.registers.borrow()[read_addr as usize]
-        } else {
-            0
+    fn read_reg(&self, simulator: &Simulator, input: &Input) -> Signal {
+        match simulator.get_input_val(input) {
+            Signal::DontCare | Signal::Unknown | Signal::Uninitialized => return Signal::Unknown,
+            Signal::Data(read_addr) => {
+                if read_addr > 0 {
+                    trace!("read_addr {}", read_addr);
+                    return Signal::from(self.registers.borrow()[read_addr as usize]);
+                } else {
+                    trace!("read_addr {}", read_addr);
+                    return Signal::from(0);
+                }
+            }
         }
     }
 }
@@ -156,7 +159,7 @@ impl Component for RegFile {
     fn clock(&self, simulator: &mut Simulator) {
         if simulator.get_input_val(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_val(&self.write_data);
-            trace!("data {:?}", data);
+            trace!("write data {:?}", data);
             let write_addr: SignalUnsigned = simulator
                 .get_input_val(&self.write_addr)
                 .try_into()
@@ -167,12 +170,12 @@ impl Component for RegFile {
 
         // read after write
         let reg_value_a = self.read_reg(simulator, &self.read_addr1);
-        trace!("reg_value {}", reg_value_a);
-        simulator.set_out_val(&self.id, "reg_a", Signal::Data(reg_value_a));
+        trace!("reg_value_a {:?}", reg_value_a);
+        simulator.set_out_val(&self.id, "reg_a", reg_value_a);
 
         let reg_value_b = self.read_reg(simulator, &self.read_addr2);
-        trace!("reg_value {}", reg_value_b);
-        simulator.set_out_val(&self.id, "reg_b", Signal::Data(reg_value_b));
+        trace!("reg_value_b {:?}", reg_value_b);
+        simulator.set_out_val(&self.id, "reg_b", reg_value_b);
     }
 }
 

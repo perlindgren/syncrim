@@ -1,3 +1,4 @@
+use log::trace;
 use serde::{Deserialize, Serialize};
 use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
 
@@ -29,10 +30,9 @@ impl Component for InstrMem {
         // get instr at pc/4
         let pc: u32 = simulator.get_input_val(&self.pc).try_into().unwrap();
 
-        println!("--- evaluate instr mem: pc {}", pc);
         let instr = self.instr[(pc / 4) as usize];
+        trace!("instruction: {:032b}", instr);
         // set output
-        println!("--- output {}", instr);
         simulator.set_out_val(&self.id, "instruction", instr);
     }
 }

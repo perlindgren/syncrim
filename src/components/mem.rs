@@ -199,33 +199,50 @@ impl Component for Mem {
 
     fn clock(&self, simulator: &mut Simulator) {
         let data = simulator.get_input_val(&self.data);
-        let addr: SignalUnsigned = simulator.get_input_val(&self.addr).try_into().unwrap();
-        let addr = addr as usize;
-        let ctrl: SignalUnsigned = simulator.get_input_val(&self.ctrl).try_into().unwrap();
-        let ctrl = MemCtrl::try_from(ctrl as u8).unwrap();
-        let size: SignalUnsigned = simulator.get_input_val(&self.size).try_into().unwrap();
-        let size = size as usize;
-        let sign: SignalUnsigned = simulator.get_input_val(&self.sign).try_into().unwrap();
-        let sign = sign != 0;
+        let addr = simulator.get_input_val(&self.addr);
+        let size = simulator.get_input_val(&self.size);
+        //let size = size as usize;
+        let sign = simulator.get_input_val(&self.sign);
+        //let sign = sign != 0;
 
-        match ctrl {
-            MemCtrl::Read => {
-                trace!("read addr {:?} size {:?}", addr, size);
-                let value = self.memory.read(addr, size, sign, self.big_endian);
-                simulator.set_out_val(&self.id, "data", value);
-                let value = self.memory.align(addr, size);
-                trace!("align {:?}", value);
-                simulator.set_out_val(&self.id, "err", value); // align
+        match simulator.get_input_val(&self.ctrl) {
+            Signal::Data(ctrl) => {
+                let ctrl = MemCtrl::try_from(ctrl as u8).unwrap();
+                match ctrl {
+                    MemCtrl::Read => {
+                        let addr: u32 = addr.try_into().unwrap();
+                        let size: u32 = size.try_into().unwrap();
+                        let sign: u32 = sign.try_into().unwrap();
+                        trace!("read addr {:?} size {:?}", addr, size);
+                        let value = self.memory.read(
+                            addr as usize,
+                            size as usize,
+                            sign != 0,
+                            self.big_endian,
+                        );
+                        simulator.set_out_val(&self.id, "data", value);
+                        let value = self.memory.align(addr as usize, size as usize);
+                        trace!("align {:?}", value);
+                        simulator.set_out_val(&self.id, "err", value); // align
+                    }
+                    MemCtrl::Write => {
+                        let addr: u32 = addr.try_into().unwrap();
+                        let size: u32 = size.try_into().unwrap();
+                        trace!("write addr {:?} size {:?}", addr, size);
+                        self.memory
+                            .write(addr as usize, size as usize, self.big_endian, data);
+                        let value = self.memory.align(addr as usize, size as usize);
+                        trace!("align {:?}", value);
+                        simulator.set_out_val(&self.id, "err", value); // align
+                    }
+                    MemCtrl::None => {
+                        trace!("no read/write");
+                    }
+                }
             }
-            MemCtrl::Write => {
-                trace!("write addr {:?} size {:?}", addr, size);
-                self.memory.write(addr, size, self.big_endian, data);
-                let value = self.memory.align(addr, size);
-                trace!("align {:?}", value);
-                simulator.set_out_val(&self.id, "err", value); // align
-            }
-            MemCtrl::None => {
-                trace!("no read/write");
+            _ => {
+                simulator.set_out_val(&self.id, "data", Signal::Unknown);
+                simulator.set_out_val(&self.id, "err", Signal::Unknown); // align
             }
         }
 

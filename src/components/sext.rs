@@ -37,18 +37,24 @@ impl Component for Sext {
         );
 
         // get input values
-        let mut value: SignalUnsigned = simulator.get_input_val(&self.sext_in).try_into().unwrap();
+        match simulator.get_input_val(&self.sext_in) {
+            Signal::DontCare | Signal::Uninitialized | Signal::Unknown => {
+                simulator.set_out_val(&self.id, "out", Signal::Unknown);
+                trace!("{} unknown input", self.id);
+            }
+            Signal::Data(mut value) => {
+                let to_sext = self.out_size - self.in_size; // Amount to be arithmetically shifted
+                let to_shl = SignalUnsigned::BITS - self.in_size; // To move input to MSB
+                let to_shr = to_shl - to_sext; // To shift the result back to LSB
 
-        let to_sext = self.out_size - self.in_size; // Amount to be arithmetically shifted
-        let to_shl = SignalUnsigned::BITS - self.in_size; // To move input to MSB
-        let to_shr = to_shl - to_sext; // To shift the result back to LSB
+                value <<= to_shl;
+                value = ((value as SignalSigned) >> to_sext) as SignalUnsigned;
+                value >>= to_shr;
 
-        value <<= to_shl;
-        value = ((value as SignalSigned) >> to_sext) as SignalUnsigned;
-        value >>= to_shr;
-
-        // set output
-        simulator.set_out_val(&self.id, "out", Signal::Data(value));
+                // set output
+                simulator.set_out_val(&self.id, "out", Signal::Data(value));
+            }
+        }
     }
 }
 

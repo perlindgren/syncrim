@@ -1,5 +1,6 @@
+use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct BranchLogic {
@@ -35,69 +36,88 @@ impl Component for BranchLogic {
     }
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) {
-        let ctrl: u32 = simulator.get_input_val(&self.ctrl).try_into().unwrap();
-        let rs1: u32 = simulator.get_input_val(&self.rs1).try_into().unwrap();
-        let rs2: u32 = simulator.get_input_val(&self.rs2).try_into().unwrap();
         let enable: u32 = simulator.get_input_val(&self.enable).try_into().unwrap();
-        let out: u32;
+        let out: Signal;
+        let rs1: Signal = simulator.get_input_val(&self.rs1);
+        let rs2: Signal = simulator.get_input_val(&self.rs2);
         if enable != 0 {
-            match ctrl {
-                0b000 => {
-                    if rs1 == rs2 {
-                        out = 2;
-                    } else {
-                        out = 0;
+            match simulator.get_input_val(&self.ctrl) {
+                Signal::Unknown | Signal::DontCare | Signal::Uninitialized => out = Signal::Unknown,
+                Signal::Data(ctrl) => {
+                    match ctrl {
+                        0b000 => {
+                            let rs1: u32 = rs1.try_into().unwrap();
+                            let rs2: u32 = rs2.try_into().unwrap();
+                            if rs1 == rs2 {
+                                out = Signal::from(2);
+                            } else {
+                                out = Signal::from(0);
+                            }
+                        } //beq
+                        0b001 => {
+                            let rs1: u32 = rs1.try_into().unwrap();
+                            let rs2: u32 = rs2.try_into().unwrap();
+                            if rs1 != rs2 {
+                                out = Signal::from(2);
+                            } else {
+                                out = Signal::from(0);
+                            }
+                        } //bne
+                        0b100 => {
+                            let rs1: u32 = rs1.try_into().unwrap();
+                            let rs2: u32 = rs2.try_into().unwrap();
+                            if (rs1 as i32) < (rs2 as i32) {
+                                out = Signal::from(2);
+                            } else {
+                                out = Signal::from(0);
+                            }
+                        } //blt
+                        0b101 => {
+                            let rs1: u32 = rs1.try_into().unwrap();
+                            let rs2: u32 = rs2.try_into().unwrap();
+                            if rs1 as i32 >= rs2 as i32 {
+                                out = Signal::from(2);
+                            } else {
+                                out = Signal::from(0);
+                            }
+                        } //bge
+                        0b110 => {
+                            let rs1: u32 = rs1.try_into().unwrap();
+                            let rs2: u32 = rs2.try_into().unwrap();
+                            if rs1 < rs2 {
+                                out = Signal::from(2);
+                            } else {
+                                out = Signal::from(0);
+                            }
+                        } //bltu
+                        0b111 => {
+                            let rs1: u32 = rs1.try_into().unwrap();
+                            let rs2: u32 = rs2.try_into().unwrap();
+                            if rs1 >= rs2 {
+                                out = Signal::from(2);
+                            } else {
+                                out = Signal::from(0);
+                            }
+                        } //bgeu
+                        0b011 => {
+                            out = Signal::from(1);
+                        } //jalr
+                        0b010 => {
+                            out = Signal::from(2); //jal
+                        }
+                        _ => {
+                            out = Signal::from(0);
+                        }
                     }
-                } //beq
-                0b001 => {
-                    if rs1 != rs2 {
-                        out = 2;
-                    } else {
-                        out = 0;
-                    }
-                } //bne
-                0b100 => {
-                    if (rs1 as i32) < (rs2 as i32) {
-                        out = 2;
-                    } else {
-                        out = 0;
-                    }
-                } //blt
-                0b101 => {
-                    if rs1 as i32 >= rs2 as i32 {
-                        out = 2;
-                    } else {
-                        out = 0;
-                    }
-                } //bge
-                0b110 => {
-                    if rs1 < rs2 {
-                        out = 2;
-                    } else {
-                        out = 0;
-                    }
-                } //bltu
-                0b111 => {
-                    if rs1 >= rs2 {
-                        out = 2;
-                    } else {
-                        out = 0;
-                    }
-                } //bgeu
-                0b011 => {
-                    out = 1;
-                } //jalr
-                0b010 => {
-                    out = 2; //jal
-                }
-                _ => {
-                    out = 0;
                 }
             }
         } else {
-            out = 0;
+            out = Signal::from(0); // pick pc+4 signal if disabled
         }
-
+        trace!("BranchLogic Out:{:?}", out);
+        println!(
+            "HIDFAJSDFPIJWAPEOFKOWAPEFKPOEWKFPAWEFPIAWJEFPOAWKEFWAEMFPOWEFPOWAMEFAOWEMFXDDDDD"
+        );
         simulator.set_out_val(&self.id, "out", out);
     }
 }

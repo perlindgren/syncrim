@@ -1,5 +1,6 @@
+use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct ALU {
@@ -38,10 +39,15 @@ impl Component for ALU {
     }
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) {
-        let operator_i: u32 = simulator
-            .get_input_val(&self.operator_i)
-            .try_into()
-            .unwrap();
+        let operator_i: u32;
+        match simulator.get_input_val(&self.operator_i) {
+            Signal::Data(data) => operator_i = data,
+            _ => {
+                simulator.set_out_val(&self.id, "result_o", Signal::Unknown);
+                return;
+            }
+        }
+        //if i is set, these two must be set or panic is reasonable.
         let operand_a_i: u32 = simulator
             .get_input_val(&self.operand_a_i)
             .try_into()
@@ -50,26 +56,68 @@ impl Component for ALU {
             .get_input_val(&self.operand_b_i)
             .try_into()
             .unwrap();
-        //let operand_c_i = simulator.get_input_val(&self.operand_c_i);
+        trace!("ALU operand A: {}, operand B:{}", operand_a_i, operand_b_i);
         let mut result_o = 0;
         match operator_i {
-            1 => result_o = (operand_a_i as i32 + operand_b_i as i32) as u32, //ADD/ADDI
-            2 => result_o = (operand_a_i as i32 - operand_b_i as i32) as u32, //SUB
-            3 => result_o = operand_a_i << operand_b_i,                       //SLL/SLLI
-            4 => result_o = operand_a_i >> operand_b_i,                       //SRL/SRLI
-            5 => result_o = (operand_a_i as i32 >> operand_b_i as i32) as u32, //SRA/SRAI
-            6 => result_o = operand_a_i ^ operand_b_i,                        //XOR/XORI
-            7 => result_o = operand_a_i | operand_b_i,                        //OR/ORI
-            8 => result_o = operand_a_i & operand_b_i,                        //AND/ANDI
-            9 => result_o = (operand_a_i < operand_b_i) as u32,               //SLTU/SLTIU/BLTU
-            10 => result_o = ((operand_a_i as i32) < (operand_b_i as i32)) as u32, //SLT/SLTI/BLT
-            11 => result_o = (operand_a_i == operand_b_i) as u32,             //BEQ
-            12 => result_o = (operand_a_i != operand_b_i) as u32,             //BNE
-            13 => result_o = (operand_a_i as i32 >= operand_b_i as i32) as u32, //BGE
-            14 => result_o = (operand_a_i >= operand_b_i) as u32,             //BGEU
+            1 => {
+                result_o = (operand_a_i as i32 + operand_b_i as i32) as u32;
+                trace!("ALU ADD")
+            } //ADD/ADDI
+            2 => {
+                result_o = (operand_a_i as i32 - operand_b_i as i32) as u32;
+                trace!("ALU SUB");
+            } //SUB
+            3 => {
+                result_o = operand_a_i << operand_b_i;
+                trace!("ALU SHIFT LEFT LOCIVAL");
+            } //SLL/SLLI
+            4 => {
+                result_o = operand_a_i >> operand_b_i;
+                trace!("ALU SHIFT RIGHT LOGICAL");
+            } //SRL/SRLI
+            5 => {
+                result_o = (operand_a_i as i32 >> operand_b_i as i32) as u32;
+                trace!("ALU SHIFT RIGHT ARITHMETIC");
+            } //SRA/SRAI
+            6 => {
+                result_o = operand_a_i ^ operand_b_i;
+                trace!("ALU XOR");
+            } //XOR/XORI
+            7 => {
+                result_o = operand_a_i | operand_b_i;
+                trace!("ALU OR");
+            } //OR/ORI
+            8 => {
+                result_o = operand_a_i & operand_b_i;
+                trace!("ALU AND");
+            } //AND/ANDI
+            9 => {
+                result_o = (operand_a_i < operand_b_i) as u32;
+                trace!("ALU SET LESS THAN UNSIGNED");
+            } //SLTU/SLTIU/BLTU
+            10 => {
+                result_o = ((operand_a_i as i32) < (operand_b_i as i32)) as u32;
+                trace!("ALU SET LESS THAN");
+            } //SLT/SLTI/BLT
+            11 => {
+                result_o = (operand_a_i == operand_b_i) as u32;
+                trace!("ALU EQUAL");
+            } //BEQ
+            12 => {
+                result_o = (operand_a_i != operand_b_i) as u32;
+                trace!("ALU NOT EQUAL");
+            } //BNE
+            13 => {
+                result_o = (operand_a_i as i32 >= operand_b_i as i32) as u32;
+                trace!("ALU GREATER OR EQUAL");
+            } //BGE
+            14 => {
+                result_o = (operand_a_i >= operand_b_i) as u32;
+                trace!("ALU GREATER OR EQUAL UNSIGNED");
+            } //BGEU
             _ => {}
         }
-        //println!("ALU result_o:{}", result_o);
+        trace!("ALU result_o:{}", result_o);
         simulator.set_out_val(&self.id, "result_o", result_o);
     }
 }

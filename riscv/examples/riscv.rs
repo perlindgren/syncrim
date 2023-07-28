@@ -1,4 +1,5 @@
 // An example MIPS model
+use fern;
 use riscv::components::*;
 use std::{cell::RefCell, path::PathBuf, rc::Rc};
 use syncrim::{
@@ -7,6 +8,7 @@ use syncrim::{
 };
 
 fn main() {
+    fern_setup_riscv();
     let cs = ComponentStore {
         store: vec![
             Rc::new(Add {
@@ -313,4 +315,35 @@ fn main() {
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(&cs, &path);
+}
+#[allow(unused_imports)]
+use log::LevelFilter;
+fn fern_setup_riscv() {
+    let f = fern::Dispatch::new()
+        // Perform allocation-free log formatting
+        .format(|out, message, record| {
+            out.finish(format_args!(
+                "[{} {}] {}",
+                record.level(),
+                record.target(),
+                message
+            ))
+        })
+        // Add blanket level filter -
+        // .level(log::LevelFilter::Debug);
+        .level(log::LevelFilter::Warn);
+
+    // - and per-module overrides
+    #[cfg(feature = "gui-vizia")]
+    let f = f
+        .level_for("riscv", LevelFilter::Trace)
+        .level_for("syncrim::components", LevelFilter::Trace);
+
+    f
+        // Output to stdout, files, and other Dispatch configurations
+        .chain(std::io::stdout())
+        .chain(fern::log_file("output.log").unwrap())
+        // Apply globally
+        .apply()
+        .unwrap()
 }

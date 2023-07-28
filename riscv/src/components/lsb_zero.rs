@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Input, OutputType, Ports, Signal, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct LSBZero {
@@ -26,12 +26,13 @@ impl Component for LSBZero {
     }
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) {
-        let mut data: u32 = simulator.get_input_val(&self.data_i).try_into().unwrap();
-        let mask: u32 = !0b1;
-        //println!("STRIPPER  IN:0b{:032b}", data);
-        //println!("STRIPPERMASK:0b{:032b}", mask);
-        data &= mask;
-        //println!("STRIPPER OUT:0b{:032b}", data);
-        simulator.set_out_val(&self.id, "out", data);
+        match simulator.get_input_val(&self.data_i) {
+            Signal::Data(mut data) => {
+                let mask: u32 = !0b1;
+                data &= mask;
+                simulator.set_out_val(&self.id, "out", data);
+            }
+            _ => simulator.set_out_val(&self.id, "out", Signal::Unknown),
+        }
     }
 }
