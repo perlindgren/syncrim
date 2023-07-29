@@ -1,7 +1,7 @@
 use crate::{
-    common::{Component, Simulator, ViziaComponent},
+    common::{Component, Simulator, ViziaComponent, V},
     components::Probe,
-    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
+    gui_vizia::{popup::build_popup, tooltip::new_component_tooltip, GuiData},
 };
 
 use vizia::{
@@ -14,32 +14,35 @@ use log::*;
 #[typetag::serde]
 impl ViziaComponent for Probe {
     // create view
-    fn view(&self, cx: &mut Context) {
-        trace!("---- Create Probe View");
-        View::build(ProbeView {}, cx, |cx| {
-            let input = self.input.clone();
+    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
+        V {}.build(cx, |cx| {
+            trace!("---- Create Probe View");
+            View::build(ProbeView {}, cx, |cx| {
+                let input = self.input.clone();
 
-            Binding::new(
-                cx,
-                crate::gui_vizia::GuiData::simulator.then(Simulator::cycle),
-                move |cx, _| {
-                    Label::new(cx, {
-                        let simulator = GuiData::simulator.get(cx);
-                        &format!("{}", simulator.get_input_signal(&input))
-                    })
-                    .hoverable(false);
-                },
-            );
-            NewPopup::new(cx, self.get_id_ports());
+                Binding::new(
+                    cx,
+                    crate::gui_vizia::GuiData::simulator.then(Simulator::cycle),
+                    move |cx, _| {
+                        Label::new(cx, {
+                            let simulator = GuiData::simulator.get(cx);
+                            &format!("{}", simulator.get_input_signal(&input))
+                        })
+                        .hoverable(false);
+                    },
+                );
+                // NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+                build_popup(cx, self.get_id_ports());
+            })
+            .position_type(PositionType::SelfDirected)
+            .left(Pixels(self.pos.0 - 10.0))
+            .top(Pixels(self.pos.1 - 10.0))
+            // .width(Pixels(20.0)) // TODO, max width?
+            .width(Auto)
+            .height(Pixels(20.0))
+            .on_press(|ex| ex.emit(PopupEvent::Switch))
+            .tooltip(|cx| new_component_tooltip(cx, self));
         })
-        .position_type(PositionType::SelfDirected)
-        .left(Pixels(self.pos.0 - 10.0))
-        .top(Pixels(self.pos.1 - 10.0))
-        // .width(Pixels(20.0)) // TODO, max width?
-        .width(Auto)
-        .height(Pixels(20.0))
-        .on_press(|ex| ex.emit(PopupEvent::Switch))
-        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 

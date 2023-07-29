@@ -1,7 +1,7 @@
 use crate::{
-    common::{Component, ViziaComponent},
+    common::{Component, ViziaComponent, V},
     components::Mem,
-    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
+    gui_vizia::{popup::build_popup, tooltip::new_component_tooltip},
 };
 
 use vizia::{
@@ -14,24 +14,27 @@ use log::*;
 #[typetag::serde]
 impl ViziaComponent for Mem {
     // create view
-    fn view(&self, cx: &mut Context) {
-        trace!("---- Create Mem View ");
+    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
+        V {}.build(cx, |cx| {
+            trace!("---- Create Mem View ");
 
-        View::build(MemView {}, cx, |cx| {
-            Label::new(cx, "DataMemory")
-                .hoverable(false)
-                .left(Pixels(10.0))
-                .top(Pixels(10.0));
-            NewPopup::new(cx, self.get_id_ports());
+            View::build(MemView {}, cx, |cx| {
+                Label::new(cx, "DataMemory")
+                    .hoverable(false)
+                    .left(Pixels(10.0))
+                    .top(Pixels(10.0));
+                // NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+                build_popup(cx, self.get_id_ports());
+            })
+            .position_type(PositionType::SelfDirected)
+            .background_color(Color::blueviolet())
+            .left(Pixels(self.pos.0 - self.width / 2.0))
+            .top(Pixels(self.pos.1 - self.height / 2.0))
+            .width(Pixels(self.width))
+            .height(Pixels(self.height))
+            .on_press(|ex| ex.emit(PopupEvent::Switch))
+            .tooltip(|cx| new_component_tooltip(cx, self));
         })
-        .position_type(PositionType::SelfDirected)
-        .background_color(Color::blueviolet())
-        .left(Pixels(self.pos.0 - self.width / 2.0))
-        .top(Pixels(self.pos.1 - self.height / 2.0))
-        .width(Pixels(self.width))
-        .height(Pixels(self.height))
-        .on_press(|ex| ex.emit(PopupEvent::Switch))
-        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 

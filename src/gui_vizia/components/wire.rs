@@ -1,7 +1,7 @@
 use crate::{
-    common::{Component, ViziaComponent},
+    common::{Component, ViziaComponent, V},
     components::Wire,
-    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
+    gui_vizia::{popup::build_popup, tooltip::new_component_tooltip},
 };
 
 use vizia::{
@@ -14,22 +14,25 @@ use log::*;
 #[typetag::serde]
 impl ViziaComponent for Wire {
     // create view
-    fn view(&self, cx: &mut Context) {
-        trace!("---- Create Wire View");
-        let surround = 5.0;
+    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
+        V {}.build(cx, |cx| {
+            trace!("---- Create Wire View");
+            let surround = 5.0;
 
-        for (i, pos) in self.pos[1..].iter().enumerate() {
-            View::build(WireView { surround }, cx, |cx| {
-                NewPopup::new(cx, self.get_id_ports());
-            })
-            .position_type(PositionType::SelfDirected)
-            .left(Pixels(f32::min(pos.0, self.pos[i].0) - surround))
-            .top(Pixels(f32::min(pos.1, self.pos[i].1) - surround))
-            .width(Pixels(f32::abs(pos.0 - self.pos[i].0) + 2.0 * surround))
-            .height(Pixels(f32::abs(pos.1 - self.pos[i].1) + 2.0 * surround))
-            .on_press(|ex| ex.emit(PopupEvent::Switch))
-            .tooltip(|cx| new_component_tooltip(cx, self));
-        }
+            for (i, pos) in self.pos[1..].iter().enumerate() {
+                View::build(WireView { surround }, cx, |cx| {
+                    //    NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+                    build_popup(cx, self.get_id_ports());
+                })
+                .position_type(PositionType::SelfDirected)
+                .left(Pixels(f32::min(pos.0, self.pos[i].0) - surround))
+                .top(Pixels(f32::min(pos.1, self.pos[i].1) - surround))
+                .width(Pixels(f32::abs(pos.0 - self.pos[i].0) + 2.0 * surround))
+                .height(Pixels(f32::abs(pos.1 - self.pos[i].1) + 2.0 * surround))
+                .on_press(|ex| ex.emit(PopupEvent::Switch))
+                .tooltip(|cx| new_component_tooltip(cx, self));
+            }
+        })
     }
 }
 

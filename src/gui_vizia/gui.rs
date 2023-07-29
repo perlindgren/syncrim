@@ -259,19 +259,27 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                                     let oc = wrapper_oc.get(cx);
                                     for (i, c) in oc.iter().enumerate() {
                                         trace!("build view comp id {}", i);
-                                        VStack::new(cx, |cx| {
-                                            c.view(cx);
-                                        })
-                                        .position_type(PositionType::SelfDirected)
-                                        .size(Auto)
-                                        .on_mouse_down(
-                                            move |ex, button| {
-                                                if button == MouseButton::Right {
-                                                    trace!("on_mouse_down {:?}", i);
-                                                    ex.emit(GuiEvent::ShowLeftPanel(i))
+                                        c.view(cx)
+                                            .hoverable(true)
+                                            .position_type(PositionType::SelfDirected)
+                                            .size(Auto)
+                                            .on_mouse_down(move |ex, button| {
+                                                trace!("on_mouse_down");
+                                                match button {
+                                                    MouseButton::Left => {
+                                                        trace!("LEFT");
+                                                        ex.emit(PopupEvent::Switch)
+                                                    }
+                                                    MouseButton::Middle => {
+                                                        trace!("MIDDLE ")
+                                                    }
+                                                    MouseButton::Right => {
+                                                        trace!("RIGHT {:?}", i);
+                                                        ex.emit(GuiEvent::ShowLeftPanel(i))
+                                                    }
+                                                    _ => {}
                                                 }
-                                            },
-                                        );
+                                            });
                                     }
                                 })
                                 .border_color(Color::black())

@@ -1,22 +1,14 @@
 use std::path::PathBuf;
-use syncrim::{
-    common::{Component, ComponentStore, Input},
-    components::*,
-    fern::fern_setup,
-    signal::SignalUnsigned,
-};
+use syncrim::{common::ComponentStore, components::*, fern::fern_setup};
 
 fn main() {
     fern_setup();
 
-    // let mut c = Constant::rc_new("constant", (100.0, 100.0), MemCtrl::Write as SignalUnsigned);
-    // let out = c.get_id_ports();
-
     let cs = ComponentStore {
-        store: vec![Constant::rc_new("probe_edit", (100.0, 100.0), 0)],
+        store: vec![Constant::rc_new("constant", (100.0, 100.0), 0)],
     };
 
-    let path = PathBuf::from("probe_constant.json");
+    let path = PathBuf::from("constant.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]

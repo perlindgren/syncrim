@@ -73,8 +73,13 @@ pub trait ViziaComponent: Component {
     fn left_view(&self, _cx: &mut vizia::context::Context) {}
 
     /// create Vizia view
-    fn view(&self, _cx: &mut vizia::context::Context) {}
+    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
+        V {}.build(cx, move |_| {})
+    }
 }
+
+pub struct V;
+impl View for V {}
 
 // Specific functionality for EGui frontend
 #[cfg(feature = "gui-egui")]
