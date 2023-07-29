@@ -1,42 +1,34 @@
 // use std::fmt::Alignment;
 use crate::{
-    common::{Component, ViziaComponent, V},
+    common::{ViziaComponent, V},
     components::Sext,
-    gui_vizia::{popup::build_popup, tooltip::new_component_tooltip},
 };
-
+use log::*;
 use vizia::{
     prelude::*,
     vg::{Paint, Path},
 };
 
-use log::*;
-
 #[typetag::serde]
 impl ViziaComponent for Sext {
-    // create viewI
-    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
-        V {}.build(cx, |cx| {
+    // create view
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
+        V::new(cx, self, |cx| {
             trace!("---- Create Sext View");
             assert!(self.in_size < self.out_size);
 
-            View::build(SextView {}, cx, move |cx| {
+            SextView {}.build(cx, move |cx| {
                 Label::new(cx, "SXT")
                     .width(Pixels(80.0))
                     .top(Pixels(20.0))
                     .text_align(TextAlign::Center)
                     .hoverable(false);
-                //  NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
-                build_popup(cx, self.get_id_ports());
             })
-            .position_type(PositionType::SelfDirected)
-            .left(Pixels(self.pos.0 - 40.0))
-            .top(Pixels(self.pos.1 - 20.0))
-            .width(Pixels(80.0))
-            .height(Pixels(40.0))
-            .on_press(|ex| ex.emit(PopupEvent::Switch))
-            .tooltip(|cx| new_component_tooltip(cx, self));
         })
+        .left(Pixels(self.pos.0 - 40.0))
+        .top(Pixels(self.pos.1 - 20.0))
+        .width(Pixels(80.0))
+        .height(Pixels(40.0))
     }
 }
 
