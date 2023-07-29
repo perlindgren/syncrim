@@ -1,7 +1,7 @@
 use crate::{
-    common::{Component, Input, SignalUnsigned, ViziaComponent, V},
+    common::{Input, SignalUnsigned, ViziaComponent, V},
     components::Mux,
-    gui_vizia::{popup::build_popup, tooltip::new_component_tooltip, GuiData},
+    gui_vizia::GuiData,
 };
 
 use vizia::{
@@ -14,8 +14,8 @@ use log::*;
 #[typetag::serde]
 impl ViziaComponent for Mux {
     // create view
-    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
-        V {}.build(cx, |cx| {
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
+        V::new(cx, self, |cx| {
             trace!("---- Create Mux View");
 
             View::build(
@@ -24,19 +24,13 @@ impl ViziaComponent for Mux {
                     select_max: self.m_in.len() as u8,
                 },
                 cx,
-                |cx| {
-                    // NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
-                    build_popup(cx, self.get_id_ports());
-                },
+                |cx| {},
             )
-            .position_type(PositionType::SelfDirected)
-            .left(Pixels(self.pos.0 - 20.0))
-            .top(Pixels(self.pos.1 - 10.0 * self.m_in.len() as f32 - 10.0))
-            .width(Pixels(40.0))
-            .height(Pixels(20.0 * self.m_in.len() as f32 + 20.0))
-            .on_press(|ex| ex.emit(PopupEvent::Switch))
-            .tooltip(|cx| new_component_tooltip(cx, self));
         })
+        .left(Pixels(self.pos.0 - 20.0))
+        .top(Pixels(self.pos.1 - 10.0 * self.m_in.len() as f32 - 10.0))
+        .width(Pixels(40.0))
+        .height(Pixels(20.0 * self.m_in.len() as f32 + 20.0))
     }
 }
 
