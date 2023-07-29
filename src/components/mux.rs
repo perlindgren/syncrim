@@ -18,7 +18,6 @@ impl Component for Mux {
     fn to_(&self) {
         trace!("mux");
     }
-
     fn get_id_ports(&self) -> (Id, Ports) {
         let mut inputs = vec![self.select.clone()];
         let mut m = self.m_in.clone();

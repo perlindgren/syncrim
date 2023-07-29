@@ -15,7 +15,6 @@ impl Component for Register {
     fn to_(&self) {
         trace!("register");
     }
-
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

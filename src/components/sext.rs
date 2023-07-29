@@ -1,6 +1,7 @@
 // use std::fmt::Alignment;
-use crate::common::{
-    Component, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, Simulator,
+use crate::{
+    common::{Component, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, Simulator},
+    signal::SignalValue,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -19,7 +20,6 @@ impl Component for Sext {
     fn to_(&self) {
         trace!("Sign Extension");
     }
-
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
@@ -39,19 +39,24 @@ impl Component for Sext {
         );
 
         // get input values
-        let mut value: SignalUnsigned =
-            simulator.get_input_value(&self.sext_in).try_into().unwrap();
+        match simulator.get_input_value(&self.sext_in) {
+            SignalValue::Data(mut value) => {
+                let to_sext = self.out_size - self.in_size; // Amount to be arithmetically shifted
+                let to_shl = SignalUnsigned::BITS - self.in_size; // To move input to MSB
+                let to_shr = to_shl - to_sext; // To shift the result back to LSB
 
-        let to_sext = self.out_size - self.in_size; // Amount to be arithmetically shifted
-        let to_shl = SignalUnsigned::BITS - self.in_size; // To move input to MSB
-        let to_shr = to_shl - to_sext; // To shift the result back to LSB
+                value <<= to_shl;
+                value = ((value as SignalSigned) >> to_sext) as SignalUnsigned;
+                value >>= to_shr;
 
-        value <<= to_shl;
-        value = ((value as SignalSigned) >> to_sext) as SignalUnsigned;
-        value >>= to_shr;
-
-        // set output
-        simulator.set_out_value(&self.id, "out", value);
+                // set output
+                simulator.set_out_value(&self.id, "out", SignalValue::Data(value));
+            }
+            _ => {
+                simulator.set_out_value(&self.id, "out", SignalValue::Unknown);
+                trace!("{} unknown input", self.id);
+            }
+        }
     }
 }
 

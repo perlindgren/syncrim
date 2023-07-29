@@ -7,6 +7,7 @@ use vizia::prelude::*;
 use log::*;
 
 use crate::gui_vizia::popup::popup_data_derived_lenses::is_open;
+
 pub fn build_popup(cx: &mut Context, id_ports: (Id, Ports)) -> Handle<'_, Popup<Wrapper<is_open>>> {
     trace!("build_popup");
     PopupData::default().build(cx);

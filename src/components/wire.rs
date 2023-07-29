@@ -14,7 +14,6 @@ impl Component for Wire {
     fn to_(&self) {
         trace!("Wire");
     }
-
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
