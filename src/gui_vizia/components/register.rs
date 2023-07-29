@@ -1,7 +1,6 @@
 use crate::{
-    common::{Component, ViziaComponent, V},
+    common::{ViziaComponent, V},
     components::Register,
-    gui_vizia::{popup::build_popup, tooltip::new_component_tooltip},
 };
 
 use vizia::{
@@ -14,22 +13,15 @@ use log::*;
 #[typetag::serde]
 impl ViziaComponent for Register {
     // create view
-    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
-        V {}.build(cx, |cx| {
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
+        V::new(cx, self, |cx| {
             trace!("---- Create Register View ");
-
-            View::build(RegisterView {}, cx, |cx| {
-                //  NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
-                build_popup(cx, self.get_id_ports());
-            })
-            .position_type(PositionType::SelfDirected)
-            .left(Pixels(self.pos.0 - 10.0))
-            .top(Pixels(self.pos.1 - 15.0))
-            .width(Pixels(20.0))
-            .height(Pixels(30.0))
-            .on_press(|ex| ex.emit(PopupEvent::Switch))
-            .tooltip(|cx| new_component_tooltip(cx, self));
+            RegisterView {}.build(cx, |cx| {})
         })
+        .left(Pixels(self.pos.0 - 10.0))
+        .top(Pixels(self.pos.1 - 15.0))
+        .width(Pixels(20.0))
+        .height(Pixels(30.0))
     }
 }
 
