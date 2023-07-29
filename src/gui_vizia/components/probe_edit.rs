@@ -9,7 +9,7 @@ use log::*;
 
 #[typetag::serde]
 impl ViziaComponent for ProbeEdit {
-    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
         V {}.build(cx, |cx| {
             trace!("---- Create ProbeEdit View");
             ProbeEditView {
