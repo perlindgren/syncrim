@@ -1,7 +1,6 @@
 use crate::{
-    common::{Component, ViziaComponent, V},
+    common::{ViziaComponent, V},
     components::Add,
-    gui_vizia::{popup::build_popup, tooltip::new_component_tooltip},
 };
 
 use vizia::{
@@ -14,8 +13,8 @@ use log::*;
 #[typetag::serde]
 impl ViziaComponent for Add {
     // create view
-    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
-        V {}.build(cx, move |cx| {
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
+        V::new(cx, self, move |cx| {
             trace!("---- Create Add View");
 
             View::build(AddView {}, cx, move |cx| {
@@ -23,17 +22,12 @@ impl ViziaComponent for Add {
                     .left(Percentage(50.0))
                     .top(Pixels(40.0 - 10.0))
                     .hoverable(false);
-
-                build_popup(cx, self.get_id_ports());
             })
-            .position_type(PositionType::SelfDirected)
-            .left(Pixels(self.pos.0 - 20.0))
-            .top(Pixels(self.pos.1 - 40.0))
-            .width(Pixels(40.0))
-            .height(Pixels(80.0))
-            // .on_press(|ex| ex.emit(PopupEvent::Switch))
-            .tooltip(|cx| new_component_tooltip(cx, self));
         })
+        .left(Pixels(self.pos.0 - 20.0))
+        .top(Pixels(self.pos.1 - 40.0))
+        .width(Pixels(40.0))
+        .height(Pixels(80.0))
     }
 }
 
