@@ -20,7 +20,7 @@ impl ViziaComponent for Wire {
 
         for (i, pos) in self.pos[1..].iter().enumerate() {
             View::build(WireView { surround }, cx, |cx| {
-                NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+                NewPopup::new(cx, self.get_id_ports());
             })
             .position_type(PositionType::SelfDirected)
             .left(Pixels(f32::min(pos.0, self.pos[i].0) - surround))

@@ -9,14 +9,11 @@ use syncrim::{
 fn main() {
     fern_setup();
 
-    let mut c = Constant::rc_new("constant", (100.0, 100.0), MemCtrl::Write as SignalUnsigned);
-    let out = c.get_id_ports();
+    // let mut c = Constant::rc_new("constant", (100.0, 100.0), MemCtrl::Write as SignalUnsigned);
+    // let out = c.get_id_ports();
 
     let cs = ComponentStore {
-        store: vec![
-            ProbeEdit::rc_new("probe_edit", (100.0, 100.0)),
-            Probe::rc_new("probe", (250.0, 100.0), Input::new("probe_edit", "out")),
-        ],
+        store: vec![Constant::rc_new("probe_edit", (100.0, 100.0), 0)],
     };
 
     let path = PathBuf::from("probe_constant.json");

@@ -28,7 +28,7 @@ impl ViziaComponent for ProbeStim {
                     Label::new(cx, &format!("{}", rhs)).hoverable(false);
                 },
             );
-            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+            NewPopup::new(cx, self.get_id_ports());
         })
         .position_type(PositionType::SelfDirected)
         .background_color(Color::lightblue())

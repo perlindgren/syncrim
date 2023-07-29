@@ -22,7 +22,7 @@ impl ViziaComponent for Add {
                 .left(Percentage(50.0))
                 .top(Pixels(40.0 - 10.0))
                 .hoverable(false);
-            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+            NewPopup::new(cx, self.get_id_ports());
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 20.0))

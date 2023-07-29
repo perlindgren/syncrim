@@ -30,7 +30,7 @@ impl ViziaComponent for Probe {
                     .hoverable(false);
                 },
             );
-            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+            NewPopup::new(cx, self.get_id_ports());
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 10.0))

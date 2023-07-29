@@ -22,7 +22,7 @@ impl ViziaComponent for Mem {
                 .hoverable(false)
                 .left(Pixels(10.0))
                 .top(Pixels(10.0));
-            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+            NewPopup::new(cx, self.get_id_ports());
         })
         .position_type(PositionType::SelfDirected)
         .background_color(Color::blueviolet())

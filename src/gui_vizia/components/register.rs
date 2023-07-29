@@ -18,7 +18,7 @@ impl ViziaComponent for Register {
         trace!("---- Create Register View ");
 
         View::build(RegisterView {}, cx, |cx| {
-            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+            NewPopup::new(cx, self.get_id_ports());
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 10.0))

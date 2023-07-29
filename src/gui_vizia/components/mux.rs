@@ -24,7 +24,7 @@ impl ViziaComponent for Mux {
             },
             cx,
             |cx| {
-                NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+                NewPopup::new(cx, self.get_id_ports());
             },
         )
         .position_type(PositionType::SelfDirected)

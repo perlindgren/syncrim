@@ -25,7 +25,7 @@ impl ViziaComponent for Sext {
                 .top(Pixels(20.0))
                 .text_align(TextAlign::Center)
                 .hoverable(false);
-            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+            NewPopup::new(cx, self.get_id_ports());
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 40.0))

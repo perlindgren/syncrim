@@ -15,7 +15,7 @@ impl ViziaComponent for Constant {
         trace!("---- Create Constant View");
         View::build(ConstantView {}, cx, |cx| {
             Label::new(cx, &format!("{}", self.value)).hoverable(false);
-            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+            NewPopup::new(cx, self.get_id_ports());
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 10.0))
