@@ -66,7 +66,7 @@ fn main() {
             ),
             Add::rc_new(
                 "branch_adder",
-                (500.0, 1000.0),
+                (50.0, 400.0),
                 Input::new("reg", "out"),
                 Input::new("branch_adder_mux", "out"),
             ),

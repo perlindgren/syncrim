@@ -31,7 +31,7 @@ impl Component for InstrMem {
         let pc: u32 = simulator.get_input_val(&self.pc).try_into().unwrap();
 
         let instr = self.instr[(pc / 4) as usize];
-        trace!("instruction: {:032b}", instr);
+        trace!("instruction: {:08x}", instr);
         trace!("pc:0x{:08x}", pc);
         // set output
         simulator.set_out_value(&self.id, "instruction", instr);
