@@ -71,7 +71,7 @@ pub trait Component {
 // Specific functionality for EGui frontend
 #[cfg(feature = "gui-egui")]
 #[typetag::serde(tag = "type")]
-pub trait EguiComponent {
+pub trait EguiComponent: Component {
     fn render(
         &self,
         _ui: &mut egui::Ui,
