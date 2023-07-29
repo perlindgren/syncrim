@@ -7,14 +7,21 @@ use vizia::prelude::*;
 
 pub use crate::signal::*;
 
-#[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
-type Components = Vec<Rc<dyn Component>>;
+use log::*;
 
-#[cfg(feature = "gui-vizia")]
-type Components = Vec<Rc<dyn ViziaComponent>>;
+// #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
+// type Components = Vec<Rc<dyn Component>>;
 
-#[cfg(feature = "gui-egui")]
-type Components = Vec<Rc<dyn EguiComponent>>;
+// #[cfg(feature = "gui-vizia")]
+// type Components = Vec<Rc<dyn ViziaComponent>>;
+
+// #[cfg(feature = "gui-egui")]
+// type Components = Vec<Rc<dyn EguiComponent>>;
+
+// #[typetag::serde(tag = "type")]
+// pub trait GuiComponent: Component + ViziaComponent {}
+
+pub type Components = Vec<Rc<dyn Component>>;
 
 #[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
@@ -51,7 +58,7 @@ pub type IdFieldIndex = HashMap<(Id, Id), usize>;
 
 // Common functionality for all components
 #[typetag::serde(tag = "type")]
-pub trait Component {
+pub trait Component: ViziaComponent {
     // placeholder
     fn to_(&self) {}
 
@@ -66,9 +73,9 @@ pub trait Component {
 }
 
 // Specific functionality for Vizia frontend
-#[cfg(feature = "gui-vizia")]
+// #[cfg(feature = "gui-vizia")]
 #[typetag::serde(tag = "type")]
-pub trait ViziaComponent: Component {
+pub trait ViziaComponent {
     /// create left Vizia view
     fn left_view(&self, _cx: &mut vizia::context::Context) {}
 
@@ -81,10 +88,26 @@ pub trait ViziaComponent: Component {
 pub struct V;
 impl View for V {}
 
+impl V {
+    pub fn new<H>(
+        cx: &mut Context,
+        id_ports: (Id, Ports),
+        content: impl FnOnce(&mut Context) -> Handle<'_, H>,
+    ) -> Handle<V> {
+        Self {}
+            .build(cx, |cx| {
+                trace!("V build");
+                content(cx).hoverable(false);
+                crate::gui_vizia::popup::build_popup(cx, id_ports).hoverable(true);
+            })
+            .size(Auto)
+    }
+}
+
 // Specific functionality for EGui frontend
 #[cfg(feature = "gui-egui")]
 #[typetag::serde(tag = "type")]
-pub trait EguiComponent: Component {
+pub trait EguiComponent {
     fn render(
         &self,
         _ui: &mut egui::Ui,

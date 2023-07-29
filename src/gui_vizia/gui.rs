@@ -1,6 +1,9 @@
 use crate::{
-    common::{ComponentStore, Simulator},
-    gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::Transport},
+    common::{Component, ComponentStore, Simulator},
+    gui_vizia::{
+        grid::Grid, keymap::init_keymap, menu::Menu, popup::build_popup,
+        tooltip::new_component_tooltip, transport::Transport,
+    },
 };
 use rfd::FileDialog;
 use std::collections::HashSet;
@@ -159,7 +162,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
 
             HStack::new(cx, |cx| {
                 HStack::new(cx, |cx| {
-                    // Left pane
+                    // Left panel
                     Binding::new(
                         cx,
                         GuiData::simulator.then(Simulator::ordered_components),
@@ -247,6 +250,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                     );
                 });
 
+                // Mid panel
                 ScrollView::new(cx, 0.0, 0.0, true, true, |cx| {
                     // Grid area
                     Grid::new(cx, |cx| {
@@ -257,12 +261,24 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                             |cx, wrapper_oc| {
                                 VStack::new(cx, |cx| {
                                     let oc = wrapper_oc.get(cx);
-                                    for (i, c) in oc.iter().enumerate() {
+                                    for (i, c) in oc.into_iter().enumerate() {
                                         trace!("build view comp id {}", i);
+                                        // VStack::new(cx, |cx| {
                                         c.view(cx)
+                                            //.hoverable(false)
+                                            .tooltip(|cx| new_component_tooltip(cx, &*c))
+                                            //.size(Auto)
+                                            //.position_type(PositionType::SelfDirected)
+                                            // .popup();
+                                            // build_popup(cx, c.get_id_ports())
+                                            // .size(Auto)
+                                            //     .hoverable(false)
+                                            //     //.position_type(PositionType::SelfDirected)
+                                            //     ;
+                                            // })
+                                            .size(Auto)
                                             .hoverable(true)
                                             .position_type(PositionType::SelfDirected)
-                                            .size(Auto)
                                             .on_mouse_down(move |ex, button| {
                                                 trace!("on_mouse_down");
                                                 match button {
