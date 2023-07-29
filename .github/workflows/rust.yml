@@ -32,3 +32,12 @@ jobs:
           args: --no-default-features --features gui-egui
       - name: Run tests
         run: cargo test --workspace --no-default-features --features components --verbose
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: rustfmt
+        run: cargo fmt --all -- --check
