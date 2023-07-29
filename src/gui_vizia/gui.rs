@@ -1,8 +1,8 @@
 use crate::{
-    common::{Component, ComponentStore, Simulator},
+    common::{ComponentStore, Simulator},
     gui_vizia::{
-        grid::Grid, keymap::init_keymap, menu::Menu, popup::build_popup,
-        tooltip::new_component_tooltip, transport::Transport,
+        grid::Grid, keymap::init_keymap, menu::Menu, tooltip::new_component_tooltip,
+        transport::Transport,
     },
 };
 use rfd::FileDialog;
