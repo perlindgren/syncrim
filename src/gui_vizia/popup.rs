@@ -63,7 +63,7 @@ pub fn build_popup(cx: &mut Context, id_ports: (Id, Ports)) -> Handle<'_, Popup<
         })
         .size(Auto);
     })
-    .on_blur(|cx| cx.emit(PopupEvent::Close))
+    //.on_blur(|cx| cx.emit(PopupEvent::Close))
     .size(Auto)
     // .position_type(PositionType::SelfDirected)
     .top(Percentage(100.0)) // place popup below

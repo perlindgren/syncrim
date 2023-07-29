@@ -21,7 +21,6 @@ impl ViziaComponent for Wire {
 
             for (i, pos) in self.pos[1..].iter().enumerate() {
                 View::build(WireView { surround }, cx, |cx| {
-                    //    NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
                     build_popup(cx, self.get_id_ports());
                 })
                 .position_type(PositionType::SelfDirected)
@@ -33,6 +32,9 @@ impl ViziaComponent for Wire {
                 .tooltip(|cx| new_component_tooltip(cx, self));
             }
         })
+        .hoverable(false)
+        .width(Pixels(0.0))
+        .height(Pixels(0.0))
     }
 }
 
