@@ -44,12 +44,12 @@ impl ViziaComponent for ProbeEdit {
                     };
                     trace!("signal {:?}", value);
                 })
-                .position_type(PositionType::SelfDirected)
-                .left(Pixels(self.pos.0 - 40.0))
-                .top(Pixels(self.pos.1 - 10.0))
                 .width(Pixels(80.0))
                 .height(Pixels(20.0));
         })
+        .size(Auto)
+        .left(Pixels(self.pos.0 - 40.0))
+        .top(Pixels(self.pos.1 - 10.0))
     }
 }
 
