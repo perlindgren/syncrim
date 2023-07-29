@@ -1,5 +1,5 @@
 use crate::{
-    common::{Component, GuiComponent, ViziaComponent, V},
+    common::{ViziaComponent, V},
     components::Constant,
 };
 use vizia::prelude::*;
@@ -14,6 +14,3 @@ impl ViziaComponent for Constant {
             .background_color(Color::lightblue())
     }
 }
-
-#[typetag::serde]
-impl GuiComponent for Constant {}

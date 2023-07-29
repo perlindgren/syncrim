@@ -9,19 +9,14 @@ pub use crate::signal::*;
 
 use log::*;
 
-// #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
-// type Components = Vec<Rc<dyn Component>>;
+#[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
+type Components = Vec<Rc<dyn Component>>;
 
-// #[cfg(feature = "gui-vizia")]
-// type Components = Vec<Rc<dyn ViziaComponent>>;
+#[cfg(feature = "gui-vizia")]
+type Components = Vec<Rc<dyn ViziaComponent>>;
 
-// #[cfg(feature = "gui-egui")]
-// type Components = Vec<Rc<dyn EguiComponent>>;
-
-#[typetag::serde(tag = "type")]
-pub trait GuiComponent: Component + ViziaComponent {}
-
-pub type Components = Vec<Rc<dyn GuiComponent>>;
+#[cfg(feature = "gui-egui")]
+type Components = Vec<Rc<dyn EguiComponent>>;
 
 #[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
@@ -73,7 +68,7 @@ pub trait Component {
 }
 
 // Specific functionality for Vizia frontend
-// #[cfg(feature = "gui-vizia")]
+#[cfg(feature = "gui-vizia")]
 #[typetag::serde(tag = "type")]
 pub trait ViziaComponent: Component {
     /// create left Vizia view
@@ -85,24 +80,9 @@ pub trait ViziaComponent: Component {
     }
 }
 
+// Perhaps we should move this to `gui_vizia`
 pub struct V;
 impl View for V {}
-
-// impl V {
-//     pub fn new<H>(
-//         cx: &mut Context,
-//         id_ports: (Id, Ports),
-//         content: impl FnOnce(&mut Context) -> Handle<'_, H>,
-//     ) -> Handle<V> {
-//         Self {}
-//             .build(cx, |cx| {
-//                 trace!("V build");
-//                 content(cx).hoverable(false);
-//                 crate::gui_vizia::popup::build_popup(cx, id_ports).hoverable(true);
-//             })
-//             .size(Auto)
-//     }
-// }
 
 impl V {
     pub fn new<'a, H>(
@@ -110,7 +90,6 @@ impl V {
         component: &dyn Component,
         content: impl FnOnce(&mut Context) -> Handle<'_, H>,
     ) -> Handle<'a, V> {
-        // let id_idport = component.get_id_ports();
         Self {}
             .build(cx, move |cx| {
                 trace!("V build");

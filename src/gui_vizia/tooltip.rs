@@ -1,10 +1,10 @@
 use crate::{
-    common::{Component, GuiComponent, Simulator, ViziaComponent},
+    common::{Simulator, ViziaComponent},
     gui_vizia::GuiData,
 };
 use vizia::prelude::*;
 
-pub fn new_component_tooltip(cx: &mut Context, component: &dyn GuiComponent) {
+pub fn new_component_tooltip(cx: &mut Context, component: &dyn ViziaComponent) {
     VStack::new(cx, |cx| {
         let (id, ports) = component.get_id_ports();
         Label::new(cx, &id);
