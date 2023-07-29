@@ -16,7 +16,7 @@ impl ViziaComponent for Register {
     fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
         V::new(cx, self, |cx| {
             trace!("---- Create Register View ");
-            RegisterView {}.build(cx, |cx| {})
+            RegisterView {}.build(cx, |_cx| {})
         })
         .left(Pixels(self.pos.0 - 10.0))
         .top(Pixels(self.pos.1 - 15.0))
