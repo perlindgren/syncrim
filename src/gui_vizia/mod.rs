@@ -1,4 +1,3 @@
-
 use crate::common::Component;
 use log::*;
 use vizia::prelude::*;

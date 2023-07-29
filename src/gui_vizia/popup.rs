@@ -69,4 +69,3 @@ pub fn build_popup(cx: &mut Context, id_ports: (Id, Ports)) -> Handle<'_, Popup<
     .top(Percentage(100.0)) // place popup below
     .left(Percentage(0.0))
 }
-
