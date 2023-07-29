@@ -42,6 +42,7 @@ impl Mem {
         ctrl: Input,
         sext: Input,
         size: Input,
+        memory: HashMap<usize, u8>,
     ) -> Self {
         Mem {
             id: id.to_string(),
@@ -54,7 +55,7 @@ impl Mem {
             ctrl,
             sext,
             size,
-            memory: Memory::new(),
+            memory: Memory::new(memory),
         }
     }
 
@@ -72,7 +73,35 @@ impl Mem {
         size: Input,
     ) -> Rc<Self> {
         Rc::new(Mem::new(
-            id, pos, width, height, big_endian, data, addr, ctrl, sext, size,
+            id,
+            pos,
+            width,
+            height,
+            big_endian,
+            data,
+            addr,
+            ctrl,
+            sext,
+            size,
+            HashMap::new(),
+        ))
+    }
+
+    pub fn rc_new_from_bytes(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        big_endian: bool,
+        data: Input,
+        addr: Input,
+        ctrl: Input,
+        sext: Input,
+        size: Input,
+        memory: HashMap<usize, u8>,
+    ) -> Rc<Self> {
+        Rc::new(Mem::new(
+            id, pos, width, height, big_endian, data, addr, ctrl, sext, size, memory,
         ))
     }
 }
@@ -84,14 +113,14 @@ pub struct Memory {
 
 impl Default for Memory {
     fn default() -> Self {
-        Self::new()
+        Self::new(HashMap::new())
     }
 }
 
 impl Memory {
-    pub fn new() -> Self {
+    pub fn new(data: HashMap<usize, u8>) -> Self {
         Memory {
-            bytes: RefCell::new(HashMap::new()),
+            bytes: RefCell::new(data),
         }
     }
 

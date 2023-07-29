@@ -4,6 +4,9 @@
 .global _start
 
 _start:
+    li x30, 0xffff
+    sw x30, 0(x0)
+    lb x8, 0(x0)
     addi x1, x0, 0 #x1=0
     jal x2, .+8
     jal x2, .+0 #this is to be jumped over or we will get stuck

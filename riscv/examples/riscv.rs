@@ -2,7 +2,12 @@
 use fern;
 use riscv::components::*;
 use riscv_elf_parse;
-use std::{cell::RefCell, collections::BTreeMap, path::PathBuf, rc::Rc};
+use std::{
+    cell::RefCell,
+    collections::{BTreeMap, HashMap},
+    path::PathBuf,
+    rc::Rc,
+};
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
@@ -13,9 +18,12 @@ fn main() {
     let memory = riscv_elf_parse::Memory::new_from_assembly("asm.s", "memory.x");
     println!("{}", memory);
     let mut instr_mem = BTreeMap::new();
+    let mut data_mem = HashMap::new();
     for element in memory.bytes {
-        if element.0 < 0x8000_0000 {
+        if element.0 < 0x5000_0000 {
             instr_mem.insert(element.0, element.1);
+        } else {
+            data_mem.insert(element.0, element.1);
         }
     }
     let cs = ComponentStore {
@@ -250,7 +258,7 @@ fn main() {
                 // ],
                 history: RegHistory::new(),
             }),
-            Mem::rc_new(
+            Mem::rc_new_from_bytes(
                 "data_memory",
                 (700.0, 600.0),
                 100.0,
@@ -261,6 +269,7 @@ fn main() {
                 Input::new("decoder", "data_mem_ctrl"),
                 Input::new("decoder", "data_se"),
                 Input::new("decoder", "data_mem_size"),
+                data_mem,
             ),
             Constant::rc_new("zero_c", (680.0, 150.0), 0),
             Mux::rc_new(
@@ -330,8 +339,10 @@ fn fern_setup_riscv() {
 
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
-    let f = f.level_for("riscv", LevelFilter::Trace);
-    //.level_for("syncrim::components", LevelFilter::Trace);
+    let f = f
+        .level_for("syncrim::components::mem", LevelFilter::Trace)
+        .level_for("riscv::components::instr_mem", LevelFilter::Trace);
+    //.level_for("riscv", LevelFilter::Trace);
 
     f
         // Output to stdout, files, and other Dispatch configurations
