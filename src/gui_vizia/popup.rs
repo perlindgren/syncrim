@@ -77,4 +77,3 @@ impl NewPopup {
 }
 
 impl View for NewPopup {}
-
