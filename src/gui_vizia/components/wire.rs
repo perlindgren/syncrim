@@ -14,7 +14,7 @@ use log::*;
 #[typetag::serde]
 impl ViziaComponent for Wire {
     // create view
-    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
         V {}.build(cx, |cx| {
             trace!("---- Create Wire View");
             let surround = 5.0;
