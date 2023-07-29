@@ -17,15 +17,11 @@ impl ViziaComponent for Mux {
     fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
         V::new(cx, self, |cx| {
             trace!("---- Create Mux View");
-
-            View::build(
-                MuxView {
-                    select: self.select.clone(),
-                    select_max: self.m_in.len() as u8,
-                },
-                cx,
-                |cx| {},
-            )
+            MuxView {
+                select: self.select.clone(),
+                select_max: self.m_in.len() as u8,
+            }
+            .build(cx, |cx| {})
         })
         .left(Pixels(self.pos.0 - 20.0))
         .top(Pixels(self.pos.1 - 10.0 * self.m_in.len() as f32 - 10.0))
