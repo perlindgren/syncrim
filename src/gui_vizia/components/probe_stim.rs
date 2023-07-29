@@ -1,6 +1,7 @@
 use crate::{
-    common::{SignalValue, Simulator, ViziaComponent, V},
+    common::{SignalValue, Simulator},
     components::ProbeStim,
+    gui_vizia::{ViziaComponent, V},
 };
 use log::*;
 use vizia::prelude::*;

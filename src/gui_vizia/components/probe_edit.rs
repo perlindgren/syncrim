@@ -1,11 +1,10 @@
-use crate::gui_vizia::GuiData;
 use crate::{
-    common::{SignalSigned, SignalUnsigned, SignalValue, Simulator, ViziaComponent, V},
+    common::{SignalSigned, SignalUnsigned, SignalValue, Simulator},
     components::{ProbeEdit, TextSignal},
+    gui_vizia::{GuiData, ViziaComponent, V},
 };
-use vizia::prelude::*;
-
 use log::*;
+use vizia::prelude::*;
 
 #[typetag::serde]
 impl ViziaComponent for ProbeEdit {

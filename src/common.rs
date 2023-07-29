@@ -5,9 +5,10 @@ use std::{collections::HashMap, rc::Rc};
 #[cfg(feature = "gui-vizia")]
 use vizia::prelude::*;
 
-pub use crate::signal::*;
+#[cfg(feature = "gui-vizia")]
+use crate::gui_vizia::ViziaComponent;
 
-use log::*;
+pub use crate::signal::*;
 
 #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
 type Components = Vec<Rc<dyn Component>>;
@@ -65,39 +66,6 @@ pub trait Component {
 
     /// update component internal state
     fn un_clock(&self) {}
-}
-
-// Specific functionality for Vizia frontend
-#[cfg(feature = "gui-vizia")]
-#[typetag::serde(tag = "type")]
-pub trait ViziaComponent: Component {
-    /// create left Vizia view
-    fn left_view(&self, _cx: &mut vizia::context::Context) {}
-
-    /// create Vizia view
-    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
-        V {}.build(cx, move |_| {})
-    }
-}
-
-// Perhaps we should move this to `gui_vizia`
-pub struct V;
-impl View for V {}
-
-impl V {
-    pub fn new<'a, H>(
-        cx: &'a mut Context,
-        component: &dyn Component,
-        content: impl FnOnce(&mut Context) -> Handle<'_, H>,
-    ) -> Handle<'a, V> {
-        Self {}
-            .build(cx, move |cx| {
-                trace!("V build");
-                content(cx).hoverable(false);
-                crate::gui_vizia::popup::build_popup(cx, component.get_id_ports()).hoverable(true);
-            })
-            .size(Auto)
-    }
 }
 
 // Specific functionality for EGui frontend

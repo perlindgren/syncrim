@@ -1,7 +1,6 @@
-// use std::fmt::Alignment;
 use crate::{
-    common::{ViziaComponent, V},
     components::Sext,
+    gui_vizia::{ViziaComponent, V},
 };
 use log::*;
 use vizia::{

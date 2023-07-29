@@ -1,9 +1,5 @@
 use std::path::PathBuf;
-use syncrim::{
-    common::{ComponentStore, Input},
-    components::*,
-    fern::fern_setup,
-};
+use syncrim::{common::ComponentStore, components::*, fern::fern_setup};
 
 fn main() {
     fern_setup();

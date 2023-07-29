@@ -1,11 +1,10 @@
 use crate::{
-    common::{SignalValue, Simulator, ViziaComponent, V},
+    common::{SignalValue, Simulator},
     components::ProbeAssert,
-    gui_vizia::GuiData,
+    gui_vizia::{GuiData, ViziaComponent, V},
 };
-use vizia::prelude::*;
-
 use log::*;
+use vizia::prelude::*;
 
 #[typetag::serde]
 impl ViziaComponent for ProbeAssert {

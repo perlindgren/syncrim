@@ -1,6 +1,6 @@
 use crate::{
-    common::{Simulator, ViziaComponent},
-    gui_vizia::GuiData,
+    common::Simulator,
+    gui_vizia::{GuiData, ViziaComponent},
 };
 use vizia::prelude::*;
 

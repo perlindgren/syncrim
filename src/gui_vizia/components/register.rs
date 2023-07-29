@@ -1,14 +1,12 @@
 use crate::{
-    common::{ViziaComponent, V},
     components::Register,
+    gui_vizia::{ViziaComponent, V},
 };
-
+use log::*;
 use vizia::{
     prelude::*,
     vg::{Paint, Path},
 };
-
-use log::*;
 
 #[typetag::serde]
 impl ViziaComponent for Register {

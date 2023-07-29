@@ -1,8 +1,7 @@
 use crate::{
-    common::{ViziaComponent, V},
     components::Add,
+    gui_vizia::{ViziaComponent, V},
 };
-
 use vizia::{
     prelude::*,
     vg::{Paint, Path},

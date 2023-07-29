@@ -1,12 +1,10 @@
 use crate::{
-    common::{Simulator, ViziaComponent, V},
+    common::Simulator,
     components::Probe,
-    gui_vizia::GuiData,
+    gui_vizia::{GuiData, ViziaComponent, V},
 };
-
-use vizia::prelude::*;
-
 use log::*;
+use vizia::prelude::*;
 
 #[typetag::serde]
 impl ViziaComponent for Probe {

@@ -1,6 +1,6 @@
 use crate::{
-    common::{ViziaComponent, V},
     components::Mem,
+    gui_vizia::{ViziaComponent, V},
 };
 use log::*;
 use vizia::prelude::*;

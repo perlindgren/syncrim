@@ -1,7 +1,7 @@
 use crate::{
-    common::{Component, ViziaComponent, V},
+    common::Component,
     components::Wire,
-    gui_vizia::{popup::build_popup, tooltip::new_component_tooltip},
+    gui_vizia::{popup::build_popup, tooltip::new_component_tooltip, ViziaComponent, V},
 };
 
 use vizia::{

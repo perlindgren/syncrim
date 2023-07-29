@@ -1,15 +1,13 @@
 use crate::{
-    common::{Input, SignalUnsigned, ViziaComponent, V},
+    common::{Input, SignalUnsigned},
     components::Mux,
-    gui_vizia::GuiData,
+    gui_vizia::{GuiData, ViziaComponent, V},
 };
-
+use log::*;
 use vizia::{
     prelude::*,
     vg::{Paint, Path},
 };
-
-use log::*;
 
 #[typetag::serde]
 impl ViziaComponent for Mux {
