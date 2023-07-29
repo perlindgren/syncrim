@@ -1,9 +1,7 @@
 use crate::{
-    common::{Component, ViziaComponent},
     components::Add,
-    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
+    gui_vizia::{ViziaComponent, V},
 };
-
 use vizia::{
     prelude::*,
     vg::{Paint, Path},
@@ -14,23 +12,21 @@ use log::*;
 #[typetag::serde]
 impl ViziaComponent for Add {
     // create view
-    fn view(&self, cx: &mut Context) {
-        trace!("---- Create Add View");
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
+        V::new(cx, self, move |cx| {
+            trace!("---- Create Add View");
 
-        View::build(AddView {}, cx, move |cx| {
-            Label::new(cx, "+")
-                .left(Percentage(50.0))
-                .top(Pixels(40.0 - 10.0))
-                .hoverable(false);
-            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+            View::build(AddView {}, cx, move |cx| {
+                Label::new(cx, "+")
+                    .left(Percentage(50.0))
+                    .top(Pixels(40.0 - 10.0))
+                    .hoverable(false);
+            })
         })
-        .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 20.0))
         .top(Pixels(self.pos.1 - 40.0))
         .width(Pixels(40.0))
         .height(Pixels(80.0))
-        .on_press(|ex| ex.emit(PopupEvent::Switch))
-        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 

@@ -1,7 +1,6 @@
 use crate::components::InstrMem;
 use syncrim::{
-    common::ViziaComponent,
-    gui_vizia::tooltip::new_component_tooltip,
+    gui_vizia::{ViziaComponent, V},
     vizia::{
         prelude::*,
         vg::{Color, Paint, Path},
@@ -22,19 +21,20 @@ impl ViziaComponent for InstrMem {
     }
 
     // create view
-    fn view(&self, cx: &mut Context) {
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
         trace!("---- Create InsrMem View");
-        View::build(InstMem {}, cx, |cx| {
-            Label::new(cx, "Inst Mem")
-                .left(Percentage(20.0))
-                .top(Percentage(45.0));
+        V::new(cx, self, |cx| {
+            InstMem {}.build(cx, |cx| {
+                Label::new(cx, "Inst Mem")
+                    .left(Percentage(20.0))
+                    .top(Percentage(45.0))
+                    .hoverable(false);
+            })
         })
-        .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 50.0))
         .top(Pixels(self.pos.1 - 100.0))
         .width(Pixels(100.0))
         .height(Pixels(200.0))
-        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 

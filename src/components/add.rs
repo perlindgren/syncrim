@@ -33,8 +33,8 @@ impl Component for Add {
     // propagate addition to output
     fn clock(&self, simulator: &mut Simulator) {
         // get input values
-        let a_in = u32::try_from(simulator.get_input_val(&self.a_in));
-        let b_in = u32::try_from(simulator.get_input_val(&self.b_in));
+        let a_in = u32::try_from(simulator.get_input_value(&self.a_in));
+        let b_in = u32::try_from(simulator.get_input_value(&self.b_in));
 
         let (value, overflow) = match (&a_in, &b_in) {
             (Ok(a), Ok(b)) => {
@@ -110,9 +110,9 @@ mod test {
         let add_overflow = &Input::new("add", "overflow");
 
         // reset
-        assert_eq!(simulator.get_input_val(add_val), (0 + 0).into());
+        assert_eq!(simulator.get_input_value(add_val), (0 + 0).into());
         assert_eq!(
-            simulator.get_input_val(add_overflow),
+            simulator.get_input_value(add_overflow),
             (false as SignalUnsigned).into()
         );
 
@@ -125,9 +125,9 @@ mod test {
 
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 2);
-        assert_eq!(simulator.get_input_val(add_val), (42 + 1337).into());
+        assert_eq!(simulator.get_input_value(add_val), (42 + 1337).into());
         assert_eq!(
-            simulator.get_input_val(add_overflow),
+            simulator.get_input_value(add_overflow),
             (false as SignalUnsigned).into()
         );
 
@@ -141,11 +141,11 @@ mod test {
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 3);
         assert_eq!(
-            simulator.get_input_val(add_val),
+            simulator.get_input_value(add_val),
             (SignalUnsigned::MAX / 2 + 1).into()
         );
         assert_eq!(
-            simulator.get_input_val(add_overflow),
+            simulator.get_input_value(add_overflow),
             (true as SignalUnsigned).into()
         );
     }

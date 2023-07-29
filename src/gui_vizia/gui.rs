@@ -1,6 +1,9 @@
 use crate::{
     common::{ComponentStore, Simulator},
-    gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::Transport},
+    gui_vizia::{
+        grid::Grid, keymap::init_keymap, menu::Menu, tooltip::new_component_tooltip,
+        transport::Transport,
+    },
 };
 use rfd::FileDialog;
 use std::collections::HashSet;
@@ -159,7 +162,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
 
             HStack::new(cx, |cx| {
                 HStack::new(cx, |cx| {
-                    // Left pane
+                    // Left panel
                     Binding::new(
                         cx,
                         GuiData::simulator.then(Simulator::ordered_components),
@@ -247,6 +250,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                     );
                 });
 
+                // Mid panel
                 ScrollView::new(cx, 0.0, 0.0, true, true, |cx| {
                     // Grid area
                     Grid::new(cx, |cx| {
@@ -257,21 +261,29 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                             |cx, wrapper_oc| {
                                 VStack::new(cx, |cx| {
                                     let oc = wrapper_oc.get(cx);
-                                    for (i, c) in oc.iter().enumerate() {
+                                    for (i, c) in oc.into_iter().enumerate() {
                                         trace!("build view comp id {}", i);
-                                        VStack::new(cx, |cx| {
-                                            c.view(cx);
-                                        })
-                                        .position_type(PositionType::SelfDirected)
-                                        .size(Auto)
-                                        .on_mouse_down(
-                                            move |ex, button| {
-                                                if button == MouseButton::Right {
-                                                    trace!("on_mouse_down {:?}", i);
-                                                    ex.emit(GuiEvent::ShowLeftPanel(i))
+                                        c.view(cx)
+                                            .tooltip(|cx| new_component_tooltip(cx, &*c))
+                                            .hoverable(true)
+                                            .position_type(PositionType::SelfDirected)
+                                            .on_mouse_down(move |ex, button| {
+                                                trace!("on_mouse_down");
+                                                match button {
+                                                    MouseButton::Left => {
+                                                        trace!("LEFT");
+                                                        ex.emit(PopupEvent::Switch)
+                                                    }
+                                                    MouseButton::Middle => {
+                                                        trace!("MIDDLE ")
+                                                    }
+                                                    MouseButton::Right => {
+                                                        trace!("RIGHT {:?}", i);
+                                                        ex.emit(GuiEvent::ShowLeftPanel(i))
+                                                    }
+                                                    _ => {}
                                                 }
-                                            },
-                                        );
+                                            });
                                     }
                                 })
                                 .border_color(Color::black())

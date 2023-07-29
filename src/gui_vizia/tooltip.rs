@@ -1,10 +1,10 @@
 use crate::{
-    common::{Component, Simulator},
-    gui_vizia::GuiData,
+    common::Simulator,
+    gui_vizia::{GuiData, ViziaComponent},
 };
 use vizia::prelude::*;
 
-pub fn new_component_tooltip(cx: &mut Context, component: &dyn Component) {
+pub fn new_component_tooltip(cx: &mut Context, component: &dyn ViziaComponent) {
     VStack::new(cx, |cx| {
         let (id, ports) = component.get_id_ports();
         Label::new(cx, &id);
@@ -18,7 +18,7 @@ pub fn new_component_tooltip(cx: &mut Context, component: &dyn Component) {
                     move |cx, _| {
                         Label::new(
                             cx,
-                            &format!("{:?}", GuiData::simulator.get(cx).get_input_val(&input)),
+                            &format!("{:?}", GuiData::simulator.get(cx).get_input_value(&input)),
                         )
                         .class("tt_shortcut");
                     },

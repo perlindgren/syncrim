@@ -26,6 +26,8 @@ impl ComponentStore {
     }
 
     pub fn to_(&self) {
-        self.store.iter().for_each(|c| c.to_());
+        self.store.iter().for_each(|c| {
+            c.to_();
+        })
     }
 }

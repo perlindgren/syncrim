@@ -9,7 +9,7 @@ fn main() {
     fern_setup();
     let cs = ComponentStore {
         store: vec![
-            Constant::rc_new("c0", (100.0, 110.0), 32768),
+            Constant::rc_new("c0", (50.0, 110.0), 32768),
             Wire::rc_new(
                 "w0",
                 vec![(110.0, 110.0), (140.0, 110.0)],
