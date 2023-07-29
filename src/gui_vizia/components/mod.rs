@@ -1,6 +1,6 @@
 mod add;
 mod constant;
-// mod mem;
+mod mem;
 mod mux;
 mod probe;
 mod probe_assert;
