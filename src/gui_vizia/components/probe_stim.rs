@@ -1,21 +1,18 @@
 use crate::{
-    common::{Component, SignalValue, Simulator, ViziaComponent, V},
+    common::{SignalValue, Simulator, ViziaComponent, V},
     components::ProbeStim,
-    gui_vizia::{popup::build_popup, tooltip::new_component_tooltip},
 };
-
-use vizia::prelude::*;
-
 use log::*;
+use vizia::prelude::*;
 
 #[typetag::serde]
 impl ViziaComponent for ProbeStim {
     // create view
-    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
-        V {}.build(cx, |cx| {
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
+        V::new(cx, self, |cx| {
             trace!("---- Create ProbeStim View");
             let values = self.values.clone();
-            View::build(ProbeStimView {}, cx, |cx| {
+            VStack::new(cx, |cx| {
                 Binding::new(
                     cx,
                     crate::gui_vizia::GuiData::simulator.then(Simulator::cycle),
@@ -29,26 +26,14 @@ impl ViziaComponent for ProbeStim {
                         Label::new(cx, &format!("{}", rhs)).hoverable(false);
                     },
                 );
-                // NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
-                build_popup(cx, self.get_id_ports());
             })
-            .position_type(PositionType::SelfDirected)
-            .background_color(Color::lightblue())
-            .left(Pixels(self.pos.0 - 10.0))
-            .top(Pixels(self.pos.1 - 10.0))
-            .width(Auto)
-            // .width() // TODO, maybe some max width
-            .height(Pixels(20.0))
-            // TODO: do we want/need tooltip/popup for constants
-            .on_press(|ex| ex.emit(PopupEvent::Switch))
-            .tooltip(|cx| new_component_tooltip(cx, self));
+            .size(Auto)
         })
-    }
-}
-pub struct ProbeStimView {}
-
-impl View for ProbeStimView {
-    fn element(&self) -> Option<&'static str> {
-        Some("ProbeStim")
+        .top(Pixels(self.pos.1 - 10.0))
+        .left(Pixels(self.pos.0 - 10.0))
+        .width(Auto)
+        // .width() // TODO, maybe some max width
+        .background_color(Color::lightblue())
+        .height(Pixels(20.0))
     }
 }
