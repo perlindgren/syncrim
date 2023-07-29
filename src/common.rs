@@ -18,10 +18,10 @@ use log::*;
 // #[cfg(feature = "gui-egui")]
 // type Components = Vec<Rc<dyn EguiComponent>>;
 
-// #[typetag::serde(tag = "type")]
-// pub trait GuiComponent: Component + ViziaComponent {}
+#[typetag::serde(tag = "type")]
+pub trait GuiComponent: Component + ViziaComponent {}
 
-pub type Components = Vec<Rc<dyn Component>>;
+pub type Components = Vec<Rc<dyn GuiComponent>>;
 
 #[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
@@ -58,7 +58,7 @@ pub type IdFieldIndex = HashMap<(Id, Id), usize>;
 
 // Common functionality for all components
 #[typetag::serde(tag = "type")]
-pub trait Component: ViziaComponent {
+pub trait Component {
     // placeholder
     fn to_(&self) {}
 
@@ -75,12 +75,12 @@ pub trait Component: ViziaComponent {
 // Specific functionality for Vizia frontend
 // #[cfg(feature = "gui-vizia")]
 #[typetag::serde(tag = "type")]
-pub trait ViziaComponent {
+pub trait ViziaComponent: Component {
     /// create left Vizia view
     fn left_view(&self, _cx: &mut vizia::context::Context) {}
 
     /// create Vizia view
-    fn view<'a>(&'a self, cx: &'a mut Context) -> Handle<'a, V> {
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
         V {}.build(cx, move |_| {})
     }
 }
@@ -88,17 +88,34 @@ pub trait ViziaComponent {
 pub struct V;
 impl View for V {}
 
+// impl V {
+//     pub fn new<H>(
+//         cx: &mut Context,
+//         id_ports: (Id, Ports),
+//         content: impl FnOnce(&mut Context) -> Handle<'_, H>,
+//     ) -> Handle<V> {
+//         Self {}
+//             .build(cx, |cx| {
+//                 trace!("V build");
+//                 content(cx).hoverable(false);
+//                 crate::gui_vizia::popup::build_popup(cx, id_ports).hoverable(true);
+//             })
+//             .size(Auto)
+//     }
+// }
+
 impl V {
-    pub fn new<H>(
-        cx: &mut Context,
-        id_ports: (Id, Ports),
+    pub fn new<'a, H>(
+        cx: &'a mut Context,
+        component: &dyn Component,
         content: impl FnOnce(&mut Context) -> Handle<'_, H>,
-    ) -> Handle<V> {
+    ) -> Handle<'a, V> {
+        // let id_idport = component.get_id_ports();
         Self {}
-            .build(cx, |cx| {
+            .build(cx, move |cx| {
                 trace!("V build");
                 content(cx).hoverable(false);
-                crate::gui_vizia::popup::build_popup(cx, id_ports).hoverable(true);
+                crate::gui_vizia::popup::build_popup(cx, component.get_id_ports()).hoverable(true);
             })
             .size(Auto)
     }
