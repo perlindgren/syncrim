@@ -1,7 +1,7 @@
 use crate::components::InstrMem;
+use log::trace;
 use syncrim::{
-    common::ViziaComponent,
-    gui_vizia::tooltip::new_component_tooltip,
+    gui_vizia::{tooltip::new_component_tooltip, ViziaComponent, V},
     vizia::{
         prelude::*,
         vg::{Color, Paint, Path},
@@ -11,19 +11,21 @@ use syncrim::{
 #[typetag::serde]
 impl ViziaComponent for InstrMem {
     // create view
-    fn view(&self, cx: &mut Context) {
-        println!("---- Create InsrMem View");
-        View::build(InstMem {}, cx, |cx| {
-            Label::new(cx, "Inst Mem")
-                .left(Percentage(35.0))
-                .top(Percentage(35.0));
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
+        V::new(cx, self, move |cx| {
+            trace!("---- Create InsrMem View");
+            View::build(InstMem {}, cx, |cx| {
+                Label::new(cx, "Inst Mem")
+                    .left(Percentage(35.0))
+                    .top(Percentage(35.0));
+            })
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 50.0))
         .top(Pixels(self.pos.1 - 100.0))
         .width(Pixels(200.0))
         .height(Pixels(100.0))
-        .tooltip(|cx| new_component_tooltip(cx, self));
+        .tooltip(|cx| new_component_tooltip(cx, self))
     }
 }
 

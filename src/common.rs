@@ -5,6 +5,9 @@ use std::{collections::HashMap, rc::Rc};
 #[cfg(feature = "gui-vizia")]
 use vizia::prelude::*;
 
+#[cfg(feature = "gui-vizia")]
+use crate::gui_vizia::ViziaComponent;
+
 pub use crate::signal::*;
 
 #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
@@ -63,17 +66,6 @@ pub trait Component {
 
     /// update component internal state
     fn un_clock(&self) {}
-}
-
-// Specific functionality for Vizia frontend
-#[cfg(feature = "gui-vizia")]
-#[typetag::serde(tag = "type")]
-pub trait ViziaComponent: Component {
-    /// create left Vizia view
-    fn left_view(&self, _cx: &mut vizia::context::Context) {}
-
-    /// create Vizia view
-    fn view(&self, _cx: &mut vizia::context::Context) {}
 }
 
 // Specific functionality for EGui frontend

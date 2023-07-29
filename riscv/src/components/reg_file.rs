@@ -125,7 +125,7 @@ impl Deref for RegStore {
 
 impl RegFile {
     fn read_reg(&self, simulator: &Simulator, input: &Input) -> SignalValue {
-        match simulator.get_input_val(input) {
+        match simulator.get_input_value(input) {
             SignalValue::Data(read_addr) => {
                 if read_addr > 0 {
                     trace!("read_addr {}", read_addr);
@@ -158,11 +158,11 @@ impl Component for RegFile {
     }
 
     fn clock(&self, simulator: &mut Simulator) {
-        if simulator.get_input_val(&self.write_enable) == (true as SignalUnsigned).into() {
-            let data = simulator.get_input_val(&self.write_data);
+        if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
+            let data = simulator.get_input_value(&self.write_data);
             trace!("write data {:?}", data);
             let write_addr: SignalUnsigned = simulator
-                .get_input_val(&self.write_addr)
+                .get_input_value(&self.write_addr)
                 .try_into()
                 .unwrap();
             trace!("write_addr {}", write_addr);
@@ -229,8 +229,8 @@ mod test {
         let out_reg_2 = &Input::new("reg_file", "reg_b");
 
         // reset
-        assert_eq!(simulator.get_input_val(out_reg_1), 0.into());
-        assert_eq!(simulator.get_input_val(out_reg_2), 0.into());
+        assert_eq!(simulator.get_input_value(out_reg_1), 0.into());
+        assert_eq!(simulator.get_input_value(out_reg_2), 0.into());
 
         println!("<setup for clock 2>");
         simulator.set_out_value("read_reg_1", "out", 0);
@@ -245,8 +245,8 @@ mod test {
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 2);
-        assert_eq!(simulator.get_input_val(out_reg_1), 0.into());
-        assert_eq!(simulator.get_input_val(out_reg_2), 1337.into());
+        assert_eq!(simulator.get_input_value(out_reg_1), 0.into());
+        assert_eq!(simulator.get_input_value(out_reg_2), 1337.into());
 
         // test write and read to reg # 0 in same cycle (red #0 should always read 0)
         println!("<setup for clock 3>");
@@ -259,7 +259,7 @@ mod test {
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 3);
-        assert_eq!(simulator.get_input_val(out_reg_1), 0.into());
-        assert_eq!(simulator.get_input_val(out_reg_2), 1337.into());
+        assert_eq!(simulator.get_input_value(out_reg_1), 0.into());
+        assert_eq!(simulator.get_input_value(out_reg_2), 1337.into());
     }
 }

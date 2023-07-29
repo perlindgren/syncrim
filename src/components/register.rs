@@ -30,7 +30,7 @@ impl Component for Register {
     // propagate input value to output
     fn clock(&self, simulator: &mut Simulator) {
         // get input value
-        let value = simulator.get_input_val(&self.r_in);
+        let value = simulator.get_input_value(&self.r_in);
         // set output
         simulator.set_out_value(&self.id, "out", value);
         trace!("eval: register id {} in {:?}", self.id, value);

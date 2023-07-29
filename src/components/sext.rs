@@ -39,7 +39,7 @@ impl Component for Sext {
         );
 
         // get input values
-        match simulator.get_input_val(&self.sext_in) {
+        match simulator.get_input_value(&self.sext_in) {
             SignalValue::Data(mut value) => {
                 let to_sext = self.out_size - self.in_size; // Amount to be arithmetically shifted
                 let to_shl = SignalUnsigned::BITS - self.in_size; // To move input to MSB
@@ -118,8 +118,8 @@ mod test {
         let sext16_out = &Input::new("sext16", "out");
 
         // reset
-        assert_eq!(simulator.get_input_val(sext32_out), 0.into());
-        assert_eq!(simulator.get_input_val(sext16_out), 0.into());
+        assert_eq!(simulator.get_input_value(sext32_out), 0.into());
+        assert_eq!(simulator.get_input_value(sext16_out), 0.into());
 
         // Sign-extended
         println!("<setup for clock 2>");
@@ -129,8 +129,8 @@ mod test {
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 2);
-        assert_eq!(simulator.get_input_val(sext32_out), 0xFFFFFFFF.into());
-        assert_eq!(simulator.get_input_val(sext16_out), 0xFFFF.into());
+        assert_eq!(simulator.get_input_value(sext32_out), 0xFFFFFFFF.into());
+        assert_eq!(simulator.get_input_value(sext16_out), 0xFFFF.into());
 
         // Zero-extended
         println!("<setup for clock 3>");
@@ -140,8 +140,8 @@ mod test {
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 3);
-        assert_eq!(simulator.get_input_val(sext32_out), 0b111.into());
-        assert_eq!(simulator.get_input_val(sext16_out), 0b111.into());
+        assert_eq!(simulator.get_input_value(sext32_out), 0b111.into());
+        assert_eq!(simulator.get_input_value(sext16_out), 0b111.into());
 
         // Unclean upper bits
         println!("<setup for clock 4>");
@@ -151,7 +151,7 @@ mod test {
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 4);
-        assert_eq!(simulator.get_input_val(sext32_out), 0b111.into());
-        assert_eq!(simulator.get_input_val(sext16_out), 0b111.into());
+        assert_eq!(simulator.get_input_value(sext32_out), 0b111.into());
+        assert_eq!(simulator.get_input_value(sext16_out), 0b111.into());
     }
 }

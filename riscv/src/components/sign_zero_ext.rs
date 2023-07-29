@@ -30,11 +30,11 @@ impl Component for SZExt {
     fn clock(&self, simulator: &mut Simulator) {
         //data is zero extended as default since its a 32 bit signal
 
-        match simulator.get_input_val(&self.data_i) {
+        match simulator.get_input_value(&self.data_i) {
             //if there is data, sel should be defined, otherwise panic is good.
             SignalValue::Data(data) => {
                 let mut data: u32 = data.try_into().unwrap();
-                let sel: u32 = simulator.get_input_val(&self.sel_i).try_into().unwrap();
+                let sel: u32 = simulator.get_input_value(&self.sel_i).try_into().unwrap();
                 //println!("SZEDATA:{:x}", data);
                 match sel {
                     0 => {
@@ -92,13 +92,13 @@ mod test {
         simulator.set_out_value("sel", "out", 0);
         simulator.clock();
         assert_eq!(
-            simulator.get_input_val(szext),
+            simulator.get_input_value(szext),
             ((!0b11111111111) as u32).into()
         );
 
         simulator.set_out_value("input", "out", val);
         simulator.set_out_value("sel", "out", 1);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(szext), 0b100000000000.into());
+        assert_eq!(simulator.get_input_value(szext), 0b100000000000.into());
     }
 }

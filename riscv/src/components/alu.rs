@@ -43,7 +43,7 @@ impl Component for ALU {
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) {
         let operator_i: u32;
-        match simulator.get_input_val(&self.operator_i) {
+        match simulator.get_input_value(&self.operator_i) {
             SignalValue::Data(data) => operator_i = data,
             _ => {
                 simulator.set_out_value(&self.id, "result_o", SignalValue::Unknown);
@@ -52,11 +52,11 @@ impl Component for ALU {
         }
         //if i is set, these two must be set or panic is reasonable.
         let operand_a_i: u32 = simulator
-            .get_input_val(&self.operand_a_i)
+            .get_input_value(&self.operand_a_i)
             .try_into()
             .unwrap();
         let operand_b_i: u32 = simulator
-            .get_input_val(&self.operand_b_i)
+            .get_input_value(&self.operand_b_i)
             .try_into()
             .unwrap();
         trace!("ALU operand A: {}, operand B:{}", operand_a_i, operand_b_i);
@@ -170,7 +170,7 @@ mod test {
         simulator.set_out_value("operand_b_i", "out", 42);
         simulator.clock();
         assert_eq!(
-            simulator.get_input_val(alu_out),
+            simulator.get_input_value(alu_out),
             (SignalSigned::overflowing_add(-41i32, 42).0 as u32).into()
         );
 
@@ -179,7 +179,7 @@ mod test {
         simulator.set_out_value("operand_b_i", "out", 1);
         simulator.clock();
         assert_eq!(
-            simulator.get_input_val(alu_out),
+            simulator.get_input_value(alu_out),
             (SignalSigned::overflowing_sub(-2147483648, 1).0 as u32).into()
         );
 
@@ -187,24 +187,24 @@ mod test {
         simulator.set_out_value("operand_a_i", "out", 58);
         simulator.set_out_value("operand_b_i", "out", 4);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), (58u32 << 4u32).into());
+        assert_eq!(simulator.get_input_value(alu_out), (58u32 << 4u32).into());
 
         simulator.set_out_value("operator_i", "out", 4); //srl
         simulator.set_out_value("operand_a_i", "out", 58);
         simulator.set_out_value("operand_b_i", "out", 4);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), (58u32 >> 4u32).into());
+        assert_eq!(simulator.get_input_value(alu_out), (58u32 >> 4u32).into());
 
         simulator.set_out_value("operator_i", "out", 5); //sra
         simulator.set_out_value("operand_a_i", "out", -1i32 as u32);
         simulator.set_out_value("operand_b_i", "out", 4);
         simulator.clock();
         assert_eq!(
-            simulator.get_input_val(alu_out),
+            simulator.get_input_value(alu_out),
             ((-1i32 >> 4i32) as u32).into()
         );
         assert_ne!(
-            simulator.get_input_val(alu_out),
+            simulator.get_input_value(alu_out),
             ((-1i32 as u32 >> 4).into())
         );
 
@@ -212,94 +212,103 @@ mod test {
         simulator.set_out_value("operand_a_i", "out", 7327239 as u32);
         simulator.set_out_value("operand_b_i", "out", 184771);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), (7327239 ^ 184771).into());
+        assert_eq!(
+            simulator.get_input_value(alu_out),
+            (7327239 ^ 184771).into()
+        );
 
         simulator.set_out_value("operator_i", "out", 7); //or
         simulator.set_out_value("operand_a_i", "out", 7327239 as u32);
         simulator.set_out_value("operand_b_i", "out", 184771);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), (7327239 | 184771).into());
+        assert_eq!(
+            simulator.get_input_value(alu_out),
+            (7327239 | 184771).into()
+        );
 
         simulator.set_out_value("operator_i", "out", 8); //and
         simulator.set_out_value("operand_a_i", "out", 7327239 as u32);
         simulator.set_out_value("operand_b_i", "out", 184771);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), (7327239 & 184771).into());
+        assert_eq!(
+            simulator.get_input_value(alu_out),
+            (7327239 & 184771).into()
+        );
 
         simulator.set_out_value("operator_i", "out", 9); //SLTU
         simulator.set_out_value("operand_a_i", "out", -2147483648i32 as u32);
         simulator.set_out_value("operand_b_i", "out", 1);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 0.into());
+        assert_eq!(simulator.get_input_value(alu_out), 0.into());
         simulator.set_out_value("operator_i", "out", 9); //SLTU
         simulator.set_out_value("operand_a_i", "out", 1 as u32);
         simulator.set_out_value("operand_b_i", "out", -2147483648i32 as u32);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 1.into());
+        assert_eq!(simulator.get_input_value(alu_out), 1.into());
 
         simulator.set_out_value("operator_i", "out", 10); //SLT
         simulator.set_out_value("operand_a_i", "out", -2147483648i32 as u32);
         simulator.set_out_value("operand_b_i", "out", 1);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 1.into());
+        assert_eq!(simulator.get_input_value(alu_out), 1.into());
         simulator.set_out_value("operator_i", "out", 10); //SLT
         simulator.set_out_value("operand_a_i", "out", 1 as u32);
         simulator.set_out_value("operand_b_i", "out", -2147483648i32 as u32);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 0.into());
+        assert_eq!(simulator.get_input_value(alu_out), 0.into());
 
         simulator.set_out_value("operator_i", "out", 11); //BEQ
         simulator.set_out_value("operand_a_i", "out", 52);
         simulator.set_out_value("operand_b_i", "out", 52);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 1.into());
+        assert_eq!(simulator.get_input_value(alu_out), 1.into());
         simulator.set_out_value("operator_i", "out", 11); //BEQ
         simulator.set_out_value("operand_a_i", "out", 52);
         simulator.set_out_value("operand_b_i", "out", 53);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 0.into());
+        assert_eq!(simulator.get_input_value(alu_out), 0.into());
 
         simulator.set_out_value("operator_i", "out", 12); //BNE
         simulator.set_out_value("operand_a_i", "out", 52);
         simulator.set_out_value("operand_b_i", "out", 53);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 1.into());
+        assert_eq!(simulator.get_input_value(alu_out), 1.into());
         simulator.set_out_value("operator_i", "out", 12); //BNE
         simulator.set_out_value("operand_a_i", "out", 53);
         simulator.set_out_value("operand_b_i", "out", 53);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 0.into());
+        assert_eq!(simulator.get_input_value(alu_out), 0.into());
 
         simulator.set_out_value("operator_i", "out", 13); //BGE
         simulator.set_out_value("operand_a_i", "out", -2147483648i32 as u32);
         simulator.set_out_value("operand_b_i", "out", 0);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 0.into());
+        assert_eq!(simulator.get_input_value(alu_out), 0.into());
         simulator.set_out_value("operator_i", "out", 13); //BGE
         simulator.set_out_value("operand_b_i", "out", -2147483648i32 as u32);
         simulator.set_out_value("operand_a_i", "out", 0);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 1.into());
+        assert_eq!(simulator.get_input_value(alu_out), 1.into());
         simulator.set_out_value("operator_i", "out", 13); //BGE
         simulator.set_out_value("operand_b_i", "out", 0);
         simulator.set_out_value("operand_a_i", "out", 0);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 1.into());
+        assert_eq!(simulator.get_input_value(alu_out), 1.into());
 
         simulator.set_out_value("operator_i", "out", 14); //BGEU
         simulator.set_out_value("operand_a_i", "out", -2147483648i32 as u32);
         simulator.set_out_value("operand_b_i", "out", 0);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 1.into());
+        assert_eq!(simulator.get_input_value(alu_out), 1.into());
         simulator.set_out_value("operator_i", "out", 14); //BGEU
         simulator.set_out_value("operand_b_i", "out", -2147483648i32 as u32);
         simulator.set_out_value("operand_a_i", "out", 0);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 0.into());
+        assert_eq!(simulator.get_input_value(alu_out), 0.into());
         simulator.set_out_value("operator_i", "out", 14); //BGEU
         simulator.set_out_value("operand_b_i", "out", 0);
         simulator.set_out_value("operand_a_i", "out", 0);
         simulator.clock();
-        assert_eq!(simulator.get_input_val(alu_out), 1.into());
+        assert_eq!(simulator.get_input_value(alu_out), 1.into());
     }
 }

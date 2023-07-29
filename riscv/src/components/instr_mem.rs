@@ -30,7 +30,7 @@ impl Component for InstrMem {
 
     fn clock(&self, simulator: &mut Simulator) {
         // get instr at pc/4
-        let pc: u32 = simulator.get_input_val(&self.pc).try_into().unwrap();
+        let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
 
         let instr = (*self.bytes.get(&((pc) as usize)).unwrap() as u32) << 24
             | (*self.bytes.get(&((pc + 1) as usize)).unwrap() as u32) << 16
@@ -81,7 +81,7 @@ mod test {
         for i in 0..6 {
             simulator.set_out_value("pc", "out", i * 4);
             simulator.clock();
-            assert_eq!(simulator.get_input_val(imem_out), i.into());
+            assert_eq!(simulator.get_input_value(imem_out), i.into());
         }
     }
 }

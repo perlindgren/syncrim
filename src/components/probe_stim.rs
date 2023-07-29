@@ -74,54 +74,54 @@ mod test {
         println!("<reset>");
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 1);
-        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(simulator.get_input_value(out), 0.into());
 
         println!("<clock>");
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 2);
-        assert_eq!(simulator.get_input_val(out), 1.into());
+        assert_eq!(simulator.get_input_value(out), 1.into());
 
         println!("<clock>");
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 3);
-        assert_eq!(simulator.get_input_val(out), 2.into());
+        assert_eq!(simulator.get_input_value(out), 2.into());
 
         println!("<un_clock>");
         simulator.un_clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 2);
-        assert_eq!(simulator.get_input_val(out), 1.into());
+        assert_eq!(simulator.get_input_value(out), 1.into());
 
         println!("<un_clock>");
         simulator.un_clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 1);
-        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(simulator.get_input_value(out), 0.into());
 
         println!("<un_clock (already in reset)>");
         simulator.un_clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 1);
-        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(simulator.get_input_value(out), 0.into());
 
         println!("<clock>");
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 2);
-        assert_eq!(simulator.get_input_val(out), 1.into());
+        assert_eq!(simulator.get_input_value(out), 1.into());
 
         println!("<clock>");
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 3);
-        assert_eq!(simulator.get_input_val(out), 2.into());
+        assert_eq!(simulator.get_input_value(out), 2.into());
 
         println!("<reset>");
         simulator.reset();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 1);
-        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(simulator.get_input_value(out), 0.into());
     }
 }

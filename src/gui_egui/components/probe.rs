@@ -16,7 +16,7 @@ impl EguiComponent for Probe {
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
         let input = self.input.clone();
-        let value = simulator.get_input_val(&input);
+        let value = simulator.get_input_value(&input);
         Area::new(self.id.to_string())
             .order(Order::Middle)
             .current_pos(offset.to_pos2())

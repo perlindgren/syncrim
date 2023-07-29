@@ -1,5 +1,5 @@
 use crate::common::{
-    Component, ComponentStore, Id, Input, OutputType, Signal, SignalValue, Simulator,
+    Component, ComponentStore, Id, Input, OutputType, Signal, SignalFmt, SignalValue, Simulator,
 };
 use petgraph::{
     algo::toposort,
@@ -172,8 +172,13 @@ impl Simulator {
     }
 
     /// get input value
-    pub fn get_input_val(&self, input: &Input) -> SignalValue {
+    pub fn get_input_value(&self, input: &Input) -> SignalValue {
         self.get_input_signal(input).get_value()
+    }
+
+    /// get input fmt
+    pub fn get_input_fmt(&self, input: &Input) -> SignalFmt {
+        self.get_input_signal(input).get_fmt()
     }
 
     /// get start index by id
@@ -186,6 +191,11 @@ impl Simulator {
         self.sim_state[index].set_value(value);
     }
 
+    // set fmt by index
+    fn set_fmt(&mut self, index: usize, fmt: SignalFmt) {
+        self.sim_state[index].set_fmt(fmt);
+    }
+
     /// set value by Id (instance) and Id (field)
     pub fn set_out_value(&mut self, id: &str, field: &str, value: impl Into<SignalValue>) {
         let index = *self
@@ -194,6 +204,16 @@ impl Simulator {
             .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
         let start_index = self.get_id_start_index(id);
         self.set_value(start_index + index, value.into());
+    }
+
+    /// set fmt by Id (instance) and Id (field)
+    pub fn set_out_fmt(&mut self, id: &str, field: &str, fmt: SignalFmt) {
+        let index = *self
+            .id_field_index
+            .get(&(id.into(), field.into()))
+            .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
+        let start_index = self.get_id_start_index(id);
+        self.set_fmt(start_index + index, fmt);
     }
 
     /// iterate over the evaluators and increase clock by one
@@ -281,7 +301,7 @@ mod test {
         let simulator = Simulator::new(&cs);
 
         assert_eq!(simulator.cycle, 1);
-        let _ = simulator.get_input_val(&Input::new("po1", "out"));
+        let _ = simulator.get_input_value(&Input::new("po1", "out"));
     }
 
     #[test]
@@ -294,6 +314,18 @@ mod test {
         let simulator = Simulator::new(&cs);
 
         assert_eq!(simulator.cycle, 1);
-        let _ = simulator.get_input_val(&Input::new("po1", "missing"));
+        let _ = simulator.get_input_value(&Input::new("po1", "missing"));
+    }
+
+    #[test]
+    fn test_get_input_fmt() {
+        let cs = ComponentStore {
+            store: vec![Rc::new(Constant::new("c", (0.0, 0.0), 0))],
+        };
+
+        let simulator = Simulator::new(&cs);
+
+        assert_eq!(simulator.cycle, 1);
+        let _ = simulator.get_input_fmt(&Input::new("c", "out"));
     }
 }

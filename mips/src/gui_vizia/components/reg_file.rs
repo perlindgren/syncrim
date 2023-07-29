@@ -1,7 +1,8 @@
 use crate::components::{Reg, RegFile, RegStore};
 use std::{convert::TryFrom, ops::Range};
 use syncrim::{
-    common::ViziaComponent, gui_vizia::tooltip::new_component_tooltip, vizia::prelude::*,
+    gui_vizia::{ViziaComponent, V},
+    vizia::prelude::*,
 };
 
 use log::*;
@@ -55,55 +56,56 @@ impl ViziaComponent for RegFile {
     }
 
     // create view
-    fn view(&self, cx: &mut Context) {
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
         trace!("---- Create RegFile View");
-        View::build(
-            RegFileView {
-                registers: self.registers.clone(),
-            },
-            cx,
-            |cx| {
-                RegTabs {
-                    list: vec!["Lo", "Hi", "Recent"],
-                }
-                .build(cx);
+        V::new(cx, self, move |cx| {
+            View::build(
+                RegFileView {
+                    registers: self.registers.clone(),
+                },
+                cx,
+                |cx| {
+                    RegTabs {
+                        list: vec!["Lo", "Hi", "Recent"],
+                    }
+                    .build(cx);
 
-                TabView::new(cx, RegTabs::list, |cx, item| match item.get(cx) {
-                    "Lo" => TabPair::new(
-                        move |cx| {
-                            Label::new(cx, item).hoverable(false);
-                            Element::new(cx).class("indicator");
-                        },
-                        |cx| range_view(cx, RegStore::lo_range()),
-                    ),
+                    TabView::new(cx, RegTabs::list, |cx, item| match item.get(cx) {
+                        "Lo" => TabPair::new(
+                            move |cx| {
+                                Label::new(cx, item).hoverable(false);
+                                Element::new(cx).class("indicator");
+                            },
+                            |cx| range_view(cx, RegStore::lo_range()),
+                        ),
 
-                    "Hi" => TabPair::new(
-                        move |cx| {
-                            Label::new(cx, item).hoverable(false);
-                            Element::new(cx).class("indicator");
-                        },
-                        |cx| range_view(cx, RegStore::hi_range()),
-                    ),
+                        "Hi" => TabPair::new(
+                            move |cx| {
+                                Label::new(cx, item).hoverable(false);
+                                Element::new(cx).class("indicator");
+                            },
+                            |cx| range_view(cx, RegStore::hi_range()),
+                        ),
 
-                    "Recent" => TabPair::new(
-                        move |cx| {
-                            Label::new(cx, item).hoverable(false);
-                            Element::new(cx).class("indicator");
-                        },
-                        |cx| {
-                            Element::new(cx)
-                                .size(Pixels(200.0))
-                                .background_color(Color::blue());
-                        },
-                    ),
+                        "Recent" => TabPair::new(
+                            move |cx| {
+                                Label::new(cx, item).hoverable(false);
+                                Element::new(cx).class("indicator");
+                            },
+                            |cx| {
+                                Element::new(cx)
+                                    .size(Pixels(200.0))
+                                    .background_color(Color::blue());
+                            },
+                        ),
 
-                    _ => unreachable!(),
-                })
-                .width(Pixels(500.0))
-                .height(Pixels(300.0));
-            },
-        )
-        .position_type(PositionType::SelfDirected)
+                        _ => unreachable!(),
+                    })
+                    .width(Pixels(500.0))
+                    .height(Pixels(300.0));
+                },
+            )
+        })
         .overflow(Overflow::Hidden)
         .left(Pixels(self.pos.0 - self.width / 2.0))
         .top(Pixels(self.pos.1 - self.height / 2.0))
@@ -112,7 +114,6 @@ impl ViziaComponent for RegFile {
         .border_color(Color::black())
         .width(Pixels(self.width))
         .height(Pixels(self.height))
-        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 

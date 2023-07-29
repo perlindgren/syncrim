@@ -74,7 +74,7 @@ impl Component for CSR {
 
     fn clock(&self, simulator: &mut Simulator) {
         // get instr at pc/4
-        let _we = simulator.get_input_val(&self.we);
+        let _we = simulator.get_input_value(&self.we);
 
         //simulator.set_out_val(&self.id, "instruction", we);
     }

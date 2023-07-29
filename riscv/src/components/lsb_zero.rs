@@ -29,7 +29,7 @@ impl Component for LSBZero {
     }
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) {
-        match simulator.get_input_val(&self.data_i) {
+        match simulator.get_input_value(&self.data_i) {
             SignalValue::Data(mut data) => {
                 let mask: u32 = !0b1;
                 data &= mask;
@@ -70,7 +70,7 @@ mod test {
         for i in 0..100 {
             simulator.set_out_value("input", "out", i);
             simulator.clock();
-            assert_eq!(simulator.get_input_val(lout), (i & (!0b1)).into());
+            assert_eq!(simulator.get_input_value(lout), (i & (!0b1)).into());
         }
     }
 }

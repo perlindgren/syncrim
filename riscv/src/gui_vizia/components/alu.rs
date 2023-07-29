@@ -1,7 +1,7 @@
 use crate::components::ALU;
+use log::trace;
 use syncrim::{
-    common::ViziaComponent,
-    gui_vizia::tooltip::new_component_tooltip,
+    gui_vizia::{tooltip::new_component_tooltip, ViziaComponent, V},
     vizia::{
         prelude::*,
         vg::{Color, Paint, Path},
@@ -11,19 +11,22 @@ use syncrim::{
 #[typetag::serde]
 impl ViziaComponent for ALU {
     // create view
-    fn view(&self, cx: &mut Context) {
-        println!("---- Create ALU View");
-        View::build(ALUView {}, cx, |cx| {
-            Label::new(cx, "ALU")
-                .left(Percentage(20.0))
-                .top(Percentage(45.0));
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
+        V::new(cx, self, move |cx| {
+            trace!("---- Create ALU View");
+
+            View::build(ALUView {}, cx, |cx| {
+                Label::new(cx, "ALU")
+                    .left(Percentage(20.0))
+                    .top(Percentage(45.0));
+            })
         })
         .position_type(PositionType::SelfDirected)
         .left(Pixels(self.pos.0 - 50.0))
         .top(Pixels(self.pos.1 - 100.0))
         .width(Pixels(100.0))
         .height(Pixels(200.0))
-        .tooltip(|cx| new_component_tooltip(cx, self));
+        .tooltip(|cx| new_component_tooltip(cx, self))
     }
 }
 
