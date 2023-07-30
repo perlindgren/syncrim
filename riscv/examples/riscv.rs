@@ -1,3 +1,4 @@
+use clap::Parser;
 // An example MIPS model
 use fern;
 use riscv::components::*;
@@ -5,6 +6,7 @@ use riscv_elf_parse;
 use std::{
     cell::RefCell,
     collections::{BTreeMap, HashMap},
+    fs,
     path::PathBuf,
     rc::Rc,
 };
@@ -12,10 +14,41 @@ use syncrim::{
     common::{ComponentStore, Input},
     components::*,
 };
+use xmas_elf::ElfFile;
+
+#[derive(Parser, Debug)]
+struct Args {
+    /// Toolchain prefix to be used for compilation/linking
+    #[arg(short, long, default_value = "riscv32-unknown-elf-")]
+    toolchain_prefix: String,
+    /// Use a pre-compiled elf file instead of compiling one
+    #[arg(short, long, default_value = "false")]
+    use_elf: bool,
+    /// Path to the pre-compiled elf file
+    #[arg(short, long, default_value = "")]
+    elf_path: String,
+    /// Path to the assembly source file
+    #[arg(short, long, default_value = "asm.s")]
+    asm_path: String,
+    /// Path to the linker script
+    #[arg(short, long, default_value = "memory.x")]
+    ls_path: String,
+}
 
 fn main() {
     fern_setup_riscv();
-    let memory = riscv_elf_parse::Memory::new_from_assembly("asm.s", "memory.x");
+    let args = Args::parse();
+    let memory = if args.use_elf {
+        let bytes = fs::read(args.elf_path).expect("The elf file could not be found");
+        let elf = ElfFile::new(&bytes).unwrap();
+        riscv_elf_parse::Memory::new_from_elf(elf)
+    } else {
+        riscv_elf_parse::Memory::new_from_assembly(
+            &args.asm_path,
+            &args.ls_path,
+            &args.toolchain_prefix,
+        )
+    };
     println!("{}", memory);
     let mut instr_mem = BTreeMap::new();
     let mut data_mem = HashMap::new();
