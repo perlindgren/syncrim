@@ -1,3 +1,4 @@
+use clap::Parser;
 // An example MIPS model
 use fern;
 use riscv::components::*;
@@ -13,9 +14,19 @@ use syncrim::{
     components::*,
 };
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Path to source file
+    #[arg(short, long, default_value = "riscv32-unknown-elf-")]
+    toolchain_prefix: String,
+}
+
 fn main() {
     fern_setup_riscv();
-    let memory = riscv_elf_parse::Memory::new_from_assembly("asm.s", "memory.x");
+    let args = Args::parse();
+    let memory =
+        riscv_elf_parse::Memory::new_from_assembly("asm.s", "memory.x", &args.toolchain_prefix);
     println!("{}", memory);
     let mut instr_mem = BTreeMap::new();
     let mut data_mem = HashMap::new();
