@@ -1,0 +1,10 @@
+[target.riscv32i-unknown-none-elf]
+
+rustflags = [
+    # LLD (shipped with the Rust toolchain) is used as the default linker
+    "-C",
+    "link-arg=-Tmemory.x",
+]
+
+[build]
+target = "riscv32i-unknown-none-elf"
