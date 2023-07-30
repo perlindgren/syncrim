@@ -1660,7 +1660,7 @@ mod test {
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
         assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
-        assert_eq!(simulator.get_input_value(alu_operand_b_sel), 2.into());
+        assert_eq!(simulator.get_input_value(alu_operand_b_sel), 3.into());
         assert_eq!(
             simulator.get_input_value(regfile_rs1),
             SignalValue::Uninitialized
