@@ -17,21 +17,20 @@ use syncrim::{
 use xmas_elf::ElfFile;
 
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
 struct Args {
-    /// Path to source file
+    /// Toolchain prefix to be used for compilation/linking
     #[arg(short, long, default_value = "riscv32-unknown-elf-")]
     toolchain_prefix: String,
-
+    /// Use a pre-compiled elf file instead of compiling one
     #[arg(short, long, default_value = "false")]
     use_elf: bool,
-
+    /// Path to the pre-compiled elf file
     #[arg(short, long, default_value = "")]
     elf_path: String,
-
+    /// Path to the assembly source file
     #[arg(short, long, default_value = "asm.s")]
     asm_path: String,
-
+    /// Path to the linker script
     #[arg(short, long, default_value = "memory.x")]
     ls_path: String,
 }
@@ -44,7 +43,11 @@ fn main() {
         let elf = ElfFile::new(&bytes).unwrap();
         riscv_elf_parse::Memory::new_from_elf(elf)
     } else {
-        riscv_elf_parse::Memory::new_from_assembly(&args.asm_path, &args.ls_path, &args.toolchain_prefix)
+        riscv_elf_parse::Memory::new_from_assembly(
+            &args.asm_path,
+            &args.ls_path,
+            &args.toolchain_prefix,
+        )
     };
     println!("{}", memory);
     let mut instr_mem = BTreeMap::new();
