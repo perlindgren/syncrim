@@ -323,6 +323,7 @@ fn main() {
                     Input::new("reg_file", "reg_b"),
                     Input::new("imm_szext", "out"),
                     Input::new("pc_adder", "out"),
+                    Input::new("reg", "out"),
                 ],
             ),
             Rc::new(ALU {
