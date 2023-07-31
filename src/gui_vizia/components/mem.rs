@@ -1,9 +1,29 @@
+use std::ops::Range;
+
 use crate::{
-    components::Mem,
+    components::{Mem, Memory},
     gui_vizia::{ViziaComponent, V},
 };
 use log::*;
 use vizia::prelude::*;
+
+fn range_view(cx: &mut Context) {
+    let range = Range {
+        start: 0x8000_0000u32,
+        end: 0x8000_0020u32,
+    };
+    for i in range {
+        let item = DataMemView::data
+            .map(move |mem: &Memory| mem.0.borrow().get(&(i as usize)).copied().unwrap());
+
+        HStack::new(cx, |cx| {
+            Label::new(cx, item).width(Pixels(50.0)).left(Pixels(10.0));
+            Label::new(cx, item);
+        })
+        .font_size(12.0)
+        .size(Auto);
+    }
+}
 
 #[typetag::serde]
 impl ViziaComponent for Mem {
@@ -22,5 +42,38 @@ impl ViziaComponent for Mem {
         .width(Pixels(self.width))
         .height(Pixels(self.height))
         .background_color(Color::lightgrey())
+    }
+
+    fn left_view(&self, cx: &mut Context) {
+        trace!("---- Create Left Mem View");
+
+        View::build(
+            DataMemView {
+                data: self.memory.clone(),
+            },
+            cx,
+            |cx| {
+                Label::new(cx, "Register File")
+                    .left(Pixels(10.0))
+                    .top(Pixels(10.0));
+
+                ScrollView::new(cx, 0.0, 0.0, false, true, |cx| {
+                    range_view(cx);
+                })
+                // .size(Units::Pixels(300.0))
+                .class("bg-default");
+            },
+        );
+    }
+}
+
+#[derive(Lens, Clone)]
+pub struct DataMemView {
+    data: Memory,
+}
+
+impl View for DataMemView {
+    fn element(&self) -> Option<&'static str> {
+        Some("MemView")
     }
 }
