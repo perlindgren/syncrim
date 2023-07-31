@@ -30,6 +30,7 @@
     "repr",
     "rgbaf",
     "rgbf",
+    "riscv",
     "rustfmt",
     "serde",
     "stim",
@@ -47,7 +48,7 @@
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer",
     "editor.formatOnSave": true
-  },
+  }
   //,
   // "rust-analyzer.cargo.unsetTest": [
   //   "syncrim"
