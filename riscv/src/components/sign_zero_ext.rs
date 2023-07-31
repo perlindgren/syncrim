@@ -1,6 +1,6 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, SignalValue, Simulator};
+use syncrim::common::{Component, Condition, Input, OutputType, Ports, SignalValue, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct SZExt {
@@ -27,13 +27,12 @@ impl Component for SZExt {
         )
     }
     #[allow(non_snake_case)]
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         //data is zero extended as default since its a 32 bit signal
 
         match simulator.get_input_value(&self.data_i) {
             //if there is data, sel should be defined, otherwise panic is good.
-            SignalValue::Data(data) => {
-                let mut data: u32 = data.try_into().unwrap();
+            SignalValue::Data(mut data) => {
                 let sel: u32 = simulator.get_input_value(&self.sel_i).try_into().unwrap();
                 //println!("SZEDATA:{:x}", data);
                 match sel {
@@ -56,6 +55,7 @@ impl Component for SZExt {
             }
             _ => simulator.set_out_value(&self.id, "out", SignalValue::Unknown),
         }
+        Ok(())
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::common::{Component, Id, Input, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Condition, Id, Input, OutputType, Ports, Signal, Simulator};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
@@ -183,7 +183,9 @@ impl Component for Mem {
         println!("Mem");
     }
 
-    fn to_string(&self)->String{"".to_string()}
+    fn to_string(&self) -> String {
+        "".to_string()
+    }
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

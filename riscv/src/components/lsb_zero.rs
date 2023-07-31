@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use syncrim::{
-    common::{Component, Input, OutputType, Ports, Simulator},
+    common::{Component, Condition, Input, OutputType, Ports, Simulator},
     signal::SignalValue,
 };
 
@@ -28,7 +28,7 @@ impl Component for LSBZero {
         )
     }
     #[allow(non_snake_case)]
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         match simulator.get_input_value(&self.data_i) {
             SignalValue::Data(mut data) => {
                 let mask: u32 = !0b1;
@@ -37,6 +37,7 @@ impl Component for LSBZero {
             }
             _ => simulator.set_out_value(&self.id, "out", SignalValue::Unknown),
         }
+        Ok(())
     }
 }
 

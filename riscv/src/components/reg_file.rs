@@ -3,7 +3,7 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
-use syncrim::common::{Component, Input, OutputType, Ports, SignalUnsigned, Simulator};
+use syncrim::common::{Component, Condition, Input, OutputType, Ports, SignalUnsigned, Simulator};
 use syncrim::signal::SignalValue;
 
 #[allow(non_camel_case_types)]
@@ -129,13 +129,13 @@ impl RegFile {
             SignalValue::Data(read_addr) => {
                 if read_addr > 0 {
                     trace!("read_addr {}", read_addr);
-                    return SignalValue::from(self.registers.borrow()[read_addr as usize]);
+                    SignalValue::from(self.registers.borrow()[read_addr as usize])
                 } else {
                     trace!("read_addr {}", read_addr);
-                    return SignalValue::from(0);
+                    SignalValue::from(0)
                 }
             }
-            _ => return SignalValue::Unknown,
+            _ => SignalValue::Unknown,
         }
     }
 }
@@ -157,7 +157,7 @@ impl Component for RegFile {
         )
     }
 
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_value(&self.write_data);
             trace!("write data {:?}", data);
@@ -177,6 +177,7 @@ impl Component for RegFile {
         let reg_value_b = self.read_reg(simulator, &self.read_addr2);
         trace!("reg_value_b {:?}", reg_value_b);
         simulator.set_out_value(&self.id, "reg_b", reg_value_b);
+        Ok(())
     }
 }
 

@@ -62,10 +62,20 @@ pub trait Component {
     fn get_id_ports(&self) -> (Id, Ports);
 
     /// evaluate component based on current internal state
-    fn clock(&self, _simulator: &mut Simulator) {}
+    fn clock(&self, _simulator: &mut Simulator) -> Result<(), Condition> {
+        Ok(())
+    }
 
     /// update component internal state
     fn un_clock(&self) {}
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Condition {
+    Warning(String),
+    Error(String),
+    Assert(String),
+    Halt(String),
 }
 
 // Specific functionality for EGui frontend

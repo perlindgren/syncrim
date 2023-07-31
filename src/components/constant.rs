@@ -1,4 +1,4 @@
-use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Condition, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::{convert::Into, rc::Rc};
@@ -27,8 +27,9 @@ impl Component for Constant {
         )
     }
 
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         simulator.set_out_value(&self.id, "out", self.value.get_value());
+        Ok(())
     }
 }
 

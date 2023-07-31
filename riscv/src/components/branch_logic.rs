@@ -1,6 +1,6 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, SignalValue, Simulator};
+use syncrim::common::{Component, Condition, Input, OutputType, Ports, SignalValue, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct BranchLogic {
@@ -35,7 +35,7 @@ impl Component for BranchLogic {
         )
     }
     #[allow(non_snake_case)]
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let enable: u32 = simulator.get_input_value(&self.enable).try_into().unwrap();
         let out: SignalValue;
         let rs1: SignalValue = simulator.get_input_value(&self.rs1);
@@ -133,6 +133,7 @@ impl Component for BranchLogic {
         }
         trace!("BranchLogic Out:{:?}", out);
         simulator.set_out_value(&self.id, "out", out);
+        Ok(())
     }
 }
 #[cfg(test)]

@@ -1,6 +1,8 @@
 // use std::fmt::Alignment;
 use crate::{
-    common::{Component, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, Simulator},
+    common::{
+        Component, Condition, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, Simulator,
+    },
     signal::SignalValue,
 };
 use log::*;
@@ -29,7 +31,7 @@ impl Component for Sext {
 
     // propagate sign extension to output
     // TODO: always extend to Signal size? (it should not matter and should be slightly cheaper)
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         assert!(
             self.out_size <= SignalUnsigned::BITS,
             "{}: Output size {} is larger than maximum size {}",
@@ -57,6 +59,7 @@ impl Component for Sext {
                 trace!("{} unknown input", self.id);
             }
         }
+        Ok(())
     }
 }
 

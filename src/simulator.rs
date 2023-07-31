@@ -1,5 +1,6 @@
 use crate::common::{
-    Component, ComponentStore, Id, Input, OutputType, Signal, SignalFmt, SignalValue, Simulator,
+    Component, ComponentStore, Condition, Id, Input, OutputType, Signal, SignalFmt, SignalValue,
+    Simulator,
 };
 use petgraph::{
     algo::toposort,
@@ -222,7 +223,15 @@ impl Simulator {
         self.history.push(self.sim_state.clone());
 
         for component in self.ordered_components.clone() {
-            component.clock(self);
+            match component.clock(self) {
+                Ok(_) => {}
+                Err(cond) => match cond {
+                    Condition::Warning(_) => todo!(),
+                    Condition::Error(err) => panic!("err {}", err),
+                    Condition::Assert(assert) => panic!("assert {}", assert),
+                    Condition::Halt(halt) => info!("halt {}", halt),
+                },
+            }
         }
         self.cycle = self.history.len();
     }

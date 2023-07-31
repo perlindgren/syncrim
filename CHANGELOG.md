@@ -4,6 +4,8 @@ Tracking changes per date:
 
 ## 230731
 
+- Return type from `clock` (`fn clock(&self, _simulator: &mut Simulator) -> Result<(), Condition`).
+
 - RISC-V cross compilation.
 
 ## 230727

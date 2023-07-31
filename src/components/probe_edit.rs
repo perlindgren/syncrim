@@ -1,4 +1,4 @@
-use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Condition, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -39,7 +39,7 @@ impl Component for ProbeEdit {
     }
 
     // propagate editable value
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let mut history = self.edit_history.write().unwrap();
         trace!("{} history {:?}", self.id, history);
         let current = history.last().unwrap().clone();
@@ -47,6 +47,7 @@ impl Component for ProbeEdit {
         simulator.set_out_value(&self.id, "out", current.signal.get_value());
         // push to prepare data for next;
         history.push(current);
+        Ok(())
     }
 
     // reverse simulation, notice does not touch simulator state, its just internal
