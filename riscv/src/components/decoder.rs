@@ -277,7 +277,7 @@ impl Component for Decoder {
                 //AUIPC
                 trace!("opcode=AUIPC");
                 alu_operand_a_sel = SignalValue::from(1); //big-imm
-                alu_operand_b_sel = SignalValue::from(2); //PC
+                alu_operand_b_sel = SignalValue::from(3); //PC
                 regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = SignalValue::from(0); //x0 dont care
                 regfile_we = SignalValue::from(1); //enable write
@@ -1660,7 +1660,7 @@ mod test {
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
         assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
-        assert_eq!(simulator.get_input_value(alu_operand_b_sel), 2.into());
+        assert_eq!(simulator.get_input_value(alu_operand_b_sel), 3.into());
         assert_eq!(
             simulator.get_input_value(regfile_rs1),
             SignalValue::Uninitialized

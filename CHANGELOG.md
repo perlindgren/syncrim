@@ -2,6 +2,10 @@
 
 Tracking changes per date:
 
+## 230731
+
+- RISC-V cross compilation.
+
 ## 230727
 
 - `Signal` type now incorporates formatting. This allows the default formatting to be set on a signal on creation. The data and formatting can be read/written separately by setters/getters.

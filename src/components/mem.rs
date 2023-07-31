@@ -87,6 +87,7 @@ impl Mem {
         ))
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn rc_new_from_bytes(
         id: &str,
         pos: (f32, f32),
