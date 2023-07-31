@@ -6,7 +6,7 @@ SECTIONS
     KEEP(*(.text)); 
   }
 
-  . = 0x1000;
+  . = 0x50000000;
   .data :
   {
     KEEP(*(.data));  
