@@ -13,15 +13,46 @@ fn range_view(cx: &mut Context) {
         end: 0x8000_0020u32,
     };
     for i in range {
-        let item = DataMemView::data
-            .map(move |mem: &Memory| mem.0.borrow().get(&(i as usize)).copied().unwrap());
+        if i % 4 == 0 {
+            let item = (
+                DataMemView::data.map(move |mem: &Memory| {
+                    format!(
+                        "0x{:02x}",
+                        mem.0.borrow().get(&(i as usize)).copied().unwrap()
+                    )
+                }),
+                DataMemView::data.map(move |mem: &Memory| {
+                    format!(
+                        "{:02x}",
+                        mem.0.borrow().get(&((i + 1) as usize)).copied().unwrap()
+                    )
+                }),
+                DataMemView::data.map(move |mem: &Memory| {
+                    format!(
+                        "{:02x}",
+                        mem.0.borrow().get(&((i + 2) as usize)).copied().unwrap()
+                    )
+                }),
+                DataMemView::data.map(move |mem: &Memory| {
+                    format!(
+                        "{:02x}",
+                        mem.0.borrow().get(&((i + 3) as usize)).copied().unwrap()
+                    )
+                }),
+            );
 
-        HStack::new(cx, |cx| {
-            Label::new(cx, item).width(Pixels(50.0)).left(Pixels(10.0));
-            Label::new(cx, item);
-        })
-        .font_size(12.0)
-        .size(Auto);
+            HStack::new(cx, |cx| {
+                Label::new(cx, &format!("0x{:08x}", i))
+                    .width(Pixels(100.0))
+                    .left(Pixels(10.0));
+                Label::new(cx, item.0);
+                Label::new(cx, item.1);
+                Label::new(cx, item.2);
+                Label::new(cx, item.3);
+            })
+            .font_size(12.0)
+            .size(Auto);
+        }
     }
 }
 
