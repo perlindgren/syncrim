@@ -1,4 +1,4 @@
-use crate::common::{Component, Id, Input, OutputType, Ports, Simulator};
+use crate::common::{Component, Condition, Id, Input, OutputType, Ports, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -28,12 +28,13 @@ impl Component for Register {
     }
 
     // propagate input value to output
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input value
         let value = simulator.get_input_value(&self.r_in);
         // set output
         simulator.set_out_value(&self.id, "out", value);
         trace!("eval: register id {} in {:?}", self.id, value);
+        Ok(())
     }
 }
 

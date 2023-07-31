@@ -1,6 +1,6 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, SignalValue, Simulator};
+use syncrim::common::{Component, Condition, Input, OutputType, Ports, SignalValue, Simulator};
 use syncrim::components::MemCtrl;
 
 #[derive(Serialize, Deserialize)]
@@ -50,7 +50,7 @@ impl Component for Decoder {
         )
     }
     #[allow(non_snake_case)]
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let instruction: u32 = simulator
             .get_input_value(&self.instruction)
             .try_into()
@@ -440,6 +440,7 @@ impl Component for Decoder {
         simulator.set_out_value(&self.id, "branch_logic_ctl", branch_logic_ctl);
         simulator.set_out_value(&self.id, "branch_logic_enable", branch_logic_enable);
         simulator.set_out_value(&self.id, "jalr_imm", jalr_imm);
+        Ok(())
     }
 }
 

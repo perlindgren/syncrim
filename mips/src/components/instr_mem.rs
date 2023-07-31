@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use syncrim::common::{
-    Component, Input, OutputType, Ports, SignalUnsigned, SignalValue, Simulator,
+    Component, Condition, Input, OutputType, Ports, SignalUnsigned, SignalValue, Simulator,
 };
 
 #[derive(Serialize, Deserialize)]
@@ -31,7 +31,7 @@ impl Component for InstrMem {
         )
     }
 
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let instr: SignalValue =
             match TryInto::<SignalUnsigned>::try_into(simulator.get_input_value(&self.pc)) {
                 Ok(pc) => {
@@ -48,6 +48,7 @@ impl Component for InstrMem {
         // set output
         trace!("--- output {:?}", instr);
         simulator.set_out_value(&self.id, "out", instr);
+        Ok(())
     }
 }
 

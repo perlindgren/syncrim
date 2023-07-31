@@ -1,7 +1,7 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
 use syncrim::{
-    common::{Component, Input, OutputType, Ports, SignalValue, Simulator},
+    common::{Component, Condition, Input, OutputType, Ports, SignalValue, Simulator},
     signal::SignalSigned,
 };
 
@@ -41,15 +41,14 @@ impl Component for ALU {
         )
     }
     #[allow(non_snake_case)]
-    fn clock(&self, simulator: &mut Simulator) {
-        let operator_i: u32;
-        match simulator.get_input_value(&self.operator_i) {
-            SignalValue::Data(data) => operator_i = data,
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
+        let operator_i = match simulator.get_input_value(&self.operator_i) {
+            SignalValue::Data(data) => data,
             _ => {
                 simulator.set_out_value(&self.id, "result_o", SignalValue::Unknown);
-                return;
+                return Ok(());
             }
-        }
+        };
         //if i is set, these two must be set or panic is reasonable.
         let operand_a_i: u32 = simulator
             .get_input_value(&self.operand_a_i)
@@ -130,6 +129,7 @@ impl Component for ALU {
         }
         trace!("ALU result_o:{}", result_o);
         simulator.set_out_value(&self.id, "result_o", result_o);
+        Ok(())
     }
 }
 #[cfg(test)]

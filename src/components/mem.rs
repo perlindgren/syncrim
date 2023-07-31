@@ -1,5 +1,6 @@
 use crate::common::{
-    Component, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, SignalValue, Simulator,
+    Component, Condition, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, SignalValue,
+    Simulator,
 };
 use log::*;
 use num_enum::IntoPrimitive;
@@ -282,7 +283,7 @@ impl Component for Mem {
         )
     }
 
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let data = simulator.get_input_value(&self.data);
         let addr = simulator.get_input_value(&self.addr);
         let size = simulator.get_input_value(&self.size);
@@ -330,6 +331,7 @@ impl Component for Mem {
         }
 
         trace!("memory {:?}", self.memory);
+        Ok(())
     }
 }
 
