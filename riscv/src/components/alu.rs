@@ -128,7 +128,7 @@ impl Component for ALU {
             } //BGEU
             _ => {}
         }
-        trace!("ALU result_o:{}", result_o);
+        trace!("ALU result_o:{:08x}", result_o);
         simulator.set_out_value(&self.id, "result_o", result_o);
     }
 }

@@ -277,7 +277,7 @@ impl Component for Decoder {
                 //AUIPC
                 trace!("opcode=AUIPC");
                 alu_operand_a_sel = SignalValue::from(1); //big-imm
-                alu_operand_b_sel = SignalValue::from(2); //PC
+                alu_operand_b_sel = SignalValue::from(3); //PC
                 regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = SignalValue::from(0); //x0 dont care
                 regfile_we = SignalValue::from(1); //enable write

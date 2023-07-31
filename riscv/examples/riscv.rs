@@ -51,7 +51,7 @@ fn main() {
     };
     println!("{}", memory);
     let mut instr_mem = BTreeMap::new();
-    let mut data_mem = HashMap::new();
+    let mut data_mem = BTreeMap::new();
     for element in memory.bytes {
         if element.0 < 0x5000_0000 {
             instr_mem.insert(element.0, element.1);
@@ -138,88 +138,7 @@ fn main() {
                 id: "instr_mem".to_string(),
                 pos: (180.0, 400.0),
                 pc: Input::new("reg", "out"),
-                // fake instructions just to show the relation between input address and instruction
                 bytes: instr_mem,
-                //vec![
-                //The results are calculated from the reg file start state defined above
-                //and assuming the blocks are the only code over that reg file.
-                //OP TEST BLOCK
-                // 0x003100b3,//add x1, x2, x3 -> x1 = 0x5
-                // 0x00308133,//add x2, x1, x3 -> x2 = 0x8
-                // 0x40410133,//sub x2, x2, x4 -> x2 = -2
-                // 0x004121b3,//slt x3, x2, x4 -> x3 = 0x1 //signed -2<10
-                // 0x004131b3,//sltu x3, x2, x4 x3 = 0x0 //unsigned -2>10
-                // 0x001151b3,//srl x3, x2, x1 # x3 = 0x07ffffff
-                // 0x401151b3,//sra x3, x2, x1 # x3 = 0xffffffff
-                // 0x001111b3,//sll x3, x2, x1 # x3 = 0xffffffc0
-                // 0x0020c1b3,//xor x3, x1, x2 # x3 = 0xfffffffb //fel här
-                // 0x0020f1b3,//and x3, x1, x2 # x3 = 0x00000004
-                // 0x0060e1b3,//or x3, x1, x6 #  x3 = 0x00000007
-                // 0x00000033,//add x0, x0, x0, basically nop before panicking so we can see result.
-                // 0x00940023,//sb x8, 0(x9) # should panic over opcode for now
-                //OP_IMM, AUIPC, LUI, STORE, LOAD, OP_IMM TEST BLOCK
-                // 0x00310093,//addi x1, x2, 3 # x1=0x5
-                // 0xffd0a093,//slti x1, x1, -3 # x1=0x0
-                // 0x0030a093,//slti x1, x1, 3 # x1=0x1
-                // 0xffd0b093,//sltiu x1, x1, -3 #x1=0x1
-                // 0x00313093,//sltiu x1, x2, 3 #x1=0x1
-                // 0x00324093,//xori x1, x4, 3 #x1 = 0x9
-                // 0x00326093,//ori x1, x4, 3 #x1=0xb
-                // 0x00327093,//andi x1, x4, 3 #x1=0x2
-                // 0x00c19093,//slli x1, x3, 12 #x1=0x3000
-                // 0x0011d093,//srli x1, x3, 1 #x1=0x1
-                // 0xffa00093,//addi x1, x0, -6 #x1=0xfffffffa
-                // 0x4020d093,//srai x1, x1, 2 #x1=0xfffffffe
-                // 0x00500093,//addi x1, x0, 5 #x1=0x5
-                // 0x4020d093,//srai x1, x1, 2 #x1=0x1
-                // 0xfffff0b7,//lui x1, 0xFFFFF #x1=0xFFFFF000
-                // 0xfffff097,//auipc x1, 0xFFFFF #x1=0xFFFFF040
-                // 0x00000093,//addi, x1, x0, 0 x1 = 0
-                // 0x00408093,//addi x1, x1, 4 x1+=4
-                // //0xff9ff16f,//jal, x2, -8 should jump to the addi before and keep incrementing x1.
-                // 0x00000033,//add x0, x0, x0, basically nop before panicking so we can see result.
-                // //0x00940023,//sb x8, 0(x9) # should panic over opcode for now
-                // 0x00102023,//sw x1, 0(x0) store x1=4 at 0
-                // 0x00002283,//lw x5, 0(x0) x5=4
-                // 0x00228213,//addi x4, x5, 2 //x4=6
-                // 0x00002303, //lw x6, 0(x0), x6 = 4
-                // 0xfff00093,//set x1 to -1 addi x1, x0, -1
-                // 0x00102023,//store -1 at 0
-                // 0x00000203,//load via lb -1 to x4
-                // 0x00004203,//lbu x4 -1 again.
-                // 0x004002a3,//sb x4, 5(0)
-                // 0x00000033,//add x0, x0, x0, basically nop before panicking so we can see result.
-                // 0x00000033,//add x0, x0, x0, basically nop before panicking so we can see result.
-                //JAL, JALR, BRANCHES TEST BLOCK
-                //     0x00000093, //addi, x1, x0, 0 x1=0
-                //     0x0080016f, //jal x2, 8
-                //     0x0000016f, //jal x2, 0 this is to be jumped over or we will get stuck
-                //     0x00410167, //jalr x2, x2, 4
-                //     0x0000016f, //jal x2, 0 this is to be jumped over or we will get stuck
-                //     0x01000113, //addi x2, x0, 16
-                //     0x00000093, //addi x1, x0, 0
-                //     0x00408093, //addi x1, x1, 4
-                //     0xfe209ee3, //bne x1, x2, -4
-                //     0x00208463, //beq, x1, x2, 8
-                //     0x0000006f, //jal x0, 0
-                //     0xff800093, //addi x1, x0, -8
-                //     0x00000113, //addi x2, x0, 0
-                //     0x00408093, //addi x1, x1, 4
-                //     0xfe20cee3, //blt x1, x2, -4
-                //     0xff800093, //addi x1, x0, -8
-                //     0x00000113, //addi x2, x0, 0
-                //     0x00408093, //addi x1, x1, 4
-                //     0xfe116ee3, //bltu, x2, x1, -4
-                //     0xff800093, //addi x1, x0, -8
-                //     0x00000113, //addi x2, x0, 0
-                //     0x00408093, //addi x1, x1, 4
-                //     0xfe115ee3, //bge x2, x1, -4
-                //     0xff800093, //addi x1, x0, -8
-                //     0x00800113, //addi x2, x0, 8
-                //     0x00408093, //addi x1, x1, 4
-                //     0xfe20fee3, //bgeu x1, x2, -4
-                //     0x00408093, 0x00408093, 0x00408093, 0x00408093, 4, 5, 6, 7, 8, 9,
-                // ],
             }),
             Rc::new(Decoder {
                 id: "decoder".to_string(),
@@ -252,58 +171,35 @@ fn main() {
                 write_data: Input::new("wb_mux", "out"),
                 write_addr: Input::new("regfile_rd_reg", "out"),
                 write_enable: Input::new("regfile_we_reg", "out"),
-                registers: RegStore::new(Rc::new(RefCell::new([
-                    0, 1, 2, 3, 10, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-                    22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-                ]))),
-                // registers: vec![Cell::new(0),
-                // RefCell::new(1),
-                // Cell::new(2),
-                // Cell::new(3),
-                // Cell::new(10),
-                // Cell::new(5),
-                // Cell::new(6),
-                // Cell::new(7),
-                // Cell::new(8),
-                // Cell::new(9),
-                // Cell::new(10),
-                // Cell::new(11),
-                // Cell::new(12),
-                // Cell::new(13),
-                // Cell::new(14),
-                // Cell::new(15),
-                // Cell::new(16),
-                // Cell::new(17),
-                // Cell::new(18),
-                // Cell::new(19),
-                // Cell::new(20),
-                // Cell::new(21),
-                // Cell::new(22),
-                // Cell::new(23),
-                // Cell::new(24),
-                // Cell::new(25),
-                // Cell::new(26),
-                // Cell::new(27),
-                // Cell::new(28),
-                // Cell::new(29),
-                // Cell::new(30),
-                // Cell::new(31),
-                // ],
+                registers: RegStore::new(Rc::new(RefCell::new([0; 32]))),
                 history: RegHistory::new(),
             }),
-            Mem::rc_new_from_bytes(
-                "data_memory",
-                (700.0, 600.0),
-                100.0,
-                100.0,
-                false,
-                Input::new("reg_file", "reg_b"),
-                Input::new("alu", "result_o"),
-                Input::new("decoder", "data_mem_ctrl"),
-                Input::new("decoder", "data_se"),
-                Input::new("decoder", "data_mem_size"),
-                data_mem,
-            ),
+            Rc::new(Mem {
+                id: "data_memory".to_string(),
+                pos: (700.0, 600.0),
+                width: 100.0,
+                height: 100.0,
+                big_endian: false,
+                data: Input::new("reg_file", "reg_b"),
+                addr: Input::new("alu", "result_o"),
+                ctrl: Input::new("decoder", "data_mem_ctrl"),
+                sext: Input::new("decoder", "data_se"),
+                size: Input::new("decoder", "data_mem_size"),
+                memory: Memory::new(Rc::new(RefCell::new(data_mem))),
+            }),
+            // Mem::rc_new_from_bytes(
+            //     "data_memory",
+            //     (700.0, 600.0),
+            //     100.0,
+            //     100.0,
+            //     false,
+            //     Input::new("reg_file", "reg_b"),
+            //     Input::new("alu", "result_o"),
+            //     Input::new("decoder", "data_mem_ctrl"),
+            //     Input::new("decoder", "data_se"),
+            //     Input::new("decoder", "data_mem_size"),
+            //     data_mem,
+            // ),
             Constant::rc_new("zero_c", (680.0, 150.0), 0),
             Mux::rc_new(
                 "alu_operand_a_mux",
@@ -323,6 +219,7 @@ fn main() {
                     Input::new("reg_file", "reg_b"),
                     Input::new("imm_szext", "out"),
                     Input::new("pc_adder", "out"),
+                    Input::new("reg", "out"),
                 ],
             ),
             Rc::new(ALU {
@@ -373,9 +270,12 @@ fn fern_setup_riscv() {
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
     let f = f
-        .level_for("syncrim::components::mem", LevelFilter::Trace)
-        .level_for("riscv::components::instr_mem", LevelFilter::Trace);
-    //.level_for("riscv", LevelFilter::Trace);
+        //.level_for("syncrim::components::mem", LevelFilter::Trace)
+        //.level_for("riscv::components::instr_mem", LevelFilter::Trace)
+        .level_for("syncrim::gui_vizia::components::mem", LevelFilter::Trace)
+        .level_for("riscv::gui_vizia::components::reg_file", LevelFilter::Trace)
+        //.level_for("riscv::components::alu", LevelFilter::Trace);
+        .level_for("syncrim::components::mem", LevelFilter::Trace);
 
     f
         // Output to stdout, files, and other Dispatch configurations

@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use asm_riscv;
 
 use log::trace;
 use serde::{Deserialize, Serialize};
@@ -36,7 +37,8 @@ impl Component for InstrMem {
             | (*self.bytes.get(&((pc + 1) as usize)).unwrap() as u32) << 16
             | (*self.bytes.get(&((pc + 2) as usize)).unwrap() as u32) << 8
             | (*self.bytes.get(&((pc + 3) as usize)).unwrap() as u32);
-        trace!("instruction: 0x{:08x}", instr);
+        let instruction = asm_riscv::I::try_from(instr).unwrap();
+        trace!("instruction: {:?}", instruction);
         trace!("pc:0x{:08x}", pc);
         // set output
         simulator.set_out_value(&self.id, "instruction", instr);
