@@ -229,7 +229,10 @@ impl Simulator {
                 Err(cond) => match cond {
                     Condition::Warning(warn) => trace!("warning {}", warn),
                     Condition::Error(err) => panic!("err {}", err),
-                    Condition::Assert(assert) => panic!("assert {}", assert),
+                    Condition::Assert(assert) => {
+                        error!("assertion failed {}", assert);
+                        self.running = false;
+                    }
                     Condition::Halt(halt) => {
                         self.running = false;
                         info!("halt {}", halt)

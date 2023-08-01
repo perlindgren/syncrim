@@ -1,4 +1,7 @@
-use crate::common::{Component, Condition, Id, Input, OutputType, Ports, Signal, Simulator};
+use crate::{
+    common::{Component, Condition, Id, Input, OutputType, Ports, Signal, Simulator},
+    signal::SignalValue,
+};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -27,7 +30,10 @@ impl Component for ProbeAssert {
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         trace!("-- cycle {} --", simulator.cycle);
         let lhs = simulator.get_input_value(&self.input);
-        let rhs = self.values[simulator.cycle].get_value();
+        let rhs = match self.values.get(simulator.cycle) {
+            Some(rhs) => rhs.get_value(),
+            _ => SignalValue::Unknown,
+        };
 
         // the assertion is checked only in test mode
         #[cfg(test)]
