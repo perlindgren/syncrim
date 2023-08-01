@@ -136,6 +136,7 @@ impl Simulator {
             history: vec![],
             component_ids,
             graph,
+            running: false,
         };
 
         trace!("sim_state {:?}", simulator.sim_state);
@@ -226,14 +227,33 @@ impl Simulator {
             match component.clock(self) {
                 Ok(_) => {}
                 Err(cond) => match cond {
-                    Condition::Warning(_) => todo!(),
+                    Condition::Warning(warn) => trace!("warning {}", warn),
                     Condition::Error(err) => panic!("err {}", err),
-                    Condition::Assert(assert) => panic!("assert {}", assert),
-                    Condition::Halt(halt) => info!("halt {}", halt),
+                    Condition::Assert(assert) => {
+                        error!("assertion failed {}", assert);
+                        self.running = false;
+                    }
+                    Condition::Halt(halt) => {
+                        self.running = false;
+                        info!("halt {}", halt)
+                    }
                 },
             }
         }
         self.cycle = self.history.len();
+    }
+
+    /// free running mode until Halt condition
+    pub fn run(&mut self) {
+        self.running = true;
+        while self.running {
+            self.clock()
+        }
+    }
+
+    /// stop the simulator from gui or other external reason
+    pub fn stop(&mut self) {
+        self.running = false;
     }
 
     /// reverse simulation using history if clock > 1
@@ -256,7 +276,12 @@ impl Simulator {
         self.history = vec![];
         self.cycle = 0;
         self.sim_state.iter_mut().for_each(|val| *val = 0.into());
+        self.stop();
         self.clock();
+    }
+
+    pub fn get_state(&self) -> bool {
+        self.running
     }
 
     /// save as `dot` file with `.gv` extension
