@@ -206,10 +206,72 @@ impl fmt::Display for Signal {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+enum SignalExpr {
+    Eq(Box<SignalExpr>, Box<SignalExpr>),
+    Gt(Box<SignalExpr>, Box<SignalExpr>),
+    And(Box<SignalExpr>, Box<SignalExpr>),
+    Or(Box<SignalExpr>, Box<SignalExpr>),
+    Signal(Signal),
+}
+
+impl SignalExpr {
+    fn signal(&self) -> Result<Signal, String> {
+        match self {
+            SignalExpr::Signal(s) => Ok(*s),
+            _ => Err(format!("expected Signal, found {:?}", self)),
+        }
+    }
+    pub fn eval(&self) -> Result<bool, String> {
+        match self {
+            SignalExpr::Eq(lhs, rhs) => {
+                let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal()?)?;
+                let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal()?)?;
+                Ok(lhs == rhs)
+            }
+            SignalExpr::Gt(lhs, rhs) => {
+                let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal()?)?;
+                let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal()?)?;
+                Ok(lhs > rhs)
+            }
+            SignalExpr::And(lhs, rhs) => {
+                let lhs = lhs.eval()?;
+                let rhs = rhs.eval()?;
+                Ok(lhs && rhs)
+            }
+            SignalExpr::Or(lhs, rhs) => {
+                let lhs = lhs.eval()?;
+                let rhs = rhs.eval()?;
+                Ok(lhs || rhs)
+            }
+            SignalExpr::Signal(s) => {
+                let s: SignalUnsigned = s.get_value().try_into()?;
+                Ok(s != 0)
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
 
+    #[test]
+    fn test_expr() {
+        let lhs = Box::new(SignalExpr::Signal(2.into()));
+        let rhs = Box::new(SignalExpr::Signal(1.into()));
+        let expr = SignalExpr::Eq(lhs.clone(), rhs.clone());
+        println!("expr {:?}", expr);
+        println!("expr.eval() {:?}", expr.eval());
+
+        let expr = SignalExpr::Gt(lhs.clone(), rhs.clone());
+        println!("expr {:?}", expr);
+        println!("expr.eval() {:?}", expr.eval());
+
+        let expr = SignalExpr::Gt(rhs, lhs);
+        println!("expr {:?}", expr);
+        println!("expr.eval() {:?}", expr.eval());
+    }
     #[test]
     fn test_bool_fmt() {
         let mut signal: Signal = false.into();
