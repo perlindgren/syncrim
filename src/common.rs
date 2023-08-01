@@ -33,6 +33,8 @@ pub struct Simulator {
     pub history: Vec<Vec<Signal>>,
     pub component_ids: Vec<Id>,
     pub graph: Graph<Id, ()>,
+    // Running state, (do we need it accessible from other crates?)
+    pub(crate) running: bool,
 }
 
 #[derive(Serialize, Deserialize)]
