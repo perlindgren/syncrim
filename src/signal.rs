@@ -1,3 +1,4 @@
+use crate::common::{Input, Simulator};
 use num_enum::IntoPrimitive;
 
 use serde::{Deserialize, Serialize};
@@ -207,45 +208,52 @@ impl fmt::Display for Signal {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
-enum SignalExpr {
+pub enum SignalExpr {
     Eq(Box<SignalExpr>, Box<SignalExpr>),
     Gt(Box<SignalExpr>, Box<SignalExpr>),
     And(Box<SignalExpr>, Box<SignalExpr>),
     Or(Box<SignalExpr>, Box<SignalExpr>),
-    Signal(Signal),
+    Not(Box<SignalExpr>),
+    Input(Input),
+    Constant(Signal),
 }
 
 impl SignalExpr {
-    fn signal(&self) -> Result<Signal, String> {
+    fn signal(&self, simulator: &Simulator) -> Result<Signal, String> {
         match self {
-            SignalExpr::Signal(s) => Ok(*s),
+            SignalExpr::Input(input) => Ok(simulator.get_input_signal(input)),
+            SignalExpr::Constant(constant) => Ok(*constant),
             _ => Err(format!("expected Signal, found {:?}", self)),
         }
     }
-    pub fn eval(&self) -> Result<bool, String> {
+    pub fn eval(&self, simulator: &Simulator) -> Result<bool, String> {
         match self {
             SignalExpr::Eq(lhs, rhs) => {
-                let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal()?)?;
-                let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal()?)?;
+                let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal(simulator)?)?;
+                let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal(simulator)?)?;
                 Ok(lhs == rhs)
             }
             SignalExpr::Gt(lhs, rhs) => {
-                let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal()?)?;
-                let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal()?)?;
+                let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal(simulator)?)?;
+                let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal(simulator)?)?;
                 Ok(lhs > rhs)
             }
             SignalExpr::And(lhs, rhs) => {
-                let lhs = lhs.eval()?;
-                let rhs = rhs.eval()?;
+                let lhs = lhs.eval(simulator)?;
+                let rhs = rhs.eval(simulator)?;
                 Ok(lhs && rhs)
             }
             SignalExpr::Or(lhs, rhs) => {
-                let lhs = lhs.eval()?;
-                let rhs = rhs.eval()?;
+                let lhs = lhs.eval(simulator)?;
+                let rhs = rhs.eval(simulator)?;
                 Ok(lhs || rhs)
             }
-            SignalExpr::Signal(s) => {
-                let s: SignalUnsigned = s.get_value().try_into()?;
+            SignalExpr::Not(expr) => {
+                let expr = expr.eval(simulator)?;
+                Ok(!expr)
+            }
+            _ => {
+                let s: SignalUnsigned = self.signal(simulator)?.try_into()?;
                 Ok(s != 0)
             }
         }
@@ -255,23 +263,127 @@ impl SignalExpr {
 #[cfg(test)]
 mod test {
     use super::*;
-
+    use crate::{common::ComponentStore, components::ProbeOut};
     #[test]
     fn test_expr() {
-        let lhs = Box::new(SignalExpr::Signal(2.into()));
-        let rhs = Box::new(SignalExpr::Signal(1.into()));
-        let expr = SignalExpr::Eq(lhs.clone(), rhs.clone());
-        println!("expr {:?}", expr);
-        println!("expr.eval() {:?}", expr.eval());
+        let cs = ComponentStore {
+            store: vec![ProbeOut::rc_new("probe_out")],
+        };
 
-        let expr = SignalExpr::Gt(lhs.clone(), rhs.clone());
-        println!("expr {:?}", expr);
-        println!("expr.eval() {:?}", expr.eval());
+        let mut simulator = Simulator::new(&cs);
+        // output
+        let out = Input::new("probe_out", "out");
 
-        let expr = SignalExpr::Gt(rhs, lhs);
+        // check reset state
+        println!("<reset>");
+        println!("sim_state {:?}", simulator.sim_state);
+        assert_eq!(simulator.cycle, 1);
+        assert_eq!(simulator.get_input_value(&out), 0.into());
+
+        // check constant false
+        println!("<check constant false>");
+        let expr = SignalExpr::Constant(false.into());
         println!("expr {:?}", expr);
-        println!("expr.eval() {:?}", expr.eval());
+        println!("eval.expr {:?}", expr.eval(&simulator));
+        assert_eq!(Ok(false), expr.eval(&simulator));
+
+        // check constant true
+        println!("<check constant true>");
+        let expr = SignalExpr::Constant(true.into());
+        println!("expr {:?}", expr);
+        println!("eval.expr {:?}", expr.eval(&simulator));
+        assert_eq!(Ok(true), expr.eval(&simulator));
+
+        // check not constant true
+        println!("<check not constant true>");
+        let expr = SignalExpr::Not(Box::new(SignalExpr::Constant(true.into())));
+        println!("expr {:?}", expr);
+        println!("eval.expr {:?}", expr.eval(&simulator));
+        assert_eq!(Ok(false), expr.eval(&simulator));
+
+        // check not constant false
+        println!("<check not constant false>");
+        let expr = SignalExpr::Not(Box::new(SignalExpr::Constant(false.into())));
+        println!("expr {:?}", expr);
+        println!("eval.expr {:?}", expr.eval(&simulator));
+        assert_eq!(Ok(true), expr.eval(&simulator));
+
+        // check "probe_out" "out"
+        println!("<check probe out>");
+        let expr = SignalExpr::Input(out.clone());
+        println!("expr {:?}", expr);
+        println!("eval.expr {:?}", expr.eval(&simulator));
+        assert_eq!(Ok(false), expr.eval(&simulator));
+
+        // check eq "probe_out" "out" against constant
+        println!("<check probe out against constant>");
+        let expr = SignalExpr::Eq(
+            Box::new(SignalExpr::Input(out.clone())),
+            Box::new(SignalExpr::Constant(false.into())),
+        );
+        println!("expr {:?}", expr);
+        println!("eval.expr {:?}", expr.eval(&simulator));
+        assert_eq!(Ok(true), expr.eval(&simulator));
+
+        // check input 0 greater than 1
+        println!("<check greater than>");
+        let expr = SignalExpr::Gt(
+            Box::new(SignalExpr::Input(out.clone())),
+            Box::new(SignalExpr::Constant(1.into())),
+        );
+        println!("expr {:?}", expr);
+        println!("eval.expr {:?}", expr.eval(&simulator));
+        assert_eq!(Ok(false), expr.eval(&simulator));
+
+        // update simulator value
+        println!("<check update simulator>");
+        simulator.set_out_value("probe_out", "out", 2);
+        println!("eval.expr {:?}", expr.eval(&simulator));
+        assert_eq!(Ok(true), expr.eval(&simulator));
+
+        // check and
+        println!("<check and>");
+        let expr2 = SignalExpr::And(
+            Box::new(expr.clone()),
+            Box::new(SignalExpr::Constant(false.into())),
+        );
+        println!("eval.expr2 {:?}", expr2.eval(&simulator));
+        assert_eq!(Ok(false), expr2.eval(&simulator));
+
+        // check or
+        println!("<check or>");
+        let expr2 = SignalExpr::Or(
+            Box::new(expr.clone()),
+            Box::new(SignalExpr::Constant(false.into())),
+        );
+        println!("eval.expr2 {:?}", expr2.eval(&simulator));
+        assert_eq!(Ok(true), expr2.eval(&simulator));
+
+        // check complex
+        println!("<check complex>");
+        let expr2 = SignalExpr::And(
+            Box::new(expr.clone()), // true
+            Box::new(SignalExpr::Or(
+                Box::new(SignalExpr::Constant(false.into())), // false
+                Box::new(expr.clone()),                       // true
+            )),
+        );
+        println!("eval.expr2 {:?}", expr2.eval(&simulator));
+        assert_eq!(Ok(true), expr2.eval(&simulator));
+
+        // check complex
+        println!("<check complex>");
+        let expr2 = SignalExpr::And(
+            Box::new(SignalExpr::Not(Box::new(expr.clone()))), // false
+            Box::new(SignalExpr::Or(
+                Box::new(SignalExpr::Constant(false.into())), // false
+                Box::new(expr.clone()),                       // true
+            )),
+        );
+        println!("eval.expr2 {:?}", expr2.eval(&simulator));
+        assert_eq!(Ok(false), expr2.eval(&simulator));
     }
+
     #[test]
     fn test_bool_fmt() {
         let mut signal: Signal = false.into();

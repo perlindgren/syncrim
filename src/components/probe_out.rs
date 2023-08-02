@@ -1,6 +1,7 @@
 use crate::common::{Component, Id, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct ProbeOut {
@@ -29,5 +30,9 @@ impl Component for ProbeOut {
 impl ProbeOut {
     pub fn new(id: &str) -> Self {
         ProbeOut { id: id.into() }
+    }
+
+    pub fn rc_new(id: &str) -> Rc<Self> {
+        Rc::new(ProbeOut::new(id))
     }
 }

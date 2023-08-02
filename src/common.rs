@@ -112,7 +112,7 @@ impl Ports {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct Input {
     pub id: Id,
     pub field: Id,
