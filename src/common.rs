@@ -32,6 +32,7 @@ pub struct Simulator {
     pub id_field_index: IdFieldIndex,
     pub history: Vec<Vec<Signal>>,
     pub component_ids: Vec<Id>,
+    pub id_outputs: IdOutputs,
     pub graph: Graph<Id, ()>,
     // Running state, (do we need it accessible from other crates?)
     pub(crate) running: bool,
@@ -53,6 +54,8 @@ pub type IdStartIndex = HashMap<Id, usize>;
 pub type IdNrOutputs = HashMap<Id, usize>;
 
 pub type IdFieldIndex = HashMap<(Id, Id), usize>;
+
+pub type IdOutputs = HashMap<Id, Vec<Id>>;
 
 // Common functionality for all components
 #[typetag::serde(tag = "type")]

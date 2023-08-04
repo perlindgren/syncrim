@@ -11,10 +11,14 @@ fn main() {
     let cs = ComponentStore {
         store: vec![
             ProbeEdit::rc_new("probe_edit", (100.0, 100.0)),
+            ProbeEdit::rc_new("probe_edit2", (100.0, 140.0)),
             ProbeHalt::rc_new(
                 "probe_halt",
                 (250.0, 100.0),
-                vec![Input::new("probe_edit", "out")],
+                vec![
+                    Input::new("probe_edit", "out"),
+                    Input::new("probe_edit2", "out"),
+                ],
                 SignalExpr::BinOp(
                     BinOp::CmpOp(CmpOp::Eq),
                     Box::new(SignalExpr::Input(Input::new("probe_edit", "out"))),

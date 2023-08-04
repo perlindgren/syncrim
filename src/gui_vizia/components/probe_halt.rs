@@ -58,6 +58,18 @@ impl ViziaComponent for ProbeHalt {
     }
 }
 
+#[derive(Lens, Model, Setter)]
+pub struct InputIdData {
+    list: Vec<String>,
+    choice: String,
+}
+
+#[derive(Lens, Model, Setter)]
+pub struct InputFieldData {
+    list: Vec<String>,
+    choice: String,
+}
+
 impl ProbeHalt {
     fn build_expression(&self, cx: &mut Context, signal_expr: &SignalExpr) {
         match signal_expr {
@@ -76,8 +88,47 @@ impl ProbeHalt {
             }
             SignalExpr::Input(Input { id, field }) => {
                 trace!("-- Input -- {:?}", self.inputs);
+                InputIdData {
+                    list: self
+                        .inputs
+                        .iter()
+                        .map(|input| input.id.to_owned())
+                        .collect(),
+                    choice: id.into(),
+                }
+                .build(cx);
+
+                let simulator = GuiData::simulator.get(cx);
+                let outputs = simulator.id_outputs.get(id);
+
+                trace!("outputs {:?}", outputs);
+
                 HStack::new(cx, |cx| {
-                    Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", id)));
+                    // Input Id dropdown
+                    Dropdown::new(
+                        cx,
+                        move |cx| Label::new(cx, InputIdData::choice),
+                        move |cx| {
+                            List::new(cx, InputIdData::list, |cx, _, item| {
+                                Label::new(cx, item)
+                                    .width(Stretch(1.0))
+                                    .cursor(CursorIcon::Hand)
+                                    .bind(InputIdData::choice, move |handle, selected| {
+                                        if item.get(&handle) == selected.get(&handle) {
+                                            handle.checked(true);
+                                        }
+                                    })
+                                    .on_press(move |cx| {
+                                        cx.emit(InputIdDataSetter::Choice(item.get(cx)));
+                                        cx.emit(PopupEvent::Close);
+                                    });
+                            })
+                            .width(Stretch(1.0));
+                        },
+                    )
+                    .top(Pixels(40.0))
+                    .width(Pixels(100.0));
+
                     Label::new(cx, ".").size(Auto);
                     Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", field)));
                 })

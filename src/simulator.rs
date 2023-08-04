@@ -1,6 +1,6 @@
 use crate::common::{
-    Component, ComponentStore, Condition, Id, Input, OutputType, Signal, SignalFmt, SignalValue,
-    Simulator,
+    Component, ComponentStore, Condition, Id, IdOutputs, Input, OutputType, Signal, SignalFmt,
+    SignalValue, Simulator,
 };
 use petgraph::{
     algo::toposort,
@@ -12,7 +12,7 @@ use log::*;
 use std::collections::HashMap;
 use std::{fs::File, io::prelude::*, path::PathBuf};
 
-pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
+// pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 
 // Notice:
 // The topological order does not enforce any specific order of registers
@@ -27,7 +27,7 @@ impl Simulator {
 
         let mut id_start_index = HashMap::new();
         let mut id_component = HashMap::new(); // IdComponent(HashMap::new());
-
+        let mut id_outputs: IdOutputs = HashMap::new();
         let mut id_nr_outputs = HashMap::new();
         let mut id_field_index = HashMap::new();
         // allocate storage for lensed outputs
@@ -46,6 +46,7 @@ impl Simulator {
             }
 
             id_component.insert(id.clone(), c);
+            id_outputs.insert(id.clone(), ports.outputs.clone());
 
             // create placeholder for output
             #[allow(clippy::same_item_push)]
@@ -132,6 +133,7 @@ impl Simulator {
             ordered_components,
             id_nr_outputs,
             id_field_index,
+            id_outputs,
             sim_state: lens_values,
             history: vec![],
             component_ids,
