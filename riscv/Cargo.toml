@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-riscv_asm = {path="/home/pawel/riscv_asm/"}
 serde = "1.0.167"
 serde_derive = "1.0.167"
 typetag = "0.2.9"
