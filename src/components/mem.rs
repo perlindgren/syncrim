@@ -352,6 +352,8 @@ impl Component for Mem {
                 )
             }
         }
+
+        Ok(())
     }
 }
 

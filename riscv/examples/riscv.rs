@@ -3,7 +3,9 @@ use clap::Parser;
 use fern;
 use riscv::components::*;
 use riscv_elf_parse;
-use std::{cell::RefCell, collections::BTreeMap, fs, ops::Range, path::PathBuf, rc::Rc};
+use std::{
+    cell::RefCell, collections::BTreeMap, fs, ops::Range, path::PathBuf, process::Command, rc::Rc,
+};
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
