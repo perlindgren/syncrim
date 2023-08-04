@@ -4,6 +4,7 @@ use crate::common::{
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::{
+    cell::RefCell,
     rc::Rc,
     sync::{Arc, RwLock},
 };
@@ -13,7 +14,7 @@ pub struct ProbeHalt {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
     pub(crate) inputs: Vec<Input>,
-    pub(crate) signal_expr: SignalExpr,
+    pub(crate) signal_expr: RefCell<SignalExpr>,
 }
 
 // #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -41,7 +42,7 @@ impl Component for ProbeHalt {
 
     // propagate editable value
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
-        let res = self.signal_expr.eval(simulator);
+        let res = self.signal_expr.borrow().eval(simulator);
         trace!("signal_expr = {:?}", res);
 
         match res {
@@ -63,7 +64,7 @@ impl ProbeHalt {
             id: id.into(),
             pos,
             inputs,
-            signal_expr,
+            signal_expr: signal_expr.into(),
         }
     }
 

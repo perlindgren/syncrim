@@ -1,7 +1,8 @@
 use crate::{
-    common::{SignalSigned, SignalUnsigned, SignalValue, Simulator},
+    common::{Input, SignalSigned, SignalUnsigned, SignalValue, Simulator},
     components::{ProbeHalt, TextSignal},
     gui_vizia::{GuiData, ViziaComponent, V},
+    signal::SignalExpr,
 };
 use log::*;
 use vizia::prelude::*;
@@ -16,28 +17,82 @@ impl ViziaComponent for ProbeHalt {
             }
             .build(cx);
 
-            Textbox::new(cx, ProbeHaltView::editable_text)
-                .on_submit(move |ex, text, enter| {
-                    trace!("submit: text {} enter {}", text, enter);
-                    ex.emit(ProbeHaltViewSetter::EditableText(text));
+            VStack::new(cx, |cx| {
+                HStack::new(cx, |cx| {
+                    Label::new(cx, "Halt on: ");
+                    // this won't update I guess
+                    Label::new(cx, &format!("{}", self.signal_expr.borrow()));
                 })
-                .on_edit(move |_ex, text| {
-                    trace!("edit: text {}", text);
-
-                    // let value = parse_signal(&text);
-                    // *history_submit.write().unwrap().last_mut().unwrap() = TextSignal {
-                    //     text: text.clone(),
-                    //     signal: value.into(),
-                    // };
-                    // trace!("signal {:?}", value);
-                })
-                .width(Pixels(80.0))
-                .height(Pixels(20.0));
+                .size(Auto);
+                build_expression(cx, &self.signal_expr.borrow())
+            })
+            .size(Auto);
         })
+        // // textbox for entering constants
+        // Textbox::new(cx, ProbeHaltView::editable_text)
+        //     .on_submit(move |ex, text, enter| {
+        //         trace!("submit: text {} enter {}", text, enter);
+        //         ex.emit(ProbeHaltViewSetter::EditableText(text));
+        //     })
+        //     .on_edit(move |_ex, text| {
+        //         trace!("edit: text {}", text);
+        //         // let value = parse_signal(&text);
+        //         // *history_submit.write().unwrap().last_mut().unwrap() = TextSignal {
+        //         //     text: text.clone(),
+        //         //     signal: value.into(),
+        //         // };
+        //         // trace!("signal {:?}", value);
+        //     })
+        //     .width(Pixels(80.0))
+        //     .height(Pixels(20.0));
+        // for c in self.inputs {
+        //     text
+        // }
+        // trace!("component {:?}", self.inputs);
+        // })
+        // });
         .size(Auto)
         .left(Pixels(self.pos.0 - 40.0))
         .top(Pixels(self.pos.1 - 10.0))
+        .background_color(Color::lightgoldenrodyellow())
     }
+}
+
+fn build_expression(cx: &mut Context, signal_expr: &SignalExpr) {
+    match signal_expr {
+        SignalExpr::Eq(lhs, rhs) => {
+            VStack::new(cx, |cx| {
+                Button::new(cx, |_| {}, |cx| Label::new(cx, "Eq"));
+                HStack::new(cx, |cx| {
+                    build_expression(cx, lhs);
+                    build_expression(cx, rhs);
+                });
+            });
+        }
+        SignalExpr::And(lhs, rhs) => {
+            VStack::new(cx, |cx| {
+                Button::new(cx, |_| {}, |cx| Label::new(cx, "&&"));
+                HStack::new(cx, |cx| {
+                    build_expression(cx, lhs);
+                    build_expression(cx, rhs);
+                });
+            });
+        }
+        SignalExpr::Or(lhs, rhs) => unimplemented!(),
+        SignalExpr::Not(e) => unimplemented!(),
+        SignalExpr::Constant(c) => {
+            Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", c)));
+        }
+        SignalExpr::Input(Input { id, field }) => {
+            Button::new(
+                cx,
+                |_| {},
+                |cx| Label::new(cx, &format!("{}.{}", id, field)),
+            );
+        }
+        SignalExpr::GtSigned(lhs, rhs) => unimplemented!(),
+        SignalExpr::GtUnsigned(lhs, rhs) => unimplemented!(),
+    };
 }
 
 #[derive(Lens, Setter, Model)]
@@ -49,7 +104,6 @@ fn parse_signal(text: &str) -> SignalValue {
     let text = text.trim();
 
     if let Ok(signal) = text.parse::<SignalSigned>() {
-        
         (signal as SignalUnsigned).into()
     } else if let Some(hex) = text.strip_prefix("0x") {
         if let Ok(signal) = SignalUnsigned::from_str_radix(hex, 16) {

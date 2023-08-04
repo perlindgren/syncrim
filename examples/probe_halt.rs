@@ -15,12 +15,15 @@ fn main() {
                 "probe_halt",
                 (250.0, 100.0),
                 vec![Input::new("probe_edit", "out")],
-                SignalExpr::Input(Input::new("probe_edit", "out")),
+                SignalExpr::Eq(
+                    Box::new(SignalExpr::Input(Input::new("probe_edit", "out"))),
+                    Box::new(SignalExpr::Constant(12.into())),
+                ),
             ),
         ],
     };
 
-    let path = PathBuf::from("probe_edit.json");
+    let path = PathBuf::from("probe_halt.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]

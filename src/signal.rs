@@ -266,6 +266,25 @@ impl SignalExpr {
     }
 }
 
+impl fmt::Display for SignalExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Eq(lhs, rhs) => format!("{}=={}", lhs, rhs),
+                Self::And(lhs, rhs) => format!("{}&&{}", lhs, rhs),
+                Self::Or(lhs, rhs) => format!("{}||{}", lhs, rhs),
+                Self::Not(e) => format!("!{}", e),
+                Self::Constant(c) => format!("{}", c),
+                Self::Input(Input { id, field }) => format!("{}.{}", id, field),
+                Self::GtSigned(lhs, rhs) => format!("{}>(s){}", lhs, rhs),
+                Self::GtUnsigned(lhs, rhs) => format!("{}>(u){}", lhs, rhs),
+            }
+        )
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
