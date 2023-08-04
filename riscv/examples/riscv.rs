@@ -3,13 +3,7 @@ use clap::Parser;
 use fern;
 use riscv::components::*;
 use riscv_elf_parse;
-use std::{
-    cell::RefCell,
-    collections::{BTreeMap, HashMap},
-    fs,
-    path::PathBuf,
-    rc::Rc,
-};
+use std::{cell::RefCell, collections::BTreeMap, fs, ops::Range, path::PathBuf, rc::Rc};
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
@@ -52,6 +46,15 @@ fn main() {
     println!("{}", memory);
     let mut instr_mem = BTreeMap::new();
     let mut data_mem = BTreeMap::new();
+
+    //init data memory with 0's
+    let range = Range {
+        start: 0x8000_0000u32,
+        end: 0x8000_1000u32,
+    };
+    for address in range.clone() {
+        data_mem.insert(address as usize, 0);
+    }
     for element in memory.bytes {
         if element.0 < 0x5000_0000 {
             instr_mem.insert(element.0, element.1);
@@ -59,6 +62,7 @@ fn main() {
             data_mem.insert(element.0, element.1);
         }
     }
+
     let cs = ComponentStore {
         store: vec![
             Add::rc_new(
@@ -186,6 +190,7 @@ fn main() {
                 Input::new("decoder", "data_se"),
                 Input::new("decoder", "data_mem_size"),
                 data_mem,
+                range,
             ),
             // Mem::rc_new_from_bytes(
             //     "data_memory",

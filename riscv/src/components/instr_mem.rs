@@ -1,5 +1,5 @@
-use std::collections::BTreeMap;
-use asm_riscv;
+use asm_riscv::{self};
+use std::{collections::BTreeMap, panic};
 
 use log::trace;
 use serde::{Deserialize, Serialize};
@@ -37,8 +37,11 @@ impl Component for InstrMem {
             | (*self.bytes.get(&((pc + 1) as usize)).unwrap() as u32) << 16
             | (*self.bytes.get(&((pc + 2) as usize)).unwrap() as u32) << 8
             | (*self.bytes.get(&((pc + 3) as usize)).unwrap() as u32);
-        let instruction = asm_riscv::I::try_from(instr).unwrap();
-        trace!("instruction: {:?}", instruction);
+        //the asm_riscv crate incorrectly panics when trying from instead of
+        //returning Err, catch it and handle instead
+        let instruction_fmt = panic::catch_unwind(|| format!("{:?}", asm_riscv::I::from(instr)))
+            .unwrap_or_else(|_| format!("Unknown instruction"));
+        trace!("instruction: {}", instruction_fmt);
         trace!("pc:0x{:08x}", pc);
         // set output
         simulator.set_out_value(&self.id, "instruction", instr);

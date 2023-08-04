@@ -5,6 +5,7 @@ use log::*;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
+use std::ops::Range;
 use std::{cell::RefCell, collections::BTreeMap, convert::TryFrom, rc::Rc};
 
 #[derive(Serialize, Deserialize)]
@@ -26,6 +27,7 @@ pub struct Mem {
 
     // memory
     pub(crate) memory: Memory,
+    pub(crate) range: Range<u32>,
     // later history... tbd
 }
 
@@ -43,6 +45,7 @@ impl Mem {
         sext: Input,
         size: Input,
         memory: BTreeMap<usize, u8>,
+        range: Range<u32>,
     ) -> Self {
         Mem {
             id: id.to_string(),
@@ -56,6 +59,7 @@ impl Mem {
             sext,
             size,
             memory: Memory::new(memory),
+            range,
         }
     }
 
@@ -71,19 +75,15 @@ impl Mem {
         ctrl: Input,
         sext: Input,
         size: Input,
+        range: Range<u32>,
     ) -> Rc<Self> {
+        let mut mem = BTreeMap::new();
+        //fill the defined memory range with zeroes
+        for i in range.clone() {
+            mem.insert(i as usize, 0u8);
+        }
         Rc::new(Mem::new(
-            id,
-            pos,
-            width,
-            height,
-            big_endian,
-            data,
-            addr,
-            ctrl,
-            sext,
-            size,
-            BTreeMap::new(),
+            id, pos, width, height, big_endian, data, addr, ctrl, sext, size, mem, range,
         ))
     }
 
@@ -99,9 +99,10 @@ impl Mem {
         sext: Input,
         size: Input,
         memory: BTreeMap<usize, u8>,
+        range: Range<u32>,
     ) -> Rc<Self> {
         Rc::new(Mem::new(
-            id, pos, width, height, big_endian, data, addr, ctrl, sext, size, memory,
+            id, pos, width, height, big_endian, data, addr, ctrl, sext, size, memory, range,
         ))
     }
 }
@@ -386,6 +387,10 @@ mod test {
 
                     // memory
                     memory: Memory(Rc::new(RefCell::new(BTreeMap::new()))),
+                    range: Range {
+                        start: 0u32,
+                        end: 1u32,
+                    },
                 }),
             ],
         };
@@ -565,6 +570,10 @@ mod test {
                     // memory
                     memory: Memory(Rc::new(RefCell::new(BTreeMap::new()))),
                     // later history... tbd
+                    range: Range {
+                        start: 0u32,
+                        end: 1u32,
+                    },
                 }),
             ],
         };
