@@ -41,29 +41,20 @@ impl Component for ProbeHalt {
 
     // propagate editable value
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
-        // let mut history = self.edit_history.write().unwrap();
-        // trace!("{} history {:?}", self.id, history);
-        // let current = history.last().unwrap().clone();
-        // // set output to current value
-        // simulator.set_out_value(&self.id, "out", current.signal.get_value());
-        // // push to prepare data for next;
-        // history.push(current);
-        Ok(())
+        let res = self.signal_expr.eval(simulator);
+        trace!("signal_expr = {:?}", res);
+
+        match res {
+            Ok(true) => {
+                // we hit a breakpoint
+                Err(Condition::Halt(format!("{:?}", self.signal_expr)))
+            }
+            _ => Ok(()),
+        }
     }
 
     // reverse simulation, notice does not touch simulator state, its just internal
-    fn un_clock(&self) {
-        // let mut edit_history = self.edit_history.write().unwrap();
-        // trace!("{} history {:?}", self.id, edit_history);
-        // let _next = edit_history.pop().unwrap(); // pop the next editable value
-        // let _current = edit_history.pop().unwrap(); // pop current editable value
-        // let prev = edit_history.pop().unwrap(); // pop the prev editable value
-        // trace!("next {:?}", _next);
-        // trace!("current {:?}", _current);
-        // trace!("prev {:?}", prev);
-        // edit_history.push(prev.clone()); // push as current
-        // edit_history.push(prev); // push as next (to be edited)
-    }
+    fn un_clock(&self) {}
 }
 
 impl ProbeHalt {

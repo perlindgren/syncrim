@@ -49,6 +49,7 @@ fn parse_signal(text: &str) -> SignalValue {
     let text = text.trim();
 
     if let Ok(signal) = text.parse::<SignalSigned>() {
+        
         (signal as SignalUnsigned).into()
     } else if let Some(hex) = text.strip_prefix("0x") {
         if let Ok(signal) = SignalUnsigned::from_str_radix(hex, 16) {

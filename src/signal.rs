@@ -210,7 +210,8 @@ impl fmt::Display for Signal {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum SignalExpr {
     Eq(Box<SignalExpr>, Box<SignalExpr>),
-    Gt(Box<SignalExpr>, Box<SignalExpr>),
+    GtUnsigned(Box<SignalExpr>, Box<SignalExpr>),
+    GtSigned(Box<SignalExpr>, Box<SignalExpr>),
     And(Box<SignalExpr>, Box<SignalExpr>),
     Or(Box<SignalExpr>, Box<SignalExpr>),
     Not(Box<SignalExpr>),
@@ -233,9 +234,14 @@ impl SignalExpr {
                 let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal(simulator)?)?;
                 Ok(lhs == rhs)
             }
-            SignalExpr::Gt(lhs, rhs) => {
+            SignalExpr::GtUnsigned(lhs, rhs) => {
                 let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal(simulator)?)?;
                 let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal(simulator)?)?;
+                Ok(lhs > rhs)
+            }
+            SignalExpr::GtSigned(lhs, rhs) => {
+                let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal(simulator)?)? as i32;
+                let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal(simulator)?)? as i32;
                 Ok(lhs > rhs)
             }
             SignalExpr::And(lhs, rhs) => {
@@ -325,9 +331,19 @@ mod test {
         println!("eval.expr {:?}", expr.eval(&simulator));
         assert_eq!(Ok(true), expr.eval(&simulator));
 
-        // check input 0 greater than 1
+        // check input 0 greater than neg signed
         println!("<check greater than>");
-        let expr = SignalExpr::Gt(
+        let expr = SignalExpr::GtSigned(
+            Box::new(SignalExpr::Input(out.clone())),
+            Box::new(SignalExpr::Constant(u32::MAX.into())),
+        );
+        println!("expr {:?}", expr);
+        println!("eval.expr {:?}", expr.eval(&simulator));
+        assert_eq!(Ok(true), expr.eval(&simulator));
+
+        // check input 0 greater than 1 unsigned
+        println!("<check greater than>");
+        let expr = SignalExpr::GtUnsigned(
             Box::new(SignalExpr::Input(out.clone())),
             Box::new(SignalExpr::Constant(1.into())),
         );

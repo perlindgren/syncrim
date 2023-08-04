@@ -15,7 +15,7 @@ fn main() {
                 "probe_halt",
                 (250.0, 100.0),
                 vec![Input::new("probe_edit", "out")],
-                SignalExpr::Constant(false.into()),
+                SignalExpr::Input(Input::new("probe_edit", "out")),
             ),
         ],
     };
