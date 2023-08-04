@@ -59,13 +59,7 @@ impl ViziaComponent for ProbeHalt {
 }
 
 #[derive(Lens, Model, Setter)]
-pub struct InputIdData {
-    list: Vec<String>,
-    choice: String,
-}
-
-#[derive(Lens, Model, Setter)]
-pub struct InputFieldData {
+pub struct InputData {
     list: Vec<String>,
     choice: String,
 }
@@ -82,59 +76,54 @@ impl ProbeHalt {
                 .size(Auto);
             }
 
-            //     SignalExpr::Not(e) => unimplemented!(),
+            SignalExpr::Not(e) => {
+                HStack::new(cx, |cx| {
+                    Label::new(cx, "!");
+                    self.build_expression(cx, e);
+                })
+                .size(Auto);
+            }
             SignalExpr::Constant(c) => {
                 Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", c))).size(Auto);
             }
             SignalExpr::Input(Input { id, field }) => {
                 trace!("-- Input -- {:?}", self.inputs);
-                InputIdData {
+                InputData {
                     list: self
                         .inputs
                         .iter()
-                        .map(|input| input.id.to_owned())
+                        .map(|input| format!("{}.{}", input.id, input.field))
                         .collect(),
-                    choice: id.into(),
+                    choice: format!("{}.{}", id, field),
                 }
                 .build(cx);
 
-                let simulator = GuiData::simulator.get(cx);
-                let outputs = simulator.id_outputs.get(id);
-
-                trace!("outputs {:?}", outputs);
-
-                HStack::new(cx, |cx| {
-                    // Input Id dropdown
-                    Dropdown::new(
-                        cx,
-                        move |cx| Label::new(cx, InputIdData::choice),
-                        move |cx| {
-                            List::new(cx, InputIdData::list, |cx, _, item| {
-                                Label::new(cx, item)
-                                    .width(Stretch(1.0))
-                                    .cursor(CursorIcon::Hand)
-                                    .bind(InputIdData::choice, move |handle, selected| {
-                                        if item.get(&handle) == selected.get(&handle) {
-                                            handle.checked(true);
-                                        }
-                                    })
-                                    .on_press(move |cx| {
-                                        cx.emit(InputIdDataSetter::Choice(item.get(cx)));
-                                        cx.emit(PopupEvent::Close);
-                                    });
-                            })
-                            .width(Stretch(1.0));
-                        },
-                    )
-                    .top(Pixels(40.0))
-                    .width(Pixels(100.0));
-
-                    Label::new(cx, ".").size(Auto);
-                    Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", field)));
-                })
-                .size(Auto);
+                // Input Id.Field dropdown
+                Dropdown::new(
+                    cx,
+                    move |cx| Label::new(cx, InputData::choice).size(Auto),
+                    move |cx| {
+                        List::new(cx, InputData::list, |cx, _, item| {
+                            Label::new(cx, item)
+                                // .width(Stretch(1.0))
+                                .cursor(CursorIcon::Hand)
+                                .bind(InputData::choice, move |handle, selected| {
+                                    if item.get(&handle) == selected.get(&handle) {
+                                        handle.checked(true);
+                                    }
+                                })
+                                .on_press(move |cx| {
+                                    cx.emit(InputDataSetter::Choice(item.get(cx)));
+                                    cx.emit(PopupEvent::Close);
+                                })
+                                .size(Auto);
+                        })
+                        .size(Auto);
+                    },
+                )
+                // .size(Auto);
+                .width(Pixels(140.0));
             }
-            _ => unimplemented!(),
         };
     }
 }
