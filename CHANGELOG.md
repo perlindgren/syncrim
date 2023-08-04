@@ -2,6 +2,16 @@
 
 Tracking changes per date:
 
+## 230801
+
+- Simulator run/halt is implemented in `vizia` using a simple eventing mechanism. Later we might want to spawn a simulation thread for faster execution (right now its tied to frame rate).
+
+## 230731
+
+- Return type from `clock` (`fn clock(&self, _simulator: &mut Simulator) -> Result<(), Condition`).
+
+- RISC-V cross compilation.
+
 ## 230727
 
 - `Signal` type now incorporates formatting. This allows the default formatting to be set on a signal on creation. The data and formatting can be read/written separately by setters/getters.

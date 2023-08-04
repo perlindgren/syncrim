@@ -12,9 +12,6 @@ use xmas_elf::ElfFile;
 
 #[derive(Parser, Debug)]
 struct Args {
-    /// Toolchain prefix to be used for compilation/linking
-    #[arg(short, long, default_value = "riscv32-unknown-elf-")]
-    toolchain_prefix: String,
     /// Use a pre-compiled elf file instead of compiling one
     #[arg(short, long, default_value = "false")]
     use_elf: bool,
@@ -32,17 +29,18 @@ struct Args {
 fn main() {
     fern_setup_riscv();
     let args = Args::parse();
-    let memory = if args.use_elf {
-        let bytes = fs::read(args.elf_path).expect("The elf file could not be found");
+    let memory = if !args.use_elf {
+        elf_from_asm(&args);
+        let bytes = fs::read("./output").expect("The elf file could not be found");
         let elf = ElfFile::new(&bytes).unwrap();
         riscv_elf_parse::Memory::new_from_elf(elf)
     } else {
-        riscv_elf_parse::Memory::new_from_assembly(
-            &args.asm_path,
-            &args.ls_path,
-            &args.toolchain_prefix,
-        )
+        let bytes =
+            fs::read(format!("{}", args.elf_path)).expect("The elf file could not be found");
+        let elf = ElfFile::new(&bytes).unwrap();
+        riscv_elf_parse::Memory::new_from_elf(elf)
     };
+
     println!("{}", memory);
     let mut instr_mem = BTreeMap::new();
     let mut data_mem = BTreeMap::new();
@@ -289,4 +287,73 @@ fn fern_setup_riscv() {
         // Apply globally
         .apply()
         .unwrap()
+}
+
+fn elf_from_asm(args: &Args) {
+    let source_path = &args.asm_path;
+    let linker_path = &args.ls_path;
+    let _ = if cfg!(target_os = "windows") {
+        Command::new("cmd")
+            .current_dir(".\\")
+            .args(["/C", &format!("copy {} .\\riscv_asm\\asm.s", source_path)])
+            .status()
+            .unwrap()
+    } else {
+        Command::new("sh")
+            .current_dir("./")
+            .arg("-c")
+            .arg(format!("cp {} ./riscv_asm/asm.s", source_path))
+            .status()
+            .unwrap()
+    };
+    let _ = if cfg!(target_os = "windows") {
+        Command::new("cmd")
+            .current_dir(".\\")
+            .args([
+                "/C",
+                &format!("copy {} .\\riscv_asm\\memory.x", linker_path),
+            ])
+            .status()
+            .unwrap()
+    } else {
+        Command::new("sh")
+            .current_dir("./")
+            .arg("-c")
+            .arg(format!("cp {} ./riscv_asm/memory.x", linker_path))
+            .status()
+            .unwrap()
+    };
+    let _ = if cfg!(target_os = "windows") {
+        Command::new("cmd")
+            .current_dir(".\\riscv_asm\\")
+            .args(["/C", "cargo build --release"])
+            .status()
+            .unwrap()
+    } else {
+        Command::new("sh")
+            .current_dir("./riscv_asm/")
+            .arg("-c")
+            .arg(format!("cargo build --release"))
+            .status()
+            .unwrap()
+    };
+    let _ = if cfg!(target_os = "windows") {
+        Command::new("cmd")
+            .current_dir(".\\riscv_asm\\")
+            .args([
+                "/C",
+                "move /y .\\target\\riscv32i-unknown-none-elf\\release\\riscv_asm ..\\output",
+            ])
+            .status()
+            .unwrap()
+    } else {
+        Command::new("sh")
+            .current_dir("./")
+            .arg("-c")
+            .arg(format!(
+                "mv ./riscv_asm/target/riscv32i-unknown-none-elf/release/riscv_asm ./output"
+            ))
+            .status()
+            .unwrap()
+    };
 }

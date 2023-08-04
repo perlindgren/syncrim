@@ -23,3 +23,8 @@ Cargo.lock
 output.log
 
 riscv/*.o
+riscv/output
+
+riscv/riscv_asm/target/
+riscv/riscv_asm/memory.x
+riscv/riscv_asm/asm.s

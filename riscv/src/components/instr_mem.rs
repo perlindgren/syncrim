@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, panic};
 
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Input, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Condition, Input, OutputType, Ports, Simulator};
 
 #[derive(Serialize, Deserialize)]
 pub struct InstrMem {
@@ -29,7 +29,7 @@ impl Component for InstrMem {
         )
     }
 
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get instr at pc/4
         let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
 
@@ -45,6 +45,7 @@ impl Component for InstrMem {
         trace!("pc:0x{:08x}", pc);
         // set output
         simulator.set_out_value(&self.id, "instruction", instr);
+        Ok(())
     }
 }
 mod test {

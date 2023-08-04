@@ -16,7 +16,6 @@ use log::*;
 pub struct GuiData {
     pub path: PathBuf,
     pub simulator: Simulator,
-    pub pause: bool,
     pub is_saved: bool,
     pub show_about: bool,
     pub selected_id: usize,
@@ -72,11 +71,20 @@ impl Model for GuiData {
             GuiEvent::UnClock => self.simulator.un_clock(),
             GuiEvent::Reset => {
                 self.simulator.reset();
-                self.pause = true;
             }
-            GuiEvent::Play => self.pause = false,
-            GuiEvent::Pause => self.pause = true,
-            GuiEvent::PlayToggle => self.pause = !self.pause,
+            GuiEvent::Play => {
+                self.simulator.running = true;
+                self.simulator.clock();
+            }
+            GuiEvent::Pause => {
+                self.simulator.running = false;
+            }
+            GuiEvent::PlayToggle => {
+                self.simulator.running = !self.simulator.running;
+                if self.simulator.running {
+                    self.simulator.clock();
+                }
+            }
             GuiEvent::Preferences => trace!("Preferences"),
             GuiEvent::ShowAbout => self.show_about = true,
             GuiEvent::HideAbout => self.show_about = false,
@@ -130,7 +138,6 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
         GuiData {
             path,
             simulator,
-            pause: true,
             is_saved: false,
             show_about: false,
             selected_id: 0,
@@ -138,6 +145,19 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
             expanded: HashSet::new(),
         }
         .build(cx);
+
+        // bind a clock change to allow free-running mode
+        Binding::new(cx, GuiData::simulator.then(Simulator::cycle), |cx, lens| {
+            // Retrieve the data from context
+            let cycle = lens.get(cx);
+            trace!("cycle changed {}", cycle);
+
+            let simulator = GuiData::simulator.get(cx);
+            if simulator.running {
+                trace!("send clock event");
+                cx.emit(GuiEvent::Clock);
+            };
+        });
 
         VStack::new(cx, |cx| {
             // Menu
