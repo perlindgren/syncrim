@@ -24,7 +24,7 @@ impl ViziaComponent for ProbeHalt {
                     Label::new(cx, &format!("{}", self.signal_expr.borrow()));
                 })
                 .size(Auto);
-                build_expression(cx, &self.signal_expr.borrow())
+                self.build_expression(cx, &self.signal_expr.borrow())
             })
             .size(Auto);
         })
@@ -58,31 +58,34 @@ impl ViziaComponent for ProbeHalt {
     }
 }
 
-fn build_expression(cx: &mut Context, signal_expr: &SignalExpr) {
-    match signal_expr {
-        SignalExpr::BinOp(bin_op, lhs, rhs) => {
-            HStack::new(cx, |cx| {
-                build_expression(cx, lhs);
-                Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", bin_op))).size(Auto);
-                build_expression(cx, rhs);
-            })
-            .size(Auto);
-        }
+impl ProbeHalt {
+    fn build_expression(&self, cx: &mut Context, signal_expr: &SignalExpr) {
+        match signal_expr {
+            SignalExpr::BinOp(bin_op, lhs, rhs) => {
+                HStack::new(cx, |cx| {
+                    self.build_expression(cx, lhs);
+                    Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", bin_op))).size(Auto);
+                    self.build_expression(cx, rhs);
+                })
+                .size(Auto);
+            }
 
-        //     SignalExpr::Not(e) => unimplemented!(),
-        SignalExpr::Constant(c) => {
-            Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", c))).size(Auto);
-        }
-        SignalExpr::Input(Input { id, field }) => {
-            HStack::new(cx, |cx| {
-                Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", id)));
-                Label::new(cx, ".").size(Auto);
-                Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", field)));
-            })
-            .size(Auto);
-        }
-        _ => unimplemented!(),
-    };
+            //     SignalExpr::Not(e) => unimplemented!(),
+            SignalExpr::Constant(c) => {
+                Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", c))).size(Auto);
+            }
+            SignalExpr::Input(Input { id, field }) => {
+                trace!("-- Input -- {:?}", self.inputs);
+                HStack::new(cx, |cx| {
+                    Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", id)));
+                    Label::new(cx, ".").size(Auto);
+                    Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", field)));
+                })
+                .size(Auto);
+            }
+            _ => unimplemented!(),
+        };
+    }
 }
 
 #[derive(Lens, Setter, Model)]
