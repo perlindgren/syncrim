@@ -192,19 +192,6 @@ fn main() {
                 data_mem,
                 range,
             ),
-            // Mem::rc_new_from_bytes(
-            //     "data_memory",
-            //     (700.0, 600.0),
-            //     100.0,
-            //     100.0,
-            //     false,
-            //     Input::new("reg_file", "reg_b"),
-            //     Input::new("alu", "result_o"),
-            //     Input::new("decoder", "data_mem_ctrl"),
-            //     Input::new("decoder", "data_se"),
-            //     Input::new("decoder", "data_mem_size"),
-            //     data_mem,
-            // ),
             Constant::rc_new("zero_c", (680.0, 150.0), 0),
             Mux::rc_new(
                 "alu_operand_a_mux",
@@ -274,13 +261,7 @@ fn fern_setup_riscv() {
 
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
-    let f = f
-        //.level_for("syncrim::components::mem", LevelFilter::Trace)
-        //.level_for("riscv::components::instr_mem", LevelFilter::Trace)
-        .level_for("syncrim::gui_vizia::components::mem", LevelFilter::Trace)
-        .level_for("riscv::gui_vizia::components::reg_file", LevelFilter::Trace)
-        //.level_for("riscv::components::alu", LevelFilter::Trace);
-        .level_for("syncrim::components::mem", LevelFilter::Trace);
+    let f = f.level_for("riscv::components::instr_mem", LevelFilter::Trace);
 
     f
         // Output to stdout, files, and other Dispatch configurations
