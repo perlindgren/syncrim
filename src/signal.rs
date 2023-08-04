@@ -209,14 +209,29 @@ impl fmt::Display for Signal {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum SignalExpr {
-    Eq(Box<SignalExpr>, Box<SignalExpr>),
-    GtUnsigned(Box<SignalExpr>, Box<SignalExpr>),
-    GtSigned(Box<SignalExpr>, Box<SignalExpr>),
-    And(Box<SignalExpr>, Box<SignalExpr>),
-    Or(Box<SignalExpr>, Box<SignalExpr>),
+    BinOp(BinOp, Box<SignalExpr>, Box<SignalExpr>),
     Not(Box<SignalExpr>),
     Input(Input),
     Constant(Signal),
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+pub enum BinOp {
+    BoolOp(BoolOp),
+    CmpOp(CmpOp),
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+pub enum BoolOp {
+    And,
+    Or,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+pub enum CmpOp {
+    Eq,
+    GtUnsigned,
+    GtSigned,
 }
 
 impl SignalExpr {
@@ -229,31 +244,26 @@ impl SignalExpr {
     }
     pub fn eval(&self, simulator: &Simulator) -> Result<bool, String> {
         match self {
-            SignalExpr::Eq(lhs, rhs) => {
-                let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal(simulator)?)?;
-                let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal(simulator)?)?;
-                Ok(lhs == rhs)
-            }
-            SignalExpr::GtUnsigned(lhs, rhs) => {
-                let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal(simulator)?)?;
-                let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal(simulator)?)?;
-                Ok(lhs > rhs)
-            }
-            SignalExpr::GtSigned(lhs, rhs) => {
-                let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal(simulator)?)? as i32;
-                let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal(simulator)?)? as i32;
-                Ok(lhs > rhs)
-            }
-            SignalExpr::And(lhs, rhs) => {
-                let lhs = lhs.eval(simulator)?;
-                let rhs = rhs.eval(simulator)?;
-                Ok(lhs && rhs)
-            }
-            SignalExpr::Or(lhs, rhs) => {
-                let lhs = lhs.eval(simulator)?;
-                let rhs = rhs.eval(simulator)?;
-                Ok(lhs || rhs)
-            }
+            Self::BinOp(op, lhs, rhs) => match op {
+                BinOp::BoolOp(bool_op) => {
+                    let lhs = lhs.eval(simulator)?;
+                    let rhs = rhs.eval(simulator)?;
+                    Ok(match bool_op {
+                        BoolOp::And => lhs && rhs,
+                        BoolOp::Or => lhs || rhs,
+                    })
+                }
+                BinOp::CmpOp(cmp_op) => {
+                    let lhs = TryInto::<SignalUnsigned>::try_into(lhs.signal(simulator)?)?;
+                    let rhs = TryInto::<SignalUnsigned>::try_into(rhs.signal(simulator)?)?;
+                    Ok(match cmp_op {
+                        CmpOp::Eq => lhs == rhs,
+                        CmpOp::GtSigned => lhs as SignalSigned > rhs as SignalSigned,
+                        CmpOp::GtUnsigned => lhs > rhs,
+                    })
+                }
+            },
+
             SignalExpr::Not(expr) => {
                 let expr = expr.eval(simulator)?;
                 Ok(!expr)
@@ -272,14 +282,50 @@ impl fmt::Display for SignalExpr {
             f,
             "{}",
             match self {
-                Self::Eq(lhs, rhs) => format!("{}=={}", lhs, rhs),
-                Self::And(lhs, rhs) => format!("{}&&{}", lhs, rhs),
-                Self::Or(lhs, rhs) => format!("{}||{}", lhs, rhs),
+                Self::BinOp(bin_op, lhs, rhs) => format!("{}{}{}", lhs, bin_op, rhs),
                 Self::Not(e) => format!("!{}", e),
                 Self::Constant(c) => format!("{}", c),
                 Self::Input(Input { id, field }) => format!("{}.{}", id, field),
-                Self::GtSigned(lhs, rhs) => format!("{}>(s){}", lhs, rhs),
-                Self::GtUnsigned(lhs, rhs) => format!("{}>(u){}", lhs, rhs),
+            }
+        )
+    }
+}
+
+impl fmt::Display for BinOp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::BoolOp(bool_op) => format!("{}", bool_op),
+                Self::CmpOp(cmp_op) => format!("{}", cmp_op),
+            }
+        )
+    }
+}
+
+impl fmt::Display for BoolOp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::And => "&&",
+                Self::Or => "||",
+            }
+        )
+    }
+}
+
+impl fmt::Display for CmpOp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Eq => "==",
+                Self::GtSigned => ">i",
+                Self::GtUnsigned => ">u",
             }
         )
     }
@@ -342,7 +388,8 @@ mod test {
 
         // check eq "probe_out" "out" against constant
         println!("<check probe out against constant>");
-        let expr = SignalExpr::Eq(
+        let expr = SignalExpr::BinOp(
+            BinOp::CmpOp(CmpOp::Eq),
             Box::new(SignalExpr::Input(out.clone())),
             Box::new(SignalExpr::Constant(false.into())),
         );
@@ -352,7 +399,8 @@ mod test {
 
         // check input 0 greater than neg signed
         println!("<check greater than>");
-        let expr = SignalExpr::GtSigned(
+        let expr = SignalExpr::BinOp(
+            BinOp::CmpOp(CmpOp::GtSigned),
             Box::new(SignalExpr::Input(out.clone())),
             Box::new(SignalExpr::Constant(u32::MAX.into())),
         );
@@ -362,7 +410,8 @@ mod test {
 
         // check input 0 greater than 1 unsigned
         println!("<check greater than>");
-        let expr = SignalExpr::GtUnsigned(
+        let expr = SignalExpr::BinOp(
+            BinOp::CmpOp(CmpOp::GtUnsigned),
             Box::new(SignalExpr::Input(out.clone())),
             Box::new(SignalExpr::Constant(1.into())),
         );
@@ -378,7 +427,8 @@ mod test {
 
         // check and
         println!("<check and>");
-        let expr2 = SignalExpr::And(
+        let expr2 = SignalExpr::BinOp(
+            BinOp::BoolOp(BoolOp::And),
             Box::new(expr.clone()),
             Box::new(SignalExpr::Constant(false.into())),
         );
@@ -387,7 +437,8 @@ mod test {
 
         // check or
         println!("<check or>");
-        let expr2 = SignalExpr::Or(
+        let expr2 = SignalExpr::BinOp(
+            BinOp::BoolOp(BoolOp::Or),
             Box::new(expr.clone()),
             Box::new(SignalExpr::Constant(false.into())),
         );
@@ -396,9 +447,11 @@ mod test {
 
         // check complex
         println!("<check complex>");
-        let expr2 = SignalExpr::And(
+        let expr2 = SignalExpr::BinOp(
+            BinOp::BoolOp(BoolOp::And),
             Box::new(expr.clone()), // true
-            Box::new(SignalExpr::Or(
+            Box::new(SignalExpr::BinOp(
+                BinOp::BoolOp(BoolOp::Or),
                 Box::new(SignalExpr::Constant(false.into())), // false
                 Box::new(expr.clone()),                       // true
             )),
@@ -408,9 +461,11 @@ mod test {
 
         // check complex
         println!("<check complex>");
-        let expr2 = SignalExpr::And(
+        let expr2 = SignalExpr::BinOp(
+            BinOp::BoolOp(BoolOp::And),
             Box::new(SignalExpr::Not(Box::new(expr.clone()))), // false
-            Box::new(SignalExpr::Or(
+            Box::new(SignalExpr::BinOp(
+                BinOp::BoolOp(BoolOp::Or),
                 Box::new(SignalExpr::Constant(false.into())), // false
                 Box::new(expr.clone()),                       // true
             )),

@@ -60,38 +60,28 @@ impl ViziaComponent for ProbeHalt {
 
 fn build_expression(cx: &mut Context, signal_expr: &SignalExpr) {
     match signal_expr {
-        SignalExpr::Eq(lhs, rhs) => {
-            VStack::new(cx, |cx| {
-                Button::new(cx, |_| {}, |cx| Label::new(cx, "Eq"));
-                HStack::new(cx, |cx| {
-                    build_expression(cx, lhs);
-                    build_expression(cx, rhs);
-                });
-            });
+        SignalExpr::BinOp(bin_op, lhs, rhs) => {
+            HStack::new(cx, |cx| {
+                build_expression(cx, lhs);
+                Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", bin_op))).size(Auto);
+                build_expression(cx, rhs);
+            })
+            .size(Auto);
         }
-        SignalExpr::And(lhs, rhs) => {
-            VStack::new(cx, |cx| {
-                Button::new(cx, |_| {}, |cx| Label::new(cx, "&&"));
-                HStack::new(cx, |cx| {
-                    build_expression(cx, lhs);
-                    build_expression(cx, rhs);
-                });
-            });
-        }
-        SignalExpr::Or(lhs, rhs) => unimplemented!(),
-        SignalExpr::Not(e) => unimplemented!(),
+
+        //     SignalExpr::Not(e) => unimplemented!(),
         SignalExpr::Constant(c) => {
-            Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", c)));
+            Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", c))).size(Auto);
         }
         SignalExpr::Input(Input { id, field }) => {
-            Button::new(
-                cx,
-                |_| {},
-                |cx| Label::new(cx, &format!("{}.{}", id, field)),
-            );
+            HStack::new(cx, |cx| {
+                Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", id)));
+                Label::new(cx, ".").size(Auto);
+                Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", field)));
+            })
+            .size(Auto);
         }
-        SignalExpr::GtSigned(lhs, rhs) => unimplemented!(),
-        SignalExpr::GtUnsigned(lhs, rhs) => unimplemented!(),
+        _ => unimplemented!(),
     };
 }
 

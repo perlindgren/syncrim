@@ -3,7 +3,7 @@ use syncrim::{
     common::{ComponentStore, Input},
     components::*,
     fern::fern_setup,
-    signal::SignalExpr,
+    signal::{BinOp, CmpOp, SignalExpr},
 };
 
 fn main() {
@@ -15,7 +15,8 @@ fn main() {
                 "probe_halt",
                 (250.0, 100.0),
                 vec![Input::new("probe_edit", "out")],
-                SignalExpr::Eq(
+                SignalExpr::BinOp(
+                    BinOp::CmpOp(CmpOp::Eq),
                     Box::new(SignalExpr::Input(Input::new("probe_edit", "out"))),
                     Box::new(SignalExpr::Constant(12.into())),
                 ),
