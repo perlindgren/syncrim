@@ -24,6 +24,7 @@ typetag = "0.2.10"
 
 [dependencies.vizia]
 git = "https://github.com/vizia/vizia.git"
+branch = "virtual-list-update"
 # path = "../vizia"
 optional = true
 

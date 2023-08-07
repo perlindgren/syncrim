@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::{
     common::Simulator,
     components::{Mem, Memory},
@@ -60,11 +62,13 @@ impl ViziaComponent for Mem {
             }
             data_slice
         };
-        View::build(
+        let view = View::build(
             DataMemView {
                 data: self.memory.clone(),
                 start: self.range.start as usize,
                 data_slice: data_slice,
+                //we may init to 0 range, once view opens this will be updated.
+                slice_range: Range { start: 0, end: 0 },
             },
             cx,
             |cx| {
@@ -79,16 +83,17 @@ impl ViziaComponent for Mem {
                         Label::new(cx, item);
                     })
                     .child_left(Pixels(10.0))
-                    .bind(
-                        GuiData::simulator.then(Simulator::cycle),
-                        move |mut view, _| {
-                            trace!("Emitting idx {}", idx);
-                            //on clock, update all values in view.
-                            view.context().emit(DataEvent::UpdateVal(idx));
-                        },
-                    )
+                })
+                .on_change(|cx, range| {
+                    cx.emit(DataEvent::UpdateSlice(range));
                 });
             },
+        )
+        .entity();
+        Binding::new(
+            cx,
+            GuiData::simulator.then(Simulator::cycle),
+            move |cx, _| cx.emit_to(view, DataEvent::UpdateData),
         );
     }
 }
@@ -98,54 +103,62 @@ pub struct DataMemView {
     data: Memory,
     start: usize,
     data_slice: Vec<String>,
+    slice_range: Range<usize>,
 }
 
 pub enum DataEvent {
-    UpdateVal(usize),
+    UpdateData,
+    UpdateSlice(Range<usize>),
 }
 
 impl View for DataMemView {
     fn element(&self) -> Option<&'static str> {
         Some("MemView")
     }
-    fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
+    fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
         event.map(|event, _| match event {
-            DataEvent::UpdateVal(idx) => {
-                trace!("idx {:x}", idx);
-                if let Some(data_fmt) = self.data_slice.get_mut(*idx) {
-                    *data_fmt = format!(
-                        "0x{:08x}:    {:02x}{:02x}{:02x}{:02x}",
-                        idx * 4 + self.start,
-                        self.data
-                            .0
-                            .borrow()
-                            .get(&(self.start + idx * 4))
-                            .copied()
-                            .unwrap_or_else(|| 0u8),
-                        self.data
-                            .0
-                            .borrow()
-                            .get(&(self.start + idx * 4 + 1))
-                            .copied()
-                            .unwrap_or_else(|| 0u8),
-                        self.data
-                            .0
-                            .borrow()
-                            .get(&(self.start + idx * 4 + 2))
-                            .copied()
-                            .unwrap_or_else(|| 0u8),
-                        self.data
-                            .0
-                            .borrow()
-                            .get(&(self.start + idx * 4 + 3))
-                            .copied()
-                            .unwrap_or_else(|| 0u8)
-                    );
-                } else {
-                    // Why do we end up here, seems wrong
-                    println!("{}", idx);
-                    panic!("Internal error, lookup should always succeed.")
+            DataEvent::UpdateData => {
+                for idx in self.slice_range.clone().into_iter() {
+                    if let Some(data_fmt) = self.data_slice.get_mut(idx) {
+                        *data_fmt = format!(
+                            "0x{:08x}:    {:02x}{:02x}{:02x}{:02x}",
+                            idx * 4 + self.start,
+                            self.data
+                                .0
+                                .borrow()
+                                .get(&(self.start + idx * 4))
+                                .copied()
+                                .unwrap_or_else(|| 0u8),
+                            self.data
+                                .0
+                                .borrow()
+                                .get(&(self.start + idx * 4 + 1))
+                                .copied()
+                                .unwrap_or_else(|| 0u8),
+                            self.data
+                                .0
+                                .borrow()
+                                .get(&(self.start + idx * 4 + 2))
+                                .copied()
+                                .unwrap_or_else(|| 0u8),
+                            self.data
+                                .0
+                                .borrow()
+                                .get(&(self.start + idx * 4 + 3))
+                                .copied()
+                                .unwrap_or_else(|| 0u8)
+                        );
+                    } else {
+                        // Why do we end up here, seems wrong
+                        println!("{:x}", idx);
+                        panic!("Internal error, lookup should always succeed.")
+                    }
                 }
+            }
+            DataEvent::UpdateSlice(range) => {
+                println!("{:?}", range);
+                self.slice_range = range.clone();
+                cx.emit(DataEvent::UpdateData);
             }
         })
     }
