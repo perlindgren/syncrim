@@ -52,6 +52,12 @@ impl Menu {
             editor(gui).scale = scale;
             shared_buttons_help(gui, ui);
         });
+        ui.horizontal(|ui| {
+            let wire_button = ui.button("➖").on_hover_text("Wire mode");
+            if wire_button.clicked() {
+                keymap::editor_wire_mode_fn(gui);
+            }
+        });
     }
 }
 
