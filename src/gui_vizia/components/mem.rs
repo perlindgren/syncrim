@@ -39,7 +39,7 @@ impl ViziaComponent for Mem {
 
                 data_slice.push(format!(
                     "0x{:08x}:    {:02x}{:02x}{:02x}{:02x}",
-                    idx * 4,
+                    self.range.start as usize + idx * 4,
                     mem.0.borrow().get(&idx).copied().unwrap_or_else(|| 0u8),
                     mem.0
                         .borrow()
@@ -143,7 +143,8 @@ impl View for DataMemView {
                     );
                 } else {
                     // Why do we end up here, seems wrong
-                    // panic!("Internal error, lookup should always succeed.")
+                    println!("{}", idx);
+                    panic!("Internal error, lookup should always succeed.")
                 }
             }
         })
