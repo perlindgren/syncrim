@@ -1,7 +1,7 @@
 use crate::common::{EguiComponent, Ports, Simulator};
 use crate::components::Register;
 use crate::gui_egui::component_ui::{
-    input_change_id, input_selector, pos_slider, properties_window, rect_with_hover,
+    input_change_id, input_selector, pos_drag_value, properties_window, rect_with_hover,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
@@ -99,7 +99,7 @@ impl EguiComponent for Register {
             |ui| {
                 let mut clicked_dropdown = false;
                 input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
-                pos_slider(ui, &mut self.pos);
+                pos_drag_value(ui, &mut self.pos);
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.r_in,

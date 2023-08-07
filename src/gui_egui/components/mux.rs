@@ -1,7 +1,7 @@
 use crate::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
 use crate::components::Mux;
 use crate::gui_egui::component_ui::{
-    input_change_id, input_selector, input_selector_removeable, pos_slider, properties_window,
+    input_change_id, input_selector, input_selector_removeable, pos_drag_value, properties_window,
     rect_with_hover,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
@@ -121,7 +121,7 @@ impl EguiComponent for Mux {
             |ui| {
                 let mut clicked_dropdown = false;
                 input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
-                pos_slider(ui, &mut self.pos);
+                pos_drag_value(ui, &mut self.pos);
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.select,

@@ -73,6 +73,20 @@ impl Component for Mux {
         simulator.set_out_value(&self.id, "out", value);
         res
     }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        let target_port_id = target_port_id.as_str();
+        if target_port_id == MUX_SELECT_ID {
+            self.select = new_input;
+            return;
+        }
+        for i in 0..=self.m_in.len() - 1 {
+            if target_port_id == format!("{}{}", MUX_TEMPLATE_ID, i) {
+                self.m_in[i] = new_input;
+                return;
+            }
+        }
+    }
 }
 
 impl Mux {
@@ -87,20 +101,5 @@ impl Mux {
 
     pub fn rc_new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Rc<Self> {
         Rc::new(Mux::new(id, pos, select, m_in))
-    }
-
-    #[allow(dead_code)]
-    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
-        let target_port_id = target_port_id.as_str();
-        if target_port_id == MUX_SELECT_ID {
-            self.select = new_input;
-            return;
-        }
-        for i in 0..=self.m_in.len() - 1 {
-            if target_port_id == format!("{}{}", MUX_TEMPLATE_ID, i) {
-                self.m_in[i] = new_input;
-                return;
-            }
-        }
     }
 }

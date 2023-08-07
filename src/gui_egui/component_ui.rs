@@ -2,8 +2,8 @@ use crate::common::{Input, Ports};
 use crate::gui_egui::editor::EditorMode;
 use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
 use egui::{
-    containers, ComboBox, Frame, Margin, PointerButton, Pos2, Rect, Response, Rounding, Slider, Ui,
-    Window,
+    containers, ComboBox, DragValue, Frame, Margin, PointerButton, Pos2, Rect, Response, Rounding,
+    Ui, Window,
 };
 use epaint::Shadow;
 
@@ -66,18 +66,12 @@ pub fn properties_window<P>(
     }
 }
 
-pub fn pos_slider(ui: &mut Ui, pos: &mut (f32, f32)) {
+pub fn pos_drag_value(ui: &mut Ui, pos: &mut (f32, f32)) {
     ui.horizontal(|ui| {
-        ui.add(
-            Slider::new(&mut pos.0, 0f32..=1000f32)
-                .text("pos x")
-                .clamp_to_range(false),
-        );
-        ui.add(
-            Slider::new(&mut pos.1, 0f32..=1000f32)
-                .text("pos y")
-                .clamp_to_range(false),
-        );
+        ui.label("pos x");
+        ui.add(DragValue::new(&mut pos.0));
+        ui.label("pos y");
+        ui.add(DragValue::new(&mut pos.1));
     });
 }
 

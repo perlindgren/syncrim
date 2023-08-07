@@ -1,7 +1,7 @@
 use crate::common::{EguiComponent, Ports, Simulator};
 use crate::components::Mem;
 use crate::gui_egui::component_ui::{
-    input_change_id, input_selector, pos_slider, properties_window, rect_with_hover,
+    input_change_id, input_selector, pos_drag_value, properties_window, rect_with_hover,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
@@ -96,7 +96,7 @@ impl EguiComponent for Mem {
             |ui| {
                 let mut clicked_dropdown = false;
                 input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
-                pos_slider(ui, &mut self.pos);
+                pos_drag_value(ui, &mut self.pos);
                 ui.horizontal(|ui| {
                     ui.add(Slider::new(&mut self.width, 0f32..=400f32).text("width"));
                     ui.add(Slider::new(&mut self.height, 0f32..=400f32).text("height"));

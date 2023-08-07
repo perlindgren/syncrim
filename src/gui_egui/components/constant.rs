@@ -1,11 +1,14 @@
-use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
+use crate::common::{EguiComponent, Ports, SignalUnsigned, SignalValue, Simulator};
 use crate::components::Constant;
 use crate::gui_egui::component_ui::{
-    input_change_id, pos_slider, properties_window, rect_with_hover,
+    input_change_id, pos_drag_value, properties_window, rect_with_hover,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
-use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, Response, RichText, Ui, Vec2};
+use egui::{
+    Align2, Area, Color32, DragValue, Order, PointerButton, Pos2, Rect, Response, RichText, Ui,
+    Vec2,
+};
 
 #[typetag::serde]
 impl EguiComponent for Constant {
@@ -32,15 +35,15 @@ impl EguiComponent for Constant {
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);
                 ui.label(
-                    RichText::new(format!("{:?}", self.value))
+                    RichText::new(format!("{}", self.value))
                         .size(scale * 12f32)
                         .background_color(Color32::LIGHT_GREEN),
                 )
                 .on_hover_text({
                     let r: Result<SignalUnsigned, String> = self.value.try_into();
                     match r {
-                        Ok(data) => format!("{:#x}", data),
-                        _ => format!("{:?}", self.value),
+                        Ok(data) => format!("{}", data),
+                        _ => format!("{}", self.value),
                     }
                 });
             });
@@ -99,12 +102,13 @@ impl EguiComponent for Constant {
             &mut context.properties_window,
             |ui| {
                 input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
-                pos_slider(ui, &mut self.pos);
-                /*
-                if let SignalValue::Data(d) = &mut self.value {
-                    ui.add(Slider::new(d, u32::MIN..=u32::MAX).text("value"));
-                }
-                */
+                pos_drag_value(ui, &mut self.pos);
+                let mut x = match self.value.get_value() {
+                    SignalValue::Data(s) => s,
+                    _ => 0,
+                };
+                ui.add(DragValue::new(&mut x));
+                self.value.set_value(SignalValue::Data(x));
                 false
             },
         );

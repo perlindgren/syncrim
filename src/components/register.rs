@@ -43,6 +43,12 @@ impl Component for Register {
         trace!("eval: register id {} in {:?}", self.id, value);
         Ok(())
     }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        if target_port_id == REGISTER_R_IN_ID {
+            self.r_in = new_input;
+        }
+    }
 }
 
 impl Register {
@@ -56,12 +62,5 @@ impl Register {
 
     pub fn rc_new(id: &str, pos: (f32, f32), r_in: Input) -> Rc<Self> {
         Rc::new(Register::new(id, pos, r_in))
-    }
-
-    #[allow(dead_code)]
-    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
-        if target_port_id == REGISTER_R_IN_ID {
-            self.r_in = new_input;
-        }
     }
 }

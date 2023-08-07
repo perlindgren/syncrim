@@ -82,6 +82,14 @@ impl Component for Add {
         simulator.set_out_value(&self.id, "overflow", overflow);
         res
     }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            ADD_A_IN_ID => self.a_in = new_input,
+            ADD_B_IN_ID => self.b_in = new_input,
+            _ => (),
+        }
+    }
 }
 
 impl Add {
@@ -96,15 +104,6 @@ impl Add {
 
     pub fn rc_new(id: &str, pos: (f32, f32), a_in: Input, b_in: Input) -> Rc<Self> {
         Rc::new(Add::new(id, pos, a_in, b_in))
-    }
-
-    #[allow(dead_code)]
-    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
-        match target_port_id.as_str() {
-            ADD_A_IN_ID => self.a_in = new_input,
-            ADD_B_IN_ID => self.b_in = new_input,
-            _ => (),
-        }
     }
 }
 
