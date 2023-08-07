@@ -172,8 +172,8 @@ pub fn add_comp_to_editor(e: &mut Editor) {
                     addr: e.dummy_input.clone(),
                     ctrl: e.dummy_input.clone(),
                     size: e.dummy_input.clone(),
-                    sign: e.dummy_input.clone(),
-                    memory: Memory::new(),
+                    sext: e.dummy_input.clone(),
+                    memory: Memory::new(HashMap::new()),
                 })
             }
             "mux" => {

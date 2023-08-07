@@ -1,39 +1,30 @@
 use crate::{
-    common::{Component, Input, SignalUnsigned, ViziaComponent},
+    common::{Input, SignalUnsigned},
     components::Mux,
-    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip, GuiData},
+    gui_vizia::{GuiData, ViziaComponent, V},
 };
-
+use log::*;
 use vizia::{
     prelude::*,
     vg::{Paint, Path},
 };
 
-use log::*;
-
 #[typetag::serde]
 impl ViziaComponent for Mux {
     // create view
-    fn view(&self, cx: &mut Context) {
-        trace!("---- Create Mux View");
-
-        View::build(
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
+        V::new(cx, self, |cx| {
+            trace!("---- Create Mux View");
             MuxView {
                 select: self.select.clone(),
                 select_max: self.m_in.len() as u8,
-            },
-            cx,
-            |cx| {
-                NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
-            },
-        )
-        .position_type(PositionType::SelfDirected)
+            }
+            .build(cx, |_cx| {})
+        })
         .left(Pixels(self.pos.0 - 20.0))
         .top(Pixels(self.pos.1 - 10.0 * self.m_in.len() as f32 - 10.0))
         .width(Pixels(40.0))
         .height(Pixels(20.0 * self.m_in.len() as f32 + 20.0))
-        .on_press(|ex| ex.emit(PopupEvent::Switch))
-        .tooltip(|cx| new_component_tooltip(cx, self));
     }
 }
 
@@ -84,7 +75,7 @@ impl View for MuxView {
         let simulator = GuiData::simulator.get(cx);
 
         let select: Result<SignalUnsigned, String> =
-            simulator.get_input_val(&self.select).try_into();
+            simulator.get_input_value(&self.select).try_into();
 
         trace!("----- select = {:?}", select);
         if let Ok(select) = select {

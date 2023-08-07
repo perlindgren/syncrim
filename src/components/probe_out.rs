@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct ProbeOut {
-    pub id: Id,
+    pub(crate) id: Id,
 }
 
 #[typetag::serde]
@@ -12,7 +12,6 @@ impl Component for ProbeOut {
     fn to_(&self) {
         trace!("ProbeOut");
     }
-
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

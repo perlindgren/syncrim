@@ -1,4 +1,4 @@
-use std::{path::PathBuf, rc::Rc};
+use std::path::PathBuf;
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
@@ -9,12 +9,8 @@ fn main() {
     fern_setup();
     let cs = ComponentStore {
         store: vec![
-            Rc::new(ProbeEdit::new("probe_edit", (100.0, 100.0))),
-            Rc::new(Probe {
-                id: "probe".to_string(),
-                pos: (250.0, 100.0),
-                input: Input::new("probe_edit", "out"),
-            }),
+            ProbeEdit::rc_new("probe_edit", (100.0, 100.0)),
+            Probe::rc_new("probe", (250.0, 100.0), Input::new("probe_edit", "out")),
         ],
     };
 

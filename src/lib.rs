@@ -1,6 +1,7 @@
 pub mod common;
 pub mod component_store;
 pub mod fern;
+pub mod signal;
 pub mod simulator;
 
 // Default provided components

@@ -1,18 +1,21 @@
 use crate::common::{
-    Component, Id, Input, InputPort, OutputType, Ports, Signal, SignalUnsigned, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalUnsigned, SignalValue,
+    Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
+
 pub const MUX_SELECT_ID: &str = "select";
 pub const MUX_TEMPLATE_ID: &str = "in";
 pub const MUX_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub select: Input,
-    pub m_in: Vec<Input>,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) select: Input,
+    pub(crate) m_in: Vec<Input>,
 }
 
 #[typetag::serde]
@@ -20,7 +23,6 @@ impl Component for Mux {
     fn to_(&self) {
         trace!("mux");
     }
-
     fn get_id_ports(&self) -> (Id, Ports) {
         let mut inputs: Vec<InputPort> = Vec::with_capacity(self.m_in.len() + 1);
         inputs.push(InputPort {
@@ -45,21 +47,49 @@ impl Component for Mux {
     }
 
     // propagate selected input value to output
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input value
-        let select: SignalUnsigned = simulator.get_input_val(&self.select).try_into().unwrap();
-        let select = select as usize;
-        trace!("select {}", select);
-        let value = if select < self.m_in.len() {
-            simulator.get_input_val(&self.m_in[select])
+        let select: SignalValue = simulator.get_input_value(&self.select);
+
+        let (value, res) = if let Ok(select) = TryInto::<SignalUnsigned>::try_into(select) {
+            let select = select as usize;
+            trace!("select {}", select);
+            if select < self.m_in.len() {
+                (simulator.get_input_value(&self.m_in[select]), Ok(()))
+            } else {
+                (
+                    SignalValue::Unknown,
+                    Err(Condition::Error(format!("select {} out of range", select))),
+                )
+            }
         } else {
-            Signal::Unknown
+            (
+                SignalValue::Unknown,
+                Err(Condition::Warning("select unknown".to_string())),
+            )
         };
 
         // set output
-        simulator.set_out_val(&self.id, "out", value);
+        simulator.set_out_value(&self.id, "out", value);
+        res
+    }
+}
+
+impl Mux {
+    pub fn new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Self {
+        Mux {
+            id: id.to_string(),
+            pos,
+            select,
+            m_in,
+        }
     }
 
+    pub fn rc_new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Rc<Self> {
+        Rc::new(Mux::new(id, pos, select, m_in))
+    }
+
+    #[allow(dead_code)]
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         let target_port_id = target_port_id.as_str();
         if target_port_id == MUX_SELECT_ID {

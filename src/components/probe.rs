@@ -7,9 +7,9 @@ pub const PROBE_IN_ID: &str = "in";
 
 #[derive(Serialize, Deserialize)]
 pub struct Probe {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub input: Input,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) input: Input,
 }
 
 #[typetag::serde]
@@ -17,7 +17,6 @@ impl Component for Probe {
     fn to_(&self) {
         trace!("Probe");
     }
-
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

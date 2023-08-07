@@ -1,6 +1,6 @@
+use crate::common::Simulator;
 use crate::gui_vizia::{GuiData, GuiEvent};
 use vizia::{icons, prelude::*};
-
 pub(crate) struct Transport {}
 
 impl View for Transport {}
@@ -58,11 +58,11 @@ impl Transport {
                     |cx| {
                         Label::new(
                             cx,
-                            GuiData::pause.map(|pause| {
-                                if *pause {
-                                    icons::ICON_PLAYER_PLAY
-                                } else {
+                            GuiData::simulator.then(Simulator::running).map(|running| {
+                                if *running {
                                     icons::ICON_PLAYER_PLAY_FILLED
+                                } else {
+                                    icons::ICON_PLAYER_PLAY
                                 }
                             }),
                         )
@@ -84,11 +84,11 @@ impl Transport {
                     |cx| {
                         Label::new(
                             cx,
-                            GuiData::pause.map(|pause| {
-                                if *pause {
-                                    icons::ICON_PLAYER_PAUSE_FILLED
-                                } else {
+                            GuiData::simulator.then(Simulator::running).map(|running| {
+                                if *running {
                                     icons::ICON_PLAYER_PAUSE
+                                } else {
+                                    icons::ICON_PLAYER_PAUSE_FILLED
                                 }
                             }),
                         )

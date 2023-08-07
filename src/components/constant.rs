@@ -1,15 +1,15 @@
-use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Condition, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
+use std::{convert::Into, rc::Rc};
 
 pub const CONSTANT_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub value: Signal,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) value: Signal,
 }
 
 #[typetag::serde]
@@ -30,8 +30,9 @@ impl Component for Constant {
         )
     }
 
-    fn clock(&self, simulator: &mut Simulator) {
-        simulator.set_out_val(&self.id, CONSTANT_OUT_ID, self.value);
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
+        simulator.set_out_value(&self.id, CONSTANT_OUT_ID, self.value.get_value());
+        Ok(())
     }
 }
 

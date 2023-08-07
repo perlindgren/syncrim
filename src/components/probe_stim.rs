@@ -1,13 +1,13 @@
-use crate::common::{Component, Id, OutputType, Ports, Signal, Simulator};
+use crate::common::{Component, Condition, Id, OutputType, Ports, Signal, SignalValue, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct ProbeStim {
-    pub id: Id,
-    pub pos: (f32, f32),
-    pub values: Vec<Signal>,
+    pub(crate) id: Id,
+    pub(crate) pos: (f32, f32),
+    pub(crate) values: Vec<Signal>,
 }
 
 #[typetag::serde]
@@ -28,9 +28,21 @@ impl Component for ProbeStim {
         )
     }
 
-    fn clock(&self, simulator: &mut Simulator) {
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         trace!("-- cycle {} --", simulator.cycle);
-        simulator.set_out_val(&self.id, "out", self.values[simulator.cycle]);
+        let (out, res) = if let Some(signal) = self.values.get(simulator.cycle) {
+            (signal.get_value(), Ok(()))
+        } else {
+            (
+                SignalValue::Unknown,
+                Err(Condition::Warning(format!(
+                    "No stim value defined for cycle {}",
+                    simulator.cycle
+                ))),
+            )
+        };
+        simulator.set_out_value(&self.id, "out", out);
+        res
     }
 
     // notice we don't implement `un_clock` since the state is already kept in history
@@ -69,54 +81,54 @@ mod test {
         println!("<reset>");
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 1);
-        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(simulator.get_input_value(out), 0.into());
 
         println!("<clock>");
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 2);
-        assert_eq!(simulator.get_input_val(out), 1.into());
+        assert_eq!(simulator.get_input_value(out), 1.into());
 
         println!("<clock>");
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 3);
-        assert_eq!(simulator.get_input_val(out), 2.into());
+        assert_eq!(simulator.get_input_value(out), 2.into());
 
         println!("<un_clock>");
         simulator.un_clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 2);
-        assert_eq!(simulator.get_input_val(out), 1.into());
+        assert_eq!(simulator.get_input_value(out), 1.into());
 
         println!("<un_clock>");
         simulator.un_clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 1);
-        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(simulator.get_input_value(out), 0.into());
 
         println!("<un_clock (already in reset)>");
         simulator.un_clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 1);
-        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(simulator.get_input_value(out), 0.into());
 
         println!("<clock>");
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 2);
-        assert_eq!(simulator.get_input_val(out), 1.into());
+        assert_eq!(simulator.get_input_value(out), 1.into());
 
         println!("<clock>");
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 3);
-        assert_eq!(simulator.get_input_val(out), 2.into());
+        assert_eq!(simulator.get_input_value(out), 2.into());
 
         println!("<reset>");
         simulator.reset();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 1);
-        assert_eq!(simulator.get_input_val(out), 0.into());
+        assert_eq!(simulator.get_input_value(out), 0.into());
     }
 }

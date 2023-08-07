@@ -1,56 +1,40 @@
 use crate::{
-    common::{Component, ViziaComponent},
+    common::{SignalValue, Simulator},
     components::ProbeStim,
-    gui_vizia::{popup::NewPopup, tooltip::new_component_tooltip},
+    gui_vizia::{ViziaComponent, V},
 };
-
-use vizia::{
-    prelude::*,
-    vg::{Paint, Path},
-};
-
 use log::*;
+use vizia::prelude::*;
 
 #[typetag::serde]
 impl ViziaComponent for ProbeStim {
     // create view
-    fn view(&self, cx: &mut Context) {
-        trace!("---- Create ProbeStim View");
-        View::build(ProbeStimView {}, cx, |cx| {
-            // Label::new(cx, &format!("{:?}", self.value)).hoverable(false);
-            NewPopup::new(cx, self.get_id_ports()).position_type(PositionType::SelfDirected);
+    fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
+        V::new(cx, self, |cx| {
+            trace!("---- Create ProbeStim View");
+            let values = self.values.clone();
+            VStack::new(cx, |cx| {
+                Binding::new(
+                    cx,
+                    crate::gui_vizia::GuiData::simulator.then(Simulator::cycle),
+                    move |cx, cycle| {
+                        let cycle = cycle.get(cx);
+                        let rhs = if let Some(value) = values.get(cycle - 1) {
+                            *value
+                        } else {
+                            (SignalValue::Unknown).into()
+                        };
+                        Label::new(cx, &format!("{}", rhs)).hoverable(false);
+                    },
+                );
+            })
+            .size(Auto)
         })
-        .position_type(PositionType::SelfDirected)
-        .left(Pixels(self.pos.0 - 10.0))
         .top(Pixels(self.pos.1 - 10.0))
-        .width(Pixels(20.0))
+        .left(Pixels(self.pos.0 - 10.0))
+        .width(Auto)
+        // .width() // TODO, maybe some max width
+        .background_color(Color::lightblue())
         .height(Pixels(20.0))
-        // TODO: do we want/need tooltip/popup for constants
-        .on_press(|ex| ex.emit(PopupEvent::Switch))
-        .tooltip(|cx| new_component_tooltip(cx, self));
-    }
-}
-pub struct ProbeStimView {}
-
-impl View for ProbeStimView {
-    fn element(&self) -> Option<&'static str> {
-        Some("ProbeStim")
-    }
-
-    fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
-        let bounds = cx.bounds();
-        // trace!("Constant draw {:?}", bounds);
-
-        let mut path = Path::new();
-        let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 1.0, 0.0));
-        paint.set_line_width(cx.logical_to_physical(1.0));
-
-        path.move_to(bounds.left() + 0.5, bounds.top() + 0.5);
-        path.line_to(bounds.right() + 0.5, bounds.top() + 0.5);
-        path.line_to(bounds.right() + 0.5, bounds.bottom() + 0.5);
-        path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
-        path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
-
-        canvas.fill_path(&path, &paint);
     }
 }

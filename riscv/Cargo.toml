@@ -1,0 +1,33 @@
+[package]
+name = "riscv"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = "1.0.167"
+serde_derive = "1.0.167"
+typetag = "0.2.9"
+serde_json = "1.0.100"
+riscv-elf-parse = {git = 'https://github.com/onsdagens/riscv-elf-parse'}
+clap = {version="4.3.11",features=["derive"]}
+log = "0.4.19"
+num_enum = "0.6.1"
+fern = "0.6.2"
+xmas-elf = "0.9.0"
+
+[dependencies.syncrim]
+path = "../"
+default-features = false
+
+[features]
+default = ["gui-vizia"]
+
+components = ["syncrim/components"]
+gui-vizia = ["syncrim/gui-vizia", "components"]
+gui-egui = ["syncrim/gui-egui", "components"]
+
+[[example]]
+name = "riscv"
+required-features = ["components"]

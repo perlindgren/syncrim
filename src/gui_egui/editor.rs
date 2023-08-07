@@ -96,8 +96,8 @@ impl Editor {
                 addr: dummy_input.clone(),
                 ctrl: dummy_input.clone(),
                 size: dummy_input.clone(),
-                sign: dummy_input.clone(),
-                memory: Memory::new(),
+                sext: dummy_input.clone(),
+                memory: Memory::new(HashMap::new()),
             }),
             Rc::new(Mux {
                 id: "mux".to_string(),

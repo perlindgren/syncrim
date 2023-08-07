@@ -124,8 +124,8 @@ impl EguiComponent for Mem {
                 );
                 clicked_dropdown |= input_selector(
                     ui,
-                    &mut self.sign,
-                    crate::components::MEM_SIGN_ID.to_string(),
+                    &mut self.sext,
+                    crate::components::MEM_SEXT_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
@@ -172,7 +172,7 @@ impl EguiComponent for Mem {
                 ) + own_pos,
             ),
             (
-                crate::components::MEM_SIGN_ID.to_string(),
+                crate::components::MEM_SEXT_ID.to_string(),
                 Pos2::new(
                     self.width / 10f32 * 4f32 - self.width / 2f32,
                     -self.height / 2f32,

@@ -1,6 +1,9 @@
 use crate::{
     common::{ComponentStore, Simulator},
-    gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::Transport},
+    gui_vizia::{
+        grid::Grid, keymap::init_keymap, menu::Menu, tooltip::new_component_tooltip,
+        transport::Transport,
+    },
 };
 use rfd::FileDialog;
 use std::collections::HashSet;
@@ -13,7 +16,6 @@ use log::*;
 pub struct GuiData {
     pub path: PathBuf,
     pub simulator: Simulator,
-    pub pause: bool,
     pub is_saved: bool,
     pub show_about: bool,
     pub selected_id: usize,
@@ -69,26 +71,35 @@ impl Model for GuiData {
             GuiEvent::UnClock => self.simulator.un_clock(),
             GuiEvent::Reset => {
                 self.simulator.reset();
-                self.pause = true;
             }
-            GuiEvent::Play => self.pause = false,
-            GuiEvent::Pause => self.pause = true,
-            GuiEvent::PlayToggle => self.pause = !self.pause,
+            GuiEvent::Play => {
+                self.simulator.running = true;
+                self.simulator.clock();
+            }
+            GuiEvent::Pause => {
+                self.simulator.running = false;
+            }
+            GuiEvent::PlayToggle => {
+                self.simulator.running = !self.simulator.running;
+                if self.simulator.running {
+                    self.simulator.clock();
+                }
+            }
             GuiEvent::Preferences => trace!("Preferences"),
             GuiEvent::ShowAbout => self.show_about = true,
             GuiEvent::HideAbout => self.show_about = false,
             GuiEvent::ShowLeftPanel(i) => {
-                error!("Show Left Panel {:?}", i);
+                trace!("Show Left Panel {:?}", i);
                 self.visible.insert(*i);
-                error!("visible {:?}", self.visible);
+                trace!("visible {:?}", self.visible);
             }
             GuiEvent::HideLeftPanel(i) => {
-                error!("Hide Left Panel {:?}", i);
+                trace!("Hide Left Panel {:?}", i);
                 self.visible.remove(i);
             }
             GuiEvent::ToggleExpandLeftPanel(i) => {
-                error!("Toggle Expand Left Panel {:?}", i);
-                error!("expanded {:?}", self.visible);
+                trace!("Toggle Expand Left Panel {:?}", i);
+                trace!("expanded {:?}", self.visible);
                 if self.expanded.contains(i) {
                     self.expanded.remove(i);
                 } else {
@@ -126,7 +137,6 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
         GuiData {
             path,
             simulator,
-            pause: true,
             is_saved: false,
             show_about: false,
             selected_id: 0,
@@ -134,6 +144,19 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
             expanded: HashSet::new(),
         }
         .build(cx);
+
+        // bind a clock change to allow free-running mode
+        Binding::new(cx, GuiData::simulator.then(Simulator::cycle), |cx, lens| {
+            // Retrieve the data from context
+            let cycle = lens.get(cx);
+            trace!("cycle changed {}", cycle);
+
+            let simulator = GuiData::simulator.get(cx);
+            if simulator.running {
+                trace!("send clock event");
+                cx.emit(GuiEvent::Clock);
+            };
+        });
 
         VStack::new(cx, |cx| {
             // Menu
@@ -158,7 +181,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
 
             HStack::new(cx, |cx| {
                 HStack::new(cx, |cx| {
-                    // Left pane
+                    // Left panel
                     Binding::new(
                         cx,
                         GuiData::simulator.then(Simulator::ordered_components),
@@ -246,6 +269,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
                     );
                 });
 
+                // Mid panel
                 ScrollView::new(cx, 0.0, 0.0, true, true, |cx| {
                     // Grid area
                     Grid::new(cx, |cx| {
@@ -256,21 +280,29 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
                             |cx, wrapper_oc| {
                                 VStack::new(cx, |cx| {
                                     let oc = wrapper_oc.get(cx);
-                                    for (i, c) in oc.iter().enumerate() {
-                                        error!("comp id {}", i);
-                                        VStack::new(cx, |cx| {
-                                            c.view(cx);
-                                        })
-                                        .position_type(PositionType::SelfDirected)
-                                        .size(Auto)
-                                        .on_mouse_down(
-                                            move |ex, button| {
-                                                if button == MouseButton::Right {
-                                                    error!("on_mouse_down {:?}", i);
-                                                    ex.emit(GuiEvent::ShowLeftPanel(i))
+                                    for (i, c) in oc.into_iter().enumerate() {
+                                        trace!("build view comp id {}", i);
+                                        c.view(cx)
+                                            .tooltip(|cx| new_component_tooltip(cx, &*c))
+                                            .hoverable(true)
+                                            .position_type(PositionType::SelfDirected)
+                                            .on_mouse_down(move |ex, button| {
+                                                trace!("on_mouse_down");
+                                                match button {
+                                                    MouseButton::Left => {
+                                                        trace!("LEFT");
+                                                        ex.emit(PopupEvent::Switch)
+                                                    }
+                                                    MouseButton::Middle => {
+                                                        trace!("MIDDLE ")
+                                                    }
+                                                    MouseButton::Right => {
+                                                        trace!("RIGHT {:?}", i);
+                                                        ex.emit(GuiEvent::ShowLeftPanel(i))
+                                                    }
+                                                    _ => {}
                                                 }
-                                            },
-                                        );
+                                            });
                                     }
                                 })
                                 .border_color(Color::black())

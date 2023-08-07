@@ -1,10 +1,6 @@
 use petgraph::Graph;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::{
-    convert::{From, TryFrom},
-    rc::Rc,
-};
+use std::{collections::HashMap, rc::Rc};
 
 #[cfg(feature = "gui-egui")]
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
@@ -12,43 +8,10 @@ use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
 #[cfg(feature = "gui-vizia")]
 use vizia::prelude::*;
 
-// pub type Signal = u32;
-// pub type SignedSignal = i32;
-pub type Id = String;
+#[cfg(feature = "gui-vizia")]
+use crate::gui_vizia::ViziaComponent;
 
-pub type SignalUnsigned = u32;
-pub type SignalSigned = i32;
-#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq)]
-pub enum Signal {
-    Uninitialized,
-    Unknown,
-    DontCare,
-    Data(SignalUnsigned), // Maybe we should have something even more generic here
-}
-
-impl TryFrom<Signal> for SignalUnsigned {
-    type Error = String;
-
-    fn try_from(signal: Signal) -> Result<Self, Self::Error> {
-        if let Signal::Data(data) = signal {
-            Ok(data)
-        } else {
-            Err(format!("could not convert {:?} into u32", signal))
-        }
-    }
-}
-
-impl From<SignalUnsigned> for Signal {
-    fn from(data: u32) -> Signal {
-        Signal::Data(data)
-    }
-}
-
-impl From<bool> for Signal {
-    fn from(b: bool) -> Signal {
-        Signal::Data(b as SignalUnsigned)
-    }
-}
+pub use crate::signal::*;
 
 #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
 type Components = Vec<Rc<dyn Component>>;
@@ -73,6 +36,8 @@ pub struct Simulator {
     pub history: Vec<Vec<Signal>>,
     pub component_ids: Vec<Id>,
     pub graph: Graph<Id, ()>,
+    // Running state, (do we need it accessible from other crates?)
+    pub(crate) running: bool,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -106,21 +71,20 @@ pub trait Component {
     }
 
     /// evaluate component based on current internal state
-    fn clock(&self, _simulator: &mut Simulator) {}
+    fn clock(&self, _simulator: &mut Simulator) -> Result<(), Condition> {
+        Ok(())
+    }
 
     /// update component internal state
     fn un_clock(&self) {}
 }
 
-// Specific functionality for Vizia frontend
-#[cfg(feature = "gui-vizia")]
-#[typetag::serde(tag = "type")]
-pub trait ViziaComponent: Component {
-    /// create left Vizia view
-    fn left_view(&self, _cx: &mut vizia::context::Context) {}
-
-    /// create Vizia view
-    fn view(&self, _cx: &mut vizia::context::Context) {}
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Condition {
+    Warning(String),
+    Error(String),
+    Assert(String),
+    Halt(String),
 }
 
 #[cfg(feature = "gui-egui")]
@@ -238,11 +202,3 @@ pub enum OutputType {
     // Will be evaluated as synchronous from input to output
     Sequential,
 }
-
-// #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
-// pub enum Output {
-//     // Will be evaluated as a constant (function without inputs)
-//     Constant(Signal),
-//     // Will be evaluated as a function
-//     Function,
-// }

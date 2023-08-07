@@ -52,7 +52,7 @@ impl EguiComponent for Sext {
             if let Some(s) = &simulator {
                 ui.label({
                     let r: Result<SignalUnsigned, String> =
-                        s.get_input_val(&self.sext_in).try_into();
+                        s.get_input_value(&self.sext_in).try_into();
                     match r {
                         Ok(data) => format!("{:#x}", data),
                         _ => format!("{:?}", r),

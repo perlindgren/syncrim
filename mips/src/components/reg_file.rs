@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
 use syncrim::common::{
-    Component, Input, InputPort, OutputType, Ports, Signal, SignalUnsigned, Simulator,
+    Component, Condition, Input, InputPort, OutputType, Ports, SignalUnsigned, Simulator,
 };
 
 #[allow(non_camel_case_types)]
@@ -46,32 +46,32 @@ pub enum Reg {
     ra      = 31,   // Return address (used by function calls)
 }
 
-pub const MEM_READ_ADDR1_ID: &str = "read_addr1";
-pub const MEM_READ_ADDR2_ID: &str = "read_addr2";
-pub const MEM_WRITE_DATA_ID: &str = "write_data";
-pub const MEM_WRITE_ADDR_ID: &str = "write_addr";
-pub const MEM_WRITE_ENABLE_ID: &str = "write_enable";
+pub const REG_FILE_READ_ADDR1_ID: &str = "read_addr1";
+pub const REG_FILE_READ_ADDR2_ID: &str = "read_addr2";
+pub const REG_FILE_WRITE_DATA_ID: &str = "write_data";
+pub const REG_FILE_WRITE_ADDR_ID: &str = "write_addr";
+pub const REG_FILE_WRITE_ENABLE_ID: &str = "write_enable";
 
-pub const MEM_REG_A_OUT: &str = "reg_a";
-pub const MEM_REG_B_OUT: &str = "reg_b";
+pub const REG_FILE_REG_A_OUT: &str = "reg_a";
+pub const REG_FILE_REG_B_OUT: &str = "reg_b";
 
 #[derive(Serialize, Deserialize)]
 pub struct RegFile {
-    pub id: String,
-    pub pos: (f32, f32),
-    pub width: f32,
-    pub height: f32,
+    pub(crate) id: String,
+    pub(crate) pos: (f32, f32),
+    pub(crate) width: f32,
+    pub(crate) height: f32,
 
     // ports
-    pub read_addr1: Input,
-    pub read_addr2: Input,
-    pub write_data: Input,
-    pub write_addr: Input,
-    pub write_enable: Input,
+    pub(crate) read_addr1: Input,
+    pub(crate) read_addr2: Input,
+    pub(crate) write_data: Input,
+    pub(crate) write_addr: Input,
+    pub(crate) write_enable: Input,
 
     // data
-    pub registers: RegStore,
-    pub history: RegHistory,
+    pub(crate) registers: RegStore,
+    pub(crate) history: RegHistory,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -134,8 +134,64 @@ impl Deref for RegStore {
 }
 
 impl RegFile {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        read_addr1: Input,
+        read_addr2: Input,
+        write_data: Input,
+        write_addr: Input,
+        write_enable: Input,
+    ) -> Self {
+        RegFile {
+            id: id.to_string(),
+            pos,
+            width,
+            height,
+
+            // ports
+            read_addr1,
+            read_addr2,
+            write_data,
+            write_addr,
+            write_enable,
+
+            // data
+            registers: RegStore::new(),
+            history: RegHistory::new(),
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn rc_new(
+        id: &str,
+        pos: (f32, f32),
+        width: f32,
+        height: f32,
+        read_addr1: Input,
+        read_addr2: Input,
+        write_data: Input,
+        write_addr: Input,
+        write_enable: Input,
+    ) -> Rc<Self> {
+        Rc::new(RegFile::new(
+            id,
+            pos,
+            width,
+            height,
+            read_addr1,
+            read_addr2,
+            write_data,
+            write_addr,
+            write_enable,
+        ))
+    }
+
     fn read_reg(&self, simulator: &Simulator, input: &Input) -> u32 {
-        let read_addr: SignalUnsigned = simulator.get_input_val(input).try_into().unwrap();
+        let read_addr: SignalUnsigned = simulator.get_input_value(input).try_into().unwrap();
         trace!("read_addr {}", read_addr);
 
         // mips always reads 0;
@@ -159,12 +215,24 @@ impl Component for RegFile {
             Ports {
                 inputs: vec![
                     InputPort {
-                        port_id: MEM_READ_ADDR1_ID.to_string(),
+                        port_id: REG_FILE_READ_ADDR1_ID.to_string(),
                         input: self.read_addr1.clone(),
                     },
                     InputPort {
-                        port_id: MEM_READ_ADDR2_ID.to_string(),
+                        port_id: REG_FILE_READ_ADDR2_ID.to_string(),
                         input: self.read_addr2.clone(),
+                    },
+                    InputPort {
+                        port_id: REG_FILE_WRITE_DATA_ID.to_string(),
+                        input: self.write_data.clone(),
+                    },
+                    InputPort {
+                        port_id: REG_FILE_WRITE_ADDR_ID.to_string(),
+                        input: self.write_addr.clone(),
+                    },
+                    InputPort {
+                        port_id: REG_FILE_WRITE_ENABLE_ID.to_string(),
+                        input: self.write_enable.clone(),
                     },
                 ],
                 out_type: OutputType::Combinatorial,
@@ -173,12 +241,12 @@ impl Component for RegFile {
         )
     }
 
-    fn clock(&self, simulator: &mut Simulator) {
-        if simulator.get_input_val(&self.write_enable) == (true as SignalUnsigned).into() {
-            let data = simulator.get_input_val(&self.write_data);
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
+        if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
+            let data = simulator.get_input_value(&self.write_data);
             trace!("data {:?}", data);
             let write_addr: SignalUnsigned = simulator
-                .get_input_val(&self.write_addr)
+                .get_input_value(&self.write_addr)
                 .try_into()
                 .unwrap();
             trace!("write_addr {}", write_addr);
@@ -188,11 +256,12 @@ impl Component for RegFile {
         // read after write
         let reg_value_a = self.read_reg(simulator, &self.read_addr1);
         trace!("reg_value {}", reg_value_a);
-        simulator.set_out_val(&self.id, MEM_REG_A_OUT, Signal::Data(reg_value_a));
+        simulator.set_out_value(&self.id, REG_FILE_REG_A_OUT, reg_value_a);
 
         let reg_value_b = self.read_reg(simulator, &self.read_addr2);
         trace!("reg_value {}", reg_value_b);
-        simulator.set_out_val(&self.id, MEM_REG_B_OUT, Signal::Data(reg_value_b));
+        simulator.set_out_value(&self.id, REG_FILE_REG_B_OUT, reg_value_b);
+        Ok(())
     }
 }
 
@@ -245,15 +314,15 @@ mod test {
         let out_reg_2 = &Input::new("reg_file", "reg_b");
 
         // reset
-        assert_eq!(simulator.get_input_val(out_reg_1), 0.into());
-        assert_eq!(simulator.get_input_val(out_reg_2), 0.into());
+        assert_eq!(simulator.get_input_value(out_reg_1), 0.into());
+        assert_eq!(simulator.get_input_value(out_reg_2), 0.into());
 
         println!("<setup for clock 2>");
-        simulator.set_out_val("read_reg_1", "out", 0);
-        simulator.set_out_val("read_reg_2", "out", 1);
-        simulator.set_out_val("write_data", "out", 1337);
-        simulator.set_out_val("write_addr", "out", 1);
-        simulator.set_out_val("write_enable", "out", true as SignalUnsigned);
+        simulator.set_out_value("read_reg_1", "out", 0);
+        simulator.set_out_value("read_reg_2", "out", 1);
+        simulator.set_out_value("write_data", "out", 1337);
+        simulator.set_out_value("write_addr", "out", 1);
+        simulator.set_out_value("write_enable", "out", true as SignalUnsigned);
 
         // test write and read to reg # 1 in same cycle
         println!("sim_state {:?}", simulator.sim_state);
@@ -261,21 +330,21 @@ mod test {
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 2);
-        assert_eq!(simulator.get_input_val(out_reg_1), 0.into());
-        assert_eq!(simulator.get_input_val(out_reg_2), 1337.into());
+        assert_eq!(simulator.get_input_value(out_reg_1), 0.into());
+        assert_eq!(simulator.get_input_value(out_reg_2), 1337.into());
 
         // test write and read to reg # 0 in same cycle (red #0 should always read 0)
         println!("<setup for clock 3>");
-        simulator.set_out_val("read_reg_1", "out", 0);
-        simulator.set_out_val("read_reg_2", "out", 1);
-        simulator.set_out_val("write_data", "out", 42);
-        simulator.set_out_val("write_addr", "out", 0);
-        simulator.set_out_val("write_enable", "out", true as SignalUnsigned);
+        simulator.set_out_value("read_reg_1", "out", 0);
+        simulator.set_out_value("read_reg_2", "out", 1);
+        simulator.set_out_value("write_data", "out", 42);
+        simulator.set_out_value("write_addr", "out", 0);
+        simulator.set_out_value("write_enable", "out", true as SignalUnsigned);
         println!("<clock>");
         simulator.clock();
         println!("sim_state {:?}", simulator.sim_state);
         assert_eq!(simulator.cycle, 3);
-        assert_eq!(simulator.get_input_val(out_reg_1), 0.into());
-        assert_eq!(simulator.get_input_val(out_reg_2), 1337.into());
+        assert_eq!(simulator.get_input_value(out_reg_1), 0.into());
+        assert_eq!(simulator.get_input_value(out_reg_2), 1337.into());
     }
 }

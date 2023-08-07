@@ -1,4 +1,4 @@
-use std::{path::PathBuf, rc::Rc};
+use std::path::PathBuf;
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
@@ -9,29 +9,19 @@ fn main() {
     fern_setup();
     let cs = ComponentStore {
         store: vec![
-            Constant::rc_new("c0", (100.0, 110.0), 32768),
-            Rc::new(Wire {
-                id: "w0".to_string(),
-                pos: vec![(110.0, 110.0), (140.0, 110.0)],
-                input: Input::new("c0", "out"),
-            }),
-            Rc::new(Sext {
-                id: "sxt0".to_string(),
-                pos: (180.0, 100.0),
-                sext_in: Input::new("c0", "out"),
-                in_size: 16,
-                out_size: 24,
-            }),
-            Rc::new(Wire {
-                id: "w1".to_string(),
-                pos: vec![(220.0, 100.0), (250.0, 100.0)],
-                input: Input::new("sxt0", "out"),
-            }),
-            Rc::new(Probe {
-                id: "p1".to_string(),
-                pos: (260.0, 100.0),
-                input: Input::new("sxt0", "out"),
-            }),
+            Constant::rc_new("c0", (50.0, 110.0), 32768),
+            Wire::rc_new(
+                "w0",
+                vec![(110.0, 110.0), (140.0, 110.0)],
+                Input::new("c0", "out"),
+            ),
+            Sext::rc_new("sxt0", (180.0, 100.0), Input::new("c0", "out"), 16, 24),
+            Wire::rc_new(
+                "w1",
+                vec![(220.0, 100.0), (250.0, 100.0)],
+                Input::new("sxt0", "out"),
+            ),
+            Probe::rc_new("p1", (260.0, 100.0), Input::new("sxt0", "out")),
         ],
     };
 

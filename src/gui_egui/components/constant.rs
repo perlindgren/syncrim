@@ -1,13 +1,11 @@
-use crate::common::{EguiComponent, Ports, Signal, SignalUnsigned, Simulator};
+use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
 use crate::components::Constant;
 use crate::gui_egui::component_ui::{
     input_change_id, pos_slider, properties_window, rect_with_hover,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
-use egui::{
-    Align2, Area, Color32, Order, PointerButton, Pos2, Rect, Response, RichText, Slider, Ui, Vec2,
-};
+use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, Response, RichText, Ui, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Constant {
@@ -102,9 +100,11 @@ impl EguiComponent for Constant {
             |ui| {
                 input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
                 pos_slider(ui, &mut self.pos);
-                if let Signal::Data(d) = &mut self.value {
+                /*
+                if let SignalValue::Data(d) = &mut self.value {
                     ui.add(Slider::new(d, u32::MIN..=u32::MAX).text("value"));
                 }
+                */
                 false
             },
         );
