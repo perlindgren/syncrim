@@ -257,7 +257,11 @@ fn fern_setup_riscv() {
         })
         // Add blanket level filter -
         // .level(log::LevelFilter::Debug);
-        .level(log::LevelFilter::Warn);
+        .level_for(
+            "syncrim::gui_vizia::components::mem",
+            log::LevelFilter::Trace,
+        )
+        .level(log::LevelFilter::Error);
 
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]

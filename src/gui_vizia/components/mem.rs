@@ -13,7 +13,6 @@ impl ViziaComponent for Mem {
         V::new(cx, self, |cx| {
             trace!("---- Create Mem View ");
             Label::new(cx, "DataMemory")
-                .hoverable(false)
                 .left(Pixels(10.0))
                 .top(Pixels(10.0))
                 .hoverable(false)
@@ -30,14 +29,17 @@ impl ViziaComponent for Mem {
         //We initialize data_slice with the initial state of the memory.
         //from now on, data_slice only gets updated over
         //the relevant (visible) data interval, and when needed (so only on clock)
-        //so as to not trigger unneccessary redraws.
+        //so as to not trigger unnecessary redraws.
         let data_slice = {
             let mut data_slice = vec![];
             let mem = self.memory.clone();
-            for idx in self.range.start as usize..self.range.end as usize {
+            trace!("range {:x?}", self.range);
+            for idx in (self.range.start as usize..self.range.end as usize).step_by(4) {
+                trace!("idx {:x?}", idx);
+
                 data_slice.push(format!(
                     "0x{:08x}:    {:02x}{:02x}{:02x}{:02x}",
-                    idx,
+                    idx * 4,
                     mem.0.borrow().get(&idx).copied().unwrap_or_else(|| 0u8),
                     mem.0
                         .borrow()
@@ -73,7 +75,7 @@ impl ViziaComponent for Mem {
                 VirtualList::new(cx, DataMemView::data_slice, 20.0, |cx, idx, item| {
                     HStack::new(cx, |cx| {
                         //if a value comes into view, update it with fresh data from memory
-                        cx.emit(DataEvent::UpdateVal(idx));
+                        // cx.emit(DataEvent::UpdateVal(idx));
                         Label::new(cx, item);
                     })
                     .child_left(Pixels(10.0))
@@ -109,34 +111,40 @@ impl View for DataMemView {
     fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
         event.map(|event, _| match event {
             DataEvent::UpdateVal(idx) => {
-                self.data_slice[*idx] = format!(
-                    "0x{:08x}:    {:02x}{:02x}{:02x}{:02x}",
-                    idx,
-                    self.data
-                        .0
-                        .borrow()
-                        .get(&(self.start + idx * 4))
-                        .copied()
-                        .unwrap_or_else(|| 0u8),
-                    self.data
-                        .0
-                        .borrow()
-                        .get(&(self.start + idx * 4 + 1))
-                        .copied()
-                        .unwrap_or_else(|| 0u8),
-                    self.data
-                        .0
-                        .borrow()
-                        .get(&(self.start + idx * 4 + 2))
-                        .copied()
-                        .unwrap_or_else(|| 0u8),
-                    self.data
-                        .0
-                        .borrow()
-                        .get(&(self.start + idx * 4 + 3))
-                        .copied()
-                        .unwrap_or_else(|| 0u8)
-                );
+                trace!("idx {:x}", idx);
+                if let Some(data_fmt) = self.data_slice.get_mut(*idx) {
+                    *data_fmt = format!(
+                        "0x{:08x}:    {:02x}{:02x}{:02x}{:02x}",
+                        idx * 4 + self.start,
+                        self.data
+                            .0
+                            .borrow()
+                            .get(&(self.start + idx * 4))
+                            .copied()
+                            .unwrap_or_else(|| 0u8),
+                        self.data
+                            .0
+                            .borrow()
+                            .get(&(self.start + idx * 4 + 1))
+                            .copied()
+                            .unwrap_or_else(|| 0u8),
+                        self.data
+                            .0
+                            .borrow()
+                            .get(&(self.start + idx * 4 + 2))
+                            .copied()
+                            .unwrap_or_else(|| 0u8),
+                        self.data
+                            .0
+                            .borrow()
+                            .get(&(self.start + idx * 4 + 3))
+                            .copied()
+                            .unwrap_or_else(|| 0u8)
+                    );
+                } else {
+                    // Why do we end up here, seems wrong
+                    // panic!("Internal error, lookup should always succeed.")
+                }
             }
         })
     }
