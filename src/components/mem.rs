@@ -6,6 +6,7 @@ use log::*;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
+use std::ops::Deref;
 use std::ops::Range;
 use std::{cell::RefCell, collections::BTreeMap, convert::TryFrom, rc::Rc};
 
@@ -354,6 +355,14 @@ impl Component for Mem {
         }
 
         Ok(())
+    }
+}
+
+impl Deref for Memory {
+    type Target = RefCell<BTreeMap<usize, u8>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

@@ -50,7 +50,7 @@ fn main() {
     //init data memory with 0's
     let range = Range {
         start: 0x5000_0000u32,
-        end: 0x5000_1000u32,
+        end: 0x5000_0500u32,
     };
     for address in range.clone() {
         data_mem.insert(address as usize, 0);

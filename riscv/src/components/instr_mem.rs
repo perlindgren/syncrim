@@ -39,8 +39,9 @@ impl Component for InstrMem {
             | (*self.bytes.get(&((pc + 3) as usize)).unwrap() as u32);
         //the asm_riscv crate incorrectly panics when trying from instead of
         //returning Err, catch it and handle instead
-        let instruction_fmt = panic::catch_unwind(|| format!("{:?}", asm_riscv::I::from(instr)))
-            .unwrap_or_else(|_| format!("Unknown instruction"));
+        let instruction_fmt =
+            panic::catch_unwind(|| format!("{:?}", asm_riscv::I::try_from(instr)))
+                .unwrap_or_else(|_| format!("Unknown instruction"));
         trace!("instruction: {}", instruction_fmt);
         trace!("pc:0x{:08x}", pc);
         // set output

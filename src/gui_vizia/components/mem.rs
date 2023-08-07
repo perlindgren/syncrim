@@ -1,6 +1,7 @@
 use crate::{
+    common::Simulator,
     components::{Mem, Memory},
-    gui_vizia::{ViziaComponent, V},
+    gui_vizia::{GuiData, ViziaComponent, V},
 };
 use log::*;
 use vizia::prelude::*;
@@ -26,9 +27,42 @@ impl ViziaComponent for Mem {
 
     fn left_view(&self, cx: &mut Context) {
         trace!("---- Create Left Mem View");
+        //We initialize data_slice with the initial state of the memory.
+        //from now on, data_slice only gets updated over
+        //the relevant (visible) data interval, and when needed (so only on clock)
+        //so as to not trigger unneccessary redraws.
+        let data_slice = {
+            let mut data_slice = vec![];
+            let mem = self.memory.clone();
+            for idx in self.range.start as usize..self.range.end as usize {
+                data_slice.push(format!(
+                    "0x{:08x}:    {:02x}{:02x}{:02x}{:02x}",
+                    idx,
+                    mem.0.borrow().get(&idx).copied().unwrap_or_else(|| 0u8),
+                    mem.0
+                        .borrow()
+                        .get(&(idx + 1))
+                        .copied()
+                        .unwrap_or_else(|| 0u8),
+                    mem.0
+                        .borrow()
+                        .get(&(idx + 2))
+                        .copied()
+                        .unwrap_or_else(|| 0u8),
+                    mem.0
+                        .borrow()
+                        .get(&(idx + 3))
+                        .copied()
+                        .unwrap_or_else(|| 0u8)
+                ));
+            }
+            data_slice
+        };
         View::build(
             DataMemView {
                 data: self.memory.clone(),
+                start: self.range.start as usize,
+                data_slice: data_slice,
             },
             cx,
             |cx| {
@@ -36,44 +70,22 @@ impl ViziaComponent for Mem {
                     .left(Pixels(10.0))
                     .top(Pixels(10.0));
 
-                VirtualList::new(
-                    cx,
-                    DataMemView::data.map(|mem| {
-                        let mut vec = vec![];
-                        for i in mem.0.borrow().iter() {
-                            if i.0 % 4 == 0 {
-                                vec.push(format!(
-                                    "0x{:08x}:    0x{:02x}{:02x}{:02x}{:02x}",
-                                    i.0,
-                                    i.1,
-                                    mem.0
-                                        .borrow()
-                                        .get(&((i.0 + 1) as usize))
-                                        .copied()
-                                        .unwrap_or_else(|| 0u8),
-                                    mem.0
-                                        .borrow()
-                                        .get(&((i.0 + 2) as usize))
-                                        .copied()
-                                        .unwrap_or_else(|| 0u8),
-                                    mem.0
-                                        .borrow()
-                                        .get(&((i.0 + 3) as usize))
-                                        .copied()
-                                        .unwrap_or_else(|| 0u8)
-                                ));
-                            }
-                        }
-                        vec
-                    }),
-                    20.0,
-                    |cx, _, item| {
-                        HStack::new(cx, |cx| {
-                            Label::new(cx, item);
-                        })
-                        .child_left(Pixels(10.0))
-                    },
-                );
+                VirtualList::new(cx, DataMemView::data_slice, 20.0, |cx, idx, item| {
+                    HStack::new(cx, |cx| {
+                        //if a value comes into view, update it with fresh data from memory
+                        cx.emit(DataEvent::UpdateVal(idx));
+                        Label::new(cx, item);
+                    })
+                    .child_left(Pixels(10.0))
+                    .bind(
+                        GuiData::simulator.then(Simulator::cycle),
+                        move |mut view, _| {
+                            trace!("Emitting idx {}", idx);
+                            //on clock, update all values in view.
+                            view.context().emit(DataEvent::UpdateVal(idx));
+                        },
+                    )
+                });
             },
         );
     }
@@ -82,10 +94,50 @@ impl ViziaComponent for Mem {
 #[derive(Lens, Clone)]
 pub struct DataMemView {
     data: Memory,
+    start: usize,
+    data_slice: Vec<String>,
+}
+
+pub enum DataEvent {
+    UpdateVal(usize),
 }
 
 impl View for DataMemView {
     fn element(&self) -> Option<&'static str> {
         Some("MemView")
+    }
+    fn event(&mut self, _cx: &mut EventContext, event: &mut Event) {
+        event.map(|event, _| match event {
+            DataEvent::UpdateVal(idx) => {
+                self.data_slice[*idx] = format!(
+                    "0x{:08x}:    {:02x}{:02x}{:02x}{:02x}",
+                    idx,
+                    self.data
+                        .0
+                        .borrow()
+                        .get(&(self.start + idx * 4))
+                        .copied()
+                        .unwrap_or_else(|| 0u8),
+                    self.data
+                        .0
+                        .borrow()
+                        .get(&(self.start + idx * 4 + 1))
+                        .copied()
+                        .unwrap_or_else(|| 0u8),
+                    self.data
+                        .0
+                        .borrow()
+                        .get(&(self.start + idx * 4 + 2))
+                        .copied()
+                        .unwrap_or_else(|| 0u8),
+                    self.data
+                        .0
+                        .borrow()
+                        .get(&(self.start + idx * 4 + 3))
+                        .copied()
+                        .unwrap_or_else(|| 0u8)
+                );
+            }
+        })
     }
 }
