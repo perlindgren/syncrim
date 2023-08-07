@@ -41,6 +41,7 @@ pub struct CloseToComponent {
 
 #[derive(Debug, Clone, Copy)]
 pub enum EditorMode {
+    Simulator,
     Default,
     Wire,
     Input,
@@ -79,6 +80,7 @@ impl Editor {
                 pos: (0.0, 0.0),
                 input: dummy_input.clone(),
             }),
+            Rc::new(ProbeEdit::new("pe", (0.0, 0.0))),
             Rc::new(Sext {
                 id: "sext".to_string(),
                 pos: (0.0, 0.0),
@@ -303,7 +305,9 @@ impl Editor {
         match e.editor_mode {
             EditorMode::Wire => crate::gui_egui::editor_wire_mode::wire_mode(ctx, e, cpr, layer_id),
             EditorMode::Input => crate::gui_egui::library::input_mode(ctx, e, cpr, layer_id),
-            EditorMode::Default => ctx.output_mut(|o| o.cursor_icon = egui::CursorIcon::Default),
+            EditorMode::Default | EditorMode::Simulator => {
+                ctx.output_mut(|o| o.cursor_icon = egui::CursorIcon::Default)
+            }
         }
         if central_panel.response.hovered() {
             ctx.input_mut(|i| {

@@ -142,7 +142,7 @@ impl Gui {
                     self.offset + self.pan,
                     self.scale,
                     self.clip_rect,
-                    EditorMode::Default,
+                    EditorMode::Simulator,
                 );
                 self.contexts.insert(context.id_tmp.clone(), context);
             }

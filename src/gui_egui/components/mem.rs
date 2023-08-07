@@ -47,7 +47,7 @@ impl EguiComponent for Mem {
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
-            ui.label("mem");
+            ui.label("Mem");
         });
         Some(vec![r])
     }

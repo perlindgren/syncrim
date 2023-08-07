@@ -141,6 +141,10 @@ pub fn add_comp_to_editor(e: &mut Editor) {
                     input: e.dummy_input.clone(),
                 })
             }
+            "pe" => {
+                id = unique_component_name(&id_ports, "pe");
+                Rc::new(ProbeEdit::new(id.as_str(), (0.0, 0.0)))
+            }
             "add" => {
                 id = unique_component_name(&id_ports, "add");
                 Rc::new(Add {

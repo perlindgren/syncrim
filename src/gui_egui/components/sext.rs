@@ -58,6 +58,7 @@ impl EguiComponent for Sext {
                         _ => format!("{:?}", r),
                     }
                 });
+                ui.label("Sign Extend");
             }
         });
         Some(vec![r])
