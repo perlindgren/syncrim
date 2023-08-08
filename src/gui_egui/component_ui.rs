@@ -1,11 +1,13 @@
 use crate::common::{Input, Ports};
 use crate::gui_egui::editor::EditorMode;
-use crate::gui_egui::helper::{editor_mode_to_sense, out_of_bounds, unique_component_name};
-use egui::{
-    containers, ComboBox, DragValue, Frame, Margin, PointerButton, Pos2, Rect, Response, Rounding,
-    Ui, Window,
+use crate::gui_egui::helper::{
+    editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
 };
-use epaint::Shadow;
+use egui::{
+    containers, Color32, ComboBox, DragValue, Frame, Margin, PointerButton, Pos2, Rect, Response,
+    Rounding, Shape, Stroke, Ui, Vec2, Window,
+};
+use epaint::{CircleShape, Shadow};
 
 pub fn rect_with_hover<P>(
     rect: Rect,
@@ -148,8 +150,41 @@ pub fn input_change_id(
         let r = ui
             .text_edit_singleline(&mut *id_tmp)
             .labelled_by(id_label.id);
-        if r.lost_focus() && *id_tmp != *id {
+        if (r.lost_focus() || r.clicked_elsewhere()) && *id_tmp != *id {
             *id = unique_component_name(id_ports, (*id_tmp).as_str());
         }
     });
+}
+
+pub fn visualize_ports(
+    ui: &mut Ui,
+    ports: Vec<(crate::common::Id, Pos2)>,
+    offset: Vec2,
+    scale: f32,
+    clip_rect: Rect,
+) {
+    for (id, pos) in ports {
+        let pos = offset_helper((pos.x, pos.y), scale, offset);
+        let scalev2 = Vec2 {
+            x: scale * 2f32,
+            y: scale * 2f32,
+        };
+        let circle = Shape::Circle(CircleShape {
+            center: pos,
+            radius: scale * 3f32,
+            fill: Color32::TRANSPARENT,
+            stroke: Stroke {
+                width: 1f32 * scale,
+                color: Color32::BLUE,
+            },
+        });
+        ui.painter().add(circle);
+        let rect = Rect {
+            min: pos - scalev2,
+            max: pos + scalev2,
+        };
+        rect_with_hover(rect, clip_rect, EditorMode::Wire, ui, id.clone(), |ui| {
+            ui.label(format!("Port id: {}", id));
+        });
+    }
 }

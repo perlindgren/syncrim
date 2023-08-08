@@ -1,7 +1,7 @@
 use crate::common::{EguiComponent, Ports, SignalSigned, SignalUnsigned, SignalValue, Simulator};
 use crate::components::{ProbeEdit, TextSignal};
 use crate::gui_egui::component_ui::{
-    input_change_id, pos_drag_value, properties_window, rect_with_hover,
+    input_change_id, pos_drag_value, properties_window, rect_with_hover, visualize_ports,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
@@ -19,13 +19,11 @@ impl EguiComponent for ProbeEdit {
         clip_rect: Rect,
         editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
+        let offset_old = offset;
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
-        let interact = match editor_mode {
-            EditorMode::Simulator => true,
-            _ => false,
-        };
+        let interact = matches!(editor_mode, EditorMode::Simulator);
         let area = Area::new(self.id.to_string())
             .order(Order::Middle)
             .current_pos(offset.to_pos2())
@@ -75,12 +73,21 @@ impl EguiComponent for ProbeEdit {
             self.id.clone(),
             |ui| {
                 ui.label(format!("Id: {}", self.id.clone()));
-                ui.label(format!(
-                    "{}",
-                    self.edit_history.read().unwrap().last().unwrap().text
-                ));
+                ui.label(
+                    self.edit_history
+                        .read()
+                        .unwrap()
+                        .last()
+                        .unwrap()
+                        .text
+                        .to_string(),
+                );
             },
         );
+        match editor_mode {
+            EditorMode::Simulator => (),
+            _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
+        }
         Some(vec![r])
     }
 
@@ -142,7 +149,7 @@ impl EguiComponent for ProbeEdit {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![(
             crate::components::PROBE_EDIT_OUT_ID.to_string(),
-            Pos2::new(-10f32, 0f32) + own_pos,
+            Pos2::new(0f32, 0f32) + own_pos,
         )]
     }
 

@@ -2,6 +2,7 @@ use crate::common::{EguiComponent, Ports, Simulator};
 use crate::components::Register;
 use crate::gui_egui::component_ui::{
     input_change_id, input_selector, pos_drag_value, properties_window, rect_with_hover,
+    visualize_ports,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
@@ -23,6 +24,7 @@ impl EguiComponent for Register {
         // 21x41
         // middle: 11x 21y (0 0)
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
+        let offset_old = offset;
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
@@ -53,6 +55,10 @@ impl EguiComponent for Register {
             ui.label(format!("Id: {}", self.id.clone()));
             ui.label("Register");
         });
+        match editor_mode {
+            EditorMode::Simulator => (),
+            _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
+        }
         Some(vec![r])
     }
 

@@ -2,7 +2,7 @@ use crate::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
 use crate::components::Mux;
 use crate::gui_egui::component_ui::{
     input_change_id, input_selector, input_selector_removeable, pos_drag_value, properties_window,
-    rect_with_hover,
+    rect_with_hover, visualize_ports,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
@@ -24,6 +24,7 @@ impl EguiComponent for Mux {
         // 41x(20*ports + 11)
         // middle: 21x ((20*ports + 10)/2+1)y (0 0)
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
+        let offset_old = offset;
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
@@ -75,6 +76,10 @@ impl EguiComponent for Mux {
             ui.label(format!("Id: {}", self.id.clone()));
             ui.label("Mux");
         });
+        match editor_mode {
+            EditorMode::Simulator => (),
+            _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
+        }
         Some(vec![r])
     }
 

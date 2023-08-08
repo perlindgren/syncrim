@@ -1,6 +1,9 @@
 use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
 use crate::components::Wire;
-use crate::gui_egui::component_ui::*;
+use crate::gui_egui::component_ui::{
+    input_change_id, input_selector, pos_drag_value, properties_window, rect_with_hover,
+    visualize_ports,
+};
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
@@ -19,6 +22,7 @@ impl EguiComponent for Wire {
         editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
+        let offset_old = offset;
         let offset = offset;
         let s = scale;
         let o = offset;
@@ -66,6 +70,11 @@ impl EguiComponent for Wire {
                 }
             });
             r_vec.push(r);
+        }
+
+        match editor_mode {
+            EditorMode::Simulator => (),
+            _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
         }
 
         Some(r_vec)

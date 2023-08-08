@@ -290,7 +290,10 @@ impl Editor {
                         &id_ports,
                         e.editor_mode,
                     );
-                    e.contexts.insert(context.id_tmp.clone(), context);
+                    // only reinsert if it's not getting deleted
+                    if !render_return.delete {
+                        e.contexts.insert(c.get_id_ports().0, context.clone());
+                    }
                     !render_return.delete
                 }),
             }

@@ -2,6 +2,7 @@ use crate::common::{EguiComponent, Ports, SignalUnsigned, SignalValue, Simulator
 use crate::components::Probe;
 use crate::gui_egui::component_ui::{
     input_change_id, input_selector, pos_drag_value, properties_window, rect_with_hover,
+    visualize_ports,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
@@ -19,6 +20,7 @@ impl EguiComponent for Probe {
         clip_rect: Rect,
         editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
+        let offset_old = offset;
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
@@ -36,11 +38,18 @@ impl EguiComponent for Probe {
             .pivot(Align2::CENTER_CENTER)
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);
-                ui.label(
-                    RichText::new(format!("{:?}", value))
-                        .size(scale * 12f32)
-                        .background_color(Color32::LIGHT_BLUE),
-                )
+                match editor_mode {
+                    EditorMode::Simulator => ui.label(
+                        RichText::new(format!("{:?}", value))
+                            .size(scale * 12f32)
+                            .background_color(Color32::LIGHT_BLUE),
+                    ),
+                    _ => ui.label(
+                        RichText::new(format!("{:?}", value))
+                            .size(scale * 12f32)
+                            .underline(),
+                    ),
+                }
                 .on_hover_text({
                     let r: Result<SignalUnsigned, String> = value.try_into();
                     match r {
@@ -61,6 +70,10 @@ impl EguiComponent for Probe {
                 ui.label(format!("{:?}", value));
             },
         );
+        match editor_mode {
+            EditorMode::Simulator => (),
+            _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
+        }
         Some(vec![r])
     }
 
@@ -129,7 +142,7 @@ impl EguiComponent for Probe {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![(
             crate::components::PROBE_IN_ID.to_string(),
-            Pos2::new(-10f32, 0f32) + own_pos,
+            Pos2::new(0f32, 0f32) + own_pos,
         )]
     }
 
