@@ -85,7 +85,7 @@ impl ViziaComponent for Mem {
                     .child_left(Pixels(10.0))
                 })
                 .on_change(|cx, range| {
-                    cx.emit(DataEvent::UpdateSlice(range));
+                    cx.emit(DataEvent::UpdateScroll(range));
                 });
             },
         )
@@ -93,7 +93,7 @@ impl ViziaComponent for Mem {
         Binding::new(
             cx,
             GuiData::simulator.then(Simulator::cycle),
-            move |cx, _| cx.emit_to(view, DataEvent::UpdateData),
+            move |cx, _| cx.emit_to(view, DataEvent::UpdateClock),
         );
     }
 }
@@ -107,8 +107,9 @@ pub struct DataMemView {
 }
 
 pub enum DataEvent {
-    UpdateData,
-    UpdateSlice(Range<usize>),
+    UpdateClock,
+    UpdateScroll(Range<usize>),
+    UpdateView(Range<usize>),
 }
 
 impl View for DataMemView {
@@ -117,11 +118,11 @@ impl View for DataMemView {
     }
     fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
         event.map(|event, _| match event {
-            DataEvent::UpdateData => {
-                for idx in self.slice_range.clone().into_iter() {
+            DataEvent::UpdateView(range) => {
+                for idx in range.clone().into_iter() {
                     if let Some(data_fmt) = self.data_slice.get_mut(idx) {
                         *data_fmt = format!(
-                            "0x{:08x}:    {:02x}{:02x}{:02x}{:02x}",
+                            "0x{:08x}:    0x{:02x}{:02x}{:02x}{:02x}",
                             idx * 4 + self.start,
                             self.data
                                 .0
@@ -150,15 +151,35 @@ impl View for DataMemView {
                         );
                     } else {
                         // Why do we end up here, seems wrong
-                        println!("{:x}", idx);
                         panic!("Internal error, lookup should always succeed.")
                     }
                 }
             }
-            DataEvent::UpdateSlice(range) => {
-                println!("{:?}", range);
-                self.slice_range = range.clone();
-                cx.emit(DataEvent::UpdateData);
+            DataEvent::UpdateClock => cx.emit(DataEvent::UpdateView(self.slice_range.clone())), //update the entire view on clock.
+            DataEvent::UpdateScroll(new_range) => {
+                //calculate the "delta" between the view before and after scroll, update that.
+                let old_range = self.slice_range.clone();
+                self.slice_range = new_range.clone();
+                let dirty_range_start = if new_range.start < old_range.start {
+                    new_range.start
+                } else if new_range.start < old_range.end {
+                    old_range.end
+                } else {
+                    new_range.start
+                };
+                let dirty_range_end = if new_range.end < old_range.start {
+                    new_range.end
+                } else if new_range.end < old_range.end {
+                    old_range.start
+                } else {
+                    new_range.end
+                };
+                let dirty_range = Range {
+                    start: dirty_range_start,
+                    end: dirty_range_end,
+                };
+
+                cx.emit(DataEvent::UpdateView(dirty_range))
             }
         })
     }
