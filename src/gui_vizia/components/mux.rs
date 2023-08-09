@@ -41,7 +41,7 @@ impl View for MuxView {
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
         let scale = cx.scale_factor();
-        //println!("Mux draw {:?}", bounds);
+        trace!("Mux draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbf(0.0, 0.0, 0.0));

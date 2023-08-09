@@ -334,22 +334,10 @@ impl Component for Mem {
                 trace!(
                     "0x{:08x} : 0x{:02x}{:02x}{:02x}{:02x}",
                     i.0,
-                    self.memory.0.borrow().get(&(i.0)).unwrap_or_else(|| &0u8),
-                    self.memory
-                        .0
-                        .borrow()
-                        .get(&(i.0 + 1))
-                        .unwrap_or_else(|| &0u8),
-                    self.memory
-                        .0
-                        .borrow()
-                        .get(&(i.0 + 2))
-                        .unwrap_or_else(|| &0u8),
-                    self.memory
-                        .0
-                        .borrow()
-                        .get(&(i.0 + 3))
-                        .unwrap_or_else(|| &0u8),
+                    self.memory.0.borrow().get(i.0).unwrap_or(&0u8),
+                    self.memory.0.borrow().get(&(i.0 + 1)).unwrap_or(&0u8),
+                    self.memory.0.borrow().get(&(i.0 + 2)).unwrap_or(&0u8),
+                    self.memory.0.borrow().get(&(i.0 + 3)).unwrap_or(&0u8),
                 )
             }
         }

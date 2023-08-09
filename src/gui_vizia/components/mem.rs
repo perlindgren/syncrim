@@ -42,22 +42,10 @@ impl ViziaComponent for Mem {
                 data_slice.push(format!(
                     "0x{:08x}:    {:02x}{:02x}{:02x}{:02x}",
                     self.range.start as usize + idx * 4,
-                    mem.0.borrow().get(&idx).copied().unwrap_or_else(|| 0u8),
-                    mem.0
-                        .borrow()
-                        .get(&(idx + 1))
-                        .copied()
-                        .unwrap_or_else(|| 0u8),
-                    mem.0
-                        .borrow()
-                        .get(&(idx + 2))
-                        .copied()
-                        .unwrap_or_else(|| 0u8),
-                    mem.0
-                        .borrow()
-                        .get(&(idx + 3))
-                        .copied()
-                        .unwrap_or_else(|| 0u8)
+                    mem.0.borrow().get(&idx).copied().unwrap_or(0u8),
+                    mem.0.borrow().get(&(idx + 1)).copied().unwrap_or(0u8),
+                    mem.0.borrow().get(&(idx + 2)).copied().unwrap_or(0u8),
+                    mem.0.borrow().get(&(idx + 3)).copied().unwrap_or(0u8),
                 ));
             }
             data_slice
@@ -66,7 +54,7 @@ impl ViziaComponent for Mem {
             DataMemView {
                 data: self.memory.clone(),
                 start: self.range.start as usize,
-                data_slice: data_slice,
+                data_slice,
                 //we may init to 0 range, once view opens this will be updated.
                 slice_range: Range { start: 0, end: 0 },
             },
@@ -76,10 +64,8 @@ impl ViziaComponent for Mem {
                     .left(Pixels(10.0))
                     .top(Pixels(10.0));
 
-                VirtualList::new(cx, DataMemView::data_slice, 20.0, |cx, idx, item| {
+                VirtualList::new(cx, DataMemView::data_slice, 20.0, |cx, _, item| {
                     HStack::new(cx, |cx| {
-                        //if a value comes into view, update it with fresh data from memory
-                        // cx.emit(DataEvent::UpdateVal(idx));
                         Label::new(cx, item);
                     })
                     .child_left(Pixels(10.0))
@@ -119,7 +105,7 @@ impl View for DataMemView {
     fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
         event.map(|event, _| match event {
             DataEvent::UpdateView(range) => {
-                for idx in range.clone().into_iter() {
+                for idx in range.clone() {
                     if let Some(data_fmt) = self.data_slice.get_mut(idx) {
                         *data_fmt = format!(
                             "0x{:08x}:    0x{:02x}{:02x}{:02x}{:02x}",
@@ -129,25 +115,25 @@ impl View for DataMemView {
                                 .borrow()
                                 .get(&(self.start + idx * 4))
                                 .copied()
-                                .unwrap_or_else(|| 0u8),
+                                .unwrap_or(0u8),
                             self.data
                                 .0
                                 .borrow()
                                 .get(&(self.start + idx * 4 + 1))
                                 .copied()
-                                .unwrap_or_else(|| 0u8),
+                                .unwrap_or(0u8),
                             self.data
                                 .0
                                 .borrow()
                                 .get(&(self.start + idx * 4 + 2))
                                 .copied()
-                                .unwrap_or_else(|| 0u8),
+                                .unwrap_or(0u8),
                             self.data
                                 .0
                                 .borrow()
                                 .get(&(self.start + idx * 4 + 3))
                                 .copied()
-                                .unwrap_or_else(|| 0u8)
+                                .unwrap_or(0u8),
                         );
                     } else {
                         // Why do we end up here, seems wrong
