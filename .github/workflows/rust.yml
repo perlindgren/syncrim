@@ -14,8 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Update runner
+        run: sudo apt-get update
       - name: Install dependencies
-        run: sudo apt-get install librust-atk-dev
+        run: sudo apt-get install librust-atk-dev librust-gdk-dev
       - name: Install Rust
         run: rustup toolchain install stable --profile minimal
       - uses: rui314/setup-mold@v1
