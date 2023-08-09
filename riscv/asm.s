@@ -226,6 +226,11 @@ main:
 	sw t1, 4(t0)
 	sw t1, 8(t0)
 	sw t1, 12(t0)
+	li t0, 0x500000F4 # address should be outide of memview range
+	sw t1, 0(t0)
+	sw t1, 4(t0)
+	sw t1, 8(t0)
+	sw t1, 12(t0)
 	li	s0, 0x0e0657c1	# initialize "seed"
 	la	s1, seed	# initialize "seed"
 	sw	s0, 0(s1)
