@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{ops::Range, path::PathBuf};
 use syncrim::{
     common::{ComponentStore, Input, SignalUnsigned},
     components::*,
@@ -22,6 +22,10 @@ fn main() {
                 Input::new("ctrl", "out"),
                 Input::new("sext", "out"),
                 Input::new("size", "out"),
+                Range {
+                    start: 0,
+                    end: 0x20,
+                },
                 // later history... tbd
             ),
             Constant::rc_new("data", (100.0, 100.0), 3),

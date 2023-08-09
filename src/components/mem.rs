@@ -6,7 +6,9 @@ use log::*;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
-use std::{cell::RefCell, collections::HashMap, convert::TryFrom, rc::Rc};
+use std::ops::Deref;
+use std::ops::Range;
+use std::{cell::RefCell, collections::BTreeMap, convert::TryFrom, rc::Rc};
 
 #[derive(Serialize, Deserialize)]
 pub struct Mem {
@@ -27,6 +29,7 @@ pub struct Mem {
 
     // memory
     pub(crate) memory: Memory,
+    pub(crate) range: Range<u32>,
     // later history... tbd
 }
 
@@ -43,7 +46,8 @@ impl Mem {
         ctrl: Input,
         sext: Input,
         size: Input,
-        memory: HashMap<usize, u8>,
+        memory: BTreeMap<usize, u8>,
+        range: Range<u32>,
     ) -> Self {
         Mem {
             id: id.to_string(),
@@ -57,6 +61,7 @@ impl Mem {
             sext,
             size,
             memory: Memory::new(memory),
+            range,
         }
     }
 
@@ -72,19 +77,15 @@ impl Mem {
         ctrl: Input,
         sext: Input,
         size: Input,
+        range: Range<u32>,
     ) -> Rc<Self> {
+        let mut mem = BTreeMap::new();
+        //fill the defined memory range with zeroes
+        for i in range.clone() {
+            mem.insert(i as usize, 0u8);
+        }
         Rc::new(Mem::new(
-            id,
-            pos,
-            width,
-            height,
-            big_endian,
-            data,
-            addr,
-            ctrl,
-            sext,
-            size,
-            HashMap::new(),
+            id, pos, width, height, big_endian, data, addr, ctrl, sext, size, mem, range,
         ))
     }
 
@@ -100,30 +101,27 @@ impl Mem {
         ctrl: Input,
         sext: Input,
         size: Input,
-        memory: HashMap<usize, u8>,
+        memory: BTreeMap<usize, u8>,
+        range: Range<u32>,
     ) -> Rc<Self> {
         Rc::new(Mem::new(
-            id, pos, width, height, big_endian, data, addr, ctrl, sext, size, memory,
+            id, pos, width, height, big_endian, data, addr, ctrl, sext, size, memory, range,
         ))
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Memory {
-    bytes: RefCell<HashMap<usize, u8>>,
-}
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Memory(pub Rc<RefCell<BTreeMap<usize, u8>>>);
 
 impl Default for Memory {
     fn default() -> Self {
-        Self::new(HashMap::new())
+        Self::new(BTreeMap::new())
     }
 }
 
 impl Memory {
-    pub fn new(data: HashMap<usize, u8>) -> Self {
-        Memory {
-            bytes: RefCell::new(data),
-        }
+    pub fn new(data: BTreeMap<usize, u8>) -> Self {
+        Memory(Rc::new(RefCell::new(data)))
     }
 
     fn align(&self, addr: usize, size: usize) -> SignalValue {
@@ -132,7 +130,7 @@ impl Memory {
 
     fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> SignalValue {
         let data: Vec<u8> = (0..size)
-            .map(|i| *self.bytes.borrow().get(&(addr + i)).unwrap_or(&0))
+            .map(|i| *self.0.borrow().get(&(addr + i)).unwrap_or(&0))
             .collect();
 
         let data = data.as_slice();
@@ -203,7 +201,7 @@ impl Memory {
         match size {
             1 => {
                 trace!("write byte");
-                self.bytes.borrow_mut().insert(addr, data as u8);
+                self.0.borrow_mut().insert(addr, data as u8);
             }
             2 => {
                 if big_endian {
@@ -213,7 +211,7 @@ impl Memory {
                         .iter()
                         .enumerate()
                         .for_each(|(i, bytes)| {
-                            self.bytes.borrow_mut().insert(addr + i, *bytes);
+                            self.0.borrow_mut().insert(addr + i, *bytes);
                         })
                 } else {
                     trace!("write half word le");
@@ -222,7 +220,7 @@ impl Memory {
                         .iter()
                         .enumerate()
                         .for_each(|(i, bytes)| {
-                            self.bytes.borrow_mut().insert(addr + i, *bytes);
+                            self.0.borrow_mut().insert(addr + i, *bytes);
                         })
                 }
             }
@@ -234,7 +232,7 @@ impl Memory {
                         .iter()
                         .enumerate()
                         .for_each(|(i, bytes)| {
-                            self.bytes.borrow_mut().insert(addr + i, *bytes);
+                            self.0.borrow_mut().insert(addr + i, *bytes);
                         })
                 } else {
                     trace!("write word le");
@@ -242,7 +240,7 @@ impl Memory {
                         .iter()
                         .enumerate()
                         .for_each(|(i, bytes)| {
-                            self.bytes.borrow_mut().insert(addr + i, *bytes);
+                            self.0.borrow_mut().insert(addr + i, *bytes);
                         })
                 }
             }
@@ -330,8 +328,29 @@ impl Component for Mem {
             }
         }
 
-        trace!("memory {:?}", self.memory);
+        for (idx, i) in self.memory.0.borrow().iter().enumerate() {
+            if i.0 % 4 == 0 && idx < 40 {
+                //only print 40 bytes so the trace isn't busy
+                trace!(
+                    "0x{:08x} : 0x{:02x}{:02x}{:02x}{:02x}",
+                    i.0,
+                    self.memory.0.borrow().get(i.0).unwrap_or(&0u8),
+                    self.memory.0.borrow().get(&(i.0 + 1)).unwrap_or(&0u8),
+                    self.memory.0.borrow().get(&(i.0 + 2)).unwrap_or(&0u8),
+                    self.memory.0.borrow().get(&(i.0 + 3)).unwrap_or(&0u8),
+                )
+            }
+        }
+
         Ok(())
+    }
+}
+
+impl Deref for Memory {
+    type Target = RefCell<BTreeMap<usize, u8>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
@@ -368,8 +387,10 @@ mod test {
                     sext: Input::new("sign", "out"),
 
                     // memory
-                    memory: Memory {
-                        bytes: RefCell::new(HashMap::new()),
+                    memory: Memory(Rc::new(RefCell::new(BTreeMap::new()))),
+                    range: Range {
+                        start: 0u32,
+                        end: 1u32,
                     },
                 }),
             ],
@@ -548,10 +569,12 @@ mod test {
                     sext: Input::new("sign", "out"),
 
                     // memory
-                    memory: Memory {
-                        bytes: RefCell::new(HashMap::new()),
-                    },
+                    memory: Memory(Rc::new(RefCell::new(BTreeMap::new()))),
                     // later history... tbd
+                    range: Range {
+                        start: 0u32,
+                        end: 1u32,
+                    },
                 }),
             ],
         };
