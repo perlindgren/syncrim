@@ -231,11 +231,11 @@ main:
 	sw t1, 4(t0)
 	sw t1, 8(t0)
 	sw t1, 12(t0)
-	li	s0, 0x0e0657c1	# initialize "seed"
-	la	s1, seed	# initialize "seed"
-	sw	s0, 0(s1)
-	la	a0, coded	# address of start of coded words
-	la	a1, plain	# address of start of decoded bytes
+	li s0, 0x0e0657c1	# initialize "seed"
+	la s1, seed	# initialize "seed"
+	sw s0, 0(s1)
+	la a0, coded	# address of start of coded words
+	la a1, plain	# address of start of decoded bytes
 	jal ra, codgen
 	jal ra, codgen
 	jal ra, codgen
@@ -278,28 +278,28 @@ end:
 #t2 = x
 #t3 = y
 codgen:	
-	la		s1, seed
-	lw		s0, 0(s1)
-	li		t0, 1
-	li 		t1, 0
+	la s1, seed
+	lw s0, 0(s1)
+	li t0, 1
+	li t1, 0
 loop:	
-	beq		t0, x0, continue
-	and 	t2, t0, s0
-	bne		t2, x0, skip
-	addi 	t1, t1, 1
+	beq t0, x0, continue
+	and t2, t0, s0
+	bne t2, x0, skip
+	addi t1, t1, 1
 skip:	
-	sll		t0, t0, 1
-	jal 	x0,	loop
+	sll t0, t0, 1
+	jal x0, loop
 continue:
-	slli	t2, s0, 30
-	srli	t3, s0, 2
-	or		t2, t2, t3 #rotate
-	srai	t3, s0, 6  #shift
-	addi	s0, t2, 0
-	xor		s0, s0, t3
-	xor		s0, s0, t1
-	sw		s0, 0(s1) #update seed
-	jalr	x0, ra
+	slli t2, s0, 30
+	srli t3, s0, 2
+	or t2, t2, t3 #rotate
+	srai t3, s0, 6  #shift
+	addi s0, t2, 0
+	xor s0, s0, t3
+	xor s0, s0, t1
+	sw s0, 0(s1) #update seed
+	jalr x0, ra
 
 
 
