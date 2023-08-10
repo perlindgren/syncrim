@@ -4,15 +4,15 @@ use egui::{Pos2, Rect, Sense, Vec2};
 
 pub fn offset_reverse_helper_pos2(xy: Pos2, scale: f32, offset: Vec2) -> Pos2 {
     egui::Pos2 {
-        x: (xy.x - offset.x) * scale,
-        y: (xy.y - offset.y) * scale,
+        x: (xy.x - offset.x) / scale,
+        y: (xy.y - offset.y) / scale,
     }
 }
 
 pub fn offset_reverse_helper(xy: (f32, f32), scale: f32, offset: Vec2) -> Pos2 {
     egui::Pos2 {
-        x: (xy.0 - offset.x) * scale,
-        y: (xy.1 - offset.y) * scale,
+        x: (xy.0 - offset.x) / scale,
+        y: (xy.1 - offset.y) / scale,
     }
 }
 
