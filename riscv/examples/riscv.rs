@@ -4,7 +4,13 @@ use fern;
 use riscv::components::*;
 use riscv_elf_parse;
 use std::{
-    cell::RefCell, collections::BTreeMap, fs, ops::Range, path::PathBuf, process::Command, rc::Rc,
+    cell::RefCell,
+    collections::{BTreeMap, HashSet},
+    fs,
+    ops::Range,
+    path::PathBuf,
+    process::Command,
+    rc::Rc,
 };
 use syncrim::{
     common::{ComponentStore, Input},
@@ -46,14 +52,24 @@ fn main() {
     println!("{}", memory);
     let mut instr_mem = BTreeMap::new();
     let mut data_mem = BTreeMap::new();
+    let mut breakpoints = HashSet::new();
+
+    breakpoints.insert(0x0000_0008);
 
     //init data memory with 0's
     let range = Range {
         start: 0x5000_0000u32,
         end: 0x5000_0500u32,
     };
+    let instr_range = Range {
+        start: 0x0000_0000usize,
+        end: 0x0000_1000usize,
+    };
     for address in range.clone() {
         data_mem.insert(address as usize, 0);
+    }
+    for address in instr_range.clone() {
+        instr_mem.insert(address as usize, 0);
     }
     for element in memory.bytes {
         if element.0 < 0x5000_0000 {
@@ -143,6 +159,8 @@ fn main() {
                 pos: (180.0, 400.0),
                 pc: Input::new("reg", "out"),
                 bytes: instr_mem,
+                range: instr_range,
+                breakpoints: Rc::new(RefCell::new(breakpoints)),
             }),
             Rc::new(Decoder {
                 id: "decoder".to_string(),
@@ -258,7 +276,8 @@ fn fern_setup_riscv() {
         // Add blanket level filter -
         // .level(log::LevelFilter::Debug);
         .level_for(
-            "syncrim::gui_vizia::components::mem",
+            //   "syncrim::gui_vizia::components::mem",
+            "riscv::gui_vizia::components::instr_mem",
             log::LevelFilter::Trace,
         )
         .level(log::LevelFilter::Error);

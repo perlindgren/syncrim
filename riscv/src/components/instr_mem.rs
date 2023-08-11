@@ -1,5 +1,11 @@
 use asm_riscv::{self};
-use std::{collections::BTreeMap, panic};
+use std::{
+    cell::RefCell,
+    collections::{BTreeMap, HashSet},
+    ops::Range,
+    panic,
+    rc::Rc,
+};
 
 use log::trace;
 use serde::{Deserialize, Serialize};
@@ -11,6 +17,8 @@ pub struct InstrMem {
     pub pos: (f32, f32),
     pub bytes: BTreeMap<usize, u8>,
     pub pc: Input,
+    pub range: Range<usize>,
+    pub breakpoints: Rc<RefCell<HashSet<usize>>>,
 }
 
 #[typetag::serde()]
@@ -32,7 +40,6 @@ impl Component for InstrMem {
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get instr at pc/4
         let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
-
         let instr = (*self.bytes.get(&((pc) as usize)).unwrap() as u32) << 24
             | (*self.bytes.get(&((pc + 1) as usize)).unwrap() as u32) << 16
             | (*self.bytes.get(&((pc + 2) as usize)).unwrap() as u32) << 8
@@ -46,7 +53,11 @@ impl Component for InstrMem {
         trace!("pc:0x{:08x}", pc);
         // set output
         simulator.set_out_value(&self.id, "instruction", instr);
-        Ok(())
+        if !self.breakpoints.borrow().contains(&(pc as usize)) {
+            Ok(())
+        } else {
+            Err(Condition::Halt(format!("Breakpoint at {}", pc)))
+        }
     }
 }
 mod test {
@@ -76,6 +87,11 @@ mod test {
                     pos: (0.0, 0.0),
                     pc: Input::new("pc", "out"),
                     bytes: instr_mem,
+                    range: Range {
+                        start: 0,
+                        end: 0x1000,
+                    },
+                    breakpoints: Rc::new(RefCell::new(HashSet::new())),
                 }),
             ],
         };
