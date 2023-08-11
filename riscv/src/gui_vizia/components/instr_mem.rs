@@ -1,6 +1,6 @@
 use std::{
     cell::RefCell,
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{BTreeMap, HashSet},
     ops::Range,
     panic,
     rc::Rc,
@@ -9,12 +9,9 @@ use std::{
 use crate::components::InstrMem;
 use log::trace;
 use syncrim::{
-    common::Simulator,
+    common::{Input, Simulator},
     gui_vizia::{tooltip::new_component_tooltip, GuiData, ViziaComponent, V},
-    vizia::{
-        prelude::*,
-        vg::{Color, Paint, Path},
-    },
+    vizia::{prelude::*, style::Color},
 };
 
 #[typetag::serde]
@@ -30,14 +27,9 @@ impl ViziaComponent for InstrMem {
             .tooltip(|cx| new_component_tooltip(cx, self))
     }
     fn left_view(&self, cx: &mut Context) {
-        trace!("---- Create Left Mem View");
-        //We initialize data_slice with the initial state of the memory.
-        //from now on, data_slice only gets updated over
-        //the relevant (visible) data interval, and when needed (so only on clock)
-        //so as to not trigger unnecessary redraws.
+        trace!("---- Create Left Instr View View");
         let data_slice = {
             let mut data_slice = vec![];
-            let mem = self.bytes.clone();
             trace!("range {:x?}", self.range);
             for idx in (self.range.start as usize..self.range.end as usize).step_by(4) {
                 trace!("idx {:x?}", idx);
@@ -46,14 +38,14 @@ impl ViziaComponent for InstrMem {
                     | (*self.bytes.get(&((idx + 2) as usize)).unwrap() as u32) << 8
                     | (*self.bytes.get(&((idx + 3) as usize)).unwrap() as u32);
                 data_slice.push(
-                    format!(
-                        "0x{:08x}:    {:08x}        ",
+                    (format!(
+                        "0x{:08x}:    {:08x}         ",
                         self.range.start as usize + idx * 4,
                         instr,
                     ) + &panic::catch_unwind(|| {
                         format!("{:?}", asm_riscv::I::try_from(instr).unwrap())
                     })
-                    .unwrap_or_else(|_| format!("Unknown instruction")),
+                    .unwrap_or_else(|_| format!("Unknown instruction"))),
                 );
             }
             data_slice
@@ -66,26 +58,46 @@ impl ViziaComponent for InstrMem {
                 //we may init to 0 range, once view opens this will be updated.
                 slice_range: Range { start: 0, end: 0 },
                 breakpoints: self.breakpoints.clone(),
+                pc_input: self.pc.clone(),
+                pc: 0,
             },
             cx,
             |cx| {
-                Label::new(cx, "Data Memory")
+                Label::new(cx, "Instruction Memory")
                     .left(Pixels(10.0))
                     .top(Pixels(10.0));
 
                 VirtualList::new(cx, InstrMemView::data_slice, 20.0, |cx, idx, item| {
                     HStack::new(cx, |cx| {
+                        Label::new(cx, "◉")
+                            .on_mouse_up(move |cx, btn| {
+                                if btn == MouseButton::Right {
+                                    cx.emit(DataEvent::Breakpoint(idx))
+                                }
+                            })
+                            .color(InstrMemView::breakpoints.map(move |breakpoints| {
+                                if breakpoints.borrow().contains(&(idx * 4)) {
+                                    Color::rgba(255, 0, 0, 255)
+                                //red
+                                } else {
+                                    Color::rgba(255, 255, 255, 0)
+                                    //transluscent
+                                }
+                            }));
                         Label::new(cx, item).on_mouse_up(move |cx, btn| {
                             if btn == MouseButton::Right {
-                                //println!("Pressed {}", idx)
                                 cx.emit(DataEvent::Breakpoint(idx))
                             }
                         });
                     })
+                    .background_color(InstrMemView::pc.map(move |pc| {
+                        if *pc as usize == idx * 4 {
+                            Color::yellow()
+                        } else {
+                            Color::white()
+                        }
+                    }))
                     .child_left(Pixels(10.0))
-                })
-                .on_change(|cx, range| {
-                    cx.emit(DataEvent::UpdateScroll(range));
                 });
             },
         )
@@ -105,12 +117,12 @@ pub struct InstrMemView {
     data_slice: Vec<String>,
     slice_range: Range<usize>,
     breakpoints: Rc<RefCell<HashSet<usize>>>,
+    pc_input: Input,
+    pc: u32,
 }
 
 pub enum DataEvent {
     UpdateClock,
-    UpdateScroll(Range<usize>),
-    UpdateView(Range<usize>),
     Breakpoint(usize),
 }
 
@@ -120,58 +132,16 @@ impl View for InstrMemView {
     }
     fn event(&mut self, cx: &mut EventContext, event: &mut Event) {
         event.map(|event, _| match event {
-            DataEvent::UpdateView(range) => {
-                trace!("UpdateView {:?}", range);
-                for idx in range.clone().step_by(4) {
-                    if let Some(data_fmt) = self.data_slice.get_mut(idx) {
-                        trace!("idx {:x?}", idx);
-                        let instr = (*self.data.get(&((idx * 4) as usize)).unwrap() as u32) << 24
-                            | (*self.data.get(&((idx * 4 + 1) as usize)).unwrap() as u32) << 16
-                            | (*self.data.get(&((idx * 4 + 2) as usize)).unwrap() as u32) << 8
-                            | (*self.data.get(&((idx * 4 + 3) as usize)).unwrap() as u32);
-                        *data_fmt = (format!(
-                            "0x{:08x}:    {:08x}        ",
-                            self.start as usize + idx * 4,
-                            instr,
-                        ) + &panic::catch_unwind(|| {
-                            format!("{:?}", asm_riscv::I::try_from(instr).unwrap())
-                        })
-                        .unwrap_or_else(|_| format!("Unknown instruction")));
-                    } else {
-                        // Why do we end up here, seems wrong
-                        panic!("Internal error, lookup should always succeed.")
-                    }
-                }
-            }
-            DataEvent::UpdateClock => cx.emit(DataEvent::UpdateView(self.slice_range.clone())), //update the entire view on clock.
-            DataEvent::UpdateScroll(new_range) => {
-                //calculate the "delta" between the view before and after scroll, update that.
-                let old_range = self.slice_range.clone();
-                self.slice_range = new_range.clone();
-                let dirty_range_start = if new_range.start < old_range.start {
-                    new_range.start
-                } else if new_range.start < old_range.end {
-                    old_range.end
-                } else {
-                    new_range.start
-                };
-                let dirty_range_end = if new_range.end < old_range.start {
-                    new_range.end
-                } else if new_range.end < old_range.end {
-                    old_range.start
-                } else {
-                    new_range.end
-                };
-                let dirty_range = Range {
-                    start: dirty_range_start,
-                    end: dirty_range_end,
-                };
-
-                cx.emit(DataEvent::UpdateView(dirty_range))
+            DataEvent::UpdateClock => {
+                self.pc = GuiData::simulator
+                    .get(cx)
+                    .get_input_value(&self.pc_input)
+                    .try_into()
+                    .unwrap();
             }
             DataEvent::Breakpoint(idx) => {
                 if self.breakpoints.borrow().contains(&(idx * 4)) {
-                    trace!("Breakpoint exists already");
+                    trace!("Breakpoint removed");
                     self.breakpoints.borrow_mut().remove(&(idx * 4));
                 } else {
                     trace!("New breakpoint!");
