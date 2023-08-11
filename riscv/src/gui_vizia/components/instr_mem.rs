@@ -18,13 +18,18 @@ use syncrim::{
 impl ViziaComponent for InstrMem {
     // create view
     fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
-        V::new(cx, self, move |cx| Label::new(cx, "Instruction Memory"))
-            .position_type(PositionType::SelfDirected)
-            .left(Pixels(self.pos.0 - 50.0))
-            .top(Pixels(self.pos.1 - 100.0))
-            .width(Pixels(200.0))
-            .height(Pixels(100.0))
-            .tooltip(|cx| new_component_tooltip(cx, self))
+        V::new(cx, self, |cx| {
+            trace!("---- Create InstMem View ");
+            Label::new(cx, "Instruction Memory")
+                .left(Pixels(10.0))
+                .top(Pixels(10.0))
+                .hoverable(false)
+        })
+        .left(Pixels(self.pos.0 - 200.0 / 2.0))
+        .top(Pixels(self.pos.1 - 50.0 / 2.0))
+        .width(Pixels(200.0))
+        .height(Pixels(50.0))
+        .background_color(Color::lightgrey())
     }
     fn left_view(&self, cx: &mut Context) {
         trace!("---- Create Left Instr View View");
