@@ -64,13 +64,55 @@ pub struct InputData {
     choice: String,
 }
 
+#[derive(Lens, Model, Setter)]
+pub struct BinOpData {
+    list: Vec<String>,
+    choice: String,
+}
+
 impl ProbeHalt {
     fn build_expression(&self, cx: &mut Context, signal_expr: &SignalExpr) {
         match signal_expr {
             SignalExpr::BinOp(bin_op, lhs, rhs) => {
                 HStack::new(cx, |cx| {
                     self.build_expression(cx, lhs);
-                    Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", bin_op))).size(Auto);
+                    trace!("bin op");
+                    BinOpData {
+                        list: [
+                            "&&".to_string(),
+                            "||".to_string(),
+                            "==".to_string(),
+                            ">".to_string(),
+                            ">s".to_string(),
+                        ]
+                        .to_vec(),
+                        choice: format!("{}", bin_op),
+                    }
+                    .build(cx);
+                    //
+                    // Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", bin_op))).size(Auto);
+                    Dropdown::new(
+                        cx,
+                        move |cx| Label::new(cx, BinOpData::choice).size(Auto),
+                        move |cx| {
+                            List::new(cx, BinOpData::list, |cx, _, item| {
+                                Label::new(cx, item)
+                                    .cursor(CursorIcon::Hand)
+                                    .bind(InputData::choice, move |handle, selected| {
+                                        if item.get(&handle) == selected.get(&handle) {
+                                            handle.checked(true);
+                                        }
+                                    })
+                                    .on_press(move |cx| {
+                                        cx.emit(BinOpDataSetter::Choice(item.get(cx)));
+                                        cx.emit(PopupEvent::Close);
+                                    })
+                                    .size(Auto);
+                            })
+                            .size(Auto);
+                        },
+                    )
+                    .width(Pixels(40.0));
                     self.build_expression(cx, rhs);
                 })
                 .size(Auto);
