@@ -215,18 +215,24 @@ pub enum SignalExpr {
     Constant(Signal),
 }
 
+#[cfg(feature = "gui-vizia")]
+use vizia::prelude::*;
+
+#[cfg_attr(feature = "gui-vizia", derive(Data))]
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum BinOp {
     BoolOp(BoolOp),
     CmpOp(CmpOp),
 }
 
+#[cfg_attr(feature = "gui-vizia", derive(Data))]
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum BoolOp {
     And,
     Or,
 }
 
+#[cfg_attr(feature = "gui-vizia", derive(Data))]
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum CmpOp {
     Eq,

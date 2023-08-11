@@ -64,11 +64,13 @@ pub struct InputData {
     choice: String,
 }
 
-#[derive(Lens, Model, Setter)]
+#[derive(Lens, Model, Data, Clone, Setter)]
 pub struct BinOpData {
-    list: Vec<String>,
-    choice: String,
+    list: Vec<BinOp>,
+    choice: BinOp,
 }
+
+use crate::signal::{BinOp, BoolOp, CmpOp};
 
 impl ProbeHalt {
     fn build_expression(&self, cx: &mut Context, signal_expr: &SignalExpr) {
@@ -79,18 +81,19 @@ impl ProbeHalt {
                     trace!("bin op");
                     BinOpData {
                         list: [
-                            "&&".to_string(),
-                            "||".to_string(),
-                            "==".to_string(),
-                            ">".to_string(),
-                            ">s".to_string(),
+                            BinOp::BoolOp(BoolOp::And),
+                            BinOp::BoolOp(BoolOp::Or),
+                            BinOp::CmpOp(CmpOp::Eq),
+                            BinOp::CmpOp(CmpOp::GtUnsigned),
+                            BinOp::CmpOp(CmpOp::GtSigned),
                         ]
                         .to_vec(),
-                        choice: format!("{}", bin_op),
+                        choice: bin_op.clone(),
                     }
                     .build(cx);
                     //
                     // Button::new(cx, |_| {}, |cx| Label::new(cx, &format!("{}", bin_op))).size(Auto);
+
                     Dropdown::new(
                         cx,
                         move |cx| Label::new(cx, BinOpData::choice).size(Auto),
@@ -99,7 +102,8 @@ impl ProbeHalt {
                                 Label::new(cx, item)
                                     .cursor(CursorIcon::Hand)
                                     .bind(InputData::choice, move |handle, selected| {
-                                        if item.get(&handle) == selected.get(&handle) {
+                                        if format!("{}", item.get(&handle)) == selected.get(&handle)
+                                        {
                                             handle.checked(true);
                                         }
                                     })
