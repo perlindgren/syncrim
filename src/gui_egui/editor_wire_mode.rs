@@ -3,8 +3,8 @@ use crate::components::Wire;
 use crate::gui_egui::editor::{get_component, CloseToComponent, Editor, EditorMode, SnapPriority};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::{
-    id_ports_of_all_components, offset_helper, offset_reverse_helper, offset_reverse_helper_pos2,
-    unique_component_name,
+    id_ports_of_all_components, offset_helper, offset_helper_pos2, offset_reverse_helper,
+    offset_reverse_helper_pos2, unique_component_name,
 };
 use egui::{
     Color32, Context, CursorIcon, LayerId, PointerButton, Pos2, Rect, Response, Shape, Stroke, Vec2,
@@ -29,7 +29,7 @@ pub fn drag_started(ctx: &Context, e: &mut Editor, _cpr: Response) {
         let (closest, closest_wire) =
             clicked_close_to_input_output(offset_cursor_scale, &e.components);
 
-        match get_closest_component_non_wire_prio(closest, closest_wire, 10f32) {
+        match get_closest_component_non_wire_prio(closest, closest_wire, e.snap_distance) {
             Some(closest_uw) => {
                 if e.wm.temp_positions.is_empty() {
                     // New Component
@@ -45,10 +45,27 @@ pub fn drag_started(ctx: &Context, e: &mut Editor, _cpr: Response) {
             }
             None => {
                 if !e.wm.temp_positions.is_empty() {
-                    let mut wires = wire_split_into_two_vec(
-                        *e.wm.temp_positions.last().unwrap(),
-                        (origin.x, origin.y),
-                    );
+                    let mut wires = if e.grid_snap_enable {
+                        match get_grid_snap(e.grid_snap_distance, offset_cursor_scale, e.grid_size)
+                        {
+                            Some(g) => {
+                                let new_loc = offset_helper_pos2(g, e.scale, e.offset_and_pan);
+                                wire_split_into_two_vec(
+                                    *e.wm.temp_positions.last().unwrap(),
+                                    (new_loc.x, new_loc.y),
+                                )
+                            }
+                            None => wire_split_into_two_vec(
+                                *e.wm.temp_positions.last().unwrap(),
+                                (origin.x, origin.y),
+                            ),
+                        }
+                    } else {
+                        wire_split_into_two_vec(
+                            *e.wm.temp_positions.last().unwrap(),
+                            (origin.x, origin.y),
+                        )
+                    };
                     e.wm.temp_positions.append(&mut wires)
                 }
             }
@@ -139,13 +156,17 @@ pub fn wire_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<
             let (closest, closest_wire) =
                 clicked_close_to_input_output(offset_cursor_scale, &e.components);
 
-            // Here we prioritize component ports over wires in a 10f32 range
-            let wire_shown_location = get_location_of_port_or_wire_inside_radius(
+            // Here we prioritize component ports over wires in snap distance
+            let wire_shown_location = get_location_of_port_wire_grid_inside_radius(
                 closest,
                 closest_wire,
-                10f32,
+                e.snap_distance,
                 e.wm.cursor_location,
                 e.offset_and_pan,
+                e.scale,
+                e.grid_enable,
+                e.grid_snap_distance,
+                e.grid_size,
             );
 
             let v = wire_split_into_two_vec(
@@ -335,15 +356,59 @@ pub fn get_closest_component_non_wire_prio(
     }
 }
 
-pub fn get_location_of_port_or_wire_inside_radius(
+pub fn get_location_of_port_wire_grid_inside_radius(
     port: Option<CloseToComponent>,
     wire: Option<CloseToComponent>,
     distance: f32,
     cursor_location: Pos2,
     offset: Vec2,
+    scale: f32,
+    grid_enable: bool,
+    grid_snap_distance: f32,
+    grid_size: f32,
 ) -> Pos2 {
     match get_closest_component_non_wire_prio(port, wire, distance) {
         Some(c) => c.pos + offset,
-        None => cursor_location,
+        None => {
+            if grid_enable {
+                match get_grid_snap(
+                    grid_snap_distance,
+                    offset_reverse_helper_pos2(cursor_location, scale, offset),
+                    grid_size,
+                ) {
+                    Some(s) => offset_helper_pos2(s, scale, offset),
+                    None => cursor_location,
+                }
+            } else {
+                cursor_location
+            }
+        }
+    }
+}
+
+pub fn get_grid_snap(distance: f32, clicked_pos: Pos2, grid_size: f32) -> Option<Pos2> {
+    let clicked_pos_v = clicked_pos.to_vec2();
+    let top_left = (clicked_pos_v / grid_size).floor() * grid_size;
+    let top_right = Pos2::new(top_left.x + grid_size, top_left.y);
+    let bottom_left = Pos2::new(top_left.x, top_left.y + grid_size);
+    let bottom_right = Pos2::new(top_left.x + grid_size, top_left.y + grid_size);
+    let top_left = Pos2::new(top_left.x, top_left.y);
+    let mut closest: Option<(Pos2, f32)> = None;
+    for pos in vec![top_left, top_right, bottom_left, bottom_right] {
+        let d = pos.distance(clicked_pos);
+        if d <= distance {
+            match closest {
+                Some(s) => {
+                    if s.1 > d {
+                        closest = Some((pos, d))
+                    }
+                }
+                None => closest = Some((pos, d)),
+            }
+        }
+    }
+    match closest {
+        Some(s) => Some(s.0),
+        None => None,
     }
 }

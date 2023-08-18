@@ -23,6 +23,7 @@ pub struct Shortcuts {
     pub view_zoom_in: KeyboardShortcut,
     pub view_zoom_out: KeyboardShortcut,
     pub view_grid_toggle: KeyboardShortcut,
+    pub view_grid_snap_toggle: KeyboardShortcut,
     pub control_play_toggle: KeyboardShortcut,
     pub control_play: KeyboardShortcut,
     pub control_pause: KeyboardShortcut,
@@ -122,6 +123,16 @@ impl Shortcuts {
                 modifiers: ctrl,
                 key: Key::G,
             },
+            view_grid_snap_toggle: KeyboardShortcut {
+                modifiers: Modifiers {
+                    alt: false,
+                    ctrl: true,
+                    shift: true,
+                    mac_cmd: false,
+                    command: false,
+                },
+                key: Key::G,
+            },
             control_play: KeyboardShortcut {
                 modifiers: none,
                 key: Key::F6,
@@ -202,6 +213,9 @@ impl Shortcuts {
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.view_grid_toggle)) {
             view_grid_toggle_fn(gui);
+        }
+        if ctx.input_mut(|i| i.consume_shortcut(&self.view_grid_snap_toggle)) {
+            view_grid_snap_toggle_fn(gui);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.control_play_toggle)) {
             control_play_toggle_fn(gui);
@@ -339,6 +353,12 @@ pub fn view_grid_toggle_fn(gui: &mut Gui) {
     if gui.editor_use {
         let editor = gui.editor.as_mut().unwrap();
         editor.grid_enable = !editor.grid_enable;
+    }
+}
+pub fn view_grid_snap_toggle_fn(gui: &mut Gui) {
+    if gui.editor_use {
+        let editor = gui.editor.as_mut().unwrap();
+        editor.grid_snap_enable = !editor.grid_snap_enable;
     }
 }
 pub fn control_play_toggle_fn(gui: &mut Gui) {

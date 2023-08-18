@@ -16,6 +16,13 @@ pub fn offset_reverse_helper(xy: (f32, f32), scale: f32, offset: Vec2) -> Pos2 {
     }
 }
 
+pub fn offset_helper_pos2(xy: Pos2, scale: f32, offset: Vec2) -> Pos2 {
+    egui::Pos2 {
+        x: xy.x * scale,
+        y: xy.y * scale,
+    } + offset
+}
+
 pub fn offset_helper(xy: (f32, f32), scale: f32, offset: Vec2) -> Pos2 {
     egui::Pos2 {
         x: xy.0 * scale,

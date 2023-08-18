@@ -51,7 +51,10 @@ impl Menu {
             let mut grid_enable = editor(gui).grid_enable;
             let mut grid_size = editor(gui).grid_size;
             let mut grid_opacity = editor(gui).grid_opacity;
-            let view_grid_toggle = gui.shortcuts.view_grid_toggle.clone();
+            let mut grid_snap_enable = editor(gui).grid_snap_enable;
+            let mut grid_snap_distance = editor(gui).grid_snap_distance;
+            let view_grid_toggle = gui.shortcuts.view_grid_toggle;
+            let view_grid_snap_toggle = gui.shortcuts.view_grid_snap_toggle;
             shared_buttons_view(gui, ui, &mut scale, |ui| {
                 ui.horizontal(|ui| {
                     ui.checkbox(&mut grid_enable, "Grid Enable");
@@ -69,11 +72,21 @@ impl Menu {
                             .speed(0.02f32),
                     );
                 });
+                ui.horizontal(|ui| {
+                    ui.checkbox(&mut grid_snap_enable, "Grid Snapping Enable");
+                    ui.label(ui.ctx().format_shortcut(&view_grid_snap_toggle));
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Grid Snap Distance:");
+                    ui.add(DragValue::new(&mut grid_snap_distance).clamp_range(0f32..=100f32));
+                });
             });
             editor(gui).scale = scale;
             editor(gui).grid_enable = grid_enable;
             editor(gui).grid_size = grid_size;
             editor(gui).grid_opacity = grid_opacity;
+            editor(gui).grid_snap_enable = grid_snap_enable;
+            editor(gui).grid_snap_distance = grid_snap_distance;
             shared_buttons_help(gui, ui);
         });
         ui.horizontal(|ui| {
