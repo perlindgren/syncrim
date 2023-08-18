@@ -1,13 +1,16 @@
 use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
 use crate::components::Wire;
 use crate::gui_egui::component_ui::{
-    input_change_id, input_selector, pos_drag_value, properties_window, rect_with_hover,
-    visualize_ports,
+    input_change_id, input_selector, rect_with_hover, visualize_ports,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
-use egui::{Color32, PointerButton, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
+use egui::{
+    Color32, DragValue, Frame, Margin, PointerButton, Pos2, Rect, Response, Rounding, Shape,
+    Stroke, Ui, Vec2, Window,
+};
+use epaint::Shadow;
 
 #[typetag::serde]
 impl EguiComponent for Wire {
@@ -104,6 +107,7 @@ impl EguiComponent for Wire {
         )
         .unwrap();
 
+        let mut properties_window_open = false;
         for (i, resp) in r_vec.iter().enumerate() {
             if resp.dragged_by(PointerButton::Primary) {
                 let delta = resp.drag_delta() / scale;
@@ -115,16 +119,25 @@ impl EguiComponent for Wire {
             {
                 delete = true;
             }
-            properties_window(
-                ui,
-                self.id.clone(),
-                resp,
-                &mut context.properties_window,
-                |ui| {
-                    let mut clicked_dropdown = false;
+            properties_window_open |= resp.clicked_by(PointerButton::Secondary);
+        }
+        let mut clicked_dropdown = false;
+        if properties_window_open || context.properties_window {
+            let resp = Window::new(format!("Properties: {}", self.id))
+                .frame(Frame {
+                    inner_margin: Margin::same(10f32),
+                    outer_margin: Margin::same(0f32),
+                    rounding: Rounding::same(10f32),
+                    shadow: Shadow::small_dark(),
+                    fill: ui.visuals().panel_fill,
+                    stroke: ui.visuals().window_stroke,
+                })
+                .default_pos(Pos2 {
+                    x: self.pos[0].0,
+                    y: self.pos[0].1,
+                })
+                .show(ui.ctx(), |ui| {
                     input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
-                    pos_drag_value(ui, &mut self.pos[i]);
-                    pos_drag_value(ui, &mut self.pos[i + 1]);
                     clicked_dropdown |= input_selector(
                         ui,
                         &mut self.input,
@@ -132,9 +145,37 @@ impl EguiComponent for Wire {
                         id_ports,
                         self.id.clone(),
                     );
-                    clicked_dropdown
-                },
-            );
+
+                    let mut i = 0;
+                    let mut first_item = true;
+                    self.pos.retain_mut(|seg_pos| {
+                        let mut delete = false;
+                        ui.horizontal(|ui| {
+                            ui.label(format!("Segment {}:", i));
+                            ui.label("pos x");
+                            ui.add(DragValue::new(&mut seg_pos.0));
+                            ui.label("pos y");
+                            ui.add(DragValue::new(&mut seg_pos.1));
+
+                            if first_item {
+                                first_item = false;
+                            } else if ui.button("🗙").clicked() {
+                                delete = true;
+                            }
+                        });
+                        i += 1;
+                        !delete
+                    });
+
+                    if ui.button("+ Add new segment").clicked() {
+                        self.pos.push(*self.pos.last().unwrap());
+                    }
+                });
+            if !context.properties_window {
+                context.properties_window = true;
+            } else if !clicked_dropdown && resp.unwrap().response.clicked_elsewhere() {
+                context.properties_window = false;
+            }
         }
 
         EditorRenderReturn {
