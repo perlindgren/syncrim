@@ -1,17 +1,17 @@
 use crate::gui_egui::{editor::Editor, gui::Gui, keymap};
-use egui::Ui;
+use egui::{menu, Button, DragValue, KeyboardShortcut, Response, Ui};
 
 pub(crate) struct Menu {}
 
 impl Menu {
     #[allow(clippy::new_ret_no_self)]
-    pub(crate) fn new(ui: &mut egui::Ui, gui: &mut Gui) {
-        egui::menu::bar(ui, |ui| {
+    pub(crate) fn new(ui: &mut Ui, gui: &mut Gui) {
+        menu::bar(ui, |ui| {
             shared_buttons_file(gui, ui);
             shared_buttons_edit(gui, ui);
 
             let mut scale = gui.scale;
-            shared_buttons_view(gui, ui, &mut scale);
+            shared_buttons_view(gui, ui, &mut scale, |_| {});
             gui.scale = scale;
 
             shared_buttons_help(gui, ui);
@@ -39,17 +39,41 @@ impl Menu {
     }
 
     #[allow(clippy::new_ret_no_self)]
-    pub(crate) fn new_editor(ui: &mut egui::Ui, gui: &mut Gui) {
+    pub(crate) fn new_editor(ui: &mut Ui, gui: &mut Gui) {
         fn editor(gui: &mut Gui) -> &mut Editor {
             gui.editor.as_mut().unwrap()
         }
 
-        egui::menu::bar(ui, |ui| {
+        menu::bar(ui, |ui| {
             shared_buttons_file(gui, ui);
             shared_buttons_edit(gui, ui);
             let mut scale = editor(gui).scale;
-            shared_buttons_view(gui, ui, &mut scale);
+            let mut grid_enable = editor(gui).grid_enable;
+            let mut grid_size = editor(gui).grid_size;
+            let mut grid_opacity = editor(gui).grid_opacity;
+            let view_grid_toggle = gui.shortcuts.view_grid_toggle.clone();
+            shared_buttons_view(gui, ui, &mut scale, |ui| {
+                ui.horizontal(|ui| {
+                    ui.checkbox(&mut grid_enable, "Grid Enable");
+                    ui.label(ui.ctx().format_shortcut(&view_grid_toggle));
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Grid Size:");
+                    ui.add(DragValue::new(&mut grid_size).clamp_range(5f32..=10000f32));
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Grid Opacity:");
+                    ui.add(
+                        DragValue::new(&mut grid_opacity)
+                            .clamp_range(0f32..=1f32)
+                            .speed(0.02f32),
+                    );
+                });
+            });
             editor(gui).scale = scale;
+            editor(gui).grid_enable = grid_enable;
+            editor(gui).grid_size = grid_size;
+            editor(gui).grid_opacity = grid_opacity;
             shared_buttons_help(gui, ui);
         });
         ui.horizontal(|ui| {
@@ -61,8 +85,8 @@ impl Menu {
     }
 }
 
-fn btn(ui: &mut egui::Ui, name: &str, keys: egui::KeyboardShortcut) -> egui::Response {
-    ui.add(egui::Button::new(name).shortcut_text(ui.ctx().format_shortcut(&keys)))
+fn btn(ui: &mut Ui, name: &str, keys: KeyboardShortcut) -> Response {
+    ui.add(Button::new(name).shortcut_text(ui.ctx().format_shortcut(&keys)))
 }
 
 fn shared_buttons_file(gui: &mut Gui, ui: &mut Ui) {
@@ -113,7 +137,10 @@ fn shared_buttons_edit(gui: &mut Gui, ui: &mut Ui) {
     });
 }
 
-fn shared_buttons_view(gui: &mut Gui, ui: &mut Ui, scale: &mut f32) {
+fn shared_buttons_view<P>(gui: &mut Gui, ui: &mut Ui, scale: &mut f32, mut f: P)
+where
+    P: FnMut(&mut Ui),
+{
     ui.menu_button("View", |ui| {
         if btn(ui, "Zoom In", gui.shortcuts.view_zoom_in).clicked() {
             keymap::view_zoom_in_fn(gui);
@@ -147,6 +174,7 @@ fn shared_buttons_view(gui: &mut Gui, ui: &mut Ui, scale: &mut f32) {
                 *scale = 2f32;
             }
         });
+        f(ui);
     });
 }
 

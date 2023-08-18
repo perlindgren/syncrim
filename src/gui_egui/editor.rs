@@ -10,7 +10,7 @@ use crate::gui_egui::{
     menu::Menu,
 };
 use eframe::{egui, Frame};
-use egui::{Color32, Context, LayerId, PointerButton, Pos2, Rect, Vec2};
+use egui::{Color32, Context, LayerId, PointerButton, Pos2, Rect, Shape, Vec2};
 use std::{collections::HashMap, path::Path, rc::Rc};
 
 pub struct Editor {
@@ -22,6 +22,9 @@ pub struct Editor {
     pub clip_rect: Rect,
     pub side_panel_width: f32,
     pub ui_change: bool,
+    pub grid_enable: bool,
+    pub grid_size: f32,
+    pub grid_opacity: f32,
     pub library: Components,
     pub dummy_input: Input,
     pub editor_mode: EditorMode,
@@ -129,6 +132,9 @@ impl Editor {
             },
             side_panel_width: 400f32,
             ui_change: true,
+            grid_enable: true,
+            grid_size: 20f32,
+            grid_opacity: 0.5f32,
             library,
             dummy_input,
             editor_mode: EditorMode::Default,
@@ -240,19 +246,51 @@ impl Editor {
 
             // draw a marker to show 0,0
             {
-                let s = Editor::gui_to_editor(gui);
-                ui.painter().add(egui::Shape::line(
+                let e = Editor::gui_to_editor(gui);
+                ui.painter().add(Shape::line(
                     vec![
-                        offset_helper((30f32, 0f32), s.scale, s.offset_and_pan),
-                        offset_helper((0f32, 0f32), s.scale, s.offset_and_pan),
-                        offset_helper((0f32, 30f32), s.scale, s.offset_and_pan),
+                        offset_helper((30f32, 0f32), e.scale, e.offset_and_pan),
+                        offset_helper((0f32, 0f32), e.scale, e.offset_and_pan),
+                        offset_helper((0f32, 30f32), e.scale, e.offset_and_pan),
                     ],
                     egui::Stroke {
-                        width: s.scale,
-                        color: egui::Color32::BLACK,
+                        width: e.scale,
+                        color: Color32::BLACK,
                     },
                 ));
                 layer_id = Some(ui.layer_id());
+            }
+
+            // draw grid
+            if Editor::gui_to_editor(gui).grid_enable {
+                let e = Editor::gui_to_editor(gui);
+                let screen_rect = ui.ctx().screen_rect();
+                let grid_scale = e.grid_size * e.scale;
+                let start = -(e.pan / e.scale / e.grid_size).floor();
+                let end =
+                    (Vec2::new(screen_rect.width(), screen_rect.height()) / e.scale / e.grid_size)
+                        .ceil();
+
+                for y in (start.y as i32)..(end.y as i32) {
+                    ui.painter().hline(
+                        (start.x * grid_scale)..=(end.x * grid_scale),
+                        y as f32 * grid_scale + e.offset_and_pan.y,
+                        egui::Stroke {
+                            width: e.scale * 0.5f32,
+                            color: egui::Color32::BLACK.gamma_multiply(e.grid_opacity),
+                        },
+                    );
+                }
+                for x in (start.x as i32)..(end.x as i32) {
+                    ui.painter().vline(
+                        x as f32 * grid_scale + e.offset_and_pan.x,
+                        (start.y * grid_scale)..=(end.y * grid_scale),
+                        egui::Stroke {
+                            width: e.scale * 0.5f32,
+                            color: egui::Color32::BLACK.gamma_multiply(e.grid_opacity),
+                        },
+                    );
+                }
             }
 
             let e = Editor::gui_to_editor(gui);

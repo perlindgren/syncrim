@@ -22,6 +22,7 @@ pub struct Shortcuts {
     pub edit_paste: KeyboardShortcut,
     pub view_zoom_in: KeyboardShortcut,
     pub view_zoom_out: KeyboardShortcut,
+    pub view_grid_toggle: KeyboardShortcut,
     pub control_play_toggle: KeyboardShortcut,
     pub control_play: KeyboardShortcut,
     pub control_pause: KeyboardShortcut,
@@ -117,6 +118,10 @@ impl Shortcuts {
                 modifiers: ctrl,
                 key: Key::Minus,
             },
+            view_grid_toggle: KeyboardShortcut {
+                modifiers: ctrl,
+                key: Key::G,
+            },
             control_play: KeyboardShortcut {
                 modifiers: none,
                 key: Key::F6,
@@ -194,6 +199,9 @@ impl Shortcuts {
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.view_zoom_out)) {
             view_zoom_out_fn(gui);
+        }
+        if ctx.input_mut(|i| i.consume_shortcut(&self.view_grid_toggle)) {
+            view_grid_toggle_fn(gui);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.control_play_toggle)) {
             control_play_toggle_fn(gui);
@@ -325,6 +333,12 @@ pub fn view_zoom_out_fn(gui: &mut Gui) {
         x if (1.4f32..1.6f32).contains(&x) => *scale = 1f32,
         x if (1.9f32..2.1f32).contains(&x) => *scale = 1.5f32,
         _ => *scale = 0.1f32,
+    }
+}
+pub fn view_grid_toggle_fn(gui: &mut Gui) {
+    if gui.editor_use {
+        let editor = gui.editor.as_mut().unwrap();
+        editor.grid_enable = !editor.grid_enable;
     }
 }
 pub fn control_play_toggle_fn(gui: &mut Gui) {

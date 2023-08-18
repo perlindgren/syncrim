@@ -84,7 +84,7 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
     };
     for c in e.library.iter() {
         let size = c.top_padding();
-        padding.y += e.scale * size;
+        padding.y += size;
         let r_vec = c
             .render(
                 ui,
@@ -95,7 +95,7 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
                 },
                 None,
                 padding,
-                e.scale,
+                1.0f32,
                 clip_rect,
                 e.editor_mode,
             )
