@@ -4,12 +4,7 @@ use fern;
 use riscv::components::*;
 use riscv_elf_parse;
 use std::{
-    cell::RefCell,
-    collections::{BTreeMap, HashMap},
-    fs,
-    path::PathBuf,
-    process::Command,
-    rc::Rc,
+    cell::RefCell, collections::BTreeMap, fs, ops::Range, path::PathBuf, process::Command, rc::Rc,
 };
 use syncrim::{
     common::{ComponentStore, Input},
@@ -50,7 +45,16 @@ fn main() {
 
     println!("{}", memory);
     let mut instr_mem = BTreeMap::new();
-    let mut data_mem = HashMap::new();
+    let mut data_mem = BTreeMap::new();
+
+    //init data memory with 0's
+    let range = Range {
+        start: 0x5000_0000u32,
+        end: 0x5000_0500u32,
+    };
+    for address in range.clone() {
+        data_mem.insert(address as usize, 0);
+    }
     for element in memory.bytes {
         if element.0 < 0x5000_0000 {
             instr_mem.insert(element.0, element.1);
@@ -58,6 +62,7 @@ fn main() {
             data_mem.insert(element.0, element.1);
         }
     }
+
     let cs = ComponentStore {
         store: vec![
             Add::rc_new(
@@ -137,7 +142,6 @@ fn main() {
                 id: "instr_mem".to_string(),
                 pos: (180.0, 400.0),
                 pc: Input::new("reg", "out"),
-                // fake instructions just to show the relation between input address and instruction
                 bytes: instr_mem,
             }),
             Rc::new(Decoder {
@@ -186,6 +190,7 @@ fn main() {
                 Input::new("decoder", "data_se"),
                 Input::new("decoder", "data_mem_size"),
                 data_mem,
+                range,
             ),
             Constant::rc_new("zero_c", (680.0, 150.0), 0),
             Mux::rc_new(
@@ -252,14 +257,15 @@ fn fern_setup_riscv() {
         })
         // Add blanket level filter -
         // .level(log::LevelFilter::Debug);
-        .level(log::LevelFilter::Warn);
+        .level_for(
+            "syncrim::gui_vizia::components::mem",
+            log::LevelFilter::Trace,
+        )
+        .level(log::LevelFilter::Error);
 
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
-    let f = f
-        .level_for("syncrim::components::mem", LevelFilter::Trace)
-        .level_for("riscv::components::instr_mem", LevelFilter::Trace);
-    //.level_for("riscv", LevelFilter::Trace);
+    let f = f.level_for("riscv::components::instr_mem", LevelFilter::Trace);
 
     f
         // Output to stdout, files, and other Dispatch configurations
