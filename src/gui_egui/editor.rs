@@ -23,11 +23,7 @@ pub struct Editor {
     pub side_panel_width: f32,
     pub ui_change: bool,
     pub snap_distance: f32,
-    pub grid_enable: bool,
-    pub grid_size: f32,
-    pub grid_opacity: f32,
-    pub grid_snap_enable: bool,
-    pub grid_snap_distance: f32,
+    pub grid: GridOptions,
     pub library: Components,
     pub dummy_input: Input,
     pub editor_mode: EditorMode,
@@ -64,6 +60,15 @@ pub struct EditorRenderReturn {
 pub enum SnapPriority {
     Default,
     Wire,
+}
+
+#[derive(Clone)]
+pub struct GridOptions {
+    pub enable: bool,
+    pub size: f32,
+    pub opacity: f32,
+    pub snap_enable: bool,
+    pub snap_distance: f32,
 }
 
 impl Editor {
@@ -136,11 +141,13 @@ impl Editor {
             side_panel_width: 400f32,
             ui_change: true,
             snap_distance: 10f32,
-            grid_enable: true,
-            grid_size: 20f32,
-            grid_opacity: 0.5f32,
-            grid_snap_enable: true,
-            grid_snap_distance: 20f32,
+            grid: GridOptions {
+                enable: true,
+                size: 20f32,
+                opacity: 0.5f32,
+                snap_enable: true,
+                snap_distance: 20f32,
+            },
             library,
             dummy_input,
             editor_mode: EditorMode::Default,
@@ -268,14 +275,14 @@ impl Editor {
             }
 
             // draw grid
-            if Editor::gui_to_editor(gui).grid_enable {
+            if Editor::gui_to_editor(gui).grid.enable {
                 let e = Editor::gui_to_editor(gui);
                 let screen_rect = ui.ctx().screen_rect();
-                let grid_scale = e.grid_size * e.scale;
-                let start = -(e.pan / e.grid_size / e.scale).floor();
+                let grid_scale = e.grid.size * e.scale;
+                let start = -(e.pan / e.grid.size / e.scale).floor();
 
                 let end =
-                    (Vec2::new(screen_rect.width(), screen_rect.height()) / e.scale / e.grid_size)
+                    (Vec2::new(screen_rect.width(), screen_rect.height()) / e.scale / e.grid.size)
                         .ceil()
                         + start;
 
@@ -285,7 +292,7 @@ impl Editor {
                         y as f32 * grid_scale + e.offset_and_pan.y,
                         egui::Stroke {
                             width: e.scale * 0.5f32,
-                            color: egui::Color32::BLACK.gamma_multiply(e.grid_opacity),
+                            color: egui::Color32::BLACK.gamma_multiply(e.grid.opacity),
                         },
                     );
                 }
@@ -295,7 +302,7 @@ impl Editor {
                         0f32..=screen_rect.height(),
                         egui::Stroke {
                             width: e.scale * 0.5f32,
-                            color: egui::Color32::BLACK.gamma_multiply(e.grid_opacity),
+                            color: egui::Color32::BLACK.gamma_multiply(e.grid.opacity),
                         },
                     );
                 }
@@ -334,6 +341,7 @@ impl Editor {
                         e.scale,
                         e.clip_rect,
                         &id_ports,
+                        &e.grid,
                         e.editor_mode,
                     );
                     // only reinsert if it's not getting deleted

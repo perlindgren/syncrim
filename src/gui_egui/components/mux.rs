@@ -4,7 +4,7 @@ use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, input_selector_removeable, pos_drag_value,
     properties_window, rect_with_hover, visualize_ports,
 };
-use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
+use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
 use egui::{Color32, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
@@ -92,6 +92,7 @@ impl EguiComponent for Mux {
         scale: f32,
         clip_rect: Rect,
         id_ports: &[(crate::common::Id, Ports)],
+        grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let r_vec = Mux::render(
@@ -106,7 +107,15 @@ impl EguiComponent for Mux {
         )
         .unwrap();
         let resp = &r_vec[0];
-        let delete = drag_logic(ui.ctx(), resp, &mut self.pos, scale, offset);
+        let delete = drag_logic(
+            ui.ctx(),
+            resp,
+            &mut self.pos,
+            &mut context.pos_tmp,
+            scale,
+            offset,
+            grid,
+        );
 
         properties_window(
             ui,
@@ -182,5 +191,9 @@ impl EguiComponent for Mux {
 
     fn set_pos(&mut self, pos: (f32, f32)) {
         self.pos = pos;
+    }
+
+    fn get_pos(&self) -> (f32, f32) {
+        self.pos
     }
 }

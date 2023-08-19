@@ -3,7 +3,7 @@ use crate::components::Wire;
 use crate::gui_egui::component_ui::{
     input_change_id, input_selector, rect_with_hover, visualize_ports,
 };
-use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
+use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapPriority};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
 use egui::{
@@ -92,6 +92,7 @@ impl EguiComponent for Wire {
         scale: f32,
         clip_rect: Rect,
         id_ports: &[(crate::common::Id, Ports)],
+        _grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         let mut delete = false;
@@ -222,5 +223,9 @@ impl EguiComponent for Wire {
 
     fn snap_priority(&self) -> SnapPriority {
         SnapPriority::Wire
+    }
+
+    fn get_pos(&self) -> (f32, f32) {
+        (0f32, 0f32)
     }
 }

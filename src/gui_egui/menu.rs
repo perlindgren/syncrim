@@ -1,4 +1,8 @@
-use crate::gui_egui::{editor::Editor, gui::Gui, keymap};
+use crate::gui_egui::{
+    editor::{Editor, GridOptions},
+    gui::Gui,
+    keymap,
+};
 use egui::{menu, Button, DragValue, KeyboardShortcut, Response, Ui};
 
 pub(crate) struct Menu {}
@@ -48,11 +52,11 @@ impl Menu {
             shared_buttons_file(gui, ui);
             shared_buttons_edit(gui, ui);
             let mut scale = editor(gui).scale;
-            let mut grid_enable = editor(gui).grid_enable;
-            let mut grid_size = editor(gui).grid_size;
-            let mut grid_opacity = editor(gui).grid_opacity;
-            let mut grid_snap_enable = editor(gui).grid_snap_enable;
-            let mut grid_snap_distance = editor(gui).grid_snap_distance;
+            let mut grid_enable = editor(gui).grid.enable;
+            let mut grid_size = editor(gui).grid.size;
+            let mut grid_opacity = editor(gui).grid.opacity;
+            let mut grid_snap_enable = editor(gui).grid.snap_enable;
+            let mut grid_snap_distance = editor(gui).grid.snap_distance;
             let view_grid_toggle = gui.shortcuts.view_grid_toggle;
             let view_grid_snap_toggle = gui.shortcuts.view_grid_snap_toggle;
             shared_buttons_view(gui, ui, &mut scale, |ui| {
@@ -82,11 +86,13 @@ impl Menu {
                 });
             });
             editor(gui).scale = scale;
-            editor(gui).grid_enable = grid_enable;
-            editor(gui).grid_size = grid_size;
-            editor(gui).grid_opacity = grid_opacity;
-            editor(gui).grid_snap_enable = grid_snap_enable;
-            editor(gui).grid_snap_distance = grid_snap_distance;
+            editor(gui).grid = GridOptions {
+                enable: grid_enable,
+                size: grid_size,
+                opacity: grid_opacity,
+                snap_enable: grid_snap_enable,
+                snap_distance: grid_snap_distance,
+            };
             shared_buttons_help(gui, ui);
         });
         ui.horizontal(|ui| {

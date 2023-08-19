@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, rc::Rc};
 
 #[cfg(feature = "gui-egui")]
-use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
+use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapPriority};
 
 #[cfg(feature = "gui-vizia")]
 use vizia::prelude::*;
@@ -118,6 +118,7 @@ pub trait EguiComponent: Component {
         _scale: f32,
         _clip_rect: egui::Rect,
         _id_ports: &[(Id, Ports)],
+        _grid: &GridOptions,
         _editor_mode: EditorMode,
     ) -> EditorRenderReturn {
         EditorRenderReturn {
@@ -141,6 +142,10 @@ pub trait EguiComponent: Component {
 
     fn set_pos(&mut self, _pos: (f32, f32)) {
         todo!("Create set_pos for this EguiComponent");
+    }
+
+    fn get_pos(&self) -> (f32, f32) {
+        todo!("Create get_pos for this EguiComponent");
     }
 
     fn set_id_tmp(&self, context: &mut EguiExtra) {

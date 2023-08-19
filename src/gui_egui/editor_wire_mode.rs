@@ -1,6 +1,8 @@
 use crate::common::{Components, Id, Input};
 use crate::components::Wire;
-use crate::gui_egui::editor::{get_component, CloseToComponent, Editor, EditorMode, SnapPriority};
+use crate::gui_egui::editor::{
+    get_component, CloseToComponent, Editor, EditorMode, GridOptions, SnapPriority,
+};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::{
     id_ports_of_all_components, offset_helper, offset_helper_pos2, offset_reverse_helper,
@@ -45,8 +47,8 @@ pub fn drag_started(ctx: &Context, e: &mut Editor, _cpr: Response) {
             }
             None => {
                 if !e.wm.temp_positions.is_empty() {
-                    let mut wires = if e.grid_enable && e.grid_snap_enable {
-                        match get_grid_snap(e.grid_snap_distance, offset_cursor_scale, e.grid_size)
+                    let mut wires = if e.grid.enable && e.grid.snap_enable {
+                        match get_grid_snap(e.grid.snap_distance, offset_cursor_scale, e.grid.size)
                         {
                             Some(g) => {
                                 let new_loc = offset_helper_pos2(g, e.scale, e.offset_and_pan);
@@ -108,8 +110,9 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
                     id.to_string(),
                     EguiExtra {
                         properties_window: false,
-                        id_tmp: id.to_string(),
                         size_rect: Rect::NAN,
+                        id_tmp: id.to_string(),
+                        pos_tmp: Pos2::ZERO,
                     },
                 );
 
@@ -164,10 +167,7 @@ pub fn wire_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<
                 e.wm.cursor_location,
                 e.offset_and_pan,
                 e.scale,
-                e.grid_enable,
-                e.grid_snap_enable,
-                e.grid_snap_distance,
-                e.grid_size,
+                &e.grid,
             );
 
             let v = wire_split_into_two_vec(
@@ -365,19 +365,16 @@ pub fn get_location_of_port_wire_grid_inside_radius(
     cursor_location: Pos2,
     offset: Vec2,
     scale: f32,
-    grid_enable: bool,
-    grid_snap_enable: bool,
-    grid_snap_distance: f32,
-    grid_size: f32,
+    grid: &GridOptions,
 ) -> Pos2 {
     match get_closest_component_non_wire_prio(port, wire, distance) {
         Some(c) => offset_helper_pos2(c.pos, scale, offset),
         None => {
-            if grid_enable && grid_snap_enable {
+            if grid.enable && grid.snap_enable {
                 match get_grid_snap(
-                    grid_snap_distance,
+                    grid.snap_distance,
                     offset_reverse_helper_pos2(cursor_location, scale, offset),
-                    grid_size,
+                    grid.size,
                 ) {
                     Some(s) => offset_helper_pos2(s, scale, offset),
                     None => cursor_location,

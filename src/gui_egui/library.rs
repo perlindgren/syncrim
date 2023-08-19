@@ -43,11 +43,11 @@ pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option
         clip_rect,
         Rect::EVERYTHING,
     );
-    let pos = if e.grid_enable && e.grid_snap_enable {
+    let pos = if e.grid.enable && e.grid.snap_enable {
         match get_grid_snap(
-            e.grid_snap_distance,
+            e.grid.snap_distance,
             offset_reverse_helper_pos2(e.im.cursor_location, e.scale, e.offset_and_pan),
-            e.grid_size,
+            e.grid.size,
         ) {
             Some(s) => Vec2::new(s.x, s.y) * e.scale + e.offset + e.pan * e.scale,
             None => Vec2::new(e.im.cursor_location.x, e.im.cursor_location.y),
@@ -59,8 +59,9 @@ pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option
         &mut ui,
         &mut EguiExtra {
             properties_window: false,
-            id_tmp: String::new(),
             size_rect: Rect::NAN,
+            id_tmp: String::new(),
+            pos_tmp: Pos2::ZERO,
         },
         None,
         pos,
@@ -102,8 +103,9 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
                 ui,
                 &mut EguiExtra {
                     properties_window: false,
-                    id_tmp: c.get_id_ports().0,
                     size_rect: Rect::NAN,
+                    id_tmp: c.get_id_ports().0,
+                    pos_tmp: Pos2::ZERO,
                 },
                 None,
                 padding,
@@ -133,8 +135,8 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
 // todo: This should really just copy the component that's in e.input_comp
 pub fn add_comp_to_editor(e: &mut Editor) {
     let mut pos = offset_reverse_helper_pos2(e.im.cursor_location, e.scale, e.offset_and_pan);
-    if e.grid_enable && e.grid_snap_enable {
-        if let Some(p) = get_grid_snap(e.grid_snap_distance, pos, e.grid_size) {
+    if e.grid.enable && e.grid.snap_enable {
+        if let Some(p) = get_grid_snap(e.grid.snap_distance, pos, e.grid.size) {
             pos = p;
         }
     }
@@ -223,8 +225,9 @@ pub fn add_comp_to_editor(e: &mut Editor) {
         id.clone(),
         EguiExtra {
             properties_window: false,
-            id_tmp: id,
             size_rect: Rect::NAN,
+            id_tmp: id,
+            pos_tmp: pos,
         },
     );
     e.components.push(comp);

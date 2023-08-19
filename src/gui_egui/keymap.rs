@@ -352,13 +352,13 @@ pub fn view_zoom_out_fn(gui: &mut Gui) {
 pub fn view_grid_toggle_fn(gui: &mut Gui) {
     if gui.editor_use {
         let editor = gui.editor.as_mut().unwrap();
-        editor.grid_enable = !editor.grid_enable;
+        editor.grid.enable = !editor.grid.enable;
     }
 }
 pub fn view_grid_snap_toggle_fn(gui: &mut Gui) {
     if gui.editor_use {
         let editor = gui.editor.as_mut().unwrap();
-        editor.grid_snap_enable = !editor.grid_snap_enable;
+        editor.grid.snap_enable = !editor.grid.snap_enable;
     }
 }
 pub fn control_play_toggle_fn(gui: &mut Gui) {

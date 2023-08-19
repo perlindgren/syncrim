@@ -29,8 +29,9 @@ pub struct Gui {
 #[derive(Clone, Debug)]
 pub struct EguiExtra {
     pub properties_window: bool,
-    pub id_tmp: String,
     pub size_rect: Rect,
+    pub id_tmp: String,
+    pub pos_tmp: Pos2,
 }
 
 pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
@@ -182,12 +183,14 @@ pub fn create_contexts(components: &Components) -> HashMap<crate::common::Id, Eg
     let mut contexts = HashMap::new();
     for c in &components.clone() {
         let id = c.get_id_ports().0;
+        let pos = c.get_pos();
         contexts.insert(
             id.clone(),
             EguiExtra {
                 properties_window: false,
-                id_tmp: id,
                 size_rect: Rect::NAN,
+                id_tmp: id,
+                pos_tmp: Pos2::new(pos.0, pos.1),
             },
         );
     }
