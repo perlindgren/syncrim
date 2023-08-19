@@ -1,12 +1,12 @@
 use crate::common::{EguiComponent, Ports, SignalUnsigned, SignalValue, Simulator};
 use crate::components::Probe;
 use crate::gui_egui::component_ui::{
-    input_change_id, input_selector, pos_drag_value, properties_window, rect_with_hover,
-    visualize_ports,
+    drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
+    rect_with_hover, visualize_ports,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
-use egui::{Align2, Area, Color32, Order, PointerButton, Pos2, Rect, Response, RichText, Ui, Vec2};
+use egui::{Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Ui, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Probe {
@@ -88,7 +88,6 @@ impl EguiComponent for Probe {
         id_ports: &[(crate::common::Id, Ports)],
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let mut delete = false;
         let r_vec = Probe::render(
             self,
             ui,
@@ -101,16 +100,7 @@ impl EguiComponent for Probe {
         )
         .unwrap();
         let resp = &r_vec[0];
-        if resp.dragged_by(PointerButton::Primary) {
-            let delta = resp.drag_delta() / scale;
-            self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
-        }
-
-        if resp.drag_released_by(PointerButton::Primary)
-            && resp.interact_pointer_pos().unwrap().x < offset.x
-        {
-            delete = true;
-        }
+        let delete = drag_logic(ui.ctx(), resp, &mut self.pos, scale, offset);
 
         properties_window(
             ui,

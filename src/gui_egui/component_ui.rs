@@ -4,8 +4,8 @@ use crate::gui_egui::helper::{
     editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
 };
 use egui::{
-    containers, Color32, ComboBox, DragValue, Frame, Margin, PointerButton, Pos2, Rect, Response,
-    Rounding, Shape, Stroke, Ui, Vec2, Window,
+    containers, Color32, ComboBox, Context, DragValue, Frame, Key, KeyboardShortcut, Margin,
+    Modifiers, PointerButton, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2, Window,
 };
 use epaint::{CircleShape, Shadow};
 
@@ -187,4 +187,50 @@ pub fn visualize_ports(
             ui.label(format!("Port id: {}", id));
         });
     }
+}
+
+/// Returns if the dragged object should be deleted
+pub fn drag_logic(
+    ctx: &Context,
+    resp: &Response,
+    pos: &mut (f32, f32),
+    scale: f32,
+    offset: Vec2,
+) -> bool {
+    let mut delete = false;
+    if resp.dragged_by(PointerButton::Primary) {
+        if ctx.input_mut(|i| {
+            i.consume_shortcut(&KeyboardShortcut {
+                modifiers: Modifiers {
+                    alt: false,
+                    ctrl: false,
+                    shift: false,
+                    mac_cmd: false,
+                    command: false,
+                },
+                key: Key::Delete,
+            })
+        }) || ctx.input_mut(|i| {
+            i.consume_shortcut(&KeyboardShortcut {
+                modifiers: Modifiers {
+                    alt: false,
+                    ctrl: false,
+                    shift: false,
+                    mac_cmd: false,
+                    command: false,
+                },
+                key: Key::X,
+            })
+        }) {
+            delete = true;
+        }
+        let delta = resp.drag_delta() / scale;
+        *pos = (pos.0 + delta.x, pos.1 + delta.y);
+    }
+    if resp.drag_released_by(PointerButton::Primary)
+        && resp.interact_pointer_pos().unwrap().x < offset.x
+    {
+        delete = true;
+    }
+    delete
 }

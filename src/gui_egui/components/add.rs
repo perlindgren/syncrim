@@ -1,6 +1,6 @@
 use crate::gui_egui::component_ui::{
-    input_change_id, input_selector, pos_drag_value, properties_window, rect_with_hover,
-    visualize_ports,
+    drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
+    rect_with_hover, visualize_ports,
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn};
 use crate::gui_egui::gui::EguiExtra;
@@ -9,7 +9,7 @@ use crate::{
     common::{EguiComponent, Ports, Simulator},
     components::Add,
 };
-use egui::{Color32, PointerButton, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
+use egui::{Color32, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Add {
@@ -91,7 +91,6 @@ impl EguiComponent for Add {
         id_ports: &[(crate::common::Id, Ports)],
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let mut delete = false;
         let r_vec = Add::render(
             self,
             ui,
@@ -104,16 +103,7 @@ impl EguiComponent for Add {
         )
         .unwrap();
         let resp = &r_vec[0];
-        if resp.dragged_by(PointerButton::Primary) {
-            let delta = resp.drag_delta() / scale;
-            self.pos = (self.pos.0 + delta.x, self.pos.1 + delta.y);
-        }
-
-        if resp.drag_released_by(PointerButton::Primary)
-            && resp.interact_pointer_pos().unwrap().x < offset.x
-        {
-            delete = true;
-        }
+        let delete = drag_logic(ui.ctx(), resp, &mut self.pos, scale, offset);
 
         properties_window(
             ui,
