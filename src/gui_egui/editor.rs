@@ -11,7 +11,12 @@ use crate::gui_egui::{
 };
 use eframe::{egui, Frame};
 use egui::{Color32, Context, LayerId, PointerButton, Pos2, Rect, Shape, Vec2};
-use std::{collections::HashMap, path::Path, rc::Rc};
+use std::{
+    collections::{BTreeMap, HashMap},
+    ops::Range,
+    path::Path,
+    rc::Rc,
+};
 
 pub struct Editor {
     pub components: Components,
@@ -110,7 +115,11 @@ impl Editor {
                 ctrl: dummy_input.clone(),
                 size: dummy_input.clone(),
                 sext: dummy_input.clone(),
-                memory: Memory::new(HashMap::new()),
+                range: Range {
+                    start: 0,
+                    end: 0x20,
+                },
+                memory: Memory::new(BTreeMap::new()),
             }),
             Rc::new(Mux {
                 id: "mux".to_string(),

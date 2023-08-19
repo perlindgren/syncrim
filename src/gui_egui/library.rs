@@ -7,7 +7,11 @@ use crate::gui_egui::{
     helper::{id_ports_of_all_components, offset_reverse_helper_pos2, unique_component_name},
 };
 use egui::{Context, CursorIcon, LayerId, PointerButton, Pos2, Rect, Response, Ui, Vec2};
-use std::{collections::HashMap, rc::Rc};
+use std::{
+    collections::{BTreeMap, HashMap},
+    ops::Range,
+    rc::Rc,
+};
 
 pub struct InputMode {
     pub comp: Option<Rc<dyn EguiComponent>>,
@@ -196,7 +200,11 @@ pub fn add_comp_to_editor(e: &mut Editor) {
                     ctrl: e.dummy_input.clone(),
                     size: e.dummy_input.clone(),
                     sext: e.dummy_input.clone(),
-                    memory: Memory::new(HashMap::new()),
+                    range: Range {
+                        start: 0,
+                        end: 0x20,
+                    },
+                    memory: Memory::new(BTreeMap::new()),
                 })
             }
             "mux" => {
