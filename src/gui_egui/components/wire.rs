@@ -7,8 +7,8 @@ use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
 use egui::{
-    Color32, DragValue, Frame, Margin, PointerButton, Pos2, Rect, Response, Rounding, Shape,
-    Stroke, Ui, Vec2, Window,
+    Color32, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers, PointerButton, Pos2, Rect,
+    Response, Rounding, Shape, Stroke, Ui, Vec2, Window,
 };
 use epaint::Shadow;
 
@@ -110,6 +110,31 @@ impl EguiComponent for Wire {
         let mut properties_window_open = false;
         for (i, resp) in r_vec.iter().enumerate() {
             if resp.dragged_by(PointerButton::Primary) {
+                if ui.ctx().input_mut(|i| {
+                    i.consume_shortcut(&KeyboardShortcut {
+                        modifiers: Modifiers {
+                            alt: false,
+                            ctrl: false,
+                            shift: false,
+                            mac_cmd: false,
+                            command: false,
+                        },
+                        key: Key::Delete,
+                    })
+                }) || ui.ctx().input_mut(|i| {
+                    i.consume_shortcut(&KeyboardShortcut {
+                        modifiers: Modifiers {
+                            alt: false,
+                            ctrl: false,
+                            shift: false,
+                            mac_cmd: false,
+                            command: false,
+                        },
+                        key: Key::X,
+                    })
+                }) {
+                    delete = true;
+                }
                 let delta = resp.drag_delta() / scale;
                 self.pos[i] = (self.pos[i].0 + delta.x, self.pos[i].1 + delta.y);
                 self.pos[i + 1] = (self.pos[i + 1].0 + delta.x, self.pos[i + 1].1 + delta.y);

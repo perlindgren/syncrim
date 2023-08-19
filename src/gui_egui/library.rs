@@ -1,9 +1,9 @@
 use crate::common::EguiComponent;
 use crate::components::*;
-use crate::gui_egui::editor::EditorMode;
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::{
-    editor::Editor,
+    editor::{Editor, EditorMode},
+    editor_wire_mode::get_grid_snap,
     helper::{id_ports_of_all_components, offset_reverse_helper_pos2, unique_component_name},
 };
 use egui::{Context, CursorIcon, LayerId, PointerButton, Pos2, Rect, Response, Ui, Vec2};
@@ -43,6 +43,18 @@ pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option
         clip_rect,
         Rect::EVERYTHING,
     );
+    let pos = if e.grid_enable && e.grid_snap_enable {
+        match get_grid_snap(
+            e.grid_snap_distance,
+            offset_reverse_helper_pos2(e.im.cursor_location, e.scale, e.offset_and_pan),
+            e.grid_size,
+        ) {
+            Some(s) => Vec2::new(s.x, s.y) + e.offset_and_pan,
+            None => Vec2::new(e.im.cursor_location.x, e.im.cursor_location.y),
+        }
+    } else {
+        Vec2::new(e.im.cursor_location.x, e.im.cursor_location.y)
+    };
     e.im.comp.as_ref().unwrap().render(
         &mut ui,
         &mut EguiExtra {
@@ -51,7 +63,7 @@ pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option
             size_rect: Rect::NAN,
         },
         None,
-        Vec2::new(e.im.cursor_location.x, e.im.cursor_location.y),
+        pos,
         e.scale,
         clip_rect,
         e.editor_mode,
@@ -120,7 +132,15 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
 
 // todo: This should really just copy the component that's in e.input_comp
 pub fn add_comp_to_editor(e: &mut Editor) {
-    let pos = offset_reverse_helper_pos2(e.im.cursor_location, e.scale, e.offset);
+    let mut pos = offset_reverse_helper_pos2(e.im.cursor_location, e.scale, e.offset_and_pan);
+    if e.grid_enable && e.grid_snap_enable {
+        match get_grid_snap(e.grid_snap_distance, pos, e.grid_size) {
+            Some(p) => {
+                pos = p;
+            }
+            None => (),
+        }
+    }
     let id_ports = id_ports_of_all_components(&e.components);
     let id;
     let mut comp: Rc<dyn EguiComponent> =

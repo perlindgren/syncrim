@@ -199,26 +199,22 @@ pub fn drag_logic(
 ) -> bool {
     let mut delete = false;
     if resp.dragged_by(PointerButton::Primary) {
+        let mod_none = Modifiers {
+            alt: false,
+            ctrl: false,
+            shift: false,
+            mac_cmd: false,
+            command: false,
+        };
+
         if ctx.input_mut(|i| {
             i.consume_shortcut(&KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: false,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: mod_none,
                 key: Key::Delete,
             })
         }) || ctx.input_mut(|i| {
             i.consume_shortcut(&KeyboardShortcut {
-                modifiers: Modifiers {
-                    alt: false,
-                    ctrl: false,
-                    shift: false,
-                    mac_cmd: false,
-                    command: false,
-                },
+                modifiers: mod_none,
                 key: Key::X,
             })
         }) {

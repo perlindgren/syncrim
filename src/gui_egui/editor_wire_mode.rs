@@ -45,7 +45,7 @@ pub fn drag_started(ctx: &Context, e: &mut Editor, _cpr: Response) {
             }
             None => {
                 if !e.wm.temp_positions.is_empty() {
-                    let mut wires = if e.grid_snap_enable {
+                    let mut wires = if e.grid_enable && e.grid_snap_enable {
                         match get_grid_snap(e.grid_snap_distance, offset_cursor_scale, e.grid_size)
                         {
                             Some(g) => {
@@ -165,6 +165,7 @@ pub fn wire_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<
                 e.offset_and_pan,
                 e.scale,
                 e.grid_enable,
+                e.grid_snap_enable,
                 e.grid_snap_distance,
                 e.grid_size,
             );
@@ -364,13 +365,14 @@ pub fn get_location_of_port_wire_grid_inside_radius(
     offset: Vec2,
     scale: f32,
     grid_enable: bool,
+    grid_snap_enable: bool,
     grid_snap_distance: f32,
     grid_size: f32,
 ) -> Pos2 {
     match get_closest_component_non_wire_prio(port, wire, distance) {
         Some(c) => c.pos + offset,
         None => {
-            if grid_enable {
+            if grid_enable && grid_snap_enable {
                 match get_grid_snap(
                     grid_snap_distance,
                     offset_reverse_helper_pos2(cursor_location, scale, offset),
