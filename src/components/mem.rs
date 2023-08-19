@@ -395,7 +395,6 @@ impl Deref for Memory {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use super::*;
