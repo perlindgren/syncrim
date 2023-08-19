@@ -49,7 +49,7 @@ pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option
             offset_reverse_helper_pos2(e.im.cursor_location, e.scale, e.offset_and_pan),
             e.grid_size,
         ) {
-            Some(s) => Vec2::new(s.x, s.y) + e.offset_and_pan,
+            Some(s) => Vec2::new(s.x, s.y) * e.scale + e.offset + e.pan * e.scale,
             None => Vec2::new(e.im.cursor_location.x, e.im.cursor_location.y),
         }
     } else {
@@ -134,11 +134,8 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
 pub fn add_comp_to_editor(e: &mut Editor) {
     let mut pos = offset_reverse_helper_pos2(e.im.cursor_location, e.scale, e.offset_and_pan);
     if e.grid_enable && e.grid_snap_enable {
-        match get_grid_snap(e.grid_snap_distance, pos, e.grid_size) {
-            Some(p) => {
-                pos = p;
-            }
-            None => (),
+        if let Some(p) = get_grid_snap(e.grid_snap_distance, pos, e.grid_size) {
+            pos = p;
         }
     }
     let id_ports = id_ports_of_all_components(&e.components);

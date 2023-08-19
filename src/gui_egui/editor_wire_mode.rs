@@ -357,6 +357,7 @@ pub fn get_closest_component_non_wire_prio(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn get_location_of_port_wire_grid_inside_radius(
     port: Option<CloseToComponent>,
     wire: Option<CloseToComponent>,
@@ -370,7 +371,7 @@ pub fn get_location_of_port_wire_grid_inside_radius(
     grid_size: f32,
 ) -> Pos2 {
     match get_closest_component_non_wire_prio(port, wire, distance) {
-        Some(c) => c.pos + offset,
+        Some(c) => offset_helper_pos2(c.pos, scale, offset),
         None => {
             if grid_enable && grid_snap_enable {
                 match get_grid_snap(
@@ -396,21 +397,18 @@ pub fn get_grid_snap(distance: f32, clicked_pos: Pos2, grid_size: f32) -> Option
     let bottom_right = Pos2::new(top_left.x + grid_size, top_left.y + grid_size);
     let top_left = Pos2::new(top_left.x, top_left.y);
     let mut closest: Option<(Pos2, f32)> = None;
-    for pos in vec![top_left, top_right, bottom_left, bottom_right] {
+    for pos in &[top_left, top_right, bottom_left, bottom_right] {
         let d = pos.distance(clicked_pos);
         if d <= distance {
             match closest {
                 Some(s) => {
                     if s.1 > d {
-                        closest = Some((pos, d))
+                        closest = Some((*pos, d))
                     }
                 }
-                None => closest = Some((pos, d)),
+                None => closest = Some((*pos, d)),
             }
         }
     }
-    match closest {
-        Some(s) => Some(s.0),
-        None => None,
-    }
+    closest.map(|s| s.0)
 }

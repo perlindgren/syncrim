@@ -272,14 +272,16 @@ impl Editor {
                 let e = Editor::gui_to_editor(gui);
                 let screen_rect = ui.ctx().screen_rect();
                 let grid_scale = e.grid_size * e.scale;
-                let start = -(e.pan / e.scale / e.grid_size).floor();
+                let start = -(e.pan / e.grid_size / e.scale).floor();
+
                 let end =
                     (Vec2::new(screen_rect.width(), screen_rect.height()) / e.scale / e.grid_size)
-                        .ceil();
+                        .ceil()
+                        + start;
 
                 for y in (start.y as i32)..(end.y as i32) {
                     ui.painter().hline(
-                        (start.x * grid_scale)..=(end.x * grid_scale),
+                        0f32..=screen_rect.width(),
                         y as f32 * grid_scale + e.offset_and_pan.y,
                         egui::Stroke {
                             width: e.scale * 0.5f32,
@@ -290,7 +292,7 @@ impl Editor {
                 for x in (start.x as i32)..(end.x as i32) {
                     ui.painter().vline(
                         x as f32 * grid_scale + e.offset_and_pan.x,
-                        (start.y * grid_scale)..=(end.y * grid_scale),
+                        0f32..=screen_rect.height(),
                         egui::Stroke {
                             width: e.scale * 0.5f32,
                             color: egui::Color32::BLACK.gamma_multiply(e.grid_opacity),
