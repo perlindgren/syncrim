@@ -116,9 +116,13 @@ impl GuiData {
         trace!("open path {:?}", self.path);
         let cs = ComponentStore::load_file(&self.path);
         let simulator = Simulator::new(cs);
-        self.simulator = simulator;
-
-        trace!("opened");
+        match simulator {
+            Ok(s) => {
+                self.simulator = s;
+                trace!("opened");
+            }
+            Err(e) => trace!("File failed to open due to errors with simulator {}", e),
+        }
     }
 }
 
