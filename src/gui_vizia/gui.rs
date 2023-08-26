@@ -123,7 +123,7 @@ impl GuiData {
 }
 
 pub fn gui(cs: ComponentStore, path: &PathBuf) {
-    let simulator = Simulator::new(cs);
+    let simulator = Simulator::new(cs).unwrap();
     let path = path.to_owned();
     simulator.save_dot(&path);
 

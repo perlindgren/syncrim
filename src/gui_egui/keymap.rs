@@ -261,8 +261,16 @@ pub fn file_open_fn(gui: &mut Gui) {
             }
         }
         false => {
-            let _ = gui.simulator.take();
-            gui.simulator = Some(Simulator::new(cs));
+            let simulator = Simulator::new(cs);
+            match simulator {
+                Err(e) => {
+                    println!("couldn't open file with simulator: {}", e);
+                }
+                Ok(s) => {
+                    let _ = gui.simulator.take();
+                    gui.simulator = Some(s);
+                }
+            }
         }
     }
 }
@@ -299,7 +307,13 @@ pub fn file_editor_toggle_fn(gui: &mut Gui) {
                 let components = e.components.clone();
                 gui.contexts = create_contexts(&components);
                 let simulator = Simulator::new(ComponentStore { store: components });
-                gui.simulator = Some(simulator);
+                match simulator {
+                    Err(e) => {
+                        gui.editor_use = true;
+                        println!("error: {}", e);
+                    }
+                    Ok(s) => gui.simulator = Some(s),
+                }
             }
         }
         false => {
