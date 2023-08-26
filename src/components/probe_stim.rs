@@ -73,7 +73,7 @@ mod test {
             store: vec![ProbeStim::rc_new("stim", (0.0, 0.0), vec![0, 1, 2, 3])],
         };
 
-        let mut simulator = Simulator::new(cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         // output
         let out = &Input::new("stim", "out");
 

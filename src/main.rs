@@ -25,5 +25,5 @@ fn main() {
     syncrim::gui_vizia::gui(cs, &_path);
 
     #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
-    syncrim::common::Simulator::new(cs);
+    syncrim::common::Simulator::new(cs).unwrap();
 }

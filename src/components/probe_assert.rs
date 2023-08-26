@@ -102,7 +102,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         // output
         let out = &Input::new("stim", "out");
 
@@ -176,7 +176,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         // output
         let out = &Input::new("stim", "out");
 

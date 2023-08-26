@@ -315,7 +315,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
     }
@@ -327,7 +327,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1")), Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
     }
@@ -338,7 +338,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_value(&Input::new("po1", "out"));
@@ -351,7 +351,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_value(&Input::new("po1", "missing"));
@@ -363,7 +363,7 @@ mod test {
             store: vec![Rc::new(Constant::new("c", (0.0, 0.0), 0))],
         };
 
-        let simulator = Simulator::new(cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_fmt(&Input::new("c", "out"));
