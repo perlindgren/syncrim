@@ -493,7 +493,7 @@ mod test {
                 }),
             ],
         };
-        let mut simulator = Simulator::new(cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         // outputs
         let wb_mux = &Input::new("decoder", "wb_mux");
@@ -1089,7 +1089,7 @@ mod test {
                 }),
             ],
         };
-        let mut simulator = Simulator::new(cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         // outputs
         let wb_mux = &Input::new("decoder", "wb_mux");
@@ -1608,7 +1608,7 @@ mod test {
                 }),
             ],
         };
-        let mut simulator = Simulator::new(cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         // outputs
         let wb_mux = &Input::new("decoder", "wb_mux");
@@ -2151,7 +2151,7 @@ mod test {
                 }),
             ],
         };
-        let mut simulator = Simulator::new(cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         // outputs
         let wb_mux = &Input::new("decoder", "wb_mux");

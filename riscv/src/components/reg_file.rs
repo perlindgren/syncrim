@@ -253,7 +253,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
 
