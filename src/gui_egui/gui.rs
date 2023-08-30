@@ -40,7 +40,6 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions::default();
     let path = path.to_owned();
     simulator.save_dot(&path);
-    println!("contexts: {:?}", contexts);
 
     let gui = Gui {
         path,

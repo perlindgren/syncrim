@@ -251,6 +251,7 @@ pub fn file_open_fn(gui: &mut Gui) {
         gui.path = path_buf;
     }
     let cs = ComponentStore::load_file(&gui.path);
+    gui.contexts = create_contexts(&cs.store);
     match gui.editor_use {
         true => {
             if let Some(e) = gui.editor.as_mut() {
