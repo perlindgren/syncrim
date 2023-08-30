@@ -251,7 +251,7 @@ pub fn file_open_fn(gui: &mut Gui) {
         gui.path = path_buf;
     }
     let cs = ComponentStore::load_file(&gui.path);
-    gui.contexts = create_contexts(&cs.store);
+    let contexts = create_contexts(&cs.store);
     match gui.editor_use {
         true => {
             if let Some(e) = gui.editor.as_mut() {
@@ -259,10 +259,12 @@ pub fn file_open_fn(gui: &mut Gui) {
                 reset_wire_mode(&mut e.wm);
                 reset_input_mode(&mut e.im);
                 e.components = cs.store;
+                e.contexts = contexts;
             }
         }
         false => {
             let simulator = Simulator::new(cs);
+            gui.contexts = contexts;
             match simulator {
                 Err(e) => {
                     println!("couldn't open file with simulator: {}", e);
