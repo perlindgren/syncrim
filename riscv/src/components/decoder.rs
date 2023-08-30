@@ -1,7 +1,34 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Condition, Input, OutputType, Ports, SignalValue, Simulator};
+use syncrim::common::{
+    Component, Condition, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
+};
 use syncrim::components::MemCtrl;
+
+pub const DECODER_INSTRUCTION_ID: &str = "instruction";
+
+pub const DECODER_WB_MUX_ID: &str = "wb_mux";
+pub const DECODER_ALU_OPERAND_A_SEL_ID: &str = "alu_operand_a_sel";
+pub const DECODER_ALU_OPERAND_B_SEL_ID: &str = "alu_operand_b_sel";
+pub const DECODER_ALU_OPERATOR_ID: &str = "alu_operator";
+pub const DECODER_REGFILE_RD_ID: &str = "regfile_rd";
+pub const DECODER_REGFILE_RS1_ID: &str = "regfile_rs1";
+pub const DECODER_REGFILE_RS2_ID: &str = "regfile_rs2";
+pub const DECODER_REGFILE_WE_ID: &str = "regfile_we";
+pub const DECODER_SIGN_ZERO_EXT_SEL_ID: &str = "sign_zero_ext_sel";
+pub const DECODER_SIGN_ZERO_EXT_DATA_ID: &str = "sign_zero_ext_data";
+pub const DECODER_IMM_A_MUX_DATA_ID: &str = "imm_a_mux_data";
+//"pc_se_data".into(),
+//"pc_mux_sel".into(),
+pub const DECODER_DATA_MEM_SIZE_ID: &str = "data_mem_size";
+pub const DECODER_DATA_SE_ID: &str = "data_se";
+pub const DECODER_DATA_MEM_CTRL_ID: &str = "data_mem_ctrl";
+pub const DECODER_PC_IMM_SEL_ID: &str = "pc_imm_sel";
+pub const DECODER_BIG_IMM_ID: &str = "big_imm";
+pub const DECODER_BRANCH_IMM_ID: &str = "branch_imm";
+pub const DECODER_BRANCH_LOGIC_CTL_ID: &str = "branch_logic_ctl";
+pub const DECODER_BRANCH_LOGIC_ENABLE_ID: &str = "branch_logic_enable";
+pub const DECODER_JALR_IMM_ID: &str = "jalr_imm";
 
 #[derive(Serialize, Deserialize)]
 pub struct Decoder {
@@ -19,34 +46,35 @@ impl Component for Decoder {
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![self.instruction.clone()],
-                out_type: OutputType::Combinatorial,
-                outputs: vec![
-                    "wb_mux".into(),
-                    "alu_operand_a_sel".into(),
-                    "alu_operand_b_sel".into(),
-                    "alu_operator".into(),
-                    "regfile_rd".into(),
-                    "regfile_rs1".into(),
-                    "regfile_rs2".into(),
-                    "regfile_we".into(),
-                    "sign_zero_ext_sel".into(),
-                    "sign_zero_ext_data".into(),
-                    "imm_a_mux_data".into(),
-                    //"pc_se_data".into(),
-                    //"pc_mux_sel".into(),
-                    "data_mem_size".into(),
-                    "data_se".into(),
-                    "data_mem_ctrl".into(),
-                    "pc_imm_sel".into(),
-                    "big_imm".into(),
-                    "branch_imm".into(),
-                    "branch_logic_ctl".into(),
-                    "branch_logic_enable".into(),
-                    "jalr_imm".into(),
+            Ports::new(
+                vec![&InputPort {
+                    port_id: DECODER_INSTRUCTION_ID.to_string(),
+                    input: self.instruction.clone(),
+                }],
+                OutputType::Combinatorial,
+                vec![
+                    DECODER_WB_MUX_ID,
+                    DECODER_ALU_OPERAND_A_SEL_ID,
+                    DECODER_ALU_OPERAND_B_SEL_ID,
+                    DECODER_ALU_OPERATOR_ID,
+                    DECODER_REGFILE_RD_ID,
+                    DECODER_REGFILE_RS1_ID,
+                    DECODER_REGFILE_RS2_ID,
+                    DECODER_REGFILE_WE_ID,
+                    DECODER_SIGN_ZERO_EXT_SEL_ID,
+                    DECODER_SIGN_ZERO_EXT_DATA_ID,
+                    DECODER_IMM_A_MUX_DATA_ID,
+                    DECODER_DATA_MEM_SIZE_ID,
+                    DECODER_DATA_SE_ID,
+                    DECODER_DATA_MEM_CTRL_ID,
+                    DECODER_PC_IMM_SEL_ID,
+                    DECODER_BIG_IMM_ID,
+                    DECODER_BRANCH_IMM_ID,
+                    DECODER_BRANCH_LOGIC_CTL_ID,
+                    DECODER_BRANCH_LOGIC_ENABLE_ID,
+                    DECODER_JALR_IMM_ID,
                 ],
-            },
+            ),
         )
     }
     #[allow(non_snake_case)]
@@ -465,7 +493,7 @@ mod test {
                 }),
             ],
         };
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         // outputs
         let wb_mux = &Input::new("decoder", "wb_mux");
@@ -1061,7 +1089,7 @@ mod test {
                 }),
             ],
         };
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         // outputs
         let wb_mux = &Input::new("decoder", "wb_mux");
@@ -1580,7 +1608,7 @@ mod test {
                 }),
             ],
         };
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         // outputs
         let wb_mux = &Input::new("decoder", "wb_mux");
@@ -2123,7 +2151,7 @@ mod test {
                 }),
             ],
         };
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         // outputs
         let wb_mux = &Input::new("decoder", "wb_mux");

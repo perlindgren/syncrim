@@ -3,7 +3,11 @@ use std::{collections::BTreeMap, panic};
 
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Condition, Input, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Condition, Input, InputPort, OutputType, Ports, Simulator};
+
+pub const INSTR_MEM_PC_ID: &str = "pc";
+
+pub const INSTR_MEM_INSTRUCTION_ID: &str = "instruction";
 
 #[derive(Serialize, Deserialize)]
 pub struct InstrMem {
@@ -21,11 +25,14 @@ impl Component for InstrMem {
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![self.pc.clone()],
-                out_type: OutputType::Combinatorial,
-                outputs: vec!["instruction".into()],
-            },
+            Ports::new(
+                vec![&InputPort {
+                    port_id: INSTR_MEM_PC_ID.to_string(),
+                    input: self.pc.clone(),
+                }],
+                OutputType::Combinatorial,
+                vec![INSTR_MEM_INSTRUCTION_ID],
+            ),
         )
     }
 
@@ -80,7 +87,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs

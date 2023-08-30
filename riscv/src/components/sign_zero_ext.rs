@@ -1,6 +1,13 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Condition, Input, OutputType, Ports, SignalValue, Simulator};
+use syncrim::common::{
+    Component, Condition, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
+};
+
+pub const SIGN_ZERO_EXT_DATA_I_ID: &str = "data_i";
+pub const SIGN_ZERO_EXT_SEL_I_ID: &str = "sel_i";
+
+pub const SIGN_ZERO_EXT_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize)]
 pub struct SZExt {
@@ -19,11 +26,20 @@ impl Component for SZExt {
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![self.data_i.clone(), self.sel_i.clone()],
-                out_type: OutputType::Combinatorial,
-                outputs: vec!["out".into()],
-            },
+            Ports::new(
+                vec![
+                    &InputPort {
+                        port_id: SIGN_ZERO_EXT_DATA_I_ID.to_string(),
+                        input: self.data_i.clone(),
+                    },
+                    &InputPort {
+                        port_id: SIGN_ZERO_EXT_SEL_I_ID.to_string(),
+                        input: self.sel_i.clone(),
+                    },
+                ],
+                OutputType::Combinatorial,
+                vec![SIGN_ZERO_EXT_OUT_ID],
+            ),
         )
     }
     #[allow(non_snake_case)]
@@ -83,7 +99,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
         let szext = &Input::new("szext", "out");
         let val = 0b100000000000;

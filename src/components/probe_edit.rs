@@ -6,6 +6,8 @@ use std::{
     sync::{Arc, RwLock},
 };
 
+pub const PROBE_EDIT_OUT_ID: &str = "out";
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeEdit {
     pub(crate) id: Id,
@@ -33,7 +35,7 @@ impl Component for ProbeEdit {
                 vec![],
                 OutputType::Combinatorial,
                 // Single output value
-                vec!["out"],
+                vec![PROBE_EDIT_OUT_ID],
             ),
         )
     }

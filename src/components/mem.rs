@@ -1,6 +1,6 @@
 use crate::common::{
-    Component, Condition, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, SignalValue,
-    Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
+    SignalValue, Simulator,
 };
 use log::*;
 use num_enum::IntoPrimitive;
@@ -9,6 +9,15 @@ use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 use std::ops::Range;
 use std::{cell::RefCell, collections::BTreeMap, convert::TryFrom, rc::Rc};
+
+pub const MEM_DATA_ID: &str = "data";
+pub const MEM_ADDR_ID: &str = "addr";
+pub const MEM_CTRL_ID: &str = "ctrl";
+pub const MEM_SEXT_ID: &str = "sext";
+pub const MEM_SIZE_ID: &str = "size";
+
+pub const MEM_DATA_OUT_ID: &str = "data";
+pub const MEM_ERR_OUT_ID: &str = "err";
 
 #[derive(Serialize, Deserialize)]
 pub struct Mem {
@@ -274,9 +283,30 @@ impl Component for Mem {
         (
             self.id.clone(),
             Ports::new(
-                vec![&self.data, &self.addr, &self.ctrl, &self.sext, &self.size],
+                vec![
+                    &InputPort {
+                        port_id: MEM_DATA_ID.to_string(),
+                        input: self.data.clone(),
+                    },
+                    &InputPort {
+                        port_id: MEM_ADDR_ID.to_string(),
+                        input: self.addr.clone(),
+                    },
+                    &InputPort {
+                        port_id: MEM_CTRL_ID.to_string(),
+                        input: self.ctrl.clone(),
+                    },
+                    &InputPort {
+                        port_id: MEM_SEXT_ID.to_string(),
+                        input: self.sext.clone(),
+                    },
+                    &InputPort {
+                        port_id: MEM_SIZE_ID.to_string(),
+                        input: self.size.clone(),
+                    },
+                ],
                 OutputType::Combinatorial,
-                vec!["data", "err"],
+                vec![MEM_DATA_OUT_ID, MEM_ERR_OUT_ID],
             ),
         )
     }
@@ -344,6 +374,17 @@ impl Component for Mem {
 
         Ok(())
     }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            MEM_DATA_ID => self.data = new_input,
+            MEM_ADDR_ID => self.addr = new_input,
+            MEM_CTRL_ID => self.ctrl = new_input,
+            MEM_SEXT_ID => self.sext = new_input,
+            MEM_SIZE_ID => self.size = new_input,
+            _ => (),
+        }
+    }
 }
 
 impl Deref for Memory {
@@ -396,7 +437,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
 
@@ -579,7 +620,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
 

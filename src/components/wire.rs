@@ -1,7 +1,10 @@
-use crate::common::{Component, Id, Input, OutputType, Ports};
+use crate::common::{Component, Id, Input, InputPort, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
+
+pub const WIRE_INPUT_ID: &str = "in";
+
 #[derive(Serialize, Deserialize)]
 pub struct Wire {
     pub(crate) id: Id,
@@ -19,7 +22,10 @@ impl Component for Wire {
             self.id.clone(),
             Ports::new(
                 // Wires take one input
-                vec![&self.input],
+                vec![&InputPort {
+                    port_id: WIRE_INPUT_ID.to_string(),
+                    input: self.input.clone(),
+                }],
                 OutputType::Combinatorial,
                 // No output value
                 vec![],

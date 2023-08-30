@@ -18,6 +18,7 @@ pub fn build_popup(cx: &mut Context, id_ports: (Id, Ports)) -> Handle<'_, Popup<
             Label::new(cx, &id);
 
             for input in ports.inputs {
+                let input = input.input;
                 HStack::new(cx, |cx| {
                     Label::new(cx, &input.id);
                     Binding::new(

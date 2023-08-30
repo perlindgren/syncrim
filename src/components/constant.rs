@@ -2,6 +2,9 @@ use crate::common::{Component, Condition, Id, OutputType, Ports, Signal, Simulat
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::{convert::Into, rc::Rc};
+
+pub const CONSTANT_OUT_ID: &str = "out";
+
 #[derive(Serialize, Deserialize)]
 pub struct Constant {
     pub(crate) id: Id,
@@ -22,13 +25,13 @@ impl Component for Constant {
                 // Constants do not take any inputs
                 vec![],
                 OutputType::Combinatorial,
-                vec!["out"],
+                vec![CONSTANT_OUT_ID],
             ),
         )
     }
 
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
-        simulator.set_out_value(&self.id, "out", self.value.get_value());
+        simulator.set_out_value(&self.id, CONSTANT_OUT_ID, self.value.get_value());
         Ok(())
     }
 }

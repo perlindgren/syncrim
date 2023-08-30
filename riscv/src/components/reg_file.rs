@@ -3,7 +3,9 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
-use syncrim::common::{Component, Condition, Input, OutputType, Ports, SignalUnsigned, Simulator};
+use syncrim::common::{
+    Component, Condition, Input, InputPort, OutputType, Ports, SignalUnsigned, Simulator,
+};
 use syncrim::signal::SignalValue;
 
 #[allow(non_camel_case_types)]
@@ -44,6 +46,15 @@ pub enum Reg {
     t5      = 30,   // Temporaries
     t6      = 31,   // Temporaries
 }
+
+pub const REG_FILE_READ_ADDR1_ID: &str = "read_addr1";
+pub const REG_FILE_READ_ADDR2_ID: &str = "read_addr2";
+pub const REG_FILE_WRITE_DATA_ID: &str = "write_data";
+pub const REG_FILE_WRITE_ADDR_ID: &str = "write_addr";
+pub const REG_FILE_WRITE_ENABLE_ID: &str = "write_enable";
+
+pub const REG_FILE_REG_A_OUT: &str = "reg_a";
+pub const REG_FILE_REG_B_OUT: &str = "reg_b";
 
 #[derive(Serialize, Deserialize)]
 pub struct RegFile {
@@ -150,7 +161,28 @@ impl Component for RegFile {
         (
             self.id.clone(),
             Ports {
-                inputs: vec![self.read_addr1.clone(), self.read_addr2.clone()],
+                inputs: vec![
+                    InputPort {
+                        port_id: REG_FILE_READ_ADDR1_ID.to_string(),
+                        input: self.read_addr1.clone(),
+                    },
+                    InputPort {
+                        port_id: REG_FILE_READ_ADDR2_ID.to_string(),
+                        input: self.read_addr2.clone(),
+                    },
+                    InputPort {
+                        port_id: REG_FILE_WRITE_DATA_ID.to_string(),
+                        input: self.write_data.clone(),
+                    },
+                    InputPort {
+                        port_id: REG_FILE_WRITE_ADDR_ID.to_string(),
+                        input: self.write_addr.clone(),
+                    },
+                    InputPort {
+                        port_id: REG_FILE_WRITE_ENABLE_ID.to_string(),
+                        input: self.write_enable.clone(),
+                    },
+                ],
                 out_type: OutputType::Combinatorial,
                 outputs: vec!["reg_a".into(), "reg_b".into()],
             },
@@ -221,7 +253,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
 

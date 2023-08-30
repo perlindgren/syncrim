@@ -114,17 +114,20 @@ impl GuiData {
     fn open(&mut self) {
         // Re-Open model
         trace!("open path {:?}", self.path);
-        let cs = Box::new(ComponentStore::load_file(&self.path));
-        let simulator = Simulator::new(&cs);
-
-        self.simulator = simulator;
-
-        trace!("opened");
+        let cs = ComponentStore::load_file(&self.path);
+        let simulator = Simulator::new(cs);
+        match simulator {
+            Ok(s) => {
+                self.simulator = s;
+                trace!("opened");
+            }
+            Err(e) => trace!("File failed to open due to errors with simulator {}", e),
+        }
     }
 }
 
-pub fn gui(cs: &ComponentStore, path: &PathBuf) {
-    let simulator = Simulator::new(cs);
+pub fn gui(cs: ComponentStore, path: &PathBuf) {
+    let simulator = Simulator::new(cs).unwrap();
     let path = path.to_owned();
     simulator.save_dot(&path);
 

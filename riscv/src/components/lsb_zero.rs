@@ -1,8 +1,12 @@
 use serde::{Deserialize, Serialize};
 use syncrim::{
-    common::{Component, Condition, Input, OutputType, Ports, Simulator},
+    common::{Component, Condition, Input, InputPort, OutputType, Ports, Simulator},
     signal::SignalValue,
 };
+
+pub const LSB_ZERO_DATA_I_ID: &str = "data_i";
+
+pub const LSB_ZERO_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize)]
 pub struct LSBZero {
@@ -20,11 +24,14 @@ impl Component for LSBZero {
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![self.data_i.clone()],
-                out_type: OutputType::Combinatorial,
-                outputs: vec!["out".into()],
-            },
+            Ports::new(
+                vec![&InputPort {
+                    port_id: LSB_ZERO_DATA_I_ID.to_string(),
+                    input: self.data_i.clone(),
+                }],
+                OutputType::Combinatorial,
+                vec![LSB_ZERO_OUT_ID],
+            ),
         )
     }
     #[allow(non_snake_case)]
@@ -63,7 +70,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs

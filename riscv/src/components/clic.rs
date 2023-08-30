@@ -1,9 +1,20 @@
-use crate::common::{Component, Condition, Id, Input, OutputType, Ports, Signal, Simulator};
+use crate::common::{
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, Signal, Simulator,
+};
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 
 use std::{cell::RefCell, collections::HashMap, convert::TryFrom};
+
+pub const CLIC_DATA_ID: &str = "data";
+pub const CLIC_ADDR_ID: &str = "addr";
+pub const CLIC_CTRL_ID: &str = "ctrl";
+pub const CLIC_SIGN_ID: &str = "sign";
+pub const CLIC_SIZE_ID: &str = "size";
+
+pub const CLIC_DATA_OUT_ID: &str = "data";
+pub const CLIC_ERR_OUT_ID: &str = "err";
 
 #[derive(Serialize, Deserialize)]
 pub struct CLIC {
@@ -190,7 +201,28 @@ impl Component for Mem {
         (
             self.id.clone(),
             Ports::new(
-                vec![&self.data, &self.addr, &self.ctrl],
+                vec![
+                    &InputPort {
+                        port_id: CLIC_DATA_ID.to_string(),
+                        input: self.data.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_ADDR_ID.to_string(),
+                        input: self.addr.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_CTRL_ID.to_string(),
+                        input: self.ctrl.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_SIGN_ID.to_string(),
+                        input: self.sign.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_SIZE_ID.to_string(),
+                        input: self.size.clone(),
+                    },
+                ],
                 OutputType::Combinatorial,
                 vec!["data", "err"],
             ),
@@ -270,7 +302,7 @@ mod test {
         };
 
         let mut clock = 0;
-        let mut simulator = Simulator::new(&cs, &mut clock);
+        let mut simulator = Simulator::new(cs, &mut clock);
 
         assert_eq!(clock, 1);
 
@@ -437,7 +469,7 @@ mod test {
         };
 
         let mut clock = 0;
-        let mut simulator = Simulator::new(&cs, &mut clock);
+        let mut simulator = Simulator::new(cs, &mut clock);
 
         assert_eq!(clock, 1);
 

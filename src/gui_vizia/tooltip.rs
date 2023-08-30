@@ -9,7 +9,8 @@ pub fn new_component_tooltip(cx: &mut Context, component: &dyn ViziaComponent) {
         let (id, ports) = component.get_id_ports();
         Label::new(cx, &id);
 
-        for input in ports.inputs {
+        for input_port in ports.inputs {
+            let input = input_port.input;
             HStack::new(cx, |cx| {
                 Label::new(cx, &input.id);
                 Binding::new(

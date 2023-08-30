@@ -1,10 +1,12 @@
 use crate::{
-    common::{Component, Condition, Id, Input, OutputType, Ports, Signal, Simulator},
+    common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Signal, Simulator},
     signal::SignalValue,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
+
+pub const PROBE_ASSERT_IN_ID: &str = "in";
 
 #[derive(Serialize, Deserialize)]
 pub struct ProbeAssert {
@@ -23,7 +25,14 @@ impl Component for ProbeAssert {
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
-            Ports::new(vec![&self.input], OutputType::Combinatorial, vec![]),
+            Ports::new(
+                vec![&InputPort {
+                    port_id: PROBE_ASSERT_IN_ID.to_string(),
+                    input: self.input.clone(),
+                }],
+                OutputType::Combinatorial,
+                vec![],
+            ),
         )
     }
 
@@ -93,7 +102,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         // output
         let out = &Input::new("stim", "out");
 
@@ -167,7 +176,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         // output
         let out = &Input::new("stim", "out");
 

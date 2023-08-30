@@ -1,7 +1,10 @@
-use crate::common::{Component, Id, Input, OutputType, Ports};
+use crate::common::{Component, Id, Input, InputPort, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
+
+pub const PROBE_IN_ID: &str = "in";
+
 #[derive(Serialize, Deserialize)]
 pub struct Probe {
     pub(crate) id: Id,
@@ -19,12 +22,21 @@ impl Component for Probe {
             self.id.clone(),
             Ports::new(
                 // Probes take one input
-                vec![&self.input],
+                vec![&InputPort {
+                    port_id: PROBE_IN_ID.to_string(),
+                    input: self.input.clone(),
+                }],
                 OutputType::Combinatorial,
                 // No output value
                 vec![],
             ),
         )
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        if target_port_id.as_str() == PROBE_IN_ID {
+            self.input = new_input
+        }
     }
 }
 

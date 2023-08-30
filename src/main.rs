@@ -16,11 +16,14 @@ fn main() {
     let args = Args::parse();
     let _path = PathBuf::from(args.model);
 
-    let _cs = ComponentStore::load_file(&_path);
+    let cs = ComponentStore::load_file(&_path);
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::gui(&_cs, &_path).ok();
+    syncrim::gui_egui::gui(cs, &_path).ok();
 
     #[cfg(feature = "gui-vizia")]
-    syncrim::gui_vizia::gui(&_cs, &_path);
+    syncrim::gui_vizia::gui(cs, &_path);
+
+    #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
+    syncrim::common::Simulator::new(cs).unwrap();
 }

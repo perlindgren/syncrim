@@ -1,9 +1,15 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
 use syncrim::{
-    common::{Component, Condition, Input, OutputType, Ports, SignalValue, Simulator},
+    common::{Component, Condition, Input, InputPort, OutputType, Ports, SignalValue, Simulator},
     signal::SignalSigned,
 };
+
+pub const ALU_OPERATOR_I_ID: &str = "operator_i";
+pub const ALU_OPERAND_A_I_ID: &str = "operand_a_i";
+pub const ALU_OPERAND_B_I_ID: &str = "operand_b_i";
+
+pub const ALU_RESULT_O_ID: &str = "result_o";
 
 #[derive(Serialize, Deserialize)]
 pub struct ALU {
@@ -24,20 +30,30 @@ impl Component for ALU {
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![
-                    self.operator_i.clone(),
-                    self.operand_a_i.clone(),
-                    self.operand_b_i.clone(),
+            Ports::new(
+                vec![
+                    &InputPort {
+                        port_id: ALU_OPERATOR_I_ID.to_string(),
+                        input: self.operator_i.clone(),
+                    },
+                    &InputPort {
+                        port_id: ALU_OPERAND_A_I_ID.to_string(),
+                        input: self.operand_a_i.clone(),
+                    },
+                    &InputPort {
+                        port_id: ALU_OPERAND_B_I_ID.to_string(),
+                        input: self.operand_b_i.clone(),
+                    },
                     //self.operand_c_i.clone(),
                 ],
-                out_type: OutputType::Combinatorial,
-                outputs: vec![
-                    "result_o".into(),
+                OutputType::Combinatorial,
+                vec![
+                    ALU_RESULT_O_ID,
+                    //"result_o".into(),
                     //"comparison_result_o".into(),
                     //"ready_o".into(),
                 ],
-            },
+            ),
         )
     }
     #[allow(non_snake_case)]
@@ -159,7 +175,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs

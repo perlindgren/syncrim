@@ -1,10 +1,16 @@
 use crate::common::{
-    Component, Condition, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, SignalValue,
-    Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
+    SignalValue, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
+
+pub const ADD_A_IN_ID: &str = "a_in";
+pub const ADD_B_IN_ID: &str = "b_in";
+
+pub const ADD_OUT_ID: &str = "out";
+pub const ADD_OVERFLOW_ID: &str = "overflow";
 
 #[derive(Serialize, Deserialize)]
 pub struct Add {
@@ -24,9 +30,18 @@ impl Component for Add {
         (
             self.id.clone(),
             Ports::new(
-                vec![&self.a_in, &self.b_in],
+                vec![
+                    &InputPort {
+                        port_id: ADD_A_IN_ID.to_string(),
+                        input: self.a_in.clone(),
+                    },
+                    &InputPort {
+                        port_id: ADD_B_IN_ID.to_string(),
+                        input: self.b_in.clone(),
+                    },
+                ],
                 OutputType::Combinatorial,
-                vec!["out", "overflow"],
+                vec![ADD_OUT_ID, ADD_OVERFLOW_ID],
             ),
         )
     }
@@ -66,6 +81,14 @@ impl Component for Add {
         simulator.set_out_value(&self.id, "out", value);
         simulator.set_out_value(&self.id, "overflow", overflow);
         res
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            ADD_A_IN_ID => self.a_in = new_input,
+            ADD_B_IN_ID => self.b_in = new_input,
+            _ => (),
+        }
     }
 }
 
@@ -108,7 +131,7 @@ mod test {
                 }),
             ],
         };
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
 

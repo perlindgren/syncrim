@@ -22,7 +22,7 @@ pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 // A solution is to evaluate register updates separately from other components
 // ... but not currently implemented ...
 impl Simulator {
-    pub fn new(component_store: &ComponentStore) -> Self {
+    pub fn new(component_store: ComponentStore) -> Result<Self, &'static str> {
         let mut lens_values = vec![];
 
         let mut id_start_index = HashMap::new();
@@ -90,8 +90,14 @@ impl Simulator {
                 let to_node = id_node.get(to_id).unwrap();
                 let (_, ports) = c.get_id_ports();
                 for in_port in &ports.inputs {
-                    let from_id = &in_port.id;
-                    let from_node = id_node.get(from_id).unwrap();
+                    let from_id = &in_port.input.id;
+                    let from_node = id_node.get(from_id);
+                    if from_node.is_none() {
+                        println!("id: {} port {} is not connected", to_id, from_id);
+                        return Err("A port left unconnected");
+                    }
+                    let from_node = from_node.unwrap();
+
                     graph.add_edge(*from_node, *to_node, ());
                     trace!(
                         "add_edge {}:{:?} -> {}:{:?}",
@@ -142,7 +148,7 @@ impl Simulator {
         trace!("sim_state {:?}", simulator.sim_state);
 
         simulator.clock();
-        simulator
+        Ok(simulator)
     }
 
     /// get input by index
@@ -309,7 +315,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(&cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
     }
@@ -321,7 +327,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1")), Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(&cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
     }
@@ -332,7 +338,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(&cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_value(&Input::new("po1", "out"));
@@ -345,7 +351,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(&cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_value(&Input::new("po1", "missing"));
@@ -357,7 +363,7 @@ mod test {
             store: vec![Rc::new(Constant::new("c", (0.0, 0.0), 0))],
         };
 
-        let simulator = Simulator::new(&cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_fmt(&Input::new("c", "out"));

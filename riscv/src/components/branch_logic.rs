@@ -1,6 +1,15 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Condition, Input, OutputType, Ports, SignalValue, Simulator};
+use syncrim::common::{
+    Component, Condition, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
+};
+
+pub const BRANCH_LOGIC_RS1_ID: &str = "rs1";
+pub const BRANCH_LOGIC_RS2_ID: &str = "rs2";
+pub const BRANCH_LOGIC_CTRL_ID: &str = "ctrl";
+pub const BRANCH_LOGIC_ENABLE_ID: &str = "enable";
+
+pub const BRANCH_LOGIC_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize)]
 pub struct BranchLogic {
@@ -22,16 +31,28 @@ impl Component for BranchLogic {
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![
-                    self.rs1.clone(),
-                    self.rs2.clone(),
-                    self.ctrl.clone(),
-                    self.enable.clone(),
+            Ports::new(
+                vec![
+                    &InputPort {
+                        port_id: BRANCH_LOGIC_RS1_ID.to_string(),
+                        input: self.rs1.clone(),
+                    },
+                    &InputPort {
+                        port_id: BRANCH_LOGIC_RS2_ID.to_string(),
+                        input: self.rs2.clone(),
+                    },
+                    &InputPort {
+                        port_id: BRANCH_LOGIC_CTRL_ID.to_string(),
+                        input: self.ctrl.clone(),
+                    },
+                    &InputPort {
+                        port_id: BRANCH_LOGIC_ENABLE_ID.to_string(),
+                        input: self.enable.clone(),
+                    },
                 ],
-                out_type: OutputType::Combinatorial,
-                outputs: vec!["out".into()],
-            },
+                OutputType::Combinatorial,
+                vec![BRANCH_LOGIC_OUT_ID],
+            ),
         )
     }
     #[allow(non_snake_case)]
@@ -165,7 +186,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -220,7 +241,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -275,7 +296,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -337,7 +358,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -399,7 +420,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -461,7 +482,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -530,7 +551,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -569,7 +590,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs

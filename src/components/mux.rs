@@ -1,9 +1,14 @@
 use crate::common::{
-    Component, Condition, Id, Input, OutputType, Ports, SignalUnsigned, SignalValue, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalUnsigned, SignalValue,
+    Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
+
+pub const MUX_SELECT_ID: &str = "select";
+pub const MUX_TEMPLATE_ID: &str = "in";
+pub const MUX_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize)]
 pub struct Mux {
@@ -19,16 +24,24 @@ impl Component for Mux {
         trace!("mux");
     }
     fn get_id_ports(&self) -> (Id, Ports) {
-        let mut inputs = vec![self.select.clone()];
-        let mut m = self.m_in.clone();
-        inputs.append(&mut m);
+        let mut inputs: Vec<InputPort> = Vec::with_capacity(self.m_in.len() + 1);
+        inputs.push(InputPort {
+            port_id: MUX_SELECT_ID.to_string(),
+            input: self.select.clone(),
+        });
+        for (i, item) in self.m_in.iter().enumerate() {
+            inputs.push(InputPort {
+                port_id: format!("{}{}", MUX_TEMPLATE_ID, i),
+                input: item.clone(),
+            });
+        }
 
         (
             self.id.clone(),
             Ports {
                 inputs,
                 out_type: OutputType::Combinatorial,
-                outputs: vec!["out".into()],
+                outputs: vec![MUX_OUT_ID.to_string()],
             },
         )
     }
@@ -59,6 +72,20 @@ impl Component for Mux {
         // set output
         simulator.set_out_value(&self.id, "out", value);
         res
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        let target_port_id = target_port_id.as_str();
+        if target_port_id == MUX_SELECT_ID {
+            self.select = new_input;
+            return;
+        }
+        for i in 0..=self.m_in.len() - 1 {
+            if target_port_id == format!("{}{}", MUX_TEMPLATE_ID, i) {
+                self.m_in[i] = new_input;
+                return;
+            }
+        }
     }
 }
 
