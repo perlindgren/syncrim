@@ -1,13 +1,14 @@
 use asm_riscv::{self};
 use std::{
     cell::RefCell,
-    collections::{BTreeMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     ops::Range,
     panic,
     rc::Rc,
 };
 
 use log::trace;
+use riscv_asm_strings::Stringify;
 use serde::{Deserialize, Serialize};
 use syncrim::common::{Component, Condition, Input, OutputType, Ports, Simulator};
 
@@ -19,6 +20,7 @@ pub struct InstrMem {
     pub pc: Input,
     pub range: Range<usize>,
     pub breakpoints: Rc<RefCell<HashSet<usize>>>,
+    pub symbols: HashMap<usize, String>,
 }
 
 #[typetag::serde()]
@@ -46,9 +48,15 @@ impl Component for InstrMem {
             | (*self.bytes.get(&((pc + 3) as usize)).unwrap() as u32);
         //the asm_riscv crate incorrectly panics when trying from instead of
         //returning Err, catch it and handle instead
-        let instruction_fmt =
-            panic::catch_unwind(|| format!("{:?}", asm_riscv::I::try_from(instr)))
-                .unwrap_or_else(|_| format!("Unknown instruction"));
+        let instruction_fmt = {
+            format!(
+                "{:?}",
+                match asm_riscv::I::try_from(instr) {
+                    Ok(i) => i.to_string(),
+                    Err(_) => "Unknown instruction".to_string(),
+                }
+            )
+        }; 
         trace!("instruction: {}", instruction_fmt);
         trace!("pc:0x{:08x}", pc);
         // set output
@@ -92,6 +100,7 @@ mod test {
                         end: 0x1000,
                     },
                     breakpoints: Rc::new(RefCell::new(HashSet::new())),
+                    symbols: HashMap::new(),
                 }),
             ],
         };

@@ -1,6 +1,6 @@
 use std::{
     cell::RefCell,
-    collections::{BTreeMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     ops::Range,
     panic,
     rc::Rc,
@@ -13,6 +13,8 @@ use syncrim::{
     gui_vizia::{tooltip::new_component_tooltip, GuiData, ViziaComponent, V},
     vizia::{prelude::*, style::Color},
 };
+
+use riscv_asm_strings::*;
 
 #[typetag::serde]
 impl ViziaComponent for InstrMem {
@@ -45,16 +47,14 @@ impl ViziaComponent for InstrMem {
                 data_slice.push(
                     (format!(
                         "0x{:08x}:    {:08x}         ",
-                        self.range.start as usize + idx * 4,
+                        self.range.start as usize + idx,
                         instr,
-                    ) + &panic::catch_unwind(|| {
-                        format!("{:?}", asm_riscv::I::try_from(instr).unwrap())
-                    })
-                    .unwrap_or_else(|_| format!("Unknown instruction"))),
+                    ) + &stringify_instruction(instr, idx, self)),
                 );
             }
             data_slice
         };
+        println!("{:?}", self.symbols);
         let view = View::build(
             InstrMemView {
                 data: self.bytes.clone(),
@@ -65,6 +65,7 @@ impl ViziaComponent for InstrMem {
                 breakpoints: self.breakpoints.clone(),
                 pc_input: self.pc.clone(),
                 pc: 0,
+                symbols: self.symbols.clone(),
             },
             cx,
             |cx| {
@@ -74,6 +75,19 @@ impl ViziaComponent for InstrMem {
 
                 VirtualList::new(cx, InstrMemView::data_slice, 20.0, |cx, idx, item| {
                     HStack::new(cx, |cx| {
+                        if InstrMemView::symbols
+                            .map(move |map| map.contains_key(&(idx * 4)))
+                            .get(cx)
+                        {
+                            Label::new(
+                                cx,
+                                &InstrMemView::symbols
+                                    .map(move |map| {
+                                        format!("{}:", map.get(&(idx * 4)).unwrap().clone())
+                                    })
+                                    .get(cx),
+                            );
+                        };
                         Label::new(cx, "◉")
                             .on_mouse_up(move |cx, btn| {
                                 if btn == MouseButton::Right {
@@ -88,12 +102,17 @@ impl ViziaComponent for InstrMem {
                                     Color::rgba(255, 255, 255, 0)
                                     //transluscent
                                 }
-                            }));
-                        Label::new(cx, item).on_mouse_up(move |cx, btn| {
-                            if btn == MouseButton::Right {
-                                cx.emit(DataEvent::Breakpoint(idx))
-                            }
-                        });
+                            }))
+                            .position_type(PositionType::SelfDirected)
+                            .left(Percentage(17.5));
+                        Label::new(cx, item)
+                            .on_mouse_up(move |cx, btn| {
+                                if btn == MouseButton::Right {
+                                    cx.emit(DataEvent::Breakpoint(idx))
+                                }
+                            })
+                            .position_type(PositionType::SelfDirected)
+                            .left(Percentage(20.0));
                     })
                     .background_color(InstrMemView::pc.map(move |pc| {
                         if *pc as usize == idx * 4 {
@@ -124,6 +143,7 @@ pub struct InstrMemView {
     breakpoints: Rc<RefCell<HashSet<usize>>>,
     pc_input: Input,
     pc: u32,
+    symbols: HashMap<usize, String>,
 }
 
 pub enum DataEvent {
@@ -154,5 +174,15 @@ impl View for InstrMemView {
                 }
             }
         })
+    }
+}
+
+fn stringify_instruction(instr: u32, address: usize, memory: &InstrMem) -> String {
+    match asm_riscv::I::try_from(instr) {
+        Ok(i) => i.to_string(),
+        Err(err) => {
+            println!("{:?}", err);
+            "Unknown instruction".to_string()
+        }
     }
 }

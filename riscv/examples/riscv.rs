@@ -1,15 +1,18 @@
 use clap::Parser;
 // An example MIPS model
 use fern;
+use gimli;
+use object::{Object, ObjectSection};
 use riscv::components::*;
 use riscv_elf_parse;
 use std::{
+    borrow,
     cell::RefCell,
     collections::{BTreeMap, HashSet},
-    fs,
+    env, fs,
     ops::Range,
     path::PathBuf,
-    process::Command,
+    process::{Command, ExitStatus, exit},
     rc::Rc,
 };
 use syncrim::{
@@ -40,16 +43,13 @@ fn main() {
     let memory = if !args.use_elf {
         elf_from_asm(&args);
         let bytes = fs::read("./output").expect("The elf file could not be found");
-        let elf = ElfFile::new(&bytes).unwrap();
-        riscv_elf_parse::Memory::new_from_elf(elf)
+        riscv_elf_parse::Memory::new_from_file(&bytes)
     } else {
         let bytes =
             fs::read(format!("{}", args.elf_path)).expect("The elf file could not be found");
-        let elf = ElfFile::new(&bytes).unwrap();
-        riscv_elf_parse::Memory::new_from_elf(elf)
+        riscv_elf_parse::Memory::new_from_file(&bytes)
     };
 
-    println!("{}", memory);
     let mut instr_mem = BTreeMap::new();
     let mut data_mem = BTreeMap::new();
     let mut breakpoints = HashSet::new();
@@ -161,6 +161,7 @@ fn main() {
                 bytes: instr_mem,
                 range: instr_range,
                 breakpoints: Rc::new(RefCell::new(breakpoints)),
+                symbols: memory.symbols,
             }),
             Rc::new(Decoder {
                 id: "decoder".to_string(),
@@ -246,8 +247,28 @@ fn main() {
                 vec![
                     Input::new("alu", "result_o"),
                     Input::new("data_memory", "data"),
+                    Input::new("clic", "csr_data"),
                 ],
             ),
+            Mux::rc_new(
+                "csr_mux", 
+                (650.0, 300.0),
+                Input::new("decoder", "csr_data_mux"),
+                vec![
+                    Input::new("reg_file", "reg_a"),
+                    Input::new("decoder", "csr_data"),
+                ],
+
+            ),
+            Rc::new(CLIC::new(
+                "clic".to_string(),
+                (700.0, 300.0),
+                100.0,
+                100.0,
+                Input::new("csr_mux", "out"),
+                Input::new("decoder", "csr_addr"),
+                Input::new("decoder", "csr_ctl"),
+            )),
         ],
     };
 
@@ -284,7 +305,7 @@ fn fern_setup_riscv() {
 
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
-    let f = f.level_for("riscv::components::instr_mem", LevelFilter::Trace);
+    let f = f.level_for("riscv::components::instr_mem", LevelFilter::Trace).level_for("riscv::components::clic", LevelFilter::Trace);
 
     f
         // Output to stdout, files, and other Dispatch configurations
@@ -330,18 +351,30 @@ fn elf_from_asm(args: &Args) {
             .unwrap()
     };
     let _ = if cfg!(target_os = "windows") {
-        Command::new("cmd")
+        match Command::new("cmd")
             .current_dir(".\\riscv_asm\\")
             .args(["/C", "cargo build --release"])
             .status()
-            .unwrap()
+    {
+        Ok(_)=>{}
+        Err(_)=>{panic!("cargo build unsuccessful")}
+    }
     } else {
+        match
         Command::new("sh")
             .current_dir("./riscv_asm/")
             .arg("-c")
             .arg(format!("cargo build --release"))
             .status()
-            .unwrap()
+        {
+            Ok(exit_status)=>{
+                match exit_status.success(){
+                    true => {},
+                    false => {panic!("cargo build unsuccessful")}
+                }
+            }//25856
+            Err(_)=>{panic!()}
+        }
     };
     let _ = if cfg!(target_os = "windows") {
         Command::new("cmd")
@@ -362,4 +395,53 @@ fn elf_from_asm(args: &Args) {
             .status()
             .unwrap()
     };
+}
+
+fn dump_file(object: &object::File, endian: gimli::RunTimeEndian) -> Result<(), gimli::Error> {
+    // Load a section and return as `Cow<[u8]>`.
+    let load_section = |id: gimli::SectionId| -> Result<borrow::Cow<[u8]>, gimli::Error> {
+        match object.section_by_name(id.name()) {
+            Some(ref section) => Ok(section
+                .uncompressed_data()
+                .unwrap_or(borrow::Cow::Borrowed(&[][..]))),
+            None => Ok(borrow::Cow::Borrowed(&[][..])),
+        }
+    };
+
+    // Load all of the sections.
+    let dwarf_cow = gimli::Dwarf::load(&load_section)?;
+
+    // Borrow a `Cow<[u8]>` to create an `EndianSlice`.
+    let borrow_section: &dyn for<'a> Fn(
+        &'a borrow::Cow<[u8]>,
+    ) -> gimli::EndianSlice<'a, gimli::RunTimeEndian> =
+        &|section| gimli::EndianSlice::new(&*section, endian);
+
+    // Create `EndianSlice`s for all of the sections.
+    let dwarf = dwarf_cow.borrow(&borrow_section);
+
+    // Iterate over the compilation units.
+    let mut iter = dwarf.units();
+    while let Some(header) = iter.next()? {
+        println!(
+            "Unit at <.debug_info+0x{:x}>",
+            header.offset().as_debug_info_offset().unwrap().0
+        );
+        let unit = dwarf.unit(header)?;
+
+        // Iterate over the Debugging Information Entries (DIEs) in the unit.
+        let mut depth = 0;
+        let mut entries = unit.entries();
+        while let Some((delta_depth, entry)) = entries.next_dfs()? {
+            depth += delta_depth;
+            println!("<{}><{:x}> {}", depth, entry.offset().0, entry.tag());
+
+            // Iterate over the attributes in the DIE.
+            let mut attrs = entry.attrs();
+            while let Some(attr) = attrs.next()? {
+                println!("   {}: {:?}", attr.name(), attr.value());
+            }
+        }
+    }
+    Ok(())
 }
