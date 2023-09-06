@@ -5,6 +5,7 @@ mod csr;
 mod decoder;
 mod instr_mem;
 mod lsb_zero;
+mod mem;
 mod reg_file;
 mod sign_zero_ext;
 
@@ -15,5 +16,6 @@ pub use csr::*;
 pub use decoder::*;
 pub use instr_mem::*;
 pub use lsb_zero::*;
+pub use mem::*;
 pub use reg_file::*;
 pub use sign_zero_ext::*;

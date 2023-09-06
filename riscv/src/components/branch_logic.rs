@@ -12,6 +12,10 @@ pub struct BranchLogic {
 
     pub ctrl: Input,
     pub enable: Input,
+
+    pub mret: Input,
+
+    pub int: Input,
 }
 
 #[typetag::serde()]
@@ -28,6 +32,7 @@ impl Component for BranchLogic {
                     self.rs2.clone(),
                     self.ctrl.clone(),
                     self.enable.clone(),
+                    self.mret.clone(),
                 ],
                 out_type: OutputType::Combinatorial,
                 outputs: vec!["out".into()],
@@ -40,6 +45,26 @@ impl Component for BranchLogic {
         let out: SignalValue;
         let rs1: SignalValue = simulator.get_input_value(&self.rs1);
         let rs2: SignalValue = simulator.get_input_value(&self.rs2);
+        let int: SignalValue = simulator.get_input_value(&self.int);
+        let mret: SignalValue = simulator.get_input_value(&self.mret);
+        match int {
+            SignalValue::Data(sig) => {
+                if sig == 1 {
+                    simulator.set_out_value(&self.id, "out", 3);
+                    return Ok(()); //if interrupt just return here.
+                }
+            }
+            _ => {}
+        }
+        match mret {
+            SignalValue::Data(sig) => {
+                if sig == 1 {
+                    simulator.set_out_value(&self.id, "out", 4);
+                    return Ok(()); //if mret just return here.
+                }
+            }
+            _ => {}
+        }
         if enable != 0 {
             match simulator.get_input_value(&self.ctrl) {
                 SignalValue::Unknown | SignalValue::DontCare | SignalValue::Uninitialized => {
@@ -154,6 +179,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
@@ -161,6 +188,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -209,6 +238,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
@@ -216,10 +247,11 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
-
         let mut simulator = Simulator::new(&cs);
         assert_eq!(simulator.cycle, 1);
 
@@ -264,6 +296,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
@@ -271,6 +305,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -326,6 +362,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
@@ -333,6 +371,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -388,6 +428,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
@@ -395,6 +437,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -450,6 +494,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
@@ -457,6 +503,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -519,6 +567,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
@@ -526,10 +576,11 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
-
         let mut simulator = Simulator::new(&cs);
         assert_eq!(simulator.cycle, 1);
 
@@ -558,6 +609,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
@@ -565,6 +618,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };

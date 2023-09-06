@@ -49,6 +49,8 @@ impl Component for Decoder {
                     "csr_data_mux".into(),
                     "csr_data".into(),
                     "csr_addr".into(),
+                    "mepc".into(),
+                    "mret".into(),
                 ],
             },
         )
@@ -98,6 +100,7 @@ impl Component for Decoder {
         let mut csr_data_mux = SignalValue::Uninitialized;
         let mut csr_data = SignalValue::Uninitialized;
         let mut csr_addr = SignalValue::Uninitialized;
+        let mut mret = SignalValue::Uninitialized;
         match opcode {
             0b0110011 => {
                 //OP
@@ -422,43 +425,62 @@ impl Component for Decoder {
                     _ => panic!("Unsupported funct3 {:b}", funct3),
                 }
             }
-            0b1110011 => { //CSR
+            0b1110011 => {
+                //SYSTEM
                 csr_addr = SignalValue::from(imm); //imm
                 regfile_we = SignalValue::from(1); //write enable
                 wb_mux = SignalValue::from(2); //csr data out
                 regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
-                match funct3{
-                    0b001 => { //CSRRW
-                        csr_ctl = SignalValue::from(1); //write
-                        csr_data_mux = SignalValue::from(0); //register
-                        regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15); //rs1
+                if instruction == 807403635
+                //mret, basically magic number
+                {
+                    mret = SignalValue::from(1);
+                } else {
+                    match funct3 {
+                        0b001 => {
+                            //CSRRW
+                            csr_ctl = SignalValue::from(1); //write
+                            csr_data_mux = SignalValue::from(0); //register
+                            regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //rs1
+                        }
+                        0b010 => {
+                            //CSRRS
+                            csr_ctl = SignalValue::from(2); //set
+                            csr_data_mux = SignalValue::from(0); //register
+                            regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //rs1
+                        }
+                        0b011 => {
+                            //CSRRC
+                            csr_ctl = SignalValue::from(3); //clear
+                            csr_data_mux = SignalValue::from(0); //register
+                            regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //rs1
+                        }
+                        0b101 => {
+                            //CSRRWI
+                            csr_ctl = SignalValue::from(1); //write
+                            csr_data_mux = SignalValue::from(1); //immediate
+                            csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //zimm
+                        }
+                        0b110 => {
+                            //CSRRSI
+                            csr_ctl = SignalValue::from(2); //set
+                            csr_data_mux = SignalValue::from(1); //immediate
+                            csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //zimm
+                        }
+                        0b111 => {
+                            //CSRRCI
+                            csr_ctl = SignalValue::from(3); //clear
+                            csr_data_mux = SignalValue::from(1); //immediate
+                            csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //zimm
+                        }
+                        _ => panic!("Unsupported funct3 {:b}", funct3),
                     }
-                    0b010 => { //CSRRS
-                        csr_ctl = SignalValue::from(2); //set
-                        csr_data_mux = SignalValue::from(0); //register
-                        regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15); //rs1
-                    }
-                    0b011 => { //CSRRC
-                        csr_ctl = SignalValue::from(3); //clear
-                        csr_data_mux = SignalValue::from(0); //register
-                        regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15); //rs1
-                    }
-                    0b101 => { //CSRRWI
-                        csr_ctl = SignalValue::from(1); //write
-                        csr_data_mux = SignalValue::from(1); //immediate
-                        csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15); //zimm
-                    }
-                    0b110 => { //CSRRSI
-                        csr_ctl = SignalValue::from(2); //set
-                        csr_data_mux = SignalValue::from(1); //immediate
-                        csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15); //zimm
-                    }
-                    0b111 => { //CSRRCI
-                        csr_ctl = SignalValue::from(3); //clear
-                        csr_data_mux = SignalValue::from(1); //immediate
-                        csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15); //zimm
-                    }
-                    _=> panic!("Unsupported funct3 {:b}", funct3),
                 }
             }
             _ => {
@@ -490,6 +512,7 @@ impl Component for Decoder {
         simulator.set_out_value(&self.id, "csr_data_mux", csr_data_mux);
         simulator.set_out_value(&self.id, "csr_data", csr_data);
         simulator.set_out_value(&self.id, "csr_addr", csr_addr);
+        simulator.set_out_value(&self.id, "mret", mret);
         Ok(())
     }
 }

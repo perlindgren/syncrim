@@ -12,7 +12,7 @@ use std::{
     env, fs,
     ops::Range,
     path::PathBuf,
-    process::{Command, ExitStatus, exit},
+    process::{exit, Command, ExitStatus},
     rc::Rc,
 };
 use syncrim::{
@@ -97,6 +97,8 @@ fn main() {
                     Input::new("pc_adder", "out"),
                     Input::new("jalr_stripper", "out"),
                     Input::new("branch_adder", "out"),
+                    Input::new("data_memory", "isr_addr"),
+                    Input::new("clic", "mepc"),
                 ],
             ),
             Add::rc_new(
@@ -112,6 +114,8 @@ fn main() {
                 rs2: Input::new("reg_file", "reg_b"),
                 ctrl: Input::new("decoder", "branch_logic_ctl"),
                 enable: Input::new("decoder", "branch_logic_enable"),
+                int: Input::new("clic", "blu_int"),
+                mret: Input::new("clic", "mret"),
             }),
             Rc::new(LSBZero {
                 id: "jalr_stripper".to_string(),
@@ -184,33 +188,7 @@ fn main() {
                 data_i: Input::new("decoder", "sign_zero_ext_data"),
                 sel_i: Input::new("decoder", "sign_zero_ext_sel"),
             }),
-            Rc::new(RegFile {
-                id: "reg_file".into(),
-                pos: (450.0, 150.0),
-                width: 100.0,
-                height: 100.0,
-                read_addr1: Input::new("decoder", "regfile_rs1"),
-                read_addr2: Input::new("decoder", "regfile_rs2"),
-                write_data: Input::new("wb_mux", "out"),
-                write_addr: Input::new("regfile_rd_reg", "out"),
-                write_enable: Input::new("regfile_we_reg", "out"),
-                registers: RegStore::new(Rc::new(RefCell::new([0; 32]))),
-                history: RegHistory::new(),
-            }),
-            Mem::rc_new_from_bytes(
-                "data_memory",
-                (700.0, 600.0),
-                100.0,
-                100.0,
-                false,
-                Input::new("reg_file", "reg_b"),
-                Input::new("alu", "result_o"),
-                Input::new("decoder", "data_mem_ctrl"),
-                Input::new("decoder", "data_se"),
-                Input::new("decoder", "data_mem_size"),
-                data_mem,
-                range,
-            ),
+            Register::rc_new("wb_reg", (100.0, 140.0), Input::new("wb_mux", "out")),
             Constant::rc_new("zero_c", (680.0, 150.0), 0),
             Mux::rc_new(
                 "alu_operand_a_mux",
@@ -240,35 +218,77 @@ fn main() {
                 operand_a_i: Input::new("alu_operand_a_mux", "out"),
                 operand_b_i: Input::new("alu_operand_b_mux", "out"),
             }),
+            Rc::new(RegFile {
+                id: "reg_file".into(),
+                pos: (450.0, 150.0),
+                width: 100.0,
+                height: 100.0,
+                read_addr1: Input::new("decoder", "regfile_rs1"),
+                read_addr2: Input::new("decoder", "regfile_rs2"),
+                write_data: Input::new("wb_reg", "out"),
+                //write_data: Input::new("wb_mux", "out"),
+                write_addr: Input::new("regfile_rd_reg", "out"),
+                write_enable: Input::new("regfile_we_reg", "out"),
+                registers: RegStore::new(Rc::new(RefCell::new([0; 32]))),
+                history: RegHistory::new(),
+            }),
             Mux::rc_new(
-                "wb_mux",
-                (900.0, 225.0),
-                Input::new("decoder", "wb_mux"),
-                vec![
-                    Input::new("alu", "result_o"),
-                    Input::new("data_memory", "data"),
-                    Input::new("clic", "csr_data"),
-                ],
-            ),
-            Mux::rc_new(
-                "csr_mux", 
+                "csr_mux",
                 (650.0, 300.0),
                 Input::new("decoder", "csr_data_mux"),
                 vec![
                     Input::new("reg_file", "reg_a"),
                     Input::new("decoder", "csr_data"),
                 ],
-
             ),
             Rc::new(CLIC::new(
                 "clic".to_string(),
                 (700.0, 300.0),
                 100.0,
                 100.0,
-                Input::new("csr_mux", "out"),
-                Input::new("decoder", "csr_addr"),
-                Input::new("decoder", "csr_ctl"),
+                Input::new("reg_file", "reg_b"),        //MMIO data
+                Input::new("alu", "result_o"),          //MMIO address
+                Input::new("decoder", "data_mem_ctrl"), //R/W for MMIO
+                Input::new("csr_mux", "out"),           //Immediate or register data for CSR op
+                Input::new("decoder", "csr_addr"),      //CSR address
+                Input::new("decoder", "csr_ctl"),       //CSR op
+                Input::new("decoder", "mret"),          //mret signal
+                Input::new("pc_adder", "out"),          //mepc
             )),
+            riscv::components::Mem::rc_new_from_bytes(
+                "data_memory",
+                (700.0, 600.0),
+                100.0,
+                100.0,
+                false,
+                Input::new("reg_file", "reg_b"),
+                Input::new("alu", "result_o"),
+                Input::new("decoder", "data_mem_ctrl"),
+                Input::new("decoder", "data_se"),
+                Input::new("decoder", "data_mem_size"),
+                Input::new("clic", "mem_int_addr"),
+                data_mem,
+                range,
+            ),
+            Mux::rc_new(
+                "wb_mux",
+                (900.0, 225.0),
+                Input::new("decoder", "wb_mux"),
+                vec![
+                    Input::new("alu", "result_o"),
+                    Input::new("mmio_data_mux", "out"),
+                    Input::new("clic", "csr_data"),
+                ],
+            ),
+            Mux::rc_new(
+                "mmio_data_mux",
+                (650.0, 300.0),
+                Input::new("data_memory", "mmio_mux_ctl"),
+                vec![
+                    Input::new("data_memory", "data"),
+                    Input::new("clic", "mmio_data"),
+                ],
+            ),
         ],
     };
 
@@ -296,16 +316,20 @@ fn fern_setup_riscv() {
         })
         // Add blanket level filter -
         // .level(log::LevelFilter::Debug);
-        .level_for(
-            //   "syncrim::gui_vizia::components::mem",
-            "riscv::gui_vizia::components::instr_mem",
-            log::LevelFilter::Trace,
-        )
+        // .level_for(
+        //     //   "syncrim::gui_vizia::components::mem",
+        //     "riscv::gui_vizia::components::instr_mem",
+        //     log::LevelFilter::Trace,
+        // )
         .level(log::LevelFilter::Error);
 
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
-    let f = f.level_for("riscv::components::instr_mem", LevelFilter::Trace).level_for("riscv::components::clic", LevelFilter::Trace);
+    let f = f
+        .level_for("riscv::components::instr_mem", LevelFilter::Trace)
+        .level_for("riscv::components::clic", LevelFilter::Trace)
+        .level_for("riscv::components::mem", LevelFilter::Trace)
+        .level_for("syncrim::simulator", LevelFilter::Trace);
 
     f
         // Output to stdout, files, and other Dispatch configurations
@@ -355,25 +379,28 @@ fn elf_from_asm(args: &Args) {
             .current_dir(".\\riscv_asm\\")
             .args(["/C", "cargo build --release"])
             .status()
-    {
-        Ok(_)=>{}
-        Err(_)=>{panic!("cargo build unsuccessful")}
-    }
+        {
+            Ok(_) => {}
+            Err(_) => {
+                panic!("cargo build unsuccessful")
+            }
+        }
     } else {
-        match
-        Command::new("sh")
+        match Command::new("sh")
             .current_dir("./riscv_asm/")
             .arg("-c")
             .arg(format!("cargo build --release"))
             .status()
         {
-            Ok(exit_status)=>{
-                match exit_status.success(){
-                    true => {},
-                    false => {panic!("cargo build unsuccessful")}
+            Ok(exit_status) => match exit_status.success() {
+                true => {}
+                false => {
+                    panic!("cargo build unsuccessful")
                 }
-            }//25856
-            Err(_)=>{panic!()}
+            }, //25856
+            Err(_) => {
+                panic!()
+            }
         }
     };
     let _ = if cfg!(target_os = "windows") {
