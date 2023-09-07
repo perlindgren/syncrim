@@ -2,7 +2,6 @@ use std::{
     cell::RefCell,
     collections::{BTreeMap, HashMap, HashSet},
     ops::Range,
-    panic,
     rc::Rc,
 };
 
@@ -10,7 +9,7 @@ use crate::components::InstrMem;
 use log::trace;
 use syncrim::{
     common::{Input, Simulator},
-    gui_vizia::{tooltip::new_component_tooltip, GuiData, ViziaComponent, V},
+    gui_vizia::{GuiData, ViziaComponent, V},
     vizia::{prelude::*, style::Color},
 };
 
@@ -49,7 +48,8 @@ impl ViziaComponent for InstrMem {
                         "0x{:08x}:    {:08x}         ",
                         self.range.start as usize + idx,
                         instr,
-                    ) + &stringify_instruction(instr, idx, self)),
+                    ) + //&stringify_instruction(instr, idx, self))
+                    &stringify_instruction(instr)),
                 );
             }
             data_slice
@@ -177,7 +177,7 @@ impl View for InstrMemView {
     }
 }
 
-fn stringify_instruction(instr: u32, address: usize, memory: &InstrMem) -> String {
+fn stringify_instruction(instr: u32) -> String {
     match asm_riscv::I::try_from(instr) {
         Ok(i) => i.to_string(),
         Err(err) => {

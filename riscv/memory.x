@@ -7,20 +7,20 @@ SECTIONS
   }
 
   . = 0x100;
-  .isr0 :
+  .trap :
   {
-    KEEP(*(.isr0));
-  }
-  . = 0x200;
-  .isr1 :
-  {
-    KEEP(*(.isr1));
+    KEEP(*(.trap));
   }
   . = 0x50000000;
   .data :
   {
     KEEP(*(.data));  
-  } 
+  }
+  . = 0x50000100;
+  .vector_table : 
+  {
+    KEEP(*(.vector_table));  
+  }
 }
 
 PROVIDE(_stack_start = 0x50000500);

@@ -42,7 +42,7 @@ impl View for CLICView {
         // println!("InstMem draw {:?}", bounds);
 
         let mut path = Path::new();
-        let mut paint = Paint::color(Color::rgbf(0.0, 1.0, 1.0));
+        let mut paint = Paint::color(Color::rgbf(1.0, 0.9, 0.9));
         paint.set_line_width(cx.logical_to_physical(1.0));
 
         path.move_to(bounds.left() + 0.5, bounds.top() + 0.5);

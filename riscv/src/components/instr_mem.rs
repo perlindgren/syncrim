@@ -3,7 +3,6 @@ use std::{
     cell::RefCell,
     collections::{BTreeMap, HashMap, HashSet},
     ops::Range,
-    panic,
     rc::Rc,
 };
 

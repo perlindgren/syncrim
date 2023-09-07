@@ -1,25 +1,21 @@
 use clap::Parser;
 // An example MIPS model
 use fern;
-use gimli;
-use object::{Object, ObjectSection};
 use riscv::components::*;
 use riscv_elf_parse;
 use std::{
-    borrow,
     cell::RefCell,
     collections::{BTreeMap, HashSet},
-    env, fs,
+    fs,
     ops::Range,
     path::PathBuf,
-    process::{exit, Command, ExitStatus},
+    process::Command,
     rc::Rc,
 };
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
 };
-use xmas_elf::ElfFile;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -243,12 +239,13 @@ fn main() {
             ),
             Rc::new(CLIC::new(
                 "clic".to_string(),
-                (700.0, 300.0),
+                (300.0, 500.0),
                 100.0,
                 100.0,
                 Input::new("reg_file", "reg_b"),        //MMIO data
                 Input::new("alu", "result_o"),          //MMIO address
                 Input::new("decoder", "data_mem_ctrl"), //R/W for MMIO
+                Input::new("decoder", "data_mem_size"), //size for MMIO
                 Input::new("csr_mux", "out"),           //Immediate or register data for CSR op
                 Input::new("decoder", "csr_addr"),      //CSR address
                 Input::new("decoder", "csr_ctl"),       //CSR op
@@ -424,51 +421,51 @@ fn elf_from_asm(args: &Args) {
     };
 }
 
-fn dump_file(object: &object::File, endian: gimli::RunTimeEndian) -> Result<(), gimli::Error> {
-    // Load a section and return as `Cow<[u8]>`.
-    let load_section = |id: gimli::SectionId| -> Result<borrow::Cow<[u8]>, gimli::Error> {
-        match object.section_by_name(id.name()) {
-            Some(ref section) => Ok(section
-                .uncompressed_data()
-                .unwrap_or(borrow::Cow::Borrowed(&[][..]))),
-            None => Ok(borrow::Cow::Borrowed(&[][..])),
-        }
-    };
+// fn dump_file(object: &object::File, endian: gimli::RunTimeEndian) -> Result<(), gimli::Error> {
+//     // Load a section and return as `Cow<[u8]>`.
+//     let load_section = |id: gimli::SectionId| -> Result<borrow::Cow<[u8]>, gimli::Error> {
+//         match object.section_by_name(id.name()) {
+//             Some(ref section) => Ok(section
+//                 .uncompressed_data()
+//                 .unwrap_or(borrow::Cow::Borrowed(&[][..]))),
+//             None => Ok(borrow::Cow::Borrowed(&[][..])),
+//         }
+//     };
 
-    // Load all of the sections.
-    let dwarf_cow = gimli::Dwarf::load(&load_section)?;
+//     // Load all of the sections.
+//     let dwarf_cow = gimli::Dwarf::load(&load_section)?;
 
-    // Borrow a `Cow<[u8]>` to create an `EndianSlice`.
-    let borrow_section: &dyn for<'a> Fn(
-        &'a borrow::Cow<[u8]>,
-    ) -> gimli::EndianSlice<'a, gimli::RunTimeEndian> =
-        &|section| gimli::EndianSlice::new(&*section, endian);
+//     // Borrow a `Cow<[u8]>` to create an `EndianSlice`.
+//     let borrow_section: &dyn for<'a> Fn(
+//         &'a borrow::Cow<[u8]>,
+//     ) -> gimli::EndianSlice<'a, gimli::RunTimeEndian> =
+//         &|section| gimli::EndianSlice::new(&*section, endian);
 
-    // Create `EndianSlice`s for all of the sections.
-    let dwarf = dwarf_cow.borrow(&borrow_section);
+//     // Create `EndianSlice`s for all of the sections.
+//     let dwarf = dwarf_cow.borrow(&borrow_section);
 
-    // Iterate over the compilation units.
-    let mut iter = dwarf.units();
-    while let Some(header) = iter.next()? {
-        println!(
-            "Unit at <.debug_info+0x{:x}>",
-            header.offset().as_debug_info_offset().unwrap().0
-        );
-        let unit = dwarf.unit(header)?;
+//     // Iterate over the compilation units.
+//     let mut iter = dwarf.units();
+//     while let Some(header) = iter.next()? {
+//         println!(
+//             "Unit at <.debug_info+0x{:x}>",
+//             header.offset().as_debug_info_offset().unwrap().0
+//         );
+//         let unit = dwarf.unit(header)?;
 
-        // Iterate over the Debugging Information Entries (DIEs) in the unit.
-        let mut depth = 0;
-        let mut entries = unit.entries();
-        while let Some((delta_depth, entry)) = entries.next_dfs()? {
-            depth += delta_depth;
-            println!("<{}><{:x}> {}", depth, entry.offset().0, entry.tag());
+//         // Iterate over the Debugging Information Entries (DIEs) in the unit.
+//         let mut depth = 0;
+//         let mut entries = unit.entries();
+//         while let Some((delta_depth, entry)) = entries.next_dfs()? {
+//             depth += delta_depth;
+//             println!("<{}><{:x}> {}", depth, entry.offset().0, entry.tag());
 
-            // Iterate over the attributes in the DIE.
-            let mut attrs = entry.attrs();
-            while let Some(attr) = attrs.next()? {
-                println!("   {}: {:?}", attr.name(), attr.value());
-            }
-        }
-    }
-    Ok(())
-}
+//             // Iterate over the attributes in the DIE.
+//             let mut attrs = entry.attrs();
+//             while let Some(attr) = attrs.next()? {
+//                 println!("   {}: {:?}", attr.name(), attr.value());
+//             }
+//         }
+//     }
+//     Ok(())
+// }
