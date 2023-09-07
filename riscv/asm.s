@@ -39,8 +39,7 @@ isr_2:					//this interrupt is pended from isr_0, it is of highest prio
 .section	.trap, "ax"
 trap_0:
         addi    sp, sp, -0x4c   # allocate space for the context on the stack
-        sw      a0, 0x10(sp)    # start by pushing a0 and a1, we need them to stack CSRs and set threshold
-        sw      a1, 0x14(sp)
+        sw      a0, 0x10(sp)    # start by pushing a0 we it to stack CSRs and set threshold
         csrrs   a0, mstatus, x0 # read and stack mstatus 
         sw      a0, 0x00(sp)      
         csrrs   a0, mepc, x0    # read and stack mepc
@@ -54,6 +53,7 @@ trap_0:
             	csrrsi  x0, mstatus, 8  # enable interrupts (end of critical section)
         #END
         sw      ra, 0x0c(sp)    # stack the caller saved registers
+		sw      a1, 0x14(sp)
         sw      a2, 0x18(sp)
         sw      a3, 0x1c(sp)
         sw      a4, 0x20(sp)
@@ -100,8 +100,7 @@ trap_0:
 .section	.isr1, "ax"
 trap_1:
         addi    sp, sp, -0x4c   # allocate space for the context on the stack
-        sw      a0, 0x10(sp)    # start by pushing a0 and a1, we need them to stack CSRs and set threshold
-        sw      a1, 0x14(sp)
+        sw      a0, 0x10(sp)    # start by pushing a0 we it to stack CSRs and set threshold
         csrrs   a0, mstatus, x0 # read and stack mstatus 
         sw      a0, 0x00(sp)      
         csrrs   a0, mepc, x0    # read and stack mepc
@@ -115,6 +114,7 @@ trap_1:
             	csrrsi  x0, mstatus, 8  # enable interrupts (end of critical section)
         #END
         sw      ra, 0x0c(sp)    # stack the caller saved registers
+		sw      a1, 0x14(sp)
         sw      a2, 0x18(sp)
         sw      a3, 0x1c(sp)
         sw      a4, 0x20(sp)
@@ -159,9 +159,8 @@ trap_1:
         mret                        # return from interrupt
 
 trap_2:
-	addi    sp, sp, -0x4c   # allocate space for the context on the stack
-        sw      a0, 0x10(sp)    # start by pushing a0 and a1, we need them to stack CSRs and set threshold
-        sw      a1, 0x14(sp)
+        addi    sp, sp, -0x4c   # allocate space for the context on the stack
+        sw      a0, 0x10(sp)    # start by pushing a0 we it to stack CSRs and set threshold
         csrrs   a0, mstatus, x0 # read and stack mstatus 
         sw      a0, 0x00(sp)      
         csrrs   a0, mepc, x0    # read and stack mepc
@@ -175,6 +174,7 @@ trap_2:
             	csrrsi  x0, mstatus, 8  # enable interrupts (end of critical section)
         #END
         sw      ra, 0x0c(sp)    # stack the caller saved registers
+		sw      a1, 0x14(sp)
         sw      a2, 0x18(sp)
         sw      a3, 0x1c(sp)
         sw      a4, 0x20(sp)
