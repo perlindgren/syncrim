@@ -46,12 +46,12 @@ trap_0:
         csrrs   a0, mepc, x0    # read and stack mepc
         sw      a0, 0x04(sp)
         #_STORE_PRIO SUBROUTINE
-			csrr	a0, 0x347	 	# load current threshold
+		csrr	a0, 0x347	 	# load current threshold
     		sw      a0, 0x08(sp)    # store old threshold on stack
-			li     	a0, 0x1000   	# base address for the CLIC MMIO
-            lb 		a0, 3(a0)		# load prio config register of interrupt 0
-            csrw    0x347, a0   	# set the priority
-            csrrsi  x0, mstatus, 8  # enable interrupts (end of critical section)
+		li     	a0, 0x1000   	# base address for the CLIC MMIO
+            	lb 		a0, 3(a0)		# load prio config register of interrupt 0
+            	csrw    0x347, a0   	# set the priority
+            	csrrsi  x0, mstatus, 8  # enable interrupts (end of critical section)
         #END
         sw      ra, 0x0c(sp)    # stack the caller saved registers
         sw      a2, 0x18(sp)
@@ -69,7 +69,7 @@ trap_0:
         sw      t6, 0x48(sp)
         jal     ra, isr_0   # call into the user defined handler
 
-		#RETURN PRIO SUBROUTINE
+	#RETURN PRIO SUBROUTINE
             lw      a0, 0x08(sp)    # load the old threshold from the stack
             csrw    0x347, a0   	# set the priority
         #END
@@ -107,12 +107,12 @@ trap_1:
         csrrs   a0, mepc, x0    # read and stack mepc
         sw      a0, 0x04(sp)
         #_STORE_PRIO SUBROUTINE
-			csrr	a0, 0x347	 	# load current threshold
+		csrr	a0, 0x347	 	# load current threshold
         	sw      a0, 0x08(sp)    # store old threshold on stack
-			li     a0, 0x1000   	# base address for the CLIC MMIO
-            lb 		a0, 7(a0)		# load prio config register of interrupt 1
-            csrw    0x347, a0   	# set the priority
-            csrrsi  x0, mstatus, 8  # enable interrupts (end of critical section)
+		li     a0, 0x1000   	# base address for the CLIC MMIO
+            	lb 		a0, 7(a0)		# load prio config register of interrupt 1
+            	csrw    0x347, a0   	# set the priority
+            	csrrsi  x0, mstatus, 8  # enable interrupts (end of critical section)
         #END
         sw      ra, 0x0c(sp)    # stack the caller saved registers
         sw      a2, 0x18(sp)
@@ -130,9 +130,9 @@ trap_1:
         sw      t6, 0x48(sp)
         jal     ra, isr_1   # call into the user defined handler
 
-		#RETURN PRIO SUBROUTINE
-            lw      a0, 0x08(sp)    # load the old threshold from the stack
-			csrw    0x347, a0   	# set the priority
+	#RETURN PRIO SUBROUTINE
+            	lw      a0, 0x08(sp)    # load the old threshold from the stack
+		csrw    0x347, a0   	# set the priority
         #END
     
         lw      a0, 0x00(sp)        # restore CSRs and caller saved registers
@@ -159,7 +159,7 @@ trap_1:
         mret                        # return from interrupt
 
 trap_2:
-	        addi    sp, sp, -0x4c   # allocate space for the context on the stack
+	addi    sp, sp, -0x4c   # allocate space for the context on the stack
         sw      a0, 0x10(sp)    # start by pushing a0 and a1, we need them to stack CSRs and set threshold
         sw      a1, 0x14(sp)
         csrrs   a0, mstatus, x0 # read and stack mstatus 
@@ -167,12 +167,12 @@ trap_2:
         csrrs   a0, mepc, x0    # read and stack mepc
         sw      a0, 0x04(sp)
         #_STORE_PRIO SUBROUTINE
-			csrr	a0, 0x347	 	# load current threshold
-            sw      a0, 0x08(sp)    # store old threshold on stack
-			li     a0, 0x1000   	# base address for the CLIC MMIO
-            lb 		a0, 11(a0)		# load prio config register of interrupt 1
-            csrw    0x347, a0   	# set the priority
-            csrrsi  x0, mstatus, 8  # enable interrupts (end of critical section)
+		csrr	a0, 0x347	 	# load current threshold
+            	sw      a0, 0x08(sp)    # store old threshold on stack
+		li     a0, 0x1000   	# base address for the CLIC MMIO
+            	lb 		a0, 11(a0)		# load prio config register of interrupt 1
+            	csrw    0x347, a0   	# set the priority
+            	csrrsi  x0, mstatus, 8  # enable interrupts (end of critical section)
         #END
         sw      ra, 0x0c(sp)    # stack the caller saved registers
         sw      a2, 0x18(sp)
@@ -190,7 +190,7 @@ trap_2:
         sw      t6, 0x48(sp)
         jal     ra, isr_2   # call into the user defined handler
 
-		        #RETURN PRIO SUBROUTINE
+	#RETURN PRIO SUBROUTINE
             lw      a0, 0x08(sp)    # load the old threshold from the stack
             csrw    0x347, a0   	# set the priority
         #END
