@@ -114,6 +114,7 @@ impl CLIC {
                 csrstore.insert(0x347, 0); //mintthresh
                 csrstore.insert(0x348, 0); //mscratchcsw
                 csrstore.insert(0x349, 0); //mscratchcswl
+                csrstore.insert(0xF14, 0); //mhartid
                 RefCell::new(csrstore)
             },
             mmio: {
@@ -232,8 +233,11 @@ impl Component for CLIC {
                         //mtvec write
                         csr_data = csr_data | 0b11; //hardwire to vectored mode
                     }
-                    val = csrstore.get(&(csr_addr as usize)).unwrap().clone();
-                    csrstore.insert(csr_addr as usize, csr_data as usize);
+                    if csr_addr != 0xf14 {
+                        //mhartid RO
+                        val = csrstore.get(&(csr_addr as usize)).unwrap().clone();
+                        csrstore.insert(csr_addr as usize, csr_data as usize);
+                    }
                 }
             }
             //set
@@ -244,8 +248,11 @@ impl Component for CLIC {
                         //mtvec set
                         csr_data = csr_data | 0b11; //hardwire to vectored mode
                     }
-                    val = csrstore.get(&(csr_addr as usize)).unwrap().clone();
-                    csrstore.insert(csr_addr as usize, (csr_data as usize) | val);
+                    if csr_addr != 0xf14 {
+                        //mhartid RO
+                        val = csrstore.get(&(csr_addr as usize)).unwrap().clone();
+                        csrstore.insert(csr_addr as usize, (csr_data as usize) | val);
+                    }
                 }
             }
             //clear
@@ -256,8 +263,11 @@ impl Component for CLIC {
                         //mtvec clear
                         csr_data = csr_data | !0b11; //hardwire to vectored mode
                     }
-                    val = csrstore.get(&(csr_addr as usize)).unwrap().clone();
-                    csrstore.insert(csr_addr as usize, (!(csr_data as usize)) & val);
+                    if csr_addr != 0xf14 {
+                        //mhartid RO
+                        val = csrstore.get(&(csr_addr as usize)).unwrap().clone();
+                        csrstore.insert(csr_addr as usize, (!(csr_data as usize)) & val);
+                    }
                 }
             }
             _ => {}

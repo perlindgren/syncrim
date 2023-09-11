@@ -31,18 +31,24 @@ struct Args {
     /// Path to the linker script
     #[arg(short, long, default_value = "memory.x")]
     ls_path: String,
+    #[arg(short, long, default_value = "false")]
+    rust: bool,
 }
 
 fn main() {
     fern_setup_riscv();
     let args = Args::parse();
-    let memory = if !args.use_elf {
+    let memory = if !args.use_elf && !args.rust {
         elf_from_asm(&args);
         let bytes = fs::read("./output").expect("The elf file could not be found");
         riscv_elf_parse::Memory::new_from_file(&bytes)
-    } else {
+    } else if args.use_elf && !args.rust {
         let bytes =
             fs::read(format!("{}", args.elf_path)).expect("The elf file could not be found");
+        riscv_elf_parse::Memory::new_from_file(&bytes)
+    } else {
+        compile_rust_crate();
+        let bytes = fs::read("./output").expect("The elf file could not be found");
         riscv_elf_parse::Memory::new_from_file(&bytes)
     };
 
@@ -59,7 +65,7 @@ fn main() {
     };
     let instr_range = Range {
         start: 0x0000_0000usize,
-        end: 0x0000_0500usize,
+        end: 0x0000_2000usize,
     };
     for address in range.clone() {
         data_mem.insert(address as usize, 0);
@@ -415,6 +421,57 @@ fn elf_from_asm(args: &Args) {
             .arg("-c")
             .arg(format!(
                 "mv ./riscv_asm/target/riscv32i-unknown-none-elf/release/riscv_asm ./output"
+            ))
+            .status()
+            .unwrap()
+    };
+}
+
+fn compile_rust_crate() {
+    let _ = if cfg!(target_os = "windows") {
+        match Command::new("cmd")
+            .current_dir(".\\riscv_basic\\")
+            .args(["/C", "cargo build --release"])
+            .status()
+        {
+            Ok(_) => {}
+            Err(_) => {
+                panic!("cargo build unsuccessful")
+            }
+        }
+    } else {
+        match Command::new("sh")
+            .current_dir("./riscv_basic/")
+            .arg("-c")
+            .arg(format!("cargo build --release"))
+            .status()
+        {
+            Ok(exit_status) => match exit_status.success() {
+                true => {}
+                false => {
+                    panic!("cargo build unsuccessful")
+                }
+            }, //25856
+            Err(_) => {
+                panic!()
+            }
+        }
+    };
+    let _ = if cfg!(target_os = "windows") {
+        Command::new("cmd")
+            .current_dir(".\\riscv_basic\\")
+            .args([
+                "/C",
+                "move /y .\\target\\riscv32i-unknown-none-elf\\release\\riscv_basic ..\\output",
+            ])
+            .status()
+            .unwrap()
+    } else {
+        Command::new("sh")
+            .current_dir("./")
+            .arg("-c")
+            .arg(format!(
+                "mv ./riscv_basic/target/riscv32i-unknown-none-elf/release/riscv_basic ./output"
             ))
             .status()
             .unwrap()

@@ -22,6 +22,7 @@ object = "0.31.1"
 memmap2 = "0.7.1"
 riscv_asm_strings = {git = 'https://github.com/onsdagens/riscv_asm_strings'}
 priority-queue = {version = "1.3.2", features = ["serde"]}
+riscv-rt = "0.11.0"
 
 [dependencies.syncrim]
 path = "../"
