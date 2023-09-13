@@ -33,12 +33,11 @@
 #![feature(type_alias_impl_trait)]
 
 use core::panic::PanicInfo;
+use riscv_rt as _;
+use syncrim_clic_rt as _;
 
-#[rtic::app(device = esp32c3, dispatchers=[Interrupt0])]
+#[rtic::app(device = clic, peripherals = false, dispatchers=[Interrupt0, Interrupt1])]
 mod app {
-    use rtt_target::{rprintln, rtt_init_print};
-    use esp32c3_hal as _;
-
     #[shared]
     struct Shared {}
 
@@ -47,15 +46,19 @@ mod app {
 
     #[init]
     fn init(_: init::Context) -> (Shared, Local) {
-        rtt_init_print!();
-        rprintln!("init");
         foo::spawn().unwrap();
         (Shared {}, Local {})
     }
 
     #[task(priority = 2)]
     async fn foo(_: foo::Context) {
-        rprintln!("foo");
+        bar::spawn().unwrap();
+        loop{}
+    }
+
+    #[task(priority = 3)]
+    async fn bar(_: bar::Context) {
+        
     }
 }
 

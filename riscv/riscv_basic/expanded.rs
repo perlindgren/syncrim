@@ -1,228 +1,174 @@
 #![feature(prelude_import)]
-#![no_std]
 #![no_main]
+#![no_std]
+#![feature(type_alias_impl_trait)]
 #[prelude_import]
 use core::prelude::rust_2021::*;
 #[macro_use]
 extern crate core;
 extern crate compiler_builtins as _;
-use core::{arch::asm, panic::PanicInfo, ops, marker::PhantomData};
-use riscv::register::{mtvec, mstatus};
-use critical_section;
-use riscv_rt::entry;
-use volatile_register::RW;
-mod mintthresh {
-    use crate::{write_csr_as_usize, read_csr_as_usize, write_csr, read_csr};
-    /// Writes the CSR
-    #[inline]
-    #[allow(unused_variables)]
-    unsafe fn _write(bits: usize) {
-        match () {
-            #[cfg(not(riscv))]
-            () => ::core::panicking::panic("not implemented"),
+use core::panic::PanicInfo;
+use riscv_rt as _;
+/// The RTIC application module
+pub mod app {
+    /// Always include the device crate which contains the vector table
+    use clic as you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml;
+    /// Holds the maximum priority level for use by async HAL drivers.
+    #[no_mangle]
+    static RTIC_ASYNC_MAX_LOGICAL_PRIO: u8 = 1 << 7;
+    /// User code end
+    ///Shared resources
+    struct Shared {}
+    ///Local resources
+    struct Local {}
+    /// Execution context
+    #[allow(non_snake_case)]
+    #[allow(non_camel_case_types)]
+    pub struct __rtic_internal_init_Context<'a> {
+        #[doc(hidden)]
+        __rtic_internal_p: ::core::marker::PhantomData<&'a ()>,
+        /// Core peripherals
+        pub core: rtic::export::Peripherals,
+        /// Critical section token for init
+        pub cs: rtic::export::CriticalSection<'a>,
+    }
+    impl<'a> __rtic_internal_init_Context<'a> {
+        #[inline(always)]
+        #[allow(missing_docs)]
+        pub unsafe fn new(core: rtic::export::Peripherals) -> Self {
+            __rtic_internal_init_Context {
+                __rtic_internal_p: ::core::marker::PhantomData,
+                cs: rtic::export::CriticalSection::new(),
+                core,
+            }
         }
     }
-    /// Writes the CSR
-    #[inline]
-    pub fn write(bits: usize) {
-        unsafe { _write(bits) }
+    #[allow(non_snake_case)]
+    ///Initialization function
+    pub mod init {
+        #[doc(inline)]
+        pub use super::__rtic_internal_init_Context as Context;
     }
-    /// Reads the CSR
-    #[inline]
-    unsafe fn _read() -> usize {
-        match () {
-            #[cfg(not(riscv))]
-            () => ::core::panicking::panic("not implemented"),
+    #[inline(always)]
+    #[allow(non_snake_case)]
+    fn init(_: init::Context) -> (Shared, Local) {
+        foo::spawn().unwrap();
+        (Shared {}, Local {})
+    }
+    /// Execution context
+    #[allow(non_snake_case)]
+    #[allow(non_camel_case_types)]
+    pub struct __rtic_internal_foo_Context<'a> {
+        #[doc(hidden)]
+        __rtic_internal_p: ::core::marker::PhantomData<&'a ()>,
+    }
+    impl<'a> __rtic_internal_foo_Context<'a> {
+        #[inline(always)]
+        #[allow(missing_docs)]
+        pub unsafe fn new() -> Self {
+            __rtic_internal_foo_Context {
+                __rtic_internal_p: ::core::marker::PhantomData,
+            }
         }
     }
-    /// Reads the CSR
-    #[inline]
-    pub fn read() -> usize {
-        unsafe { _read() }
+    /// Spawns the task directly
+    #[allow(non_snake_case)]
+    #[doc(hidden)]
+    pub fn __rtic_internal_foo_spawn() -> Result<(), ()> {
+        #[inline(always)]
+        fn tait_hack() -> __rtic_internal_foo_F {
+            foo(unsafe { foo::Context::new() })
+        }
+        unsafe {
+            if __rtic_internal_foo_EXEC.try_allocate() {
+                let f = tait_hack();
+                __rtic_internal_foo_EXEC.spawn(f);
+                rtic::export::pend(clic::Interrupt::Interrupt0);
+                Ok(())
+            } else {
+                Err(())
+            }
+        }
     }
-}
-#[allow(non_snake_case)]
-#[export_name = "main"]
-pub unsafe fn __risc_v_rt__main() -> ! {
-    mintthresh::write(0);
-    mstatus::set_mie();
-    let mut clic = Peripherals::steal().CLIC;
-    CLIC::unmask(Interrupts::Interrupt0);
-    clic.set_priority(Interrupts::Interrupt0, 2);
-    CLIC::pend(Interrupts::Interrupt0);
-    loop {}
+    #[allow(non_snake_case)]
+    ///Software task
+    pub mod foo {
+        #[doc(inline)]
+        pub use super::__rtic_internal_foo_Context as Context;
+        #[doc(inline)]
+        pub use super::__rtic_internal_foo_spawn as spawn;
+    }
+    #[allow(non_snake_case)]
+    async fn foo<'a>(_: foo::Context<'a>) {
+        use rtic::Mutex as _;
+        use rtic::mutex::prelude::*;
+        loop {}
+    }
+    #[allow(non_camel_case_types)]
+    type __rtic_internal_foo_F = impl core::future::Future;
+    #[allow(non_upper_case_globals)]
+    static __rtic_internal_foo_EXEC: rtic::export::executor::AsyncTaskExecutor<
+        __rtic_internal_foo_F,
+    > = rtic::export::executor::AsyncTaskExecutor::new();
+    #[allow(non_snake_case)]
+    ///Interrupt handler to dispatch async tasks at priority 2
+    #[no_mangle]
+    #[export_name = "_interrupt0"]
+    unsafe fn Interrupt0() {
+        rtic::export::unpend(rtic::export::Interrupt::Interrupt0);
+        /// The priority of this interrupt handler
+        const PRIORITY: u8 = 2u8;
+        rtic::export::run(
+            PRIORITY,
+            || {
+                __rtic_internal_foo_EXEC
+                    .poll(|| {
+                        __rtic_internal_foo_EXEC.set_pending();
+                        rtic::export::pend(clic::Interrupt::Interrupt0);
+                    });
+            },
+        );
+    }
+    #[doc(hidden)]
+    #[no_mangle]
+    unsafe extern "C" fn main() -> ! {
+        rtic::export::interrupt::disable();
+        let mut core: rtic::export::Peripherals = rtic::export::Peripherals::steal()
+            .into();
+        let _ = you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml::Interrupt::Interrupt0;
+        const _: () = if (15usize) <= 2u8 as usize {
+            {
+                ::core::panicking::panic_fmt(
+                    format_args!(
+                        "Maximum priority used by interrupt vector \'Interrupt0\' is more than supported by hardware",
+                    ),
+                );
+            };
+        };
+        rtic::export::enable(
+            you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml::Interrupt::Interrupt0,
+            2u8,
+            1u8,
+        );
+        #[inline(never)]
+        fn __rtic_init_resources<F>(f: F)
+        where
+            F: FnOnce(),
+        {
+            f();
+        }
+        __rtic_init_resources(|| {
+            let (shared_resources, local_resources) = init(
+                init::Context::new(core.into()),
+            );
+            rtic::export::interrupt::enable();
+        });
+        loop {
+            continue;
+        }
+    }
 }
 #[panic_handler]
 fn panic(_: &PanicInfo) -> ! {
     loop {}
-}
-#[no_mangle]
-pub unsafe fn _setup_interrupts() {
-    mtvec::write(&_VECTOR_TABLE.handler0 as *const _ as usize, mtvec::TrapMode::Vectored)
-}
-#[repr(C)]
-struct VectorTable {
-    pub handler0: unsafe extern "C" fn(),
-    pub handler1: unsafe extern "C" fn(),
-    pub handler2: unsafe extern "C" fn(),
-}
-extern "C" {
-    fn handler_2();
-}
-static CLIC_WIDTH: usize = 32;
-#[link_section = ".data"]
-static _VECTOR_TABLE: VectorTable = VectorTable {
-    handler0: handler_0,
-    handler1: handler_1,
-    handler2: handler_2,
-};
-#[no_mangle]
-unsafe extern "C" fn handler_0() {
-    CLIC::unpend(Interrupts::Interrupt0);
-    asm!("mret")
-}
-#[no_mangle]
-unsafe extern "C" fn handler_1() {
-    asm!(
-        "\n        li \ta0, 0x1000\n        sb \tzero, 4(a0) \t//unpend self\n        mret\n    "
-    )
-}
-#[repr(u16)]
-pub enum Interrupts {
-    Interrupt0 = 0,
-    Interrupt1 = 1,
-    Interrupt2 = 2,
-}
-#[automatically_derived]
-impl ::core::clone::Clone for Interrupts {
-    #[inline]
-    fn clone(&self) -> Interrupts {
-        *self
-    }
-}
-#[automatically_derived]
-impl ::core::marker::Copy for Interrupts {}
-unsafe impl InterruptNumber for Interrupts {
-    fn number(&self) -> u16 {
-        *self as u16
-    }
-}
-#[repr(C)]
-pub struct RegisterBlock {
-    pub interrupts: [[RW<u8>; 4]; 4096],
-}
-pub unsafe trait InterruptNumber {
-    fn number(&self) -> u16;
-}
-pub struct Peripherals {
-    CLIC: CLIC,
-}
-static mut TAKEN: bool = false;
-impl Peripherals {
-    /// Returns all the core peripherals *once*
-    #[inline]
-    pub fn take() -> Option<Self> {
-        critical_section::with(|_| {
-            if unsafe { TAKEN } { None } else { Some(unsafe { Peripherals::steal() }) }
-        })
-    }
-    /// Unchecked version of `Peripherals::take`
-    #[inline]
-    pub unsafe fn steal() -> Self {
-        TAKEN = true;
-        Peripherals {
-            CLIC: CLIC { _marker: PhantomData },
-        }
-    }
-}
-/// Nested Vector Interrupt Controller
-#[allow(clippy::upper_case_acronyms)]
-pub struct CLIC {
-    _marker: PhantomData<*const ()>,
-}
-unsafe impl Send for CLIC {}
-impl CLIC {
-    /// Pointer to the register block
-    pub const PTR: *const RegisterBlock = 0x0000_1000 as *const _;
-}
-impl ops::Deref for CLIC {
-    type Target = RegisterBlock;
-    #[inline(always)]
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*Self::PTR }
-    }
-}
-impl CLIC {
-    /// Disables `interrupt`
-    #[inline]
-    pub fn mask<I>(interrupt: I)
-    where
-        I: InterruptNumber,
-    {
-        let nr = interrupt.number();
-        unsafe { (*Self::PTR).interrupts[nr as usize][1].write(0) }
-    }
-    /// Enables interrupt
-    #[inline]
-    pub unsafe fn unmask<I>(interrupt: I)
-    where
-        I: InterruptNumber,
-    {
-        let nr = interrupt.number();
-        unsafe { (*Self::PTR).interrupts[nr as usize][1].write(1) }
-    }
-    /// Returns the CLIC priority of interrupt
-    #[inline]
-    pub fn get_priority<I>(interrupt: I) -> u8
-    where
-        I: InterruptNumber,
-    {
-        let nr = interrupt.number();
-        unsafe { (*Self::PTR).interrupts[nr as usize][3].read() }
-    }
-    /// Checks if interrupt is enabled
-    #[inline]
-    pub fn is_enabled<I>(interrupt: I) -> bool
-    where
-        I: InterruptNumber,
-    {
-        let nr = interrupt.number();
-        unsafe { (*Self::PTR).interrupts[nr as usize][1].read() != 0 }
-    }
-    /// Checks if interrupt is pending
-    #[inline]
-    pub fn is_pending<I>(interrupt: I) -> bool
-    where
-        I: InterruptNumber,
-    {
-        let nr = interrupt.number();
-        unsafe { (*Self::PTR).interrupts[nr as usize][0].read() != 0 }
-    }
-    /// Forces interrupt into pending state
-    #[inline]
-    pub fn pend<I>(interrupt: I)
-    where
-        I: InterruptNumber,
-    {
-        let nr = interrupt.number();
-        unsafe { (*Self::PTR).interrupts[nr as usize][0].write(1) }
-    }
-    /// Sets the priority of interrupt to prio
-    #[inline]
-    pub unsafe fn set_priority<I>(&mut self, interrupt: I, prio: u8)
-    where
-        I: InterruptNumber,
-    {
-        let nr = interrupt.number();
-        unsafe { (*Self::PTR).interrupts[nr as usize][3].write(prio) }
-    }
-    /// Clears interrupt's pending state
-    #[inline]
-    pub fn unpend<I>(interrupt: I)
-    where
-        I: InterruptNumber,
-    {
-        let nr = interrupt.number();
-        unsafe { (*Self::PTR).interrupts[nr as usize][0].write(0) }
-    }
 }
