@@ -326,7 +326,7 @@ impl Component for Mem {
 
         match mem_int_addr {
             SignalValue::Data(addr) => {
-                let value = self.memory.read(addr as usize, 4, false, true);
+                let value = self.memory.read(addr as usize, 4, false, self.big_endian);
                 simulator.set_out_value(&self.id, "isr_addr", value);
             }
             _ => simulator.set_out_value(&self.id, "isr_addr", SignalValue::Unknown),

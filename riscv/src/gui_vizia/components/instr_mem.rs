@@ -39,10 +39,10 @@ impl ViziaComponent for InstrMem {
             trace!("range {:x?}", self.range);
             for idx in (self.range.start as usize..self.range.end as usize).step_by(4) {
                 trace!("idx {:x?}", idx);
-                let instr = (*self.bytes.get(&((idx) as usize)).unwrap() as u32) << 24
-                    | (*self.bytes.get(&((idx + 1) as usize)).unwrap() as u32) << 16
-                    | (*self.bytes.get(&((idx + 2) as usize)).unwrap() as u32) << 8
-                    | (*self.bytes.get(&((idx + 3) as usize)).unwrap() as u32);
+                let instr = (*self.bytes.get(&((idx) as usize)).unwrap() as u32) 
+                    | (*self.bytes.get(&((idx + 1) as usize)).unwrap() as u32) << 8
+                    | (*self.bytes.get(&((idx + 2) as usize)).unwrap() as u32) << 16
+                    | (*self.bytes.get(&((idx + 3) as usize)).unwrap() as u32) << 24;
                 data_slice.push(
                     (format!(
                         "0x{:08x}:    {:08x}         ",

@@ -41,15 +41,15 @@ fn main() {
     let memory = if !args.use_elf && !args.rust {
         elf_from_asm(&args);
         let bytes = fs::read("./output").expect("The elf file could not be found");
-        riscv_elf_parse::Memory::new_from_file(&bytes)
+        riscv_elf_parse::Memory::new_from_file(&bytes, false)
     } else if args.use_elf && !args.rust {
         let bytes =
             fs::read(format!("{}", args.elf_path)).expect("The elf file could not be found");
-        riscv_elf_parse::Memory::new_from_file(&bytes)
+        riscv_elf_parse::Memory::new_from_file(&bytes, false)
     } else {
         compile_rust_crate();
         let bytes = fs::read("./output").expect("The elf file could not be found");
-        riscv_elf_parse::Memory::new_from_file(&bytes)
+        riscv_elf_parse::Memory::new_from_file(&bytes, false)
     };
 
     let mut instr_mem = BTreeMap::new();
@@ -168,6 +168,7 @@ fn main() {
                 range: instr_range,
                 breakpoints: Rc::new(RefCell::new(breakpoints)),
                 symbols: memory.symbols,
+                le: false,
             }),
             Rc::new(Decoder {
                 id: "decoder".to_string(),

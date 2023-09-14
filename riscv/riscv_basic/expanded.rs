@@ -9,6 +9,7 @@ extern crate core;
 extern crate compiler_builtins as _;
 use core::panic::PanicInfo;
 use riscv_rt as _;
+use syncrim_clic_rt as _;
 /// The RTIC application module
 pub mod app {
     /// Always include the device crate which contains the vector table
@@ -98,17 +99,72 @@ pub mod app {
         #[doc(inline)]
         pub use super::__rtic_internal_foo_spawn as spawn;
     }
+    /// Execution context
+    #[allow(non_snake_case)]
+    #[allow(non_camel_case_types)]
+    pub struct __rtic_internal_bar_Context<'a> {
+        #[doc(hidden)]
+        __rtic_internal_p: ::core::marker::PhantomData<&'a ()>,
+    }
+    impl<'a> __rtic_internal_bar_Context<'a> {
+        #[inline(always)]
+        #[allow(missing_docs)]
+        pub unsafe fn new() -> Self {
+            __rtic_internal_bar_Context {
+                __rtic_internal_p: ::core::marker::PhantomData,
+            }
+        }
+    }
+    /// Spawns the task directly
+    #[allow(non_snake_case)]
+    #[doc(hidden)]
+    pub fn __rtic_internal_bar_spawn() -> Result<(), ()> {
+        #[inline(always)]
+        fn tait_hack() -> __rtic_internal_bar_F {
+            bar(unsafe { bar::Context::new() })
+        }
+        unsafe {
+            if __rtic_internal_bar_EXEC.try_allocate() {
+                let f = tait_hack();
+                __rtic_internal_bar_EXEC.spawn(f);
+                rtic::export::pend(clic::Interrupt::Interrupt1);
+                Ok(())
+            } else {
+                Err(())
+            }
+        }
+    }
+    #[allow(non_snake_case)]
+    ///Software task
+    pub mod bar {
+        #[doc(inline)]
+        pub use super::__rtic_internal_bar_Context as Context;
+        #[doc(inline)]
+        pub use super::__rtic_internal_bar_spawn as spawn;
+    }
     #[allow(non_snake_case)]
     async fn foo<'a>(_: foo::Context<'a>) {
         use rtic::Mutex as _;
         use rtic::mutex::prelude::*;
+        bar::spawn().unwrap();
         loop {}
+    }
+    #[allow(non_snake_case)]
+    async fn bar<'a>(_: bar::Context<'a>) {
+        use rtic::Mutex as _;
+        use rtic::mutex::prelude::*;
     }
     #[allow(non_camel_case_types)]
     type __rtic_internal_foo_F = impl core::future::Future;
     #[allow(non_upper_case_globals)]
     static __rtic_internal_foo_EXEC: rtic::export::executor::AsyncTaskExecutor<
         __rtic_internal_foo_F,
+    > = rtic::export::executor::AsyncTaskExecutor::new();
+    #[allow(non_camel_case_types)]
+    type __rtic_internal_bar_F = impl core::future::Future;
+    #[allow(non_upper_case_globals)]
+    static __rtic_internal_bar_EXEC: rtic::export::executor::AsyncTaskExecutor<
+        __rtic_internal_bar_F,
     > = rtic::export::executor::AsyncTaskExecutor::new();
     #[allow(non_snake_case)]
     ///Interrupt handler to dispatch async tasks at priority 2
@@ -129,6 +185,25 @@ pub mod app {
             },
         );
     }
+    #[allow(non_snake_case)]
+    ///Interrupt handler to dispatch async tasks at priority 3
+    #[no_mangle]
+    #[export_name = "_interrupt1"]
+    unsafe fn Interrupt1() {
+        rtic::export::unpend(rtic::export::Interrupt::Interrupt1);
+        /// The priority of this interrupt handler
+        const PRIORITY: u8 = 3u8;
+        rtic::export::run(
+            PRIORITY,
+            || {
+                __rtic_internal_bar_EXEC
+                    .poll(|| {
+                        __rtic_internal_bar_EXEC.set_pending();
+                        rtic::export::pend(clic::Interrupt::Interrupt1);
+                    });
+            },
+        );
+    }
     #[doc(hidden)]
     #[no_mangle]
     unsafe extern "C" fn main() -> ! {
@@ -136,6 +211,7 @@ pub mod app {
         let mut core: rtic::export::Peripherals = rtic::export::Peripherals::steal()
             .into();
         let _ = you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml::Interrupt::Interrupt0;
+        let _ = you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml::Interrupt::Interrupt1;
         const _: () = if (15usize) <= 2u8 as usize {
             {
                 ::core::panicking::panic_fmt(
@@ -149,6 +225,20 @@ pub mod app {
             you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml::Interrupt::Interrupt0,
             2u8,
             1u8,
+        );
+        const _: () = if (15usize) <= 3u8 as usize {
+            {
+                ::core::panicking::panic_fmt(
+                    format_args!(
+                        "Maximum priority used by interrupt vector \'Interrupt1\' is more than supported by hardware",
+                    ),
+                );
+            };
+        };
+        rtic::export::enable(
+            you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml::Interrupt::Interrupt1,
+            3u8,
+            2u8,
         );
         #[inline(never)]
         fn __rtic_init_resources<F>(f: F)

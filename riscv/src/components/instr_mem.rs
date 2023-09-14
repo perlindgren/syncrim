@@ -20,6 +20,7 @@ pub struct InstrMem {
     pub range: Range<usize>,
     pub breakpoints: Rc<RefCell<HashSet<usize>>>,
     pub symbols: HashMap<usize, String>,
+    pub le: bool,
 }
 
 #[typetag::serde()]
@@ -41,10 +42,14 @@ impl Component for InstrMem {
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get instr at pc/4
         let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
-        let instr = (*self.bytes.get(&((pc) as usize)).unwrap() as u32) << 24
+        let instr = if self.le{ (*self.bytes.get(&((pc) as usize)).unwrap() as u32) << 24
             | (*self.bytes.get(&((pc + 1) as usize)).unwrap() as u32) << 16
             | (*self.bytes.get(&((pc + 2) as usize)).unwrap() as u32) << 8
-            | (*self.bytes.get(&((pc + 3) as usize)).unwrap() as u32);
+            | (*self.bytes.get(&((pc + 3) as usize)).unwrap() as u32)}
+        else{(*self.bytes.get(&((pc) as usize)).unwrap() as u32)
+            | (*self.bytes.get(&((pc + 1) as usize)).unwrap() as u32) << 8
+            | (*self.bytes.get(&((pc + 2) as usize)).unwrap() as u32) << 16
+            | (*self.bytes.get(&((pc + 3) as usize)).unwrap() as u32) << 24};
         //the asm_riscv crate incorrectly panics when trying from instead of
         //returning Err, catch it and handle instead
         let instruction_fmt = {
@@ -100,6 +105,7 @@ mod test {
                     },
                     breakpoints: Rc::new(RefCell::new(HashSet::new())),
                     symbols: HashMap::new(),
+                    le: true,
                 }),
             ],
         };
