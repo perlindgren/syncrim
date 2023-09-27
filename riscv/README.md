@@ -17,7 +17,7 @@ To skip compilation and linking, the ``use-elf`` flag can be used along with ``e
 
 ## Initializing the model with Rust
 
-```cargo run --example riscv -- --rust``
+```cargo run --example riscv -- --rust```
 Runs the simulation with the Rust flag.
 
 This means compiling the crate ``riscv-basic`` in ``./``, linking it using ``./memory.x`` and initializing the instruction and data memory.
