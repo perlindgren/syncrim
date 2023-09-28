@@ -244,6 +244,10 @@ fn main() {
                     Input::new("decoder", "csr_data"),
                 ],
             ),
+            Rc::new(Sysclk::new(
+                "sysclk",
+                (250.0, 500.0)
+            )),
             Rc::new(CLIC::new(
                 "clic".to_string(),
                 (300.0, 500.0),
@@ -258,6 +262,7 @@ fn main() {
                 Input::new("decoder", "csr_ctl"),       //CSR op
                 Input::new("decoder", "mret"),          //mret signal
                 Input::new("pc_adder", "out"),          //mepc
+                Input::new("sysclk", "clock"),
             )),
             riscv::components::Mem::rc_new_from_bytes(
                 "data_memory",

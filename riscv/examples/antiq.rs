@@ -64,48 +64,37 @@ fn main() {
                 (500.0, 550.0),
                 Input::new("antiq", "data_overflow_o"),
             ),
+            Probe::rc_new(
+                "int_id",
+                (500.0, 575.0),
+                Input::new("antiq", "int_id"),
+            ),
             ProbeEdit::rc_new(
-               "pop_i",
+               "we",
                 (300.0, 300.0),
             ),
             ProbeEdit::rc_new(
-               "drop_i",
+               "d_in",
                 (300.0, 325.0),
             ),
             ProbeEdit::rc_new(
-               "push_i",
+               "addr",
                 (300.0, 350.0),
             ),
-            ProbeEdit::rc_new(
-               "drop_id_i",
-                (300.0, 375.0),
-            ),
-            ProbeEdit::rc_new(
-               "push_id_i",
-                (300.0, 400.0),
-            ),
-            ProbeEdit::rc_new(
-               "data_i",
-                (300.0, 425.0),
-            ),
-            ProbeEdit::rc_new(
+            Rc::new(Sysclk::new(
                 "sysclk",
-                (300.0, 450.0),
-            ),
-
+                (300.0, 500.0),
+            )),
             Rc::new(Antiq::new(
                 "antiq",
                 (400.0, 400.0),
-                Input::new("pop_i", "out"),
-                Input::new("drop_i", "out"),
-                Input::new("push_i", "out"),
-                Input::new("drop_id_i", "out"),
-                Input::new("push_id_i", "out"),
-                Input::new("data_i", "out"),
-                Input::new("sysclk", "out"),
- 
+                Input::new("sysclk", "clock"),
                 3,
                 32,
+                Input::new("we", "out"),
+                Input::new("d_in", "out"),
+                Input::new("addr", "out"),
+                0,
             )),
         ],
     };

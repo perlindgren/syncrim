@@ -10,6 +10,7 @@ mod reg_file;
 mod sign_zero_ext;
 mod antiq;
 mod antiq_ctl;
+mod sysclk;
 
 pub use alu::*;
 pub use branch_logic::*;
@@ -23,3 +24,4 @@ pub use reg_file::*;
 pub use sign_zero_ext::*;
 pub use antiq::*;
 pub use antiq_ctl::*;
+pub use sysclk::*;

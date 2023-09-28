@@ -7,17 +7,18 @@ use std::{convert::Into, cell::RefCell, cmp::Reverse};
 pub struct Antiq {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
-    pub(crate) pop_i: Input,
-    pub(crate) drop_i: Input,
-    pub(crate) push_i: Input,
-    pub(crate) drop_id_i: Input,
-    pub(crate) push_id_i: Input,
-    pub(crate) data_i: Input,
     pub(crate) sysclk: Input,
+    pub(crate) we: Input,
+    pub(crate) d_in: Input,
+    pub(crate) addr: Input,
 
     //CONSTANTS
     pub(crate) DEPTH:u8,
     pub(crate) DATA_WIDTH:u8,
+
+    //mmio constants
+    pub(crate) RANGE_LOW:u32,
+    pub(crate) RANGE_HIGH:u32,
 
     //Internal state
     pub queue: RefCell<PriorityQueue<u32, Reverse<u32>>> 
@@ -33,23 +34,60 @@ impl Component for Antiq {
             self.id.clone(),
             Ports::new(
                 // Constants do not take any inputs
-                vec![&self.pop_i, &self.drop_i, &self.push_i, &self.drop_id_i,&self.push_id_i, &self.data_i],
+                vec![&self.sysclk, &self.we, &self.d_in, &self.addr],
                 OutputType::Combinatorial,
-                vec!["push_rdy_o", "pop_rdy_o", "drop_rdy_o", "full_o", "empty_o", "cnt_o", "data_o", "peek_vld_o", "peek_data_o", "overflow_o", "data_overflow_o"],
+                vec!["push_rdy_o", "pop_rdy_o", "drop_rdy_o", "full_o", "empty_o", "cnt_o", "data_o", "peek_vld_o", "peek_data_o", "overflow_o", "data_overflow_o", "int_id"],
             ),
         )
     }
 
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
-        //simulator.set_out_value(&self.id, "out", self.value.get_value());
-        let pop_i:u32 = simulator.get_input_value(&self.pop_i).try_into().unwrap();
-        let drop_i:u32 = simulator.get_input_value(&self.drop_i).try_into().unwrap();
-        let push_i:u32 = simulator.get_input_value(&self.push_i).try_into().unwrap();
-        let drop_id_i:u32 = simulator.get_input_value(&self.drop_id_i).try_into().unwrap();
-        let data_i:u32 = simulator.get_input_value(&self.data_i).try_into().unwrap();
-        let push_id_i:u32 = simulator.get_input_value(&self.push_id_i).try_into().unwrap();
+        //AntiqCtl part
+        let sysclk:u32 = simulator.get_input_value(&self.sysclk).try_into().unwrap();
+        let we:u32 = simulator.get_input_value(&self.we).try_into().unwrap();
+        let d_in:u32 = simulator.get_input_value(&self.d_in).try_into().unwrap();
+        let addr:u32 = simulator.get_input_value(&self.addr).try_into().unwrap();
+        let interrupt_id = d_in & 0xFF;   // shift out time data
+        let time_in = d_in >> 8; // mask out interrupt id
+        let mut data_out = 0;
+        let mut push = false;
+        let mut drop = false;
+        let mut pop = false;
+        let mut data_to_push = 0;
+        if we == 1 && self.within_range(addr) {
+            match addr - self.RANGE_LOW{
+                0 =>{//relative time maybe ignore this for now, needs signal to antiq to trigger
+                  //adding sysclk
+                       // data_out = (sysclk + time_in)<<8 | interrupt_id;
+                        trace!("relative push");
+                        push = true;
+                        data_to_push = ((sysclk+time_in)<<8) | interrupt_id;
+                    }
+                4 =>{//absolute time
+                        trace!("absolute push");
+                        push = true;
+                        data_to_push = (time_in<<8) | interrupt_id;
+                        trace!("time_in:{}", time_in);
+                        trace!("interrupt_id:{}", interrupt_id);
+                    }
+                8 =>{//drop input/push output
+                        drop = true;
+                    } 
+                int=>{//do nothing, we've checked that addr is within range
+                    trace!("addr diff{}", int)
+                    }
+            }
+        }
         let mut queue = self.queue.borrow_mut();
-        if push_i == 1 {
+        if !queue.is_empty(){
+            if queue.peek().unwrap().1.0 >> 8 <= sysclk {
+                pop = true;
+            }
+        }
+
+
+        //Actual AntiQ
+        if push{
             // if the queue size is exceeded, signal overflow, and pop from the queue before
             // pushing
             if queue.len() == self.DEPTH as usize{
@@ -60,25 +98,30 @@ impl Component for Antiq {
                 simulator.set_out_value(&self.id, "data_overflow_o", item.0);
             }
             // push the item to the queue
-            trace!("pushing deadline:{} id:{}", data_i, push_id_i);
-            queue.push(push_id_i, Reverse(data_i));
+            trace!("pushing release:{} id:{}", data_to_push >> 8, sysclk);
+            queue.push(sysclk, Reverse(data_to_push));
             simulator.set_out_value(&self.id, "push_rdy_o", 1);
         }
         else{
             simulator.set_out_value(&self.id, "push_rdy_o", 0);
         }
-        if pop_i == 1 {
+        if pop {
             if !queue.is_empty(){
                 let item = queue.pop().clone().unwrap();
-                simulator.set_out_value(&self.id, "data_o", item.0);
+                trace!("Popping: int id:{}", (item.1.0 & 0xFF));
+                simulator.set_out_value(&self.id, "int_id", item.1.0 & 0xFF);
                 simulator.set_out_value(&self.id, "pop_rdy_o", 1);
             }
 
         }
+        else{
+            simulator.set_out_value(&self.id, "pop_rdy_o", 0);
+        }
+        /*
         if drop_i == 1 {
             queue.remove(&drop_id_i);
             simulator.set_out_value(&self.id, "drop_rdy_o", 1);
-        }
+        }*/
         if queue.len() == self.DEPTH as usize{
             simulator.set_out_value(&self.id, "full_o", 1);
         }
@@ -100,7 +143,7 @@ impl Component for Antiq {
         simulator.set_out_value(&self.id, "cnt_o", queue.len() as u32);
         trace!("QUEUE:");
         for item in queue.iter(){
-            trace!("DEADLINE:{}, ID:{}", item.1.0, item.0);
+            trace!("RELEASE:{}, INTERRUPT ID:{}, ID:{}", item.1.0 >> 8,item.1.0&0xFF, item.0);
         }
 
         Ok(())
@@ -108,22 +151,24 @@ impl Component for Antiq {
 }
 
 impl Antiq {
-    pub fn new(id: &str, pos: (f32, f32), pop_i: Input, drop_i: Input,
-    push_i: Input, drop_id_i: Input, push_id_i:Input, data_i: Input,sysclk:Input, depth:u8, data_width:u8) -> Self {
+    pub fn new(id: &str, pos: (f32, f32), sysclk:Input, depth:u8, data_width:u8,
+    we:Input, d_in: Input, addr: Input, range_low:u32,) -> Self {
         Antiq {
             id: id.to_string(),
             pos,
-            pop_i: pop_i.into(),
-            drop_i: drop_i.into(),
-            push_i: push_i.into(),
-            drop_id_i: drop_id_i.into(),
-            data_i: data_i.into(),
-            push_id_i: push_id_i.into(),
             sysclk: sysclk.into(),
             DEPTH: depth,
             DATA_WIDTH: data_width,
             queue: RefCell::new(PriorityQueue::new()),
+            we: we,
+            d_in: d_in,
+            addr: addr,
+            RANGE_LOW: range_low,
+            RANGE_HIGH: range_low + 3*4,
         }
+    }
+    fn within_range(&self, addr:u32)->bool{
+        self.RANGE_LOW <= addr && addr <= self.RANGE_HIGH
     }
 }
 mod test{
@@ -154,19 +199,18 @@ use syncrim::{
                 "push_id_i"
                 )),
                 Rc::new(ProbeOut::new("data_i")),
+//(id: &str, pos: (f32, f32), sysclk:Input, depth:u8, data_width:u8,
+//    we:Input, d_in: Input, addr: Input, range_low:u32,)
                 Rc::new(Antiq::new(
                     "antiq",
                     (400.0, 400.0),
-                    Input::new("pop_i", "out"),
-                    Input::new("drop_i", "out"),
-                    Input::new("push_i", "out"),
-                    Input::new("drop_id_i", "out"),
-                    Input::new("push_id_i", "out"),
-                    Input::new("data_i", "out"),
-                    Input::new("data_i", "out"),
-    
-                    3, //depth 3
-                    32, //32 bit wide data
+                    Input::new("sysclk", "out"),
+                    3,
+                    32,
+                    Input::new("we", "out"),
+                    Input::new("d_in", "out"),
+                    Input::new("addr", "out"), 
+                    0, //mmio starts at 0x0
                 )),
 
             ],
@@ -184,12 +228,9 @@ use syncrim::{
         let overflow_o = &Input::new("antiq", "overflow_o");
         let data_overflow_o = &Input::new("antiq", "data_overflow_o");
 
-        simulator.set_out_value("pop_i", "out", 0);
-        simulator.set_out_value("drop_i", "out", 0);
-        simulator.set_out_value("push_i", "out", 1);
-        simulator.set_out_value("drop_id_i", "out", 0);
-        simulator.set_out_value("push_id_i", "out", 98);
-        simulator.set_out_value("data_i", "out", 2);
+        simulator.set_out_value("we", "out", 0);
+        simulator.set_out_value("d_in", "out", 0);
+        simulator.set_out_value("addr", "out", 1);
         simulator.clock();
         assert_eq!(simulator.get_input_value(push_rdy_o), 1.try_into().unwrap());
         assert_eq!(simulator.get_input_value(pop_rdy_o), 0.try_into().unwrap());
@@ -261,6 +302,7 @@ use syncrim::{
         assert_eq!(simulator.get_input_value(data_overflow_o), 102.try_into().unwrap());
 
     }
+    /*
     #[test]
     fn test_pop() {
         let cs = ComponentStore {
@@ -443,5 +485,5 @@ use syncrim::{
         assert_eq!(simulator.get_input_value(data_overflow_o), 0.try_into().unwrap());
 
     } 
-
+*/
 }

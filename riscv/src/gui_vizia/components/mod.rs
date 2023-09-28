@@ -9,3 +9,4 @@ pub mod reg_file;
 pub mod sign_zero_ext;
 pub mod antiq;
 pub mod antiq_ctl;
+pub mod sysclk;

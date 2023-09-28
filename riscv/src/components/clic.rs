@@ -38,6 +38,8 @@ pub struct CLIC {
     //interurpt lines
     // pub lines: Vec<Input>,
 
+    pub sysclk: Input,
+
     //internal state
     pub csrstore: RefCell<HashMap<usize, usize>>, //address, val
     pub mmio: RefCell<HashMap<usize, u8>>,        //address, val
@@ -88,6 +90,7 @@ impl CLIC {
         csr_ctl: Input,
         mret: Input,
         pc: Input,
+        sysclk: Input,
     ) -> Self {
         CLIC {
             id: id,
@@ -131,6 +134,7 @@ impl CLIC {
             csr_ctl: csr_ctl,
             mtime: RefCell::new(0),
             mtimecmp: RefCell::new(0),
+            sysclk: sysclk,
         }
     }
 }
@@ -201,6 +205,8 @@ impl Component for CLIC {
             .get_input_value(&self.data_size)
             .try_into()
             .unwrap_or(0);
+        let sysclk:u32 = simulator.get_input_value(&self.sysclk).try_into().unwrap(); //infallible, clock
+        //is always ticking.....
         let mut val = 0;
         let mut blu_int = SignalValue::Uninitialized;
         let mut mmio_data = SignalValue::Uninitialized;
@@ -209,17 +215,17 @@ impl Component for CLIC {
         let mut mepc = SignalValue::Uninitialized;
 
         //TIME HANDLING
-        let mtime_lo:u32 = self.read(0x5000, 4, false, false).try_into().unwrap();
-        let mtime_hi:u32 = self.read(0x5004, 4, false, false).try_into().unwrap();
-        let mut mtime: u64 = ((mtime_hi as u64) << 32u64) | mtime_lo as u64;
-        mtime += 1;
+        //let mtime_lo:u32 = self.read(0x5000, 4, false, false).try_into().unwrap();
+        //let mtime_hi:u32 = self.read(0x5004, 4, false, false).try_into().unwrap();
+        //let mut mtime: u64 = ((mtime_hi as u64) << 32u64) | mtime_lo as u64;
+        //mtime += 1;
         //let mmio = self.mmio.borrow_mut();
-        self.write(0x5000, 4, false, ( mtime as u32).into()); 
-        self.write(0x5004, 4, false, ((mtime >> 32 ) as u32).into());
+        self.write(0x5000, 4, false, sysclk.into()); 
+        //self.write(0x5004, 4, false, ((mtime >> 32 ) as u32).into());
         trace!("MTIME_LO:{}", <SignalValue as TryInto<u32>>::try_into(self.read(0x5000, 4, false, false)).unwrap());
-        trace!("MTIME_HI:{}", <SignalValue as TryInto<u32>>::try_into(self.read(0x5004, 4, false, false)).unwrap());
-        trace!("MTIME_COMP_LO:{}", <SignalValue as TryInto<u32>>::try_into(self.read(0x5008, 4, false, false)).unwrap());
-        trace!("MTIME_COMP_HI:{}",  <SignalValue as TryInto<u32>>::try_into(self.read(0x500C, 4, false, false)).unwrap());
+        //trace!("MTIME_HI:{}", <SignalValue as TryInto<u32>>::try_into(self.read(0x5004, 4, false, false)).unwrap());
+        //trace!("MTIME_COMP_LO:{}", <SignalValue as TryInto<u32>>::try_into(self.read(0x5008, 4, false, false)).unwrap());
+        //trace!("MTIME_COMP_HI:{}",  <SignalValue as TryInto<u32>>::try_into(self.read(0x500C, 4, false, false)).unwrap());
 
         if mret == 1 {
             let mut csrstore = self.csrstore.borrow_mut();
