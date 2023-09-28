@@ -2,6 +2,8 @@
 
 RISCV specific components.
 
+For now this requires nightly to compile the included assembly.
+
 ## Initializing the model with assembly
 
 ```cargo run --example riscv```
