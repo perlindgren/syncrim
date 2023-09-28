@@ -105,7 +105,7 @@ mod test {
                     },
                     breakpoints: Rc::new(RefCell::new(HashSet::new())),
                     symbols: HashMap::new(),
-                    le: true,
+                    le: false,
                 }),
             ],
         };

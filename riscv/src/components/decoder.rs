@@ -484,7 +484,7 @@ impl Component for Decoder {
                 }
             }
             _ => {
-                panic!("Invalid opcode! {:b}", opcode);
+               // panic!("Invalid opcode! {:b} insn:0x{:x}", opcode, instruction);
             }
         };
 

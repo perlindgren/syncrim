@@ -330,10 +330,10 @@ fn fern_setup_riscv() {
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
     let f = f
-        .level_for("riscv::components::instr_mem", LevelFilter::Trace)
-        .level_for("riscv::components::clic", LevelFilter::Trace)
-        .level_for("riscv::components::mem", LevelFilter::Trace)
-        .level_for("syncrim::simulator", LevelFilter::Trace);
+        //.level_for("riscv::components::instr_mem", LevelFilter::Trace)
+        .level_for("riscv::components::clic", LevelFilter::Trace);
+        //.level_for("riscv::components::mem", LevelFilter::Trace)
+        //.level_for("syncrim::simulator", LevelFilter::Trace);
 
     f
         // Output to stdout, files, and other Dispatch configurations
