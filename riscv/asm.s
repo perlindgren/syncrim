@@ -1,40 +1,40 @@
 .option norvc 
 	.text
 init:
-	la sp, _stack_start //set stack pointer
+	la sp, _stack_start #set stack pointer
 main:
-	la 	t0, 0x05000101 	//priority 5, enabled, pended, will store at interrupt 0
-	la 	t1, 0x04000101 	//priority 4, enabled, pended, will store at interrupt 1
-	la 	t2, 0x06000100 	//priority 6, enabled, not pended, will store at interrupt 2
-	la 	a0, 0x1000 	//CLIC address
-	sw 	t0, 0(a0) 	//store at CLIC, interrupt 0
-	sw 	t1, 4(a0) 	//store at CLIC + 4, interrupt 1
-	sw 	t2, 8(a0) 	//store at CLIC + 8, interrupt 2
-	la 	t0, .vector_table //load vector table address
-	csrw 	mtvec, t0 		// store vector table address at mtvec
-	csrwi 	0x347, 0 		// set interrupt prio threshold to 0
-	csrwi  	mstatus, 8 		//enable global interrupts
+	la 	t0, 0x05000101 	#priority 5, enabled, pended, will store at interrupt 0
+	la 	t1, 0x04000101 	#priority 4, enabled, pended, will store at interrupt 1
+	la 	t2, 0x06000100 	#priority 6, enabled, not pended, will store at interrupt 2
+	la 	a0, 0x1000 	#CLIC address
+	sw 	t0, 0(a0) 	#store at CLIC, interrupt 0
+	sw 	t1, 4(a0) 	#store at CLIC + 4, interrupt 1
+	sw 	t2, 8(a0) 	#store at CLIC + 8, interrupt 2
+	la 	t0, .vector_table #load vector table address
+	csrw 	mtvec, t0 		# store vector table address at mtvec
+	csrwi 	0x347, 0 		# set interrupt prio threshold to 0
+	csrwi  	mstatus, 8 		#enable global interrupts
 	li 	t0, 0
-	addi 	t0, t0, 1 		//make sure we return from exception properly, t0 should end up being one by the time we hit stop.
-stop: j 	stop 			//loop continue
+	addi 	t0, t0, 1 		#make sure we return from exception properly, t0 should end up being one by the time we hit stop.
+stop: j 	stop 			#loop continue
 
-isr_0:					//this interrupt is pended at the start, it is of middle prio
+isr_0:					#this interrupt is pended at the start, it is of middle prio
 	li 	a0, 0x1000
-	sb 	zero, 0(a0) 	//unpend self
+	sb 	zero, 0(a0) 	#unpend self
 	li	a1, 1
-	sb	a1, 8(a0) 	//pend highest prio interrupt 
-	li	t0, 0x1337 	//make it obvious we've come here by setting t0 to 1337
-	jr 	ra		//return
-isr_1:					//this interrupt is pended at the start, it is of low prio
+	sb	a1, 8(a0) 	#pend highest prio interrupt 
+	li	t0, 0x1337 	#make it obvious we've come here by setting t0 to 1337
+	jr 	ra		#return
+isr_1:					#this interrupt is pended at the start, it is of low prio
 	li 	a0, 0x1000
-	sb 	zero, 4(a0) 	//unpend self
-	li	t0, 0x1337 	//make it obvious we've come here by setting t1 to 1337
-	jr 	ra		//return
-isr_2:					//this interrupt is pended from isr_0, it is of highest prio
+	sb 	zero, 4(a0) 	#unpend self
+	li	t0, 0x1337 	#make it obvious we've come here by setting t1 to 1337
+	jr 	ra		#return
+isr_2:					#this interrupt is pended from isr_0, it is of highest prio
 	li 	a0, 0x1000
-	sb 	zero, 8(a0) 	//unpend self
-	li	t2, 0x1337 	//make it obvious we've come here by setting t2 to 1337
-	jr 	ra		//return
+	sb 	zero, 8(a0) 	#unpend self
+	li	t2, 0x1337 	#make it obvious we've come here by setting t2 to 1337
+	jr 	ra		#return
 
 .section	.trap, "ax"
 trap_0:
