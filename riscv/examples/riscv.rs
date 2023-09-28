@@ -168,7 +168,7 @@ fn main() {
                 range: instr_range,
                 breakpoints: Rc::new(RefCell::new(breakpoints)),
                 symbols: memory.symbols,
-                le: false,
+                le: true,
             }),
             Rc::new(Decoder {
                 id: "decoder".to_string(),

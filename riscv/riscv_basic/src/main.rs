@@ -36,7 +36,7 @@ use core::panic::PanicInfo;
 use riscv_rt as _;
 use syncrim_clic_rt as _;
 
-#[rtic::app(device = clic, peripherals = false, dispatchers=[Interrupt0, Interrupt1])]
+#[rtic::app(device = clic, peripherals = false, dispatchers=[GPIOA, TIM1])]
 mod app {
     #[shared]
     struct Shared {}

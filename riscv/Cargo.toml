@@ -10,7 +10,7 @@ serde = "1.0.167"
 serde_derive = "1.0.167"
 typetag = "0.2.9"
 serde_json = "1.0.100"
-riscv-elf-parse = {path = '../../riscv-elf-parse/'}
+riscv-elf-parse = {git = 'https://github.com/onsdagens/riscv-elf-parse/'}
 clap = {version="4.3.11",features=["derive"]}
 log = "0.4.19"
 num_enum = "0.6.1"

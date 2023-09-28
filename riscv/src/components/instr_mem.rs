@@ -42,7 +42,7 @@ impl Component for InstrMem {
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get instr at pc/4
         let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
-        let instr = if self.le{ (*self.bytes.get(&((pc) as usize)).unwrap() as u32) << 24
+        let instr = if !self.le{ (*self.bytes.get(&((pc) as usize)).unwrap() as u32) << 24
             | (*self.bytes.get(&((pc + 1) as usize)).unwrap() as u32) << 16
             | (*self.bytes.get(&((pc + 2) as usize)).unwrap() as u32) << 8
             | (*self.bytes.get(&((pc + 3) as usize)).unwrap() as u32)}
