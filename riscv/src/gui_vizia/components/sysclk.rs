@@ -1,11 +1,9 @@
-use syncrim::{
-    gui_vizia::{ViziaComponent, V},
-};
 use crate::components::Sysclk;
 use log::*;
+use syncrim::gui_vizia::{ViziaComponent, V};
 use syncrim::vizia::{
     prelude::*,
-    vg::{Paint, Path, Color},
+    vg::{Color, Paint, Path},
 };
 
 #[typetag::serde]

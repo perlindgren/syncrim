@@ -338,7 +338,7 @@ impl Component for Mem {
                 match ctrl {
                     MemCtrl::Read => {
                         let addr: u32 = addr.try_into().unwrap();
-                        if !(0x1000 <= addr && addr <= 0x500F) {
+                        if !(0x1000 <= addr && addr <= 0x501C) {
                             //if not in mmio range
                             let size: u32 = size.try_into().unwrap();
                             let sign: u32 = sign.try_into().unwrap();
@@ -354,13 +354,17 @@ impl Component for Mem {
                             trace!("align {:?}", value);
                             simulator.set_out_value(&self.id, "err", value); // align
                             simulator.set_out_value(&self.id, "mmio_mux_ctl", 0);
-                        } else {
+                        } else if (addr <= 0x500F) {
                             simulator.set_out_value(&self.id, "mmio_mux_ctl", 1);
+                        //CLIC
+                        } else {
+                            simulator.set_out_value(&self.id, "mmio_mux_ctl", 2);
+                            //AnTiQ
                         }
                     }
                     MemCtrl::Write => {
                         let addr: u32 = addr.try_into().unwrap();
-                        if !(0x1000 <= addr && addr <= 0x500F) {
+                        if !(0x1000 <= addr && addr <= 0x501C) {
                             //if not in mmio range
                             let size: u32 = size.try_into().unwrap();
                             trace!("write addr {:?} size {:?}", addr, size);

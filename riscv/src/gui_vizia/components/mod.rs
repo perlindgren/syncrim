@@ -1,4 +1,6 @@
 pub mod alu;
+pub mod antiq;
+pub mod antiq_ctl;
 pub mod branch_logic;
 pub mod clic;
 pub mod decoder;
@@ -7,6 +9,4 @@ pub mod lsb_zero;
 pub mod mem;
 pub mod reg_file;
 pub mod sign_zero_ext;
-pub mod antiq;
-pub mod antiq_ctl;
 pub mod sysclk;

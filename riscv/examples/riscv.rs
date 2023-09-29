@@ -244,10 +244,7 @@ fn main() {
                     Input::new("decoder", "csr_data"),
                 ],
             ),
-            Rc::new(Sysclk::new(
-                "sysclk",
-                (250.0, 500.0)
-            )),
+            Rc::new(Sysclk::new("sysclk", (250.0, 500.0))),
             Rc::new(CLIC::new(
                 "clic".to_string(),
                 (300.0, 500.0),
@@ -263,6 +260,7 @@ fn main() {
                 Input::new("decoder", "mret"),          //mret signal
                 Input::new("pc_adder", "out"),          //mepc
                 Input::new("sysclk", "clock"),
+                Input::new("antiq", "int_id"),
             )),
             riscv::components::Mem::rc_new_from_bytes(
                 "data_memory",
@@ -296,8 +294,21 @@ fn main() {
                 vec![
                     Input::new("data_memory", "data"),
                     Input::new("clic", "mmio_data"),
+                    Input::new("antiq", "data_o"),
                 ],
             ),
+            Rc::new(Antiq::new(
+                "antiq",
+                (600.0, 500.0),
+                Input::new("sysclk", "clock"),
+                32,
+                32,
+                Input::new("decoder", "data_mem_ctrl"),
+                Input::new("reg_file", "reg_b"),
+                Input::new("alu", "result_o"),
+                Input::new("decoder", "data_mem_size"),
+                0x5010,
+            )),
         ],
     };
 
@@ -336,9 +347,10 @@ fn fern_setup_riscv() {
     #[cfg(feature = "gui-vizia")]
     let f = f
         //.level_for("riscv::components::instr_mem", LevelFilter::Trace)
+        .level_for("riscv::components::antiq", LevelFilter::Trace)
         .level_for("riscv::components::clic", LevelFilter::Trace);
-        //.level_for("riscv::components::mem", LevelFilter::Trace)
-        //.level_for("syncrim::simulator", LevelFilter::Trace);
+    //.level_for("riscv::components::mem", LevelFilter::Trace)
+    //.level_for("syncrim::simulator", LevelFilter::Trace);
 
     f
         // Output to stdout, files, and other Dispatch configurations

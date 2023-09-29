@@ -6,7 +6,7 @@ use syncrim::{
 };
 
 use priority_queue::PriorityQueue;
-use std::{cell::RefCell, collections::HashMap, borrow::BorrowMut};
+use std::{borrow::BorrowMut, cell::RefCell, collections::HashMap};
 
 #[derive(Serialize, Deserialize)]
 pub struct CLIC {
@@ -37,8 +37,8 @@ pub struct CLIC {
     pub pc: Input,
     //interurpt lines
     // pub lines: Vec<Input>,
-
     pub sysclk: Input,
+    pub antiq_id: Input,
 
     //internal state
     pub csrstore: RefCell<HashMap<usize, usize>>, //address, val
@@ -91,6 +91,7 @@ impl CLIC {
         mret: Input,
         pc: Input,
         sysclk: Input,
+        antiq_id: Input,
     ) -> Self {
         CLIC {
             id: id,
@@ -131,10 +132,11 @@ impl CLIC {
             },
             queue: RefCell::new(PriorityQueue::new()),
             // lines: lines,
-            csr_ctl: csr_ctl,
+            csr_ctl,
             mtime: RefCell::new(0),
             mtimecmp: RefCell::new(0),
-            sysclk: sysclk,
+            sysclk,
+            antiq_id,
         }
     }
 }
@@ -159,6 +161,7 @@ impl Component for CLIC {
                     self.mret.clone(),
                     self.pc.clone(),
                     self.data_size.clone(),
+                    self.antiq_id.clone(),
                 ],
                 out_type: OutputType::Combinatorial,
                 outputs: vec![
@@ -205,8 +208,9 @@ impl Component for CLIC {
             .get_input_value(&self.data_size)
             .try_into()
             .unwrap_or(0);
-        let sysclk:u32 = simulator.get_input_value(&self.sysclk).try_into().unwrap(); //infallible, clock
-        //is always ticking.....
+        let sysclk: u32 = simulator.get_input_value(&self.sysclk).try_into().unwrap(); //infallible, clock
+                                                                                       //is always ticking.....
+        let antiq_id:u32 = simulator.get_input_value(&self.antiq_id).try_into().unwrap_or(0);
         let mut val = 0;
         let mut blu_int = SignalValue::Uninitialized;
         let mut mmio_data = SignalValue::Uninitialized;
@@ -220,9 +224,12 @@ impl Component for CLIC {
         //let mut mtime: u64 = ((mtime_hi as u64) << 32u64) | mtime_lo as u64;
         //mtime += 1;
         //let mmio = self.mmio.borrow_mut();
-        self.write(0x5000, 4, false, sysclk.into()); 
+        self.write(0x5000, 4, false, sysclk.into());
         //self.write(0x5004, 4, false, ((mtime >> 32 ) as u32).into());
-        trace!("MTIME_LO:{}", <SignalValue as TryInto<u32>>::try_into(self.read(0x5000, 4, false, false)).unwrap());
+        trace!(
+            "MTIME_LO:{}",
+            <SignalValue as TryInto<u32>>::try_into(self.read(0x5000, 4, false, false)).unwrap()
+        );
         //trace!("MTIME_HI:{}", <SignalValue as TryInto<u32>>::try_into(self.read(0x5004, 4, false, false)).unwrap());
         //trace!("MTIME_COMP_LO:{}", <SignalValue as TryInto<u32>>::try_into(self.read(0x5008, 4, false, false)).unwrap());
         //trace!("MTIME_COMP_HI:{}",  <SignalValue as TryInto<u32>>::try_into(self.read(0x500C, 4, false, false)).unwrap());
@@ -335,12 +342,15 @@ impl Component for CLIC {
                 ];
                 let mut i = 0;
                 for mmio_entry in mmio_entries {
+                    trace!("writing");
                     if mmio_entry.clicintie == 1 && mmio_entry.clicintip == 1 {
+                        trace!("pending {}",&((addr - offset + 4 * i - 0x1000) / 4) );
                         //enqueue self if pending status and enable status are 1, this changes prio dynamically with prio change also.
                         queue.push((addr - offset + 4 * i - 0x1000) / 4, mmio_entry.clicintctl);
                     }
                     if mmio_entry.clicintie != 1 || mmio_entry.clicintip != 1 {
                         //dequeue self if pending or enabled status is 0
+                        trace!("unpending {}",&((addr - offset + 4 * i - 0x1000) / 4) );
                         queue.remove(&((addr - offset + 4 * i - 0x1000) / 4));
                     }
                     i += 1;
@@ -356,6 +366,17 @@ impl Component for CLIC {
                 mmio_data = self.read(addr as usize, data_size as usize, false, false);
             }
         };
+
+        if antiq_id != 0 {
+            trace!("antiq pending stuff");
+            self.write((0x1000 + antiq_id * 4) as usize, 1, false, SignalValue::Data(1));
+            let int_reg:u32 = self.read((0x1000 + antiq_id * 4) as usize, 4, false, false).try_into().unwrap();
+            let int_reg:MMIOEntry = int_reg.into();
+            if int_reg.clicintie == 1 && int_reg.clicintip == 1 {
+                queue.push(antiq_id, int_reg.clicintctl);
+            }
+        }
+
         //Interrupt dispatch
         let mut csrstore = self.csrstore.borrow_mut();
         let mstatus = csrstore.get(&0x300).unwrap().clone();

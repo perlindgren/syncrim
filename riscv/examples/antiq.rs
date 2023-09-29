@@ -1,10 +1,10 @@
+use riscv::components::*;
+use std::path::PathBuf;
+use std::rc::Rc;
 use syncrim::{
     common::{ComponentStore, Input},
-     components::*,
+    components::*,
 };
-use std::rc::Rc;
-use std::path::PathBuf;
-use riscv::components::*;
 fn main() {
     fern_setup_riscv();
     let cs = ComponentStore {
@@ -24,26 +24,10 @@ fn main() {
                 (500.0, 350.0),
                 Input::new("antiq", "drop_rdy_o"),
             ),
-            Probe::rc_new(
-                "full_o",
-                (500.0, 375.0),
-                Input::new("antiq", "full_o"),
-            ),
-            Probe::rc_new(
-                "empty_o",
-                (500.0, 400.0),
-                Input::new("antiq", "empty_o"),
-            ),
-            Probe::rc_new(
-                "cnt_o",
-                (500.0, 425.0),
-                Input::new("antiq", "cnt_o"),
-            ),
-            Probe::rc_new(
-                "data_o",
-                (500.0, 450.0),
-                Input::new("antiq", "data_o"),
-            ),
+            Probe::rc_new("full_o", (500.0, 375.0), Input::new("antiq", "full_o")),
+            Probe::rc_new("empty_o", (500.0, 400.0), Input::new("antiq", "empty_o")),
+            Probe::rc_new("cnt_o", (500.0, 425.0), Input::new("antiq", "cnt_o")),
+            Probe::rc_new("data_o", (500.0, 450.0), Input::new("antiq", "data_o")),
             Probe::rc_new(
                 "peek_vld_o",
                 (500.0, 475.0),
@@ -64,27 +48,12 @@ fn main() {
                 (500.0, 550.0),
                 Input::new("antiq", "data_overflow_o"),
             ),
-            Probe::rc_new(
-                "int_id",
-                (500.0, 575.0),
-                Input::new("antiq", "int_id"),
-            ),
-            ProbeEdit::rc_new(
-               "we",
-                (300.0, 300.0),
-            ),
-            ProbeEdit::rc_new(
-               "d_in",
-                (300.0, 325.0),
-            ),
-            ProbeEdit::rc_new(
-               "addr",
-                (300.0, 350.0),
-            ),
-            Rc::new(Sysclk::new(
-                "sysclk",
-                (300.0, 500.0),
-            )),
+            Probe::rc_new("int_id", (500.0, 575.0), Input::new("antiq", "int_id")),
+            ProbeEdit::rc_new("we", (300.0, 300.0)),
+            ProbeEdit::rc_new("d_in", (300.0, 325.0)),
+            ProbeEdit::rc_new("addr", (300.0, 350.0)),
+            ProbeEdit::rc_new("size", (300.0, 375.0)),
+            Rc::new(Sysclk::new("sysclk", (300.0, 500.0))),
             Rc::new(Antiq::new(
                 "antiq",
                 (400.0, 400.0),
@@ -94,6 +63,7 @@ fn main() {
                 Input::new("we", "out"),
                 Input::new("d_in", "out"),
                 Input::new("addr", "out"),
+                Input::new("size", "out"),
                 0,
             )),
         ],
@@ -135,8 +105,8 @@ fn fern_setup_riscv() {
     let f = f
         //.level_for("riscv::components::instr_mem", LevelFilter::Trace)
         .level_for("riscv::components::antiq", LevelFilter::Trace);
-        //.level_for("riscv::components::mem", LevelFilter::Trace)
-        //.level_for("syncrim::simulator", LevelFilter::Trace);
+    //.level_for("riscv::components::mem", LevelFilter::Trace)
+    //.level_for("syncrim::simulator", LevelFilter::Trace);
 
     f
         // Output to stdout, files, and other Dispatch configurations

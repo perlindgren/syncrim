@@ -1,7 +1,7 @@
-use syncrim::common::{Component, Condition, Id, Input, OutputType, Ports, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
+use syncrim::common::{Component, Condition, Id, Input, OutputType, Ports, Simulator};
 #[derive(Serialize, Deserialize)]
 pub struct Sysclk {
     pub(crate) id: Id,
@@ -31,7 +31,7 @@ impl Component for Sysclk {
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input value
         let clock = self.clock.borrow().clone();
-        self.clock.replace(clock+1);
+        self.clock.replace(clock + 1);
         // set output
         simulator.set_out_value(&self.id, "clock", self.clock.borrow().clone());
         trace!("clock: {}", self.clock.borrow().clone());

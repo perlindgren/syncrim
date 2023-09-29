@@ -1,4 +1,6 @@
 mod alu;
+mod antiq;
+mod antiq_ctl;
 mod branch_logic;
 mod clic;
 mod csr;
@@ -8,11 +10,11 @@ mod lsb_zero;
 mod mem;
 mod reg_file;
 mod sign_zero_ext;
-mod antiq;
-mod antiq_ctl;
 mod sysclk;
 
 pub use alu::*;
+pub use antiq::*;
+pub use antiq_ctl::*;
 pub use branch_logic::*;
 pub use clic::*;
 pub use csr::*;
@@ -22,6 +24,4 @@ pub use lsb_zero::*;
 pub use mem::*;
 pub use reg_file::*;
 pub use sign_zero_ext::*;
-pub use antiq::*;
-pub use antiq_ctl::*;
 pub use sysclk::*;
