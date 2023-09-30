@@ -35,7 +35,9 @@ impl Component for BranchLogic {
                     self.mret.clone(),
                 ],
                 out_type: OutputType::Combinatorial,
-                outputs: vec!["out".into()],
+                outputs: vec!["out".into(), 
+                //    "mret_sel".into()
+                ],
             },
         )
     }
@@ -62,8 +64,13 @@ impl Component for BranchLogic {
                     simulator.set_out_value(&self.id, "out", 4);
                     return Ok(()); //if mret just return here.
                 }
+                else{
+                    //simulator.set_out_value(&self.id, "mret_sel", 0);
+                }
             }
-            _ => {}
+            _ => {
+                //simulator.set_out_value(&self.id, "mret_sel", 0);
+            }
         }
         if enable != 0 {
             match simulator.get_input_value(&self.ctrl) {

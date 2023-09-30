@@ -216,7 +216,36 @@ impl Component for CLIC {
         let mut mmio_data = SignalValue::Uninitialized;
         let mut mem_int_addr = SignalValue::Uninitialized;
         let mret_sig: SignalValue = mret.into();
-        let mut mepc = SignalValue::Uninitialized;
+        let mut csrstore = self.csrstore.borrow_mut();
+        let mepc = SignalValue::Data((*csrstore.get(&0x341).unwrap() as u32).into() );
+        let mepc_p:u32 = mepc.try_into().unwrap();
+        trace!("mepc:{}", mepc_p);
+        let mstatus = csrstore.get(&0x300).unwrap().clone();
+        let mintthresh = csrstore.get(&0x347).unwrap().clone();
+        let mtvec = csrstore.get(&0x305).unwrap().clone();
+        let mut queue = self.queue.borrow_mut();
+        if mstatus & 8 == 8 {
+            //if MIE is set
+            if !queue.is_empty() {
+                let interrupt = queue.peek().unwrap(); //peek highest prio interrupt
+                if *interrupt.1 as usize > mintthresh {
+                    let interrupt = queue.pop().unwrap(); //if above threshold, pop it
+                                                          //now dispatch
+                                                          //make memory output contents of mtvec + id*4 to branch mux
+                                                          //set interrupt signal on branch control
+                    csrstore.insert(0x300, (mstatus & !0x8) | 0b1 << 7); //clear interrupt enable, set mpie
+                    csrstore.insert(0x341, pc as usize);
+                    mem_int_addr = SignalValue::Data((mtvec as u32 + (interrupt.0) * 4) & !0b11);
+
+                    blu_int = SignalValue::Data(1);
+                    trace!(
+                        "interrupt dispatched id:{} prio:{}",
+                        interrupt.0,
+                        interrupt.1
+                    );
+                }
+            }
+        }
 
         //TIME HANDLING
         //let mtime_lo:u32 = self.read(0x5000, 4, false, false).try_into().unwrap();
@@ -235,8 +264,7 @@ impl Component for CLIC {
         //trace!("MTIME_COMP_HI:{}",  <SignalValue as TryInto<u32>>::try_into(self.read(0x500C, 4, false, false)).unwrap());
 
         if mret == 1 {
-            let mut csrstore = self.csrstore.borrow_mut();
-            mepc = (*csrstore.get(&0x341).unwrap() as u32).into(); //infallible
+            //mepc = (*csrstore.get(&0x341).unwrap() as u32).into(); //infallible
             let mut mstatus = csrstore.get(&0x300).unwrap().clone(); //infallible
             if mstatus >> 7 & 1 == 1 {
                 mstatus |= 0x8; //if mpie then set mie
@@ -258,7 +286,6 @@ impl Component for CLIC {
             0 => {}
             //write
             1 => {
-                let mut csrstore = self.csrstore.borrow_mut();
                 if csrstore.contains_key(&(csr_addr as usize)) {
                     if csr_addr == 0x305 {
                         //mtvec write
@@ -273,7 +300,6 @@ impl Component for CLIC {
             }
             //set
             2 => {
-                let mut csrstore = self.csrstore.borrow_mut();
                 if csrstore.contains_key(&(csr_addr as usize)) {
                     if csr_addr == 0x305 {
                         //mtvec set
@@ -288,7 +314,6 @@ impl Component for CLIC {
             }
             //clear
             3 => {
-                let mut csrstore = self.csrstore.borrow_mut();
                 if csrstore.contains_key(&(csr_addr as usize)) {
                     if csr_addr == 0x305 {
                         //mtvec clear
@@ -306,7 +331,6 @@ impl Component for CLIC {
         let offset = addr % 4;
         //let addr = addr - (addr % 4);
         trace!("ADDR:{:x}", addr);
-        let mut queue = self.queue.borrow_mut();
         let we: u32 = simulator.get_input_value(&self.data_we).try_into().unwrap();
         if (0x1000 <= addr) && (addr <= 0x500F) {
             //if within our mmio range
@@ -374,34 +398,6 @@ impl Component for CLIC {
             let int_reg:MMIOEntry = int_reg.into();
             if int_reg.clicintie == 1 && int_reg.clicintip == 1 {
                 queue.push(antiq_id, int_reg.clicintctl);
-            }
-        }
-
-        //Interrupt dispatch
-        let mut csrstore = self.csrstore.borrow_mut();
-        let mstatus = csrstore.get(&0x300).unwrap().clone();
-        let mintthresh = csrstore.get(&0x347).unwrap().clone();
-        let mtvec = csrstore.get(&0x305).unwrap().clone();
-        if mstatus & 8 == 8 {
-            //if MIE is set
-            if !queue.is_empty() {
-                let interrupt = queue.peek().unwrap(); //peek highest prio interrupt
-                if *interrupt.1 as usize > mintthresh {
-                    let interrupt = queue.pop().unwrap(); //if above threshold, pop it
-                                                          //now dispatch
-                                                          //make memory output contents of mtvec + id*4 to branch mux
-                                                          //set interrupt signal on branch control
-                    csrstore.insert(0x300, (mstatus & !0x8) | 0b1 << 7); //clear interrupt enable, set mpie
-                    csrstore.insert(0x341, pc as usize);
-                    mem_int_addr = SignalValue::Data((mtvec as u32 + (interrupt.0) * 4) & !0b11);
-
-                    blu_int = SignalValue::Data(1);
-                    trace!(
-                        "interrupt dispatched id:{} prio:{}",
-                        interrupt.0,
-                        interrupt.1
-                    );
-                }
             }
         }
         for entry in csrstore.clone().into_iter() {

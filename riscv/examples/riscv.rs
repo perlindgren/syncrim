@@ -100,9 +100,18 @@ fn main() {
                     Input::new("jalr_stripper", "out"),
                     Input::new("branch_adder", "out"),
                     Input::new("data_memory", "isr_addr"),
-                    Input::new("clic", "mepc"),
+                    Input::new("clic", "mepc")
                 ],
             ),
+           // Register::rc_new("mepc_reg", (160.0, 150.0), Input::new("clic", "mepc")),
+           // Mux::rc_new(
+            //"post_adder_mux",
+           // (175.0, 120.0),
+            //    Input::new("branch_logic", "mret_sel"),
+           //     vec![
+           //         Input::new("pc_adder", "out"),
+           //         Input::new("mepc_reg", "out"),
+           // ]),
             Add::rc_new(
                 "jalr_adder",
                 (100.0, 200.0),
@@ -258,7 +267,7 @@ fn main() {
                 Input::new("decoder", "csr_addr"),      //CSR address
                 Input::new("decoder", "csr_ctl"),       //CSR op
                 Input::new("decoder", "mret"),          //mret signal
-                Input::new("pc_adder", "out"),          //mepc
+                Input::new("reg", "out"),          //mepc
                 Input::new("sysclk", "clock"),
                 Input::new("antiq", "int_id"),
             )),

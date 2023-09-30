@@ -3,25 +3,28 @@
 init:
 	la sp, _stack_start #set stack pointer
 main:
-	#la 	t0, 0x05000101 	#priority 5, enabled, pended, will store at interrupt 0
+	//la 	t0, 0x05000101 	#priority 5, enabled, pended, will store at interrupt 0
 	la 	t1, 0x04000100 	#priority 4, enabled, pended, will store at interrupt 1
 	la 	t2, 0x06000100 	#priority 6, enabled, not pended, will store at interrupt 2
 	la 	a0, 0x1000 	#CLIC address
-	#sw 	t0, 0(a0) 	#store at CLIC, interrupt 0
-	sw 	t1, 4(a0) 	#store at CLIC + 4, interrupt 1
-	sw 	t2, 8(a0) 	#store at CLIC + 8, interrupt 2
 	la 	t0, .vector_table #load vector table address
 	csrw 	mtvec, t0 		# store vector table address at mtvec
 	csrwi 	0x347, 0 		# set interrupt prio threshold to 0
-	csrwi  	mstatus, 8 		#enable global interrupts
+  csrwi  	mstatus, 8 		#enable global interrupts
+  la t0, 0x05000101
+	sw 	t0, 4(a0) 	#store at CLIC, interrupt 0
+	//sw 	t1, 4(a0) 	#store at CLIC + 4, interrupt 1
+	//sw 	t2, 8(a0) 	#store at CLIC + 8, interrupt 2
+	//la 	t0, .vector_table #load vector table address
+	//csrw 	mtvec, t0 		# store vector table address at mtvec
+	//csrwi 	0x347, 0 		# set interrupt prio threshold to 0
+	//csrwi  	mstatus, 8 		#enable global interrupts
   li t0, 0xA01
   li t1, 0x5010
   sw t0, 0(t1)
 	//li 	t0, 0
 	//addi 	t0, t0, 1 		#make sure we return from exception properly, t0 should end up being one by the time we hit stop.
 stop: j 	stop 			#loop continue
-      nop
-      j   stop
 
 isr_0:					#this interrupt is pended at the start, it is of middle prio
 	li 	a0, 0x1000
