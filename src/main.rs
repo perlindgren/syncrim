@@ -1,7 +1,8 @@
 use clap::Parser;
 use std::path::PathBuf;
+#[cfg(feature = "gui-egui")]
+use syncrim::gui_egui::editor::Library;
 use syncrim::{common::ComponentStore, fern::fern_setup};
-
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -19,7 +20,7 @@ fn main() {
     let cs = ComponentStore::load_file(&_path);
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::gui(cs, &_path).ok();
+    syncrim::gui_egui::gui(cs, &_path, Library::default()).ok();
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(cs, &_path);

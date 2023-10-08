@@ -26,7 +26,6 @@ impl EguiComponent for Wire {
     ) -> Option<Vec<Response>> {
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
         let offset_old = offset;
-        let offset = offset;
         let s = scale;
         let o = offset;
         let mut line_vec = vec![];

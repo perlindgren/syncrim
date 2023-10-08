@@ -1,4 +1,4 @@
-mod component_ui;
+pub mod component_ui;
 pub mod editor;
 mod editor_wire_mode;
 pub mod gui;

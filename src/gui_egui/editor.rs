@@ -75,9 +75,10 @@ pub struct GridOptions {
     pub snap_enable: bool,
     pub snap_distance: f32,
 }
-
-impl Editor {
-    pub fn gui(components: Components, _path: &Path) -> Self {
+#[derive(Clone)]
+pub struct Library(pub Components);
+impl Library {
+    pub fn default() -> Library {
         let dummy_input = Input::new("id", "field");
         let library: Components = vec![
             Rc::new(Add {
@@ -133,6 +134,13 @@ impl Editor {
                 r_in: dummy_input.clone(),
             }),
         ];
+        Library(library)
+    }
+}
+impl Editor {
+    pub fn gui(components: Components, _path: &Path, library: &Library) -> Self {
+        let dummy_input = Input::new("id", "field");
+        let library: Components = library.clone().0;
         let library_contexts = crate::gui_egui::gui::create_contexts(&library);
         let mut e = Editor {
             components,

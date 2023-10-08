@@ -6,6 +6,8 @@ use riscv_elf_parse;
 use std::{
     cell::RefCell, collections::BTreeMap, fs, ops::Range, path::PathBuf, process::Command, rc::Rc,
 };
+#[cfg(feature = "gui-egui")]
+use syncrim::gui_egui::editor::Library;
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
@@ -34,15 +36,12 @@ fn main() {
     let memory = if !args.use_elf {
         elf_from_asm(&args);
         let bytes = fs::read("./output").expect("The elf file could not be found");
-        let elf = ElfFile::new(&bytes).unwrap();
-        riscv_elf_parse::Memory::new_from_elf(elf)
+        riscv_elf_parse::Memory::new_from_file(&bytes, false)
     } else {
         let bytes =
             fs::read(format!("{}", args.elf_path)).expect("The elf file could not be found");
-        let elf = ElfFile::new(&bytes).unwrap();
-        riscv_elf_parse::Memory::new_from_elf(elf)
+        riscv_elf_parse::Memory::new_from_file(&bytes, false)
     };
-
     println!("{}", memory);
     let mut instr_mem = BTreeMap::new();
     let mut data_mem = BTreeMap::new();
@@ -237,7 +236,7 @@ fn main() {
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::gui(cs, &path).ok();
+    syncrim::gui_egui::gui(cs, &path, Library::default()).ok();
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(cs, &path);

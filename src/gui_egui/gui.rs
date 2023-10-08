@@ -1,6 +1,11 @@
 use crate::common::{ComponentStore, Components, Simulator};
 use crate::gui_egui::editor::EditorMode;
-use crate::gui_egui::{editor::Editor, keymap, keymap::Shortcuts, menu::Menu};
+use crate::gui_egui::{
+    editor::{Editor, Library},
+    keymap,
+    keymap::Shortcuts,
+    menu::Menu,
+};
 use eframe::egui;
 use egui::{
     containers, CentralPanel, Color32, Context, PointerButton, Pos2, Rect, ScrollArea, Sense,
@@ -24,6 +29,7 @@ pub struct Gui {
     pub editor: Option<Editor>,
     pub editor_use: bool,
     pub contexts: HashMap<crate::common::Id, EguiExtra>,
+    pub library: Library,
 }
 
 #[derive(Clone, Debug)]
@@ -34,7 +40,7 @@ pub struct EguiExtra {
     pub pos_tmp: Pos2,
 }
 
-pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
+pub fn gui(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<(), eframe::Error> {
     let contexts = create_contexts(&cs.store);
     let simulator = Simulator::new(cs).unwrap();
     let options = eframe::NativeOptions::default();
@@ -54,6 +60,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) -> Result<(), eframe::Error> {
         editor: None,
         editor_use: false,
         contexts,
+        library,
     };
 
     eframe::run_native("SyncRim", options, Box::new(|_cc| Box::new(gui)))

@@ -1,5 +1,5 @@
 use crate::common::{ComponentStore, Simulator};
-use crate::gui_egui::editor::{Editor, EditorMode};
+use crate::gui_egui::editor::{Editor, EditorMode, Library};
 use crate::gui_egui::editor_wire_mode::reset_wire_mode;
 use crate::gui_egui::gui::create_contexts;
 use crate::gui_egui::library::reset_input_mode;
@@ -326,7 +326,7 @@ pub fn file_editor_toggle_fn(gui: &mut Gui) {
             let components = simulator.ordered_components;
 
             if !editor_existed {
-                gui.editor = Some(Editor::gui(components, &gui.path));
+                gui.editor = Some(Editor::gui(components, &gui.path, &gui.library));
             }
 
             gui.editor_use = true;
