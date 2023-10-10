@@ -1,6 +1,6 @@
 use clap::Parser;
 use riscv::components::*;
-use std::{collections::BTreeMap, path::PathBuf, rc::Rc};
+use std::{cell::RefCell, collections::BTreeMap, path::PathBuf, rc::Rc};
 use syncrim::common::{ComponentStore, Input};
 
 #[derive(Parser, Debug)]
@@ -52,6 +52,41 @@ fn main() {
                     rs2: dummy.clone(),
                     ctrl: dummy.clone(),
                     enable: dummy.clone(),
+                }),
+                Rc::new(Decoder {
+                    width: DECODER_WIDTH,
+                    height: DECODER_HEIGHT,
+                    id: "dummy_decoder".to_string(),
+                    pos: (0.0, 0.0),
+                    instruction: dummy.clone(),
+                }),
+                Rc::new(LSBZero {
+                    height: LSB_ZERO_HEIGHT,
+                    width: LSB_ZERO_WIDTH,
+                    id: "dummy_lsbzero".to_string(),
+                    pos: (0.0, 0.0),
+                    data_i: dummy.clone(),
+                }),
+                Rc::new(RegFile {
+                    id: "dummy_reg_file".into(),
+                    pos: (0.0, 0.0),
+                    width: REG_FILE_WIDTH,
+                    height: REG_FILE_HEIGHT,
+                    read_addr1: dummy.clone(),
+                    read_addr2: dummy.clone(),
+                    write_data: dummy.clone(),
+                    write_addr: dummy.clone(),
+                    write_enable: dummy.clone(),
+                    registers: RegStore::new(Rc::new(RefCell::new([0; 32]))),
+                    history: RegHistory::new(),
+                }),
+                Rc::new(SZExt {
+                    height: SIGN_ZERO_EXT_HEIGHT,
+                    width: SIGN_ZERO_EXT_WIDTH,
+                    id: "dummy_szext".to_string(),
+                    pos: (0.0, 0.0),
+                    data_i: dummy.clone(),
+                    sel_i: dummy.clone(),
                 }),
             ],
         };

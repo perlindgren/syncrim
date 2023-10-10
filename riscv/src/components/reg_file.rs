@@ -3,11 +3,12 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
+#[cfg(feature = "gui-egui")]
+use syncrim::common::EguiComponent;
 use syncrim::common::{
-    Component, Condition, Input, InputPort, OutputType, Ports, SignalUnsigned, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalUnsigned, Simulator,
 };
 use syncrim::signal::SignalValue;
-
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
 #[derive(Copy, Clone, Debug, TryFromPrimitive)]
@@ -55,6 +56,9 @@ pub const REG_FILE_WRITE_ENABLE_ID: &str = "write_enable";
 
 pub const REG_FILE_REG_A_OUT: &str = "reg_a";
 pub const REG_FILE_REG_B_OUT: &str = "reg_b";
+
+pub const REG_FILE_WIDTH: f32 = 250.0;
+pub const REG_FILE_HEIGHT: f32 = 500.0;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct RegFile {
@@ -188,7 +192,33 @@ impl Component for RegFile {
             },
         )
     }
-
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy_input = Input::new("dummy", "out");
+        Box::new(Rc::new(RegFile {
+            width: REG_FILE_WIDTH,
+            height: REG_FILE_HEIGHT,
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            registers: RegStore::new(Rc::new(RefCell::new([0; 32]))),
+            history: RegHistory::new(),
+            read_addr1: dummy_input.clone(),
+            read_addr2: dummy_input.clone(),
+            write_data: dummy_input.clone(),
+            write_addr: dummy_input.clone(),
+            write_enable: dummy_input.clone(),
+        }))
+    }
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            REG_FILE_READ_ADDR1_ID => self.read_addr1 = new_input,
+            REG_FILE_READ_ADDR2_ID => self.read_addr2 = new_input,
+            REG_FILE_WRITE_DATA_ID => self.write_data = new_input,
+            REG_FILE_WRITE_ADDR_ID => self.write_addr = new_input,
+            REG_FILE_WRITE_ENABLE_ID => self.write_enable = new_input,
+            _ => (),
+        }
+    }
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_value(&self.write_data);

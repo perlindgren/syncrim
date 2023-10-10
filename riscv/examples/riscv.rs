@@ -89,8 +89,8 @@ fn main() {
                 Input::new("jalr_se", "out"),
             ),
             Rc::new(BranchLogic {
-                width: 60.0,
-                height: 60.0,
+                width: BRANCH_LOGIC_WIDTH,
+                height: BRANCH_LOGIC_HEIGHT,
                 id: "branch_logic".to_string(),
                 pos: (725.0, 300.0),
                 rs1: Input::new("reg_file", "reg_a"),
@@ -99,6 +99,8 @@ fn main() {
                 enable: Input::new("decoder", "branch_logic_enable"),
             }),
             Rc::new(LSBZero {
+                height: LSB_ZERO_HEIGHT,
+                width: LSB_ZERO_WIDTH,
                 id: "jalr_stripper".to_string(),
                 pos: (600.0, 1000.0),
                 data_i: Input::new("jalr_adder", "out"),
@@ -140,14 +142,16 @@ fn main() {
                 32,
             ),
             Rc::new(InstrMem {
-                width: 200.0,
-                height: 100.0,
+                width: INSTR_MEM_WIDTH,
+                height: INSTR_MEM_HEIGHT,
                 id: "instr_mem".to_string(),
                 pos: (180.0, 400.0),
                 pc: Input::new("reg", "out"),
                 bytes: instr_mem,
             }),
             Rc::new(Decoder {
+                width: DECODER_WIDTH,
+                height: DECODER_HEIGHT,
                 id: "decoder".to_string(),
                 pos: (300.0, 150.0),
                 instruction: Input::new("instr_mem", "instruction"),
@@ -163,6 +167,8 @@ fn main() {
                 Input::new("decoder", "regfile_rd"),
             ),
             Rc::new(SZExt {
+                height: SIGN_ZERO_EXT_HEIGHT,
+                width: SIGN_ZERO_EXT_WIDTH,
                 id: "imm_szext".to_string(),
                 pos: (450.0, 1000.0),
                 data_i: Input::new("decoder", "sign_zero_ext_data"),

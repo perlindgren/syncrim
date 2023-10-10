@@ -1,7 +1,11 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "gui-egui")]
+use std::rc::Rc;
+#[cfg(feature = "gui-egui")]
+use syncrim::common::EguiComponent;
 use syncrim::common::{
-    Component, Condition, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
 use syncrim::components::MemCtrl;
 
@@ -30,8 +34,13 @@ pub const DECODER_BRANCH_LOGIC_CTL_ID: &str = "branch_logic_ctl";
 pub const DECODER_BRANCH_LOGIC_ENABLE_ID: &str = "branch_logic_enable";
 pub const DECODER_JALR_IMM_ID: &str = "jalr_imm";
 
+pub const DECODER_HEIGHT: f32 = 200.0;
+pub const DECODER_WIDTH: f32 = 30.0;
+
 #[derive(Serialize, Deserialize)]
 pub struct Decoder {
+    pub width: f32,
+    pub height: f32,
     pub id: String,
     pub pos: (f32, f32),
 
@@ -42,6 +51,23 @@ pub struct Decoder {
 impl Component for Decoder {
     fn to_(&self) {
         println!("Decoder");
+    }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy_input = Input::new("dummy", "out");
+        Box::new(Rc::new(Decoder {
+            width: DECODER_WIDTH,
+            height: DECODER_HEIGHT,
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            instruction: dummy_input,
+        }))
+    }
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            DECODER_INSTRUCTION_ID => self.instruction = new_input,
+            _ => (),
+        }
     }
     fn get_id_ports(&self) -> (String, Ports) {
         (
@@ -487,6 +513,8 @@ mod test {
             store: vec![
                 Rc::new(ProbeOut::new("instruction")),
                 Rc::new(Decoder {
+                    width: 0.0,
+                    height: 0.0,
                     id: "decoder".to_string(),
                     pos: (0.0, 0.0),
                     instruction: Input::new("instruction", "out"),
@@ -1083,6 +1111,8 @@ mod test {
             store: vec![
                 Rc::new(ProbeOut::new("instruction")),
                 Rc::new(Decoder {
+                    width: 0.0,
+                    height: 0.0,
                     id: "decoder".to_string(),
                     pos: (0.0, 0.0),
                     instruction: Input::new("instruction", "out"),
@@ -1602,6 +1632,8 @@ mod test {
             store: vec![
                 Rc::new(ProbeOut::new("instruction")),
                 Rc::new(Decoder {
+                    width: 0.0,
+                    height: 0.0,
                     id: "decoder".to_string(),
                     pos: (0.0, 0.0),
                     instruction: Input::new("instruction", "out"),
@@ -2145,6 +2177,8 @@ mod test {
             store: vec![
                 Rc::new(ProbeOut::new("instruction")),
                 Rc::new(Decoder {
+                    width: 0.0,
+                    height: 0.0,
                     id: "decoder".to_string(),
                     pos: (0.0, 0.0),
                     instruction: Input::new("instruction", "out"),

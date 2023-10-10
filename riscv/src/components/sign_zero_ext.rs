@@ -1,16 +1,24 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "gui-egui")]
+use std::rc::Rc;
+#[cfg(feature = "gui-egui")]
+use syncrim::common::EguiComponent;
 use syncrim::common::{
-    Component, Condition, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
-
 pub const SIGN_ZERO_EXT_DATA_I_ID: &str = "data_i";
 pub const SIGN_ZERO_EXT_SEL_I_ID: &str = "sel_i";
 
 pub const SIGN_ZERO_EXT_OUT_ID: &str = "out";
 
+pub const SIGN_ZERO_EXT_HEIGHT: f32 = 30.0;
+pub const SIGN_ZERO_EXT_WIDTH: f32 = 60.0;
+
 #[derive(Serialize, Deserialize)]
 pub struct SZExt {
+    pub height: f32,
+    pub width: f32,
     pub id: String,
     pub pos: (f32, f32),
 
@@ -22,6 +30,25 @@ pub struct SZExt {
 impl Component for SZExt {
     fn to_(&self) {
         println!("s_z_ext");
+    }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy = Input::new("dummy", "out");
+        Box::new(Rc::new(SZExt {
+            height: SIGN_ZERO_EXT_HEIGHT,
+            width: SIGN_ZERO_EXT_WIDTH,
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            data_i: dummy.clone(),
+            sel_i: dummy.clone(),
+        }))
+    }
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            SIGN_ZERO_EXT_DATA_I_ID => self.data_i = new_input,
+            SIGN_ZERO_EXT_SEL_I_ID => self.sel_i = new_input,
+            _ => (),
+        }
     }
     fn get_id_ports(&self) -> (String, Ports) {
         (
@@ -91,6 +118,8 @@ mod test {
                 Rc::new(ProbeOut::new("input")),
                 Rc::new(ProbeOut::new("sel")),
                 Rc::new(SZExt {
+                    height: 0.0,
+                    width: 0.0,
                     id: "szext".to_string(),
                     pos: (0.0, 0.0),
                     data_i: Input::new("input", "out"),

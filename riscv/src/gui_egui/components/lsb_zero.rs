@@ -1,4 +1,4 @@
-use crate::components::BranchLogic;
+use crate::components::LSBZero;
 use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2};
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
@@ -10,7 +10,7 @@ use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
 
 #[typetag::serde]
-impl EguiComponent for BranchLogic {
+impl EguiComponent for LSBZero {
     fn render(
         &self,
         ui: &mut Ui,
@@ -47,7 +47,7 @@ impl EguiComponent for BranchLogic {
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
-            ui.label("BranchLogicUnit");
+            ui.label("LSBZero");
         });
         match editor_mode {
             EditorMode::Simulator => (),
@@ -68,7 +68,7 @@ impl EguiComponent for BranchLogic {
         grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let r_vec = BranchLogic::render(
+        let r_vec = LSBZero::render(
             self,
             ui,
             context,
@@ -101,29 +101,8 @@ impl EguiComponent for BranchLogic {
                 pos_drag_value(ui, &mut self.pos);
                 clicked_dropdown |= input_selector(
                     ui,
-                    &mut self.rs1,
-                    crate::components::BRANCH_LOGIC_RS1_ID.to_string(),
-                    id_ports,
-                    self.id.clone(),
-                );
-                clicked_dropdown |= input_selector(
-                    ui,
-                    &mut self.rs2,
-                    crate::components::BRANCH_LOGIC_RS2_ID.to_string(),
-                    id_ports,
-                    self.id.clone(),
-                );
-                clicked_dropdown |= input_selector(
-                    ui,
-                    &mut self.ctrl,
-                    crate::components::BRANCH_LOGIC_CTRL_ID.to_string(),
-                    id_ports,
-                    self.id.clone(),
-                );
-                clicked_dropdown |= input_selector(
-                    ui,
-                    &mut self.enable,
-                    crate::components::BRANCH_LOGIC_ENABLE_ID.to_string(),
+                    &mut self.data_i,
+                    crate::components::LSB_ZERO_DATA_I_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
@@ -141,27 +120,12 @@ impl EguiComponent for BranchLogic {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![
             (
-                crate::components::BRANCH_LOGIC_RS1_ID.to_string(),
-                Pos2::new(
-                    -self.width / 2f32,
-                    -self.height / 2f32 + self.height / 10f32,
-                ) + own_pos,
+                crate::components::LSB_ZERO_DATA_I_ID.to_string(),
+                Pos2::new(-self.width / 2f32, 0.0) + own_pos,
             ),
             (
-                crate::components::BRANCH_LOGIC_RS2_ID.to_string(),
-                Pos2::new(-self.width / 2f32, self.height / 2f32 - self.height / 10f32) + own_pos,
-            ),
-            (
-                crate::components::BRANCH_LOGIC_CTRL_ID.to_string(),
-                Pos2::new(self.width / 4f32, -self.height / 2f32) + own_pos,
-            ),
-            (
-                crate::components::BRANCH_LOGIC_ENABLE_ID.to_string(),
-                Pos2::new(-self.width / 4f32, -self.height / 2f32) + own_pos,
-            ),
-            (
-                crate::components::BRANCH_LOGIC_OUT_ID.to_string(),
-                Pos2::new(0.0, self.height / 2f32) + own_pos,
+                crate::components::LSB_ZERO_OUT_ID.to_string(),
+                Pos2::new(self.width / 2f32, 0.0) + own_pos,
             ),
         ]
     }
