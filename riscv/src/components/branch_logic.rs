@@ -1,7 +1,11 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "gui-egui")]
+use std::rc::Rc;
+#[cfg(feature = "gui-egui")]
+use syncrim::common::EguiComponent;
 use syncrim::common::{
-    Component, Condition, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
 
 pub const BRANCH_LOGIC_RS1_ID: &str = "rs1";
@@ -11,8 +15,13 @@ pub const BRANCH_LOGIC_ENABLE_ID: &str = "enable";
 
 pub const BRANCH_LOGIC_OUT_ID: &str = "out";
 
+pub const BRANCH_LOGIC_HEIGHT: f32 = 60.0;
+pub const BRANCH_LOGIC_WIDTH: f32 = 60.0;
+
 #[derive(Serialize, Deserialize)]
 pub struct BranchLogic {
+    pub width: f32,
+    pub height: f32,
     pub id: String,
     pub pos: (f32, f32),
 
@@ -27,6 +36,29 @@ pub struct BranchLogic {
 impl Component for BranchLogic {
     fn to_(&self) {
         println!("BranchLogic");
+    }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy = Input::new("dummy", "out");
+        Box::new(Rc::new(BranchLogic {
+            width: 60.0,
+            height: 60.0,
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            rs1: dummy.clone(),
+            rs2: dummy.clone(),
+            ctrl: dummy.clone(),
+            enable: dummy.clone(),
+        }))
+    }
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            BRANCH_LOGIC_RS1_ID => self.rs1 = new_input,
+            BRANCH_LOGIC_RS2_ID => self.rs2 = new_input,
+            BRANCH_LOGIC_CTRL_ID => self.ctrl = new_input,
+            BRANCH_LOGIC_ENABLE_ID => self.enable = new_input,
+            _ => (),
+        }
     }
     fn get_id_ports(&self) -> (String, Ports) {
         (
@@ -176,6 +208,8 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
@@ -231,6 +265,8 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
@@ -286,6 +322,8 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
@@ -348,6 +386,8 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
@@ -410,6 +450,8 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
@@ -472,6 +514,8 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
@@ -541,6 +585,8 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
@@ -580,6 +626,8 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),

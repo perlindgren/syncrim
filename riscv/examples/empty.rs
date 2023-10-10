@@ -21,22 +21,43 @@ struct Args {
 
 fn main() {
     let cs = ComponentStore { store: vec![] };
-    let dummy = Input::new("id", "field");
-    let lib = ComponentStore {
-        store: vec![Rc::new(InstrMem {
-            id: "dummy_instr_mem".to_string(),
-            pos: (0.0, 0.0),
-            pc: dummy.clone(),
-            bytes: BTreeMap::new(),
-        })],
-    };
-    #[cfg(feature = "gui-egui")]
-    let _library = syncrim::gui_egui::editor::Library(lib.store);
     let path = PathBuf::from("riscv.json");
     cs.save_file(&path);
-
+    let dummy = Input::new("id", "field");
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::gui(cs, &path, syncrim::gui_egui::editor::Library::default()).ok();
+    {
+        let lib = ComponentStore {
+            store: vec![
+                Rc::new(InstrMem {
+                    width: INSTR_MEM_WIDTH,
+                    height: INSTR_MEM_HEIGHT,
+                    id: "dummy_instr_mem".to_string(),
+                    pos: (0.0, 0.0),
+                    pc: dummy.clone(),
+                    bytes: BTreeMap::new(),
+                }),
+                Rc::new(ALU {
+                    id: "dummy_alu".to_string(),
+                    pos: (0.0, 0.0),
+                    operator_i: dummy.clone(),
+                    operand_a_i: dummy.clone(),
+                    operand_b_i: dummy.clone(),
+                }),
+                Rc::new(BranchLogic {
+                    width: BRANCH_LOGIC_WIDTH,
+                    height: BRANCH_LOGIC_HEIGHT,
+                    id: "dummy_blu".to_string(),
+                    pos: (0.0, 0.0),
+                    rs1: dummy.clone(),
+                    rs2: dummy.clone(),
+                    ctrl: dummy.clone(),
+                    enable: dummy.clone(),
+                }),
+            ],
+        };
+        let library = syncrim::gui_egui::editor::Library(lib.store);
+        syncrim::gui_egui::gui(cs, &path, syncrim::gui_egui::editor::Library(library.0)).ok();
+    }
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(cs, &path);

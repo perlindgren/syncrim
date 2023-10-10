@@ -7,13 +7,18 @@ use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
-use syncrim::common::{Component, Condition, Input, InputPort, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 pub const INSTR_MEM_PC_ID: &str = "pc";
 
 pub const INSTR_MEM_INSTRUCTION_ID: &str = "instruction";
 
+pub const INSTR_MEM_HEIGHT: f32 = 100.0;
+pub const INSTR_MEM_WIDTH: f32 = 200.0;
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct InstrMem {
+    pub width: f32,
+    pub height: f32,
     pub id: String,
     pub pos: (f32, f32),
     pub bytes: BTreeMap<usize, u8>,
@@ -29,11 +34,19 @@ impl Component for InstrMem {
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy_input = Input::new("dummy", "out");
         Box::new(Rc::new(InstrMem {
+            width: INSTR_MEM_WIDTH,
+            height: INSTR_MEM_HEIGHT,
             id: id.to_string(),
             pos: (pos.0, pos.1),
             bytes: BTreeMap::new(),
             pc: dummy_input,
         }))
+    }
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            INSTR_MEM_PC_ID => self.pc = new_input,
+            _ => (),
+        }
     }
     fn get_id_ports(&self) -> (String, Ports) {
         (
@@ -92,6 +105,8 @@ mod test {
             store: vec![
                 Rc::new(ProbeOut::new("pc")),
                 Rc::new(InstrMem {
+                    width: 0.0,
+                    height: 0.0,
                     id: "imem".to_string(),
                     pos: (0.0, 0.0),
                     pc: Input::new("pc", "out"),

@@ -1,7 +1,13 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "gui-egui")]
+use std::rc::Rc;
+#[cfg(feature = "gui-egui")]
+use syncrim::common::EguiComponent;
 use syncrim::{
-    common::{Component, Condition, Input, InputPort, OutputType, Ports, SignalValue, Simulator},
+    common::{
+        Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
+    },
     signal::SignalSigned,
 };
 
@@ -26,6 +32,25 @@ pub struct ALU {
 impl Component for ALU {
     fn to_(&self) {
         println!("ALU");
+    }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy = Input::new("dummy", "out");
+        Box::new(Rc::new(ALU {
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            operator_i: dummy.clone(),
+            operand_a_i: dummy.clone(),
+            operand_b_i: dummy.clone(),
+        }))
+    }
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            ALU_OPERAND_A_I_ID => self.operand_a_i = new_input,
+            ALU_OPERAND_B_I_ID => self.operand_b_i = new_input,
+            ALU_OPERATOR_I_ID => self.operator_i = new_input,
+            _ => (),
+        }
     }
     fn get_id_ports(&self) -> (String, Ports) {
         (

@@ -89,6 +89,8 @@ fn main() {
                 Input::new("jalr_se", "out"),
             ),
             Rc::new(BranchLogic {
+                width: 60.0,
+                height: 60.0,
                 id: "branch_logic".to_string(),
                 pos: (725.0, 300.0),
                 rs1: Input::new("reg_file", "reg_a"),
@@ -138,6 +140,8 @@ fn main() {
                 32,
             ),
             Rc::new(InstrMem {
+                width: 200.0,
+                height: 100.0,
                 id: "instr_mem".to_string(),
                 pos: (180.0, 400.0),
                 pc: Input::new("reg", "out"),

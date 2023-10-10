@@ -1,5 +1,5 @@
-use crate::components::InstrMem;
-use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2};
+use crate::components::ALU;
+use egui::{Color32, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -10,7 +10,7 @@ use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
 
 #[typetag::serde]
-impl EguiComponent for InstrMem {
+impl EguiComponent for ALU {
     fn render(
         &self,
         ui: &mut Ui,
@@ -21,8 +21,8 @@ impl EguiComponent for InstrMem {
         clip_rect: Rect,
         editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
-        // 21x41
-        // middle: 11x 21y (0 0)
+        // 41x81
+        // middle: 21x 41y (0 0)
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
         let offset_old = offset;
         let mut offset = offset;
@@ -30,24 +30,31 @@ impl EguiComponent for InstrMem {
         offset.y += self.pos.1 * scale;
         let s = scale;
         let o = offset;
-
         // The shape
-        let rect = Rect {
-            min: oh((-self.width / 2f32, -self.height / 2f32), s, o),
-            max: oh((self.width / 2f32, self.height / 2f32), s, o),
-        };
-        ui.painter().add(Shape::rect_stroke(
-            rect,
-            Rounding::none(),
+        ui.painter().add(Shape::closed_line(
+            vec![
+                oh((-20f32, -40f32), s, o),
+                oh((0f32, -40f32), s, o),
+                oh((20f32, -20f32), s, o),
+                oh((20f32, 20f32), s, o),
+                oh((0f32, 40f32), s, o),
+                oh((-20f32, 40f32), s, o),
+                oh((-20f32, 20f32), s, o),
+                oh((-10f32, 0f32), s, o),
+                oh((-20f32, -20f32), s, o),
+            ],
             Stroke {
                 width: scale,
-                color: Color32::BLACK,
+                color: Color32::RED,
             },
         ));
-
+        let rect = Rect {
+            min: oh((-20f32, -40f32), s, o),
+            max: oh((20f32, 40f32), s, o),
+        };
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
-            ui.label("InstrMem");
+            ui.label("ALU");
         });
         match editor_mode {
             EditorMode::Simulator => (),
@@ -68,7 +75,7 @@ impl EguiComponent for InstrMem {
         grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let r_vec = InstrMem::render(
+        let r_vec = ALU::render(
             self,
             ui,
             context,
@@ -101,8 +108,22 @@ impl EguiComponent for InstrMem {
                 pos_drag_value(ui, &mut self.pos);
                 clicked_dropdown |= input_selector(
                     ui,
-                    &mut self.pc,
-                    crate::components::INSTR_MEM_PC_ID.to_string(),
+                    &mut self.operator_i,
+                    crate::components::ALU_OPERATOR_I_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.operand_a_i,
+                    crate::components::ALU_OPERAND_A_I_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.operand_b_i,
+                    crate::components::ALU_OPERAND_B_I_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
@@ -120,24 +141,26 @@ impl EguiComponent for InstrMem {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![
             (
-                crate::components::INSTR_MEM_PC_ID.to_string(),
-                Pos2::new(
-                    self.width / 10f32 * 1f32 - self.width / 2f32,
-                    -self.height / 2f32,
-                ) + own_pos,
+                crate::components::ALU_OPERAND_A_I_ID.to_string(),
+                Pos2::new(-20f32, -20f32) + own_pos,
             ),
             (
-                crate::components::INSTR_MEM_INSTRUCTION_ID.to_string(),
-                Pos2::new(
-                    -self.width / 10f32 * 2f32 + self.width / 2f32,
-                    -self.height / 2f32,
-                ) + own_pos,
+                crate::components::ALU_OPERAND_B_I_ID.to_string(),
+                Pos2::new(-20f32, 20f32) + own_pos,
+            ),
+            (
+                crate::components::ALU_RESULT_O_ID.to_string(),
+                Pos2::new(20f32, 0f32) + own_pos,
+            ),
+            (
+                crate::components::ALU_OPERATOR_I_ID.to_string(),
+                Pos2::new(0f32, -40f32) + own_pos,
             ),
         ]
     }
 
     fn top_padding(&self) -> f32 {
-        20f32
+        40f32
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {
