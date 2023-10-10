@@ -3,13 +3,16 @@ use std::{collections::BTreeMap, panic};
 
 use log::trace;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "gui-egui")]
+use std::rc::Rc;
+#[cfg(feature = "gui-egui")]
+use syncrim::common::EguiComponent;
 use syncrim::common::{Component, Condition, Input, InputPort, OutputType, Ports, Simulator};
-
 pub const INSTR_MEM_PC_ID: &str = "pc";
 
 pub const INSTR_MEM_INSTRUCTION_ID: &str = "instruction";
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct InstrMem {
     pub id: String,
     pub pos: (f32, f32),
@@ -21,6 +24,16 @@ pub struct InstrMem {
 impl Component for InstrMem {
     fn to_(&self) {
         println!("InstrMem");
+    }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy_input = Input::new("dummy", "out");
+        Box::new(Rc::new(InstrMem {
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            bytes: BTreeMap::new(),
+            pc: dummy_input,
+        }))
     }
     fn get_id_ports(&self) -> (String, Ports) {
         (

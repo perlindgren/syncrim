@@ -1,3 +1,5 @@
+#[cfg(feature = "gui-egui")]
+use crate::common::EguiComponent;
 use crate::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
     SignalValue, Simulator,
@@ -9,7 +11,6 @@ use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 use std::ops::Range;
 use std::{cell::RefCell, collections::BTreeMap, convert::TryFrom, rc::Rc};
-
 pub const MEM_DATA_ID: &str = "data";
 pub const MEM_ADDR_ID: &str = "addr";
 pub const MEM_CTRL_ID: &str = "ctrl";
@@ -19,7 +20,7 @@ pub const MEM_SIZE_ID: &str = "size";
 pub const MEM_DATA_OUT_ID: &str = "data";
 pub const MEM_ERR_OUT_ID: &str = "err";
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Mem {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -278,6 +279,27 @@ pub enum MemCtrl {
 impl Component for Mem {
     fn to_(&self) {
         trace!("Mem");
+    }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy_input = Input::new("dummy", "out");
+        Box::new(Rc::new(Mem {
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            width: 100.0,
+            height: 50.0,
+            big_endian: true,
+            data: dummy_input.clone(),
+            addr: dummy_input.clone(),
+            ctrl: dummy_input.clone(),
+            size: dummy_input.clone(),
+            sext: dummy_input.clone(),
+            range: Range {
+                start: 0,
+                end: 0x20,
+            },
+            memory: Memory::new(BTreeMap::new()),
+        }))
     }
     fn get_id_ports(&self) -> (Id, Ports) {
         (

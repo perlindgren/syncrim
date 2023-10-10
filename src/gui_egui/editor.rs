@@ -334,6 +334,7 @@ impl Editor {
                 EditorMode::Wire | EditorMode::Input => {
                     for c in &e.components {
                         let old_key = c.as_ref().get_id_ports().0;
+                        println!("{}, {:?}", old_key, e.contexts);
                         let mut context = e.contexts.remove(&old_key).unwrap();
                         c.render(
                             ui,

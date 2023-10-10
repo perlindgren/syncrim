@@ -56,7 +56,7 @@ pub const REG_FILE_WRITE_ENABLE_ID: &str = "write_enable";
 pub const REG_FILE_REG_A_OUT: &str = "reg_a";
 pub const REG_FILE_REG_B_OUT: &str = "reg_b";
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct RegFile {
     pub id: String,
     pub pos: (f32, f32),

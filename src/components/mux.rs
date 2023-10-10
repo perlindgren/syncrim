@@ -1,3 +1,5 @@
+#[cfg(feature = "gui-egui")]
+use crate::common::EguiComponent;
 use crate::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalUnsigned, SignalValue,
     Simulator,
@@ -5,12 +7,11 @@ use crate::common::{
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
-
 pub const MUX_SELECT_ID: &str = "select";
 pub const MUX_TEMPLATE_ID: &str = "in";
 pub const MUX_OUT_ID: &str = "out";
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Mux {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -22,6 +23,16 @@ pub struct Mux {
 impl Component for Mux {
     fn to_(&self) {
         trace!("mux");
+    }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy_input = Input::new("dummy", "out");
+        Box::new(Rc::new(Mux {
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            select: dummy_input.clone(),
+            m_in: vec![dummy_input.clone(), dummy_input.clone()],
+        }))
     }
     fn get_id_ports(&self) -> (Id, Ports) {
         let mut inputs: Vec<InputPort> = Vec::with_capacity(self.m_in.len() + 1);

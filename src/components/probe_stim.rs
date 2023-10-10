@@ -3,7 +3,7 @@ use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeStim {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),

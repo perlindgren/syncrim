@@ -1,11 +1,12 @@
+#[cfg(feature = "gui-egui")]
+use crate::common::EguiComponent;
 use crate::common::{Component, Id, Input, InputPort, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
-
 pub const PROBE_IN_ID: &str = "in";
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Probe {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -16,6 +17,15 @@ pub struct Probe {
 impl Component for Probe {
     fn to_(&self) {
         trace!("Probe");
+    }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy_input = Input::new("dummy", "out");
+        Box::new(Rc::new(Probe {
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            input: dummy_input.clone(),
+        }))
     }
     fn get_id_ports(&self) -> (Id, Ports) {
         (

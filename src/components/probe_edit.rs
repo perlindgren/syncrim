@@ -1,3 +1,5 @@
+#[cfg(feature = "gui-egui")]
+use crate::common::EguiComponent;
 use crate::common::{Component, Condition, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -26,7 +28,10 @@ impl Component for ProbeEdit {
     fn to_(&self) {
         trace!("ProbeEdit");
     }
-
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        Box::new(Rc::new(ProbeEdit::new(id, (pos.0, pos.1))))
+    }
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

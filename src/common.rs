@@ -69,7 +69,10 @@ pub trait Component {
     fn set_id_port(&mut self, _target_port_id: Id, _new_input: Input) {
         todo!("Set set_id_port for this Component");
     }
-
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, _id: &str, _pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        todo!("implement dummy component factory for this component")
+    }
     /// evaluate component based on current internal state
     fn clock(&self, _simulator: &mut Simulator) -> Result<(), Condition> {
         Ok(())

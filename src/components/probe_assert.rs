@@ -8,7 +8,7 @@ use std::rc::Rc;
 
 pub const PROBE_ASSERT_IN_ID: &str = "in";
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeAssert {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),

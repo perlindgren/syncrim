@@ -2,10 +2,9 @@ use crate::common::{Component, Id, Input, InputPort, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
-
 pub const WIRE_INPUT_ID: &str = "in";
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Wire {
     pub(crate) id: Id,
     pub(crate) pos: Vec<(f32, f32)>,

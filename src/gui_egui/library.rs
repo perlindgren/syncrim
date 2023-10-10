@@ -1,5 +1,4 @@
 use crate::common::EguiComponent;
-use crate::components::*;
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::{
     editor::{Editor, EditorMode},
@@ -7,11 +6,7 @@ use crate::gui_egui::{
     helper::{id_ports_of_all_components, offset_reverse_helper_pos2, unique_component_name},
 };
 use egui::{Context, CursorIcon, LayerId, PointerButton, Pos2, Rect, Response, Ui, Vec2};
-use std::{
-    collections::{BTreeMap, HashMap},
-    ops::Range,
-    rc::Rc,
-};
+use std::{collections::HashMap, rc::Rc};
 
 pub struct InputMode {
     pub comp: Option<Rc<dyn EguiComponent>>,
@@ -145,90 +140,9 @@ pub fn add_comp_to_editor(e: &mut Editor) {
         }
     }
     let id_ports = id_ports_of_all_components(&e.components);
-    let id;
-    let mut comp: Rc<dyn EguiComponent> =
-        match e.im.comp.as_mut().unwrap().get_id_ports().0.as_str() {
-            "c" => {
-                id = unique_component_name(&id_ports, "c");
-                Rc::new(Constant {
-                    id: id.clone(),
-                    pos: (0.0, 0.0),
-                    value: 0.into(),
-                })
-            }
-            "p" => {
-                id = unique_component_name(&id_ports, "p");
-                Rc::new(Probe {
-                    id: id.clone(),
-                    pos: (0.0, 0.0),
-                    input: e.dummy_input.clone(),
-                })
-            }
-            "pe" => {
-                id = unique_component_name(&id_ports, "pe");
-                Rc::new(ProbeEdit::new(id.as_str(), (0.0, 0.0)))
-            }
-            "add" => {
-                id = unique_component_name(&id_ports, "add");
-                Rc::new(Add {
-                    id: id.clone(),
-                    pos: (0.0, 0.0),
-                    a_in: e.dummy_input.clone(),
-                    b_in: e.dummy_input.clone(),
-                })
-            }
-            "sext" => {
-                id = unique_component_name(&id_ports, "sext");
-                Rc::new(Sext {
-                    id: id.clone(),
-                    pos: (0.0, 0.0),
-                    sext_in: e.dummy_input.clone(),
-                    in_size: 16,
-                    out_size: 24,
-                })
-            }
-            "mem" => {
-                id = unique_component_name(&id_ports, "mem");
-                Rc::new(Mem {
-                    id: id.clone(),
-                    pos: (0.0, 0.0),
-                    width: 100.0,
-                    height: 50.0,
-                    big_endian: true,
-                    data: e.dummy_input.clone(),
-                    addr: e.dummy_input.clone(),
-                    ctrl: e.dummy_input.clone(),
-                    size: e.dummy_input.clone(),
-                    sext: e.dummy_input.clone(),
-                    range: Range {
-                        start: 0,
-                        end: 0x20,
-                    },
-                    memory: Memory::new(BTreeMap::new()),
-                })
-            }
-            "mux" => {
-                id = unique_component_name(&id_ports, "mux");
-                Rc::new(Mux {
-                    id: id.clone(),
-                    pos: (0.0, 0.0),
-                    select: e.dummy_input.clone(),
-                    m_in: vec![e.dummy_input.clone(), e.dummy_input.clone()],
-                })
-            }
-            "reg" => {
-                id = unique_component_name(&id_ports, "reg");
-                Rc::new(Register {
-                    id: id.clone(),
-                    pos: (0.0, 0.0),
-                    r_in: e.dummy_input.clone(),
-                })
-            }
-            _ => todo!(),
-        };
-    Rc::<dyn EguiComponent>::get_mut(&mut comp)
-        .unwrap()
-        .set_pos((pos.x, pos.y));
+    let cloned = e.im.comp.clone().unwrap();
+    let id = unique_component_name(&id_ports, cloned.get_id_ports().0.as_str());
+    let instance = cloned.dummy(&id, (pos.x, pos.y));
     e.contexts.insert(
         id.clone(),
         EguiExtra {
@@ -238,5 +152,5 @@ pub fn add_comp_to_editor(e: &mut Editor) {
             pos_tmp: pos,
         },
     );
-    e.components.push(comp);
+    e.components.push(*instance);
 }

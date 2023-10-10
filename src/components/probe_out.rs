@@ -2,7 +2,7 @@ use crate::common::{Component, Id, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeOut {
     pub(crate) id: Id,
 }
