@@ -1,4 +1,4 @@
-.option arch, rv32i
+.option norvc
 # ----------------------------------------------------------
 #  Group 1's "underlag" for Lab 1
 #  Pseudo-instructions may be used for Lab 1.
@@ -59,10 +59,7 @@
 # NO additional global variables.
 # ----------------------------------------------------------
  
- 
-	.data
-test_word: .word 0xDEADBEEF
-some_string: .string "Hi! :)"
+  .data
 .align 4
 abc:	.word	0x9fdd9158	# string "abc", encoded
 	.word	0x85715808
@@ -219,18 +216,6 @@ coded:	.word	0x015e7a47	# the real encoded data
  
 	.text
 main:
-	addi t0, t1, 0
-	la t0, test_word
-	li t1, 0xFFFFFFFF
-	sw t1, 0(t0)
-	sw t1, 4(t0)
-	sw t1, 8(t0)
-	sw t1, 12(t0)
-	li t0, 0x500000F4 # address should be outide of memview range
-	sw t1, 0(t0)
-	sw t1, 4(t0)
-	sw t1, 8(t0)
-	sw t1, 12(t0)
 	li s0, 0x0e0657c1	# initialize "seed"
 	la s1, seed	# initialize "seed"
 	sw s0, 0(s1)
@@ -256,7 +241,7 @@ end:
 # Group 1's Codeword Generator Subroutine (pseudocode)
 #  (remember:  "seed" is a global variable, UNSIGNED INTEGER;
 #              you may implement local variables in registers or on the stack;
-#              result returned in v0; preserve all except t regs)
+#              result returned in a0; preserve all except t regs)
 #
 # FUNCTION codgen(): UNSIGNED INTEGER;
 #  LOCAL SIGNED INTEGER   n;
@@ -299,6 +284,7 @@ continue:
 	xor s0, s0, t3
 	xor s0, s0, t1
 	sw s0, 0(s1) #update seed
+	addi a0, s0, 0
 	jalr x0, ra
 
 
