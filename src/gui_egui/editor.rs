@@ -335,17 +335,19 @@ impl Editor {
                     for c in &e.components {
                         let old_key = c.as_ref().get_id_ports().0;
                         println!("{}, {:?}", old_key, e.contexts);
-                        let mut context = e.contexts.remove(&old_key).unwrap();
-                        c.render(
-                            ui,
-                            &mut context,
-                            None,
-                            e.offset + e.pan,
-                            e.scale,
-                            e.clip_rect,
-                            e.editor_mode,
-                        );
-                        e.contexts.insert(context.id_tmp.clone(), context);
+                        match e.contexts.remove(&old_key) {
+                                Some(mut context) => {c.render(
+                                ui,
+                                &mut context,
+                                None,
+                                e.offset + e.pan,
+                                e.scale,
+                                e.clip_rect,
+                                e.editor_mode,);
+                                e.contexts.insert(context.id_tmp.clone(), context);
+                                },
+                                _=>{println!("could remove old key")}
+                        }
                     }
                 }
                 _ => e.components.retain_mut(|c| {
