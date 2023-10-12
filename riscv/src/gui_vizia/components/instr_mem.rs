@@ -25,10 +25,10 @@ impl ViziaComponent for InstrMem {
                 .top(Pixels(10.0))
                 .hoverable(false)
         })
-        .left(Pixels(self.pos.0 - 200.0 / 2.0))
-        .top(Pixels(self.pos.1 - 50.0 / 2.0))
-        .width(Pixels(200.0))
-        .height(Pixels(50.0))
+        .left(Pixels(self.pos.0 - self.width / 2.0))
+        .top(Pixels(self.pos.1 - self.height / 2.0))
+        .width(Pixels(self.width))
+        .height(Pixels(self.height))
         .background_color(Color::lightgrey())
     }
     fn left_view(&self, cx: &mut Context) {

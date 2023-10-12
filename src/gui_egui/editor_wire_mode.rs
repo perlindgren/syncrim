@@ -1,4 +1,4 @@
-use crate::common::{Components, Id, Input};
+use crate::common::{ComponentStore, Components, Id, Input};
 use crate::components::Wire;
 use crate::gui_egui::editor::{
     get_component, CloseToComponent, Editor, EditorMode, GridOptions, SnapPriority,
@@ -11,7 +11,7 @@ use crate::gui_egui::helper::{
 use egui::{
     Color32, Context, CursorIcon, LayerId, PointerButton, Pos2, Rect, Response, Shape, Stroke, Vec2,
 };
-use std::rc::Rc;
+use std::{path::PathBuf, rc::Rc};
 
 pub struct WireMode {
     pub mode_ended: bool,
@@ -131,6 +131,11 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
             println!("Seems like you don't exactly have one input at the start or end of the wire");
         }
     }
+    let path = PathBuf::from("autosave.json");
+    ComponentStore {
+        store: e.components.clone(),
+    }
+    .save_file(&path);
     reset_wire_mode(&mut e.wm);
 }
 

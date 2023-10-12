@@ -227,8 +227,10 @@ impl Component for RegFile {
                 .get_input_value(&self.write_addr)
                 .try_into()
                 .unwrap();
-            trace!("write_addr {}", write_addr);
-            self.registers.borrow_mut()[write_addr as usize] = data.try_into().unwrap();
+            if write_addr != 0 {
+                trace!("write_addr {}", write_addr);
+                self.registers.borrow_mut()[write_addr as usize] = data.try_into().unwrap();
+            }
         }
 
         // read after write

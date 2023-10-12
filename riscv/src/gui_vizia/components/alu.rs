@@ -13,20 +13,19 @@ impl ViziaComponent for ALU {
     // create view
     fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
         V::new(cx, self, move |cx| {
-            trace!("---- Create ALU View");
+            trace!("---- Create Add View");
 
-            View::build(ALUView {}, cx, |cx| {
+            View::build(ALUView {}, cx, move |cx| {
                 Label::new(cx, "ALU")
-                    .left(Percentage(20.0))
-                    .top(Percentage(45.0));
+                    .left(Percentage(25.0))
+                    .top(Pixels(40.0 - 10.0))
+                    .hoverable(false);
             })
         })
-        .position_type(PositionType::SelfDirected)
-        .left(Pixels(self.pos.0 - 50.0))
-        .top(Pixels(self.pos.1 - 100.0))
-        .width(Pixels(100.0))
-        .height(Pixels(200.0))
-        .tooltip(|cx| new_component_tooltip(cx, self))
+        .left(Pixels(self.pos.0 - 20.0))
+        .top(Pixels(self.pos.1 - 40.0))
+        .width(Pixels(40.0))
+        .height(Pixels(80.0))
     }
 }
 
@@ -39,18 +38,37 @@ impl View for ALUView {
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
         let bounds = cx.bounds();
-        // println!("InstMem draw {:?}", bounds);
+        //trace!("Add draw {:?}", bounds);
 
         let mut path = Path::new();
-        let mut paint = Paint::color(Color::rgbf(0.0, 1.0, 1.0));
+        let mut paint = Paint::color(Color::rgbf(1.0, 0.0, 0.0));
         paint.set_line_width(cx.logical_to_physical(1.0));
 
-        path.move_to(bounds.left() + 0.5, bounds.top() + 0.5);
-        path.line_to(bounds.right() + 0.5, bounds.top() + 0.5);
-        path.line_to(bounds.right() + 0.5, bounds.bottom() + 0.5);
-        path.line_to(bounds.left() + 0.5, bounds.bottom() + 0.5);
-        path.line_to(bounds.left() + 0.5, bounds.top() + 0.5);
+        let height = bounds.height();
+        let width = bounds.width();
+        let top = bounds.top();
+        let left = bounds.left();
+        let right = bounds.right();
+        let bottom = bounds.bottom();
 
-        canvas.fill_path(&path, &paint);
+        // top left
+        path.move_to(left + 0.5, top + 0.5);
+
+        // top right corner
+        path.line_to(left + width * 0.5 + 0.5, top + 0.5);
+        path.line_to(right + 0.5, top + height * 0.25 + 0.5);
+
+        // bottom right corner
+        path.line_to(right + 0.5, bottom - height * 0.25 + 0.5);
+        path.line_to(left + width * 0.5 + 0.5, bottom + 0.5);
+        path.line_to(left + 0.5, bottom + 0.5);
+
+        // left outtake
+        path.line_to(left + 0.5, bottom - 0.25 * height + 0.5);
+        path.line_to(left + width * 0.25 + 0.5, top + 0.5 * height + 0.5);
+        path.line_to(left + 0.5, top + 0.25 * height + 0.5);
+        path.line_to(left + 0.5, top + 0.5);
+
+        canvas.stroke_path(&path, &paint);
     }
 }

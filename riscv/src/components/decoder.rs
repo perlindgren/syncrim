@@ -34,7 +34,7 @@ pub const DECODER_BRANCH_LOGIC_CTL_ID: &str = "branch_logic_ctl";
 pub const DECODER_BRANCH_LOGIC_ENABLE_ID: &str = "branch_logic_enable";
 pub const DECODER_JALR_IMM_ID: &str = "jalr_imm";
 
-pub const DECODER_HEIGHT: f32 = 200.0;
+pub const DECODER_HEIGHT: f32 = 600.0;
 pub const DECODER_WIDTH: f32 = 30.0;
 
 #[derive(Serialize, Deserialize)]

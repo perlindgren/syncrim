@@ -271,7 +271,8 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
                             .border_width(Pixels(1.0));
                         },
                     );
-                });
+                })
+                .width(Pixels(400.0));
 
                 // Mid panel
                 ScrollView::new(cx, 0.0, 0.0, true, true, |cx| {

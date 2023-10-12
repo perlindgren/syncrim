@@ -34,7 +34,7 @@ impl EguiComponent for Mux {
 
         // selector, here we can treat Signal better (see Vizia counterpart)
         let select: SignalUnsigned = match simulator {
-            Some(s) => s.get_input_value(&self.select).try_into().unwrap(),
+            Some(s) => s.get_input_value(&self.select).try_into().unwrap_or(0),
             None => 0,
         };
 

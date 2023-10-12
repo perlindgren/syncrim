@@ -112,7 +112,7 @@ impl ViziaComponent for RegFile {
         .background_color(Color::lightgrey())
         .border_width(Pixels(1.0))
         .border_color(Color::black())
-        .width(Pixels(200.0))
+        .width(Pixels(250.0))
         .height(Pixels(500.0))
     }
 }

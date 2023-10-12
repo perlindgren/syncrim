@@ -129,7 +129,7 @@ impl EguiComponent for SZExt {
         vec![
             (
                 crate::components::SIGN_ZERO_EXT_DATA_I_ID.to_string(),
-                Pos2::new(self.width / 2f32, 0.0) + own_pos,
+                Pos2::new(-self.width / 2f32, 0.0) + own_pos,
             ),
             (
                 crate::components::SIGN_ZERO_EXT_SEL_I_ID.to_string(),
@@ -137,7 +137,7 @@ impl EguiComponent for SZExt {
             ),
             (
                 crate::components::SIGN_ZERO_EXT_OUT_ID.to_string(),
-                Pos2::new(-self.width / 2f32, 0.0) + own_pos,
+                Pos2::new(self.width / 2f32, 0.0) + own_pos,
             ),
         ]
     }

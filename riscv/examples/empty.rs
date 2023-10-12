@@ -20,9 +20,8 @@ struct Args {
 }
 
 fn main() {
-    let cs = ComponentStore { store: vec![] };
-    let path = PathBuf::from("riscv.json");
-    cs.save_file(&path);
+    let path = PathBuf::from("autosave.json");
+    let cs = ComponentStore::load_file(&path);
     let dummy = Input::new("id", "field");
     #[cfg(feature = "gui-egui")]
     {

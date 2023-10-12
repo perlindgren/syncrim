@@ -10,8 +10,6 @@ use std::{
 use log::trace;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "gui-egui")]
-use std::rc::Rc;
-#[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
 use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 pub const INSTR_MEM_PC_ID: &str = "pc";
@@ -48,6 +46,11 @@ impl Component for InstrMem {
             pos: (pos.0, pos.1),
             bytes: BTreeMap::new(),
             pc: dummy_input,
+            range: Range {
+                start: 0,
+                end: 0x1000,
+            },
+            breakpoints: Rc::new(RefCell::new(HashSet::new())),
         }))
     }
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {

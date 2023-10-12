@@ -30,7 +30,6 @@ impl EguiComponent for RegFile {
         offset.y += self.pos.1 * scale;
         let s = scale;
         let o = offset;
-
         // The shape
         let rect = Rect {
             min: oh((-self.width / 2f32, -self.height / 2f32), s, o),
@@ -161,19 +160,19 @@ impl EguiComponent for RegFile {
             ),
             (
                 crate::components::REG_FILE_WRITE_DATA_ID.to_string(),
-                Pos2::new(-self.width / 3f32, -self.height / 2f32) + own_pos,
+                Pos2::new(self.width / 4f32, -self.height / 2f32) + own_pos,
             ),
             (
                 crate::components::REG_FILE_WRITE_ENABLE_ID.to_string(),
-                Pos2::new(self.width / 3f32, -self.height / 2f32) + own_pos,
+                Pos2::new(-self.width / 4f32, -self.height / 2f32) + own_pos,
             ),
             (
                 crate::components::REG_FILE_REG_A_OUT.to_string(),
-                Pos2::new(self.width / 2f32, -self.height / 3f32) + own_pos,
+                Pos2::new(self.width / 2f32, -self.height / 5f32) + own_pos,
             ),
             (
                 crate::components::REG_FILE_REG_B_OUT.to_string(),
-                Pos2::new(self.width / 2f32, self.height / 3f32) + own_pos,
+                Pos2::new(self.width / 2f32, self.height / 5f32) + own_pos,
             ),
         ]
     }
