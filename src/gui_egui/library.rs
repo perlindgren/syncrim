@@ -1,4 +1,4 @@
-use crate::common::EguiComponent;
+use crate::common::{ComponentStore, EguiComponent};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::{
     editor::{Editor, EditorMode},
@@ -6,7 +6,7 @@ use crate::gui_egui::{
     helper::{id_ports_of_all_components, offset_reverse_helper_pos2, unique_component_name},
 };
 use egui::{Context, CursorIcon, LayerId, PointerButton, Pos2, Rect, Response, Ui, Vec2};
-use std::{collections::HashMap, rc::Rc};
+use std::{collections::HashMap, path::PathBuf, rc::Rc};
 
 pub struct InputMode {
     pub comp: Option<Rc<dyn EguiComponent>>,
@@ -153,4 +153,9 @@ pub fn add_comp_to_editor(e: &mut Editor) {
         },
     );
     e.components.push(*instance);
+    let path = PathBuf::from("autosave.json");
+    ComponentStore {
+        store: e.components.clone(),
+    }
+    .save_file(&path);
 }
