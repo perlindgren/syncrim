@@ -16,8 +16,8 @@ impl Model for RegTabs {}
 
 fn range_view(cx: &mut Context, range: Range<u8>) {
     for i in range {
-        let item =
-            RegFileView::registers.map(move |reg| reg.borrow().get(i as usize).copied().unwrap());
+        let item = RegFileView::registers
+            .map(move |reg| format!("0x{:08x}", reg.borrow().get(i as usize).copied().unwrap()));
 
         HStack::new(cx, |cx| {
             Label::new(cx, &format!("{:?}", Reg::try_from(i).unwrap()))

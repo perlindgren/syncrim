@@ -12,7 +12,7 @@ pub const BRANCH_LOGIC_RS1_ID: &str = "rs1";
 pub const BRANCH_LOGIC_RS2_ID: &str = "rs2";
 pub const BRANCH_LOGIC_CTRL_ID: &str = "ctrl";
 pub const BRANCH_LOGIC_ENABLE_ID: &str = "enable";
-
+pub const BRANCH_LOGIC_MRET_ID: &str = "mret";
 pub const BRANCH_LOGIC_OUT_ID: &str = "out";
 
 pub const BRANCH_LOGIC_HEIGHT: f32 = 60.0;
@@ -30,6 +30,10 @@ pub struct BranchLogic {
 
     pub ctrl: Input,
     pub enable: Input,
+
+    pub mret: Input,
+
+    pub int: Input,
 }
 
 #[typetag::serde()]
@@ -57,6 +61,7 @@ impl Component for BranchLogic {
             BRANCH_LOGIC_RS2_ID => self.rs2 = new_input,
             BRANCH_LOGIC_CTRL_ID => self.ctrl = new_input,
             BRANCH_LOGIC_ENABLE_ID => self.enable = new_input,
+            BRANCH_LOGIC_MRET_ID => self.mret = new_input,
             _ => (),
         }
     }
@@ -81,6 +86,10 @@ impl Component for BranchLogic {
                         port_id: BRANCH_LOGIC_ENABLE_ID.to_string(),
                         input: self.enable.clone(),
                     },
+                    &InputPort {
+                        port_id: BRANCH_LOGIC_MRET_ID.to_string(),
+                        input: self.mret.clone(),
+                    },
                 ],
                 OutputType::Combinatorial,
                 vec![BRANCH_LOGIC_OUT_ID],
@@ -93,6 +102,26 @@ impl Component for BranchLogic {
         let out: SignalValue;
         let rs1: SignalValue = simulator.get_input_value(&self.rs1);
         let rs2: SignalValue = simulator.get_input_value(&self.rs2);
+        let int: SignalValue = simulator.get_input_value(&self.int);
+        let mret: SignalValue = simulator.get_input_value(&self.mret);
+        match int {
+            SignalValue::Data(sig) => {
+                if sig == 1 {
+                    simulator.set_out_value(&self.id, "out", 3);
+                    return Ok(()); //if interrupt just return here.
+                }
+            }
+            _ => {}
+        }
+        match mret {
+            SignalValue::Data(sig) => {
+                if sig == 1 {
+                    simulator.set_out_value(&self.id, "out", 4);
+                    return Ok(()); //if mret just return here.
+                }
+            }
+            _ => {}
+        }
         if enable != 0 {
             match simulator.get_input_value(&self.ctrl) {
                 SignalValue::Unknown | SignalValue::DontCare | SignalValue::Uninitialized => {
@@ -207,6 +236,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     width: 0.0,
                     height: 0.0,
@@ -216,6 +247,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -264,6 +297,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     width: 0.0,
                     height: 0.0,
@@ -273,10 +308,11 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
-
         let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
@@ -321,6 +357,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     width: 0.0,
                     height: 0.0,
@@ -330,6 +368,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -385,6 +425,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     width: 0.0,
                     height: 0.0,
@@ -394,6 +436,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -449,6 +493,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     width: 0.0,
                     height: 0.0,
@@ -458,6 +504,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -513,6 +561,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     width: 0.0,
                     height: 0.0,
@@ -522,6 +572,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -584,6 +636,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     width: 0.0,
                     height: 0.0,
@@ -593,6 +647,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -625,6 +681,8 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
                     width: 0.0,
                     height: 0.0,
@@ -634,6 +692,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    int: Input::new("int", "out"),
+                    mret: Input::new("mret", "out"),
                 }),
             ],
         };

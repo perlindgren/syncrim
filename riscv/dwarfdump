@@ -1,0 +1,929 @@
+output:	file format elf32-littleriscv
+
+.debug_info contents:
+0x00000000: Compile Unit: length = 0x000005a5, format = DWARF32, version = 0x0004, abbr_offset = 0x0000, addr_size = 0x04 (next unit at 0x000005a9)
+
+0x0000000b: DW_TAG_compile_unit
+              DW_AT_producer	("clang LLVM (rustc version 1.71.0-nightly (7908a1d65 2023-04-17))")
+              DW_AT_language	(DW_LANG_Rust)
+              DW_AT_name	("src/main.rs/@/riscv_asm.75d28297-cgu.0")
+              DW_AT_stmt_list	(0x00000000)
+              DW_AT_comp_dir	("/home/pawel/hierarchy/syncrim/riscv/riscv_asm")
+              DW_AT_GNU_pubnames	(true)
+              DW_AT_low_pc	(0x00000000)
+              DW_AT_high_pc	(0x00000004)
+
+0x00000026:   DW_TAG_namespace
+                DW_AT_name	("core")
+
+0x0000002b:     DW_TAG_namespace
+                  DW_AT_name	("fmt")
+
+0x00000030:       DW_TAG_namespace
+                    DW_AT_name	("rt")
+
+0x00000035:         DW_TAG_namespace
+                      DW_AT_name	("v1")
+
+0x0000003a:           DW_TAG_enumeration_type
+                        DW_AT_type	(0x000003de "u8")
+                        DW_AT_enum_class	(true)
+                        DW_AT_name	("Alignment")
+                        DW_AT_byte_size	(0x01)
+                        DW_AT_alignment	(1)
+
+0x00000045:             DW_TAG_enumerator
+                          DW_AT_name	("Left")
+                          DW_AT_const_value	(0)
+
+0x0000004b:             DW_TAG_enumerator
+                          DW_AT_name	("Right")
+                          DW_AT_const_value	(1)
+
+0x00000051:             DW_TAG_enumerator
+                          DW_AT_name	("Center")
+                          DW_AT_const_value	(2)
+
+0x00000057:             DW_TAG_enumerator
+                          DW_AT_name	("Unknown")
+                          DW_AT_const_value	(3)
+
+0x0000005d:             NULL
+
+0x0000005e:           DW_TAG_structure_type
+                        DW_AT_name	("Argument")
+                        DW_AT_byte_size	(0x20)
+                        DW_AT_alignment	(4)
+
+0x00000065:             DW_TAG_member
+                          DW_AT_name	("position")
+                          DW_AT_type	(0x00000463 "usize")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x00)
+
+0x00000070:             DW_TAG_member
+                          DW_AT_name	("format")
+                          DW_AT_type	(0x0000007c "core::fmt::rt::v1::FormatSpec")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x04)
+
+0x0000007b:             NULL
+
+0x0000007c:           DW_TAG_structure_type
+                        DW_AT_name	("FormatSpec")
+                        DW_AT_byte_size	(0x1c)
+                        DW_AT_alignment	(4)
+
+0x00000083:             DW_TAG_member
+                          DW_AT_name	("fill")
+                          DW_AT_type	(0x000004fa "char")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x14)
+
+0x0000008e:             DW_TAG_member
+                          DW_AT_name	("align")
+                          DW_AT_type	(0x0000003a "core::fmt::rt::v1::Alignment")
+                          DW_AT_alignment	(1)
+                          DW_AT_data_member_location	(0x18)
+
+0x00000099:             DW_TAG_member
+                          DW_AT_name	("flags")
+                          DW_AT_type	(0x00000471 "u32")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x10)
+
+0x000000a4:             DW_TAG_member
+                          DW_AT_name	("precision")
+                          DW_AT_type	(0x000000bb "core::fmt::rt::v1::Count")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x00)
+
+0x000000af:             DW_TAG_member
+                          DW_AT_name	("width")
+                          DW_AT_type	(0x000000bb "core::fmt::rt::v1::Count")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x08)
+
+0x000000ba:             NULL
+
+0x000000bb:           DW_TAG_structure_type
+                        DW_AT_name	("Count")
+                        DW_AT_byte_size	(0x08)
+                        DW_AT_alignment	(4)
+
+0x000000c2:             DW_TAG_variant_part
+                          DW_AT_discr	(0x000000c7)
+
+0x000000c7:               DW_TAG_member
+                            DW_AT_type	(0x00000471 "u32")
+                            DW_AT_alignment	(4)
+                            DW_AT_data_member_location	(0x00)
+                            DW_AT_artificial	(true)
+
+0x000000ce:               DW_TAG_variant
+                            DW_AT_discr_value	(0x00)
+
+0x000000d0:                 DW_TAG_member
+                              DW_AT_name	("Is")
+                              DW_AT_type	(0x000000f9 "core::fmt::rt::v1::Count::Is")
+                              DW_AT_alignment	(4)
+                              DW_AT_data_member_location	(0x00)
+
+0x000000db:                 NULL
+
+0x000000dc:               DW_TAG_variant
+                            DW_AT_discr_value	(0x01)
+
+0x000000de:                 DW_TAG_member
+                              DW_AT_name	("Param")
+                              DW_AT_type	(0x0000010c "core::fmt::rt::v1::Count::Param")
+                              DW_AT_alignment	(4)
+                              DW_AT_data_member_location	(0x00)
+
+0x000000e9:                 NULL
+
+0x000000ea:               DW_TAG_variant
+                            DW_AT_discr_value	(0x02)
+
+0x000000ec:                 DW_TAG_member
+                              DW_AT_name	("Implied")
+                              DW_AT_type	(0x0000011f "core::fmt::rt::v1::Count::Implied")
+                              DW_AT_alignment	(4)
+                              DW_AT_data_member_location	(0x00)
+
+0x000000f7:                 NULL
+
+0x000000f8:               NULL
+
+0x000000f9:             DW_TAG_structure_type
+                          DW_AT_name	("Is")
+                          DW_AT_byte_size	(0x08)
+                          DW_AT_alignment	(4)
+
+0x00000100:               DW_TAG_member
+                            DW_AT_name	("__0")
+                            DW_AT_type	(0x00000463 "usize")
+                            DW_AT_alignment	(4)
+                            DW_AT_data_member_location	(0x04)
+
+0x0000010b:               NULL
+
+0x0000010c:             DW_TAG_structure_type
+                          DW_AT_name	("Param")
+                          DW_AT_byte_size	(0x08)
+                          DW_AT_alignment	(4)
+
+0x00000113:               DW_TAG_member
+                            DW_AT_name	("__0")
+                            DW_AT_type	(0x00000463 "usize")
+                            DW_AT_alignment	(4)
+                            DW_AT_data_member_location	(0x04)
+
+0x0000011e:               NULL
+
+0x0000011f:             DW_TAG_structure_type
+                          DW_AT_name	("Implied")
+                          DW_AT_byte_size	(0x08)
+                          DW_AT_alignment	(4)
+
+0x00000126:             NULL
+
+0x00000127:           NULL
+
+0x00000128:         NULL
+
+0x00000129:       DW_TAG_structure_type
+                    DW_AT_name	("Arguments")
+                    DW_AT_byte_size	(0x18)
+                    DW_AT_alignment	(4)
+
+0x00000130:         DW_TAG_member
+                      DW_AT_name	("pieces")
+                      DW_AT_type	(0x00000485 "&[&str]")
+                      DW_AT_alignment	(4)
+                      DW_AT_data_member_location	(0x08)
+
+0x0000013b:         DW_TAG_member
+                      DW_AT_name	("fmt")
+                      DW_AT_type	(0x000002a0 "core::option::Option<&[core::fmt::rt::v1::Argument]>")
+                      DW_AT_alignment	(4)
+                      DW_AT_data_member_location	(0x00)
+
+0x00000146:         DW_TAG_member
+                      DW_AT_name	("args")
+                      DW_AT_type	(0x00000501 "&[core::fmt::ArgumentV1]")
+                      DW_AT_alignment	(4)
+                      DW_AT_data_member_location	(0x10)
+
+0x00000151:         NULL
+
+0x00000152:       DW_TAG_structure_type
+                    DW_AT_name	("ArgumentV1")
+                    DW_AT_byte_size	(0x08)
+                    DW_AT_alignment	(4)
+
+0x00000159:         DW_TAG_member
+                      DW_AT_name	("value")
+                      DW_AT_type	(0x00000528 "core::fmt::{extern#0}::Opaque *")
+                      DW_AT_alignment	(4)
+                      DW_AT_data_member_location	(0x00)
+
+0x00000164:         DW_TAG_member
+                      DW_AT_name	("formatter")
+                      DW_AT_type	(0x00000535 "core::result::Result<(), core::fmt::Error> (*)(core::fmt::{extern#0}::Opaque *, core::fmt::Formatter *)")
+                      DW_AT_alignment	(4)
+                      DW_AT_data_member_location	(0x04)
+
+0x0000016f:         NULL
+
+0x00000170:       DW_TAG_namespace
+                    DW_AT_name	("{extern#0}")
+
+0x00000175:         DW_TAG_structure_type
+                      DW_AT_name	("Opaque")
+                      DW_AT_byte_size	(0x00)
+                      DW_AT_alignment	(1)
+
+0x0000017c:         NULL
+
+0x0000017d:       DW_TAG_structure_type
+                    DW_AT_name	("Error")
+                    DW_AT_byte_size	(0x00)
+                    DW_AT_alignment	(1)
+
+0x00000184:       DW_TAG_structure_type
+                    DW_AT_name	("Formatter")
+                    DW_AT_byte_size	(0x24)
+                    DW_AT_alignment	(4)
+
+0x0000018b:         DW_TAG_member
+                      DW_AT_name	("flags")
+                      DW_AT_type	(0x00000471 "u32")
+                      DW_AT_alignment	(4)
+                      DW_AT_data_member_location	(0x18)
+
+0x00000196:         DW_TAG_member
+                      DW_AT_name	("fill")
+                      DW_AT_type	(0x000004fa "char")
+                      DW_AT_alignment	(4)
+                      DW_AT_data_member_location	(0x1c)
+
+0x000001a1:         DW_TAG_member
+                      DW_AT_name	("align")
+                      DW_AT_type	(0x0000003a "core::fmt::rt::v1::Alignment")
+                      DW_AT_alignment	(1)
+                      DW_AT_data_member_location	(0x20)
+
+0x000001ac:         DW_TAG_member
+                      DW_AT_name	("width")
+                      DW_AT_type	(0x000002fd "core::option::Option<usize>")
+                      DW_AT_alignment	(4)
+                      DW_AT_data_member_location	(0x08)
+
+0x000001b7:         DW_TAG_member
+                      DW_AT_name	("precision")
+                      DW_AT_type	(0x000002fd "core::option::Option<usize>")
+                      DW_AT_alignment	(4)
+                      DW_AT_data_member_location	(0x10)
+
+0x000001c2:         DW_TAG_member
+                      DW_AT_name	("buf")
+                      DW_AT_type	(0x00000566 "&mut dyn core::fmt::Write")
+                      DW_AT_alignment	(4)
+                      DW_AT_data_member_location	(0x00)
+
+0x000001cd:         NULL
+
+0x000001ce:       NULL
+
+0x000001cf:     DW_TAG_namespace
+                  DW_AT_name	("panic")
+
+0x000001d4:       DW_TAG_namespace
+                    DW_AT_name	("panic_info")
+
+0x000001d9:         DW_TAG_structure_type
+                      DW_AT_name	("PanicInfo")
+                      DW_AT_byte_size	(0x14)
+                      DW_AT_alignment	(4)
+
+0x000001e0:           DW_TAG_member
+                        DW_AT_name	("payload")
+                        DW_AT_type	(0x0000041b "&(dyn core::any::Any + core::marker::Send)")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x00)
+
+0x000001eb:           DW_TAG_member
+                        DW_AT_name	("message")
+                        DW_AT_type	(0x00000243 "core::option::Option<&core::fmt::Arguments>")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x08)
+
+0x000001f6:           DW_TAG_member
+                        DW_AT_name	("location")
+                        DW_AT_type	(0x00000594 "core::panic::location::Location *")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x0c)
+
+0x00000201:           DW_TAG_member
+                        DW_AT_name	("can_unwind")
+                        DW_AT_type	(0x000005a1 "bool")
+                        DW_AT_alignment	(1)
+                        DW_AT_data_member_location	(0x10)
+
+0x0000020c:           NULL
+
+0x0000020d:         NULL
+
+0x0000020e:       DW_TAG_namespace
+                    DW_AT_name	("location")
+
+0x00000213:         DW_TAG_structure_type
+                      DW_AT_name	("Location")
+                      DW_AT_byte_size	(0x10)
+                      DW_AT_alignment	(4)
+
+0x0000021a:           DW_TAG_member
+                        DW_AT_name	("file")
+                        DW_AT_type	(0x000004ac "&str")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x00)
+
+0x00000225:           DW_TAG_member
+                        DW_AT_name	("line")
+                        DW_AT_type	(0x00000471 "u32")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x08)
+
+0x00000230:           DW_TAG_member
+                        DW_AT_name	("col")
+                        DW_AT_type	(0x00000471 "u32")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x0c)
+
+0x0000023b:           NULL
+
+0x0000023c:         NULL
+
+0x0000023d:       NULL
+
+0x0000023e:     DW_TAG_namespace
+                  DW_AT_name	("option")
+
+0x00000243:       DW_TAG_structure_type
+                    DW_AT_name	("Option<&core::fmt::Arguments>")
+                    DW_AT_byte_size	(0x04)
+                    DW_AT_alignment	(4)
+
+0x0000024a:         DW_TAG_variant_part
+                      DW_AT_discr	(0x0000024f)
+
+0x0000024f:           DW_TAG_member
+                        DW_AT_type	(0x00000471 "u32")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x00)
+                        DW_AT_artificial	(true)
+
+0x00000256:           DW_TAG_variant
+                        DW_AT_discr_value	(0x00)
+
+0x00000258:             DW_TAG_member
+                          DW_AT_name	("None")
+                          DW_AT_type	(0x00000272 "core::option::Option<&core::fmt::Arguments>::None<core::fmt::Arguments *>")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x00)
+
+0x00000263:             NULL
+
+0x00000264:           DW_TAG_variant
+
+0x00000265:             DW_TAG_member
+                          DW_AT_name	("Some")
+                          DW_AT_type	(0x00000283 "core::option::Option<&core::fmt::Arguments>::Some<core::fmt::Arguments *>")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x00)
+
+0x00000270:             NULL
+
+0x00000271:           NULL
+
+0x00000272:         DW_TAG_structure_type
+                      DW_AT_name	("None")
+                      DW_AT_byte_size	(0x04)
+                      DW_AT_alignment	(4)
+
+0x00000279:           DW_TAG_template_type_parameter
+                        DW_AT_type	(0x00000478 "core::fmt::Arguments *")
+                        DW_AT_name	("T")
+
+0x00000282:           NULL
+
+0x00000283:         DW_TAG_structure_type
+                      DW_AT_name	("Some")
+                      DW_AT_byte_size	(0x04)
+                      DW_AT_alignment	(4)
+
+0x0000028a:           DW_TAG_template_type_parameter
+                        DW_AT_type	(0x00000478 "core::fmt::Arguments *")
+                        DW_AT_name	("T")
+
+0x00000293:           DW_TAG_member
+                        DW_AT_name	("__0")
+                        DW_AT_type	(0x00000478 "core::fmt::Arguments *")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x00)
+
+0x0000029e:           NULL
+
+0x0000029f:         NULL
+
+0x000002a0:       DW_TAG_structure_type
+                    DW_AT_name	("Option<&[core::fmt::rt::v1::Argument]>")
+                    DW_AT_byte_size	(0x08)
+                    DW_AT_alignment	(4)
+
+0x000002a7:         DW_TAG_variant_part
+                      DW_AT_discr	(0x000002ac)
+
+0x000002ac:           DW_TAG_member
+                        DW_AT_type	(0x00000471 "u32")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x00)
+                        DW_AT_artificial	(true)
+
+0x000002b3:           DW_TAG_variant
+                        DW_AT_discr_value	(0x00)
+
+0x000002b5:             DW_TAG_member
+                          DW_AT_name	("None")
+                          DW_AT_type	(0x000002cf "core::option::Option<&[core::fmt::rt::v1::Argument]>::None<&[core::fmt::rt::v1::Argument]>")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x00)
+
+0x000002c0:             NULL
+
+0x000002c1:           DW_TAG_variant
+
+0x000002c2:             DW_TAG_member
+                          DW_AT_name	("Some")
+                          DW_AT_type	(0x000002e0 "core::option::Option<&[core::fmt::rt::v1::Argument]>::Some<&[core::fmt::rt::v1::Argument]>")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x00)
+
+0x000002cd:             NULL
+
+0x000002ce:           NULL
+
+0x000002cf:         DW_TAG_structure_type
+                      DW_AT_name	("None")
+                      DW_AT_byte_size	(0x08)
+                      DW_AT_alignment	(4)
+
+0x000002d6:           DW_TAG_template_type_parameter
+                        DW_AT_type	(0x000004d3 "&[core::fmt::rt::v1::Argument]")
+                        DW_AT_name	("T")
+
+0x000002df:           NULL
+
+0x000002e0:         DW_TAG_structure_type
+                      DW_AT_name	("Some")
+                      DW_AT_byte_size	(0x08)
+                      DW_AT_alignment	(4)
+
+0x000002e7:           DW_TAG_template_type_parameter
+                        DW_AT_type	(0x000004d3 "&[core::fmt::rt::v1::Argument]")
+                        DW_AT_name	("T")
+
+0x000002f0:           DW_TAG_member
+                        DW_AT_name	("__0")
+                        DW_AT_type	(0x000004d3 "&[core::fmt::rt::v1::Argument]")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x00)
+
+0x000002fb:           NULL
+
+0x000002fc:         NULL
+
+0x000002fd:       DW_TAG_structure_type
+                    DW_AT_name	("Option<usize>")
+                    DW_AT_byte_size	(0x08)
+                    DW_AT_alignment	(4)
+
+0x00000304:         DW_TAG_variant_part
+                      DW_AT_discr	(0x00000309)
+
+0x00000309:           DW_TAG_member
+                        DW_AT_type	(0x00000471 "u32")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x00)
+                        DW_AT_artificial	(true)
+
+0x00000310:           DW_TAG_variant
+                        DW_AT_discr_value	(0x00)
+
+0x00000312:             DW_TAG_member
+                          DW_AT_name	("None")
+                          DW_AT_type	(0x0000032d "core::option::Option<usize>::None<usize>")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x00)
+
+0x0000031d:             NULL
+
+0x0000031e:           DW_TAG_variant
+                        DW_AT_discr_value	(0x01)
+
+0x00000320:             DW_TAG_member
+                          DW_AT_name	("Some")
+                          DW_AT_type	(0x0000033e "core::option::Option<usize>::Some<usize>")
+                          DW_AT_alignment	(4)
+                          DW_AT_data_member_location	(0x00)
+
+0x0000032b:             NULL
+
+0x0000032c:           NULL
+
+0x0000032d:         DW_TAG_structure_type
+                      DW_AT_name	("None")
+                      DW_AT_byte_size	(0x08)
+                      DW_AT_alignment	(4)
+
+0x00000334:           DW_TAG_template_type_parameter
+                        DW_AT_type	(0x00000463 "usize")
+                        DW_AT_name	("T")
+
+0x0000033d:           NULL
+
+0x0000033e:         DW_TAG_structure_type
+                      DW_AT_name	("Some")
+                      DW_AT_byte_size	(0x08)
+                      DW_AT_alignment	(4)
+
+0x00000345:           DW_TAG_template_type_parameter
+                        DW_AT_type	(0x00000463 "usize")
+                        DW_AT_name	("T")
+
+0x0000034e:           DW_TAG_member
+                        DW_AT_name	("__0")
+                        DW_AT_type	(0x00000463 "usize")
+                        DW_AT_alignment	(4)
+                        DW_AT_data_member_location	(0x04)
+
+0x00000359:           NULL
+
+0x0000035a:         NULL
+
+0x0000035b:       NULL
+
+0x0000035c:     DW_TAG_namespace
+                  DW_AT_name	("result")
+
+0x00000361:       DW_TAG_structure_type
+                    DW_AT_name	("Result<(), core::fmt::Error>")
+                    DW_AT_byte_size	(0x01)
+                    DW_AT_alignment	(1)
+
+0x00000368:         DW_TAG_variant_part
+                      DW_AT_discr	(0x0000036d)
+
+0x0000036d:           DW_TAG_member
+                        DW_AT_type	(0x000003de "u8")
+                        DW_AT_alignment	(1)
+                        DW_AT_data_member_location	(0x00)
+                        DW_AT_artificial	(true)
+
+0x00000374:           DW_TAG_variant
+                        DW_AT_discr_value	(0x00)
+
+0x00000376:             DW_TAG_member
+                          DW_AT_name	("Ok")
+                          DW_AT_type	(0x00000391 "core::result::Result<(), core::fmt::Error>::Ok<(), core::fmt::Error>")
+                          DW_AT_alignment	(1)
+                          DW_AT_data_member_location	(0x00)
+
+0x00000381:             NULL
+
+0x00000382:           DW_TAG_variant
+                        DW_AT_discr_value	(0x01)
+
+0x00000384:             DW_TAG_member
+                          DW_AT_name	("Err")
+                          DW_AT_type	(0x000003b6 "core::result::Result<(), core::fmt::Error>::Err<(), core::fmt::Error>")
+                          DW_AT_alignment	(1)
+                          DW_AT_data_member_location	(0x00)
+
+0x0000038f:             NULL
+
+0x00000390:           NULL
+
+0x00000391:         DW_TAG_structure_type
+                      DW_AT_name	("Ok")
+                      DW_AT_byte_size	(0x01)
+                      DW_AT_alignment	(1)
+
+0x00000398:           DW_TAG_template_type_parameter
+                        DW_AT_type	(0x00000552 "()")
+                        DW_AT_name	("T")
+
+0x000003a1:           DW_TAG_template_type_parameter
+                        DW_AT_type	(0x0000017d "core::fmt::Error")
+                        DW_AT_name	("E")
+
+0x000003aa:           DW_TAG_member
+                        DW_AT_name	("__0")
+                        DW_AT_type	(0x00000552 "()")
+                        DW_AT_alignment	(1)
+                        DW_AT_data_member_location	(0x01)
+
+0x000003b5:           NULL
+
+0x000003b6:         DW_TAG_structure_type
+                      DW_AT_name	("Err")
+                      DW_AT_byte_size	(0x01)
+                      DW_AT_alignment	(1)
+
+0x000003bd:           DW_TAG_template_type_parameter
+                        DW_AT_type	(0x00000552 "()")
+                        DW_AT_name	("T")
+
+0x000003c6:           DW_TAG_template_type_parameter
+                        DW_AT_type	(0x0000017d "core::fmt::Error")
+                        DW_AT_name	("E")
+
+0x000003cf:           DW_TAG_member
+                        DW_AT_name	("__0")
+                        DW_AT_type	(0x0000017d "core::fmt::Error")
+                        DW_AT_alignment	(1)
+                        DW_AT_data_member_location	(0x01)
+
+0x000003da:           NULL
+
+0x000003db:         NULL
+
+0x000003dc:       NULL
+
+0x000003dd:     NULL
+
+0x000003de:   DW_TAG_base_type
+                DW_AT_name	("u8")
+                DW_AT_encoding	(DW_ATE_unsigned)
+                DW_AT_byte_size	(0x01)
+
+0x000003e5:   DW_TAG_namespace
+                DW_AT_name	("riscv_asm")
+
+0x000003ea:     DW_TAG_subprogram
+                  DW_AT_low_pc	(0x00000000)
+                  DW_AT_high_pc	(0x00000004)
+                  DW_AT_frame_base	(DW_OP_reg2 X2)
+                  DW_AT_linkage_name	("rust_begin_unwind")
+                  DW_AT_name	("panic")
+                  DW_AT_decl_file	("/home/pawel/hierarchy/syncrim/riscv/riscv_asm/src/main.rs")
+                  DW_AT_decl_line	(8)
+                  DW_AT_noreturn	(true)
+
+0x000003ff:       DW_TAG_formal_parameter
+                    DW_AT_location	(DW_OP_reg10 X10)
+                    DW_AT_name	("_info")
+                    DW_AT_decl_file	("/home/pawel/hierarchy/syncrim/riscv/riscv_asm/src/main.rs")
+                    DW_AT_decl_line	(8)
+                    DW_AT_type	(0x0000040e "core::panic::panic_info::PanicInfo *")
+
+0x0000040c:       NULL
+
+0x0000040d:     NULL
+
+0x0000040e:   DW_TAG_pointer_type
+                DW_AT_type	(0x000001d9 "core::panic::panic_info::PanicInfo")
+                DW_AT_name	("&core::panic::panic_info::PanicInfo")
+                DW_AT_address_class	(0x00000000)
+
+0x0000041b:   DW_TAG_structure_type
+                DW_AT_name	("&(dyn core::any::Any + core::marker::Send)")
+                DW_AT_byte_size	(0x08)
+                DW_AT_alignment	(4)
+
+0x00000422:     DW_TAG_member
+                  DW_AT_name	("pointer")
+                  DW_AT_type	(0x00000439 "(dyn core::any::Any + core::marker::Send) *")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x00)
+
+0x0000042d:     DW_TAG_member
+                  DW_AT_name	("vtable")
+                  DW_AT_type	(0x00000449 "usize (*)[3]")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x04)
+
+0x00000438:     NULL
+
+0x00000439:   DW_TAG_pointer_type
+                DW_AT_type	(0x00000442 "(dyn core::any::Any + core::marker::Send)")
+                DW_AT_address_class	(0x00000000)
+
+0x00000442:   DW_TAG_structure_type
+                DW_AT_name	("(dyn core::any::Any + core::marker::Send)")
+                DW_AT_byte_size	(0x00)
+                DW_AT_alignment	(1)
+
+0x00000449:   DW_TAG_pointer_type
+                DW_AT_type	(0x00000456 "usize[3]")
+                DW_AT_name	("&[usize; 3]")
+                DW_AT_address_class	(0x00000000)
+
+0x00000456:   DW_TAG_array_type
+                DW_AT_type	(0x00000463 "usize")
+
+0x0000045b:     DW_TAG_subrange_type
+                  DW_AT_type	(0x0000046a "__ARRAY_SIZE_TYPE__")
+                  DW_AT_lower_bound	(0)
+                  DW_AT_count	(0x03)
+
+0x00000462:     NULL
+
+0x00000463:   DW_TAG_base_type
+                DW_AT_name	("usize")
+                DW_AT_encoding	(DW_ATE_unsigned)
+                DW_AT_byte_size	(0x04)
+
+0x0000046a:   DW_TAG_base_type
+                DW_AT_name	("__ARRAY_SIZE_TYPE__")
+                DW_AT_byte_size	(0x08)
+                DW_AT_encoding	(DW_ATE_unsigned)
+
+0x00000471:   DW_TAG_base_type
+                DW_AT_name	("u32")
+                DW_AT_encoding	(DW_ATE_unsigned)
+                DW_AT_byte_size	(0x04)
+
+0x00000478:   DW_TAG_pointer_type
+                DW_AT_type	(0x00000129 "core::fmt::Arguments")
+                DW_AT_name	("&core::fmt::Arguments")
+                DW_AT_address_class	(0x00000000)
+
+0x00000485:   DW_TAG_structure_type
+                DW_AT_name	("&[&str]")
+                DW_AT_byte_size	(0x08)
+                DW_AT_alignment	(4)
+
+0x0000048c:     DW_TAG_member
+                  DW_AT_name	("data_ptr")
+                  DW_AT_type	(0x000004a3 "&str *")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x00)
+
+0x00000497:     DW_TAG_member
+                  DW_AT_name	("length")
+                  DW_AT_type	(0x00000463 "usize")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x04)
+
+0x000004a2:     NULL
+
+0x000004a3:   DW_TAG_pointer_type
+                DW_AT_type	(0x000004ac "&str")
+                DW_AT_address_class	(0x00000000)
+
+0x000004ac:   DW_TAG_structure_type
+                DW_AT_name	("&str")
+                DW_AT_byte_size	(0x08)
+                DW_AT_alignment	(4)
+
+0x000004b3:     DW_TAG_member
+                  DW_AT_name	("data_ptr")
+                  DW_AT_type	(0x000004ca "u8 *")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x00)
+
+0x000004be:     DW_TAG_member
+                  DW_AT_name	("length")
+                  DW_AT_type	(0x00000463 "usize")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x04)
+
+0x000004c9:     NULL
+
+0x000004ca:   DW_TAG_pointer_type
+                DW_AT_type	(0x000003de "u8")
+                DW_AT_address_class	(0x00000000)
+
+0x000004d3:   DW_TAG_structure_type
+                DW_AT_name	("&[core::fmt::rt::v1::Argument]")
+                DW_AT_byte_size	(0x08)
+                DW_AT_alignment	(4)
+
+0x000004da:     DW_TAG_member
+                  DW_AT_name	("data_ptr")
+                  DW_AT_type	(0x000004f1 "core::fmt::rt::v1::Argument *")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x00)
+
+0x000004e5:     DW_TAG_member
+                  DW_AT_name	("length")
+                  DW_AT_type	(0x00000463 "usize")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x04)
+
+0x000004f0:     NULL
+
+0x000004f1:   DW_TAG_pointer_type
+                DW_AT_type	(0x0000005e "core::fmt::rt::v1::Argument")
+                DW_AT_address_class	(0x00000000)
+
+0x000004fa:   DW_TAG_base_type
+                DW_AT_name	("char")
+                DW_AT_encoding	(DW_ATE_UTF)
+                DW_AT_byte_size	(0x04)
+
+0x00000501:   DW_TAG_structure_type
+                DW_AT_name	("&[core::fmt::ArgumentV1]")
+                DW_AT_byte_size	(0x08)
+                DW_AT_alignment	(4)
+
+0x00000508:     DW_TAG_member
+                  DW_AT_name	("data_ptr")
+                  DW_AT_type	(0x0000051f "core::fmt::ArgumentV1 *")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x00)
+
+0x00000513:     DW_TAG_member
+                  DW_AT_name	("length")
+                  DW_AT_type	(0x00000463 "usize")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x04)
+
+0x0000051e:     NULL
+
+0x0000051f:   DW_TAG_pointer_type
+                DW_AT_type	(0x00000152 "core::fmt::ArgumentV1")
+                DW_AT_address_class	(0x00000000)
+
+0x00000528:   DW_TAG_pointer_type
+                DW_AT_type	(0x00000175 "core::fmt::{extern#0}::Opaque")
+                DW_AT_name	("&core::fmt::{extern#0}::Opaque")
+                DW_AT_address_class	(0x00000000)
+
+0x00000535:   DW_TAG_pointer_type
+                DW_AT_type	(0x00000542 "core::result::Result<(), core::fmt::Error> (core::fmt::{extern#0}::Opaque *, core::fmt::Formatter *)")
+                DW_AT_name	("fn(&core::fmt::{extern#0}::Opaque, &mut core::fmt::Formatter) -> core::result::Result<(), core::fmt::Error>")
+                DW_AT_address_class	(0x00000000)
+
+0x00000542:   DW_TAG_subroutine_type
+                DW_AT_type	(0x00000361 "core::result::Result<(), core::fmt::Error>")
+
+0x00000547:     DW_TAG_formal_parameter
+                  DW_AT_type	(0x00000528 "core::fmt::{extern#0}::Opaque *")
+
+0x0000054c:     DW_TAG_formal_parameter
+                  DW_AT_type	(0x00000559 "core::fmt::Formatter *")
+
+0x00000551:     NULL
+
+0x00000552:   DW_TAG_base_type
+                DW_AT_name	("()")
+                DW_AT_encoding	(DW_ATE_unsigned)
+                DW_AT_byte_size	(0x00)
+
+0x00000559:   DW_TAG_pointer_type
+                DW_AT_type	(0x00000184 "core::fmt::Formatter")
+                DW_AT_name	("&mut core::fmt::Formatter")
+                DW_AT_address_class	(0x00000000)
+
+0x00000566:   DW_TAG_structure_type
+                DW_AT_name	("&mut dyn core::fmt::Write")
+                DW_AT_byte_size	(0x08)
+                DW_AT_alignment	(4)
+
+0x0000056d:     DW_TAG_member
+                  DW_AT_name	("pointer")
+                  DW_AT_type	(0x00000584 "dyn core::fmt::Write *")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x00)
+
+0x00000578:     DW_TAG_member
+                  DW_AT_name	("vtable")
+                  DW_AT_type	(0x00000449 "usize (*)[3]")
+                  DW_AT_alignment	(4)
+                  DW_AT_data_member_location	(0x04)
+
+0x00000583:     NULL
+
+0x00000584:   DW_TAG_pointer_type
+                DW_AT_type	(0x0000058d "dyn core::fmt::Write")
+                DW_AT_address_class	(0x00000000)
+
+0x0000058d:   DW_TAG_structure_type
+                DW_AT_name	("dyn core::fmt::Write")
+                DW_AT_byte_size	(0x00)
+                DW_AT_alignment	(1)
+
+0x00000594:   DW_TAG_pointer_type
+                DW_AT_type	(0x00000213 "core::panic::location::Location")
+                DW_AT_name	("&core::panic::location::Location")
+                DW_AT_address_class	(0x00000000)
+
+0x000005a1:   DW_TAG_base_type
+                DW_AT_name	("bool")
+                DW_AT_encoding	(DW_ATE_boolean)
+                DW_AT_byte_size	(0x01)
+
+0x000005a8:   NULL

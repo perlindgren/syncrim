@@ -1,13 +1,13 @@
 use asm_riscv::{self};
 use std::{
     cell::RefCell,
-    collections::{BTreeMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     ops::Range,
-    panic,
     rc::Rc,
 };
 
 use log::trace;
+use riscv_asm_strings::Stringify;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
@@ -29,6 +29,8 @@ pub struct InstrMem {
     pub pc: Input,
     pub range: Range<usize>,
     pub breakpoints: Rc<RefCell<HashSet<usize>>>,
+    pub symbols: HashMap<usize, String>,
+    pub le: bool,
 }
 
 #[typetag::serde()]
@@ -76,15 +78,25 @@ impl Component for InstrMem {
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get instr at pc/4
         let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
-        let instr = (*self.bytes.get(&((pc) as usize)).unwrap() as u32) << 24
+        let instr = if !self.le{ (*self.bytes.get(&((pc) as usize)).unwrap() as u32) << 24
             | (*self.bytes.get(&((pc + 1) as usize)).unwrap() as u32) << 16
             | (*self.bytes.get(&((pc + 2) as usize)).unwrap() as u32) << 8
-            | (*self.bytes.get(&((pc + 3) as usize)).unwrap() as u32);
+            | (*self.bytes.get(&((pc + 3) as usize)).unwrap() as u32)}
+        else{(*self.bytes.get(&((pc) as usize)).unwrap() as u32)
+            | (*self.bytes.get(&((pc + 1) as usize)).unwrap() as u32) << 8
+            | (*self.bytes.get(&((pc + 2) as usize)).unwrap() as u32) << 16
+            | (*self.bytes.get(&((pc + 3) as usize)).unwrap() as u32) << 24};
         //the asm_riscv crate incorrectly panics when trying from instead of
         //returning Err, catch it and handle instead
-        let instruction_fmt =
-            panic::catch_unwind(|| format!("{:?}", asm_riscv::I::try_from(instr)))
-                .unwrap_or_else(|_| format!("Unknown instruction"));
+        let instruction_fmt = {
+            format!(
+                "{:?}",
+                match asm_riscv::I::try_from(instr) {
+                    Ok(i) => i.to_string(),
+                    Err(_) => "Unknown instruction".to_string(),
+                }
+            )
+        }; 
         trace!("instruction: {}", instruction_fmt);
         trace!("pc:0x{:08x}", pc);
         // set output
@@ -130,6 +142,8 @@ mod test {
                         end: 0x1000,
                     },
                     breakpoints: Rc::new(RefCell::new(HashSet::new())),
+                    symbols: HashMap::new(),
+                    le: true,
                 }),
             ],
         };

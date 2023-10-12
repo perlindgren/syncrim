@@ -227,11 +227,12 @@ impl Component for RegFile {
                 .get_input_value(&self.write_addr)
                 .try_into()
                 .unwrap();
-            if write_addr != 0 {
-                trace!("write_addr {}", write_addr);
+            trace!("write_addr {}", write_addr);
+            if write_addr!=0{
                 self.registers.borrow_mut()[write_addr as usize] = data.try_into().unwrap();
             }
         }
+        
 
         // read after write
         let reg_value_a = self.read_reg(simulator, &self.read_addr1);

@@ -33,6 +33,8 @@ pub const DECODER_BRANCH_IMM_ID: &str = "branch_imm";
 pub const DECODER_BRANCH_LOGIC_CTL_ID: &str = "branch_logic_ctl";
 pub const DECODER_BRANCH_LOGIC_ENABLE_ID: &str = "branch_logic_enable";
 pub const DECODER_JALR_IMM_ID: &str = "jalr_imm";
+pub const DECODER_MRET_ID: &str = "mret";
+pub const DECODER_MEPC_ID: &str = "mepc";
 
 pub const DECODER_HEIGHT: f32 = 600.0;
 pub const DECODER_WIDTH: f32 = 30.0;
@@ -99,6 +101,8 @@ impl Component for Decoder {
                     DECODER_BRANCH_LOGIC_CTL_ID,
                     DECODER_BRANCH_LOGIC_ENABLE_ID,
                     DECODER_JALR_IMM_ID,
+                    DECODER_MEPC_ID,
+                    DECODER_MRET_ID,
                 ],
             ),
         )
@@ -144,6 +148,11 @@ impl Component for Decoder {
         let mut branch_logic_ctl = SignalValue::Uninitialized;
         let mut branch_logic_enable = SignalValue::from(0); //this must be 0
         let mut jalr_imm = SignalValue::Uninitialized;
+        let mut csr_ctl = SignalValue::Uninitialized;
+        let mut csr_data_mux = SignalValue::Uninitialized;
+        let mut csr_data = SignalValue::Uninitialized;
+        let mut csr_addr = SignalValue::Uninitialized;
+        let mut mret = SignalValue::Uninitialized;
         match opcode {
             0b0110011 => {
                 //OP
@@ -468,7 +477,64 @@ impl Component for Decoder {
                     _ => panic!("Unsupported funct3 {:b}", funct3),
                 }
             }
-            0b0 => {}
+            0b1110011 => {
+                //SYSTEM
+                csr_addr = SignalValue::from(imm); //imm
+                regfile_we = SignalValue::from(1); //write enable
+                wb_mux = SignalValue::from(2); //csr data out
+                regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
+                if instruction == 807403635
+                //mret, basically magic number
+                {
+                    mret = SignalValue::from(1);
+                } else {
+                    match funct3 {
+                        0b001 => {
+                            //CSRRW
+                            csr_ctl = SignalValue::from(1); //write
+                            csr_data_mux = SignalValue::from(0); //register
+                            regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //rs1
+                        }
+                        0b010 => {
+                            //CSRRS
+                            csr_ctl = SignalValue::from(2); //set
+                            csr_data_mux = SignalValue::from(0); //register
+                            regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //rs1
+                        }
+                        0b011 => {
+                            //CSRRC
+                            csr_ctl = SignalValue::from(3); //clear
+                            csr_data_mux = SignalValue::from(0); //register
+                            regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //rs1
+                        }
+                        0b101 => {
+                            //CSRRWI
+                            csr_ctl = SignalValue::from(1); //write
+                            csr_data_mux = SignalValue::from(1); //immediate
+                            csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //zimm
+                        }
+                        0b110 => {
+                            //CSRRSI
+                            csr_ctl = SignalValue::from(2); //set
+                            csr_data_mux = SignalValue::from(1); //immediate
+                            csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //zimm
+                        }
+                        0b111 => {
+                            //CSRRCI
+                            csr_ctl = SignalValue::from(3); //clear
+                            csr_data_mux = SignalValue::from(1); //immediate
+                            csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            //zimm
+                        }
+                        _ => panic!("Unsupported funct3 {:b}", funct3),
+                    }
+                }
+            }
             _ => {
                 panic!("Invalid opcode! {:b}", opcode);
             }
@@ -494,6 +560,11 @@ impl Component for Decoder {
         simulator.set_out_value(&self.id, "branch_logic_ctl", branch_logic_ctl);
         simulator.set_out_value(&self.id, "branch_logic_enable", branch_logic_enable);
         simulator.set_out_value(&self.id, "jalr_imm", jalr_imm);
+        simulator.set_out_value(&self.id, "csr_ctl", csr_ctl);
+        simulator.set_out_value(&self.id, "csr_data_mux", csr_data_mux);
+        simulator.set_out_value(&self.id, "csr_data", csr_data);
+        simulator.set_out_value(&self.id, "csr_addr", csr_addr);
+        simulator.set_out_value(&self.id, "mret", mret);
         Ok(())
     }
 }
