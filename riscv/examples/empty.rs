@@ -90,8 +90,9 @@ fn main() {
                 }),
             ],
         };
-        let library = syncrim::gui_egui::editor::Library(lib.store);
-        syncrim::gui_egui::gui(cs, &path, syncrim::gui_egui::editor::Library(library.0)).ok();
+        let mut component_vec = lib.store.clone();
+        component_vec.append(&mut syncrim::gui_egui::editor::Library::default().0.clone());
+        syncrim::gui_egui::gui(cs, &path, syncrim::gui_egui::editor::Library(component_vec)).ok();
     }
 
     #[cfg(feature = "gui-vizia")]

@@ -155,7 +155,7 @@ impl Editor {
                     y: 1000f32,
                 },
             },
-            side_panel_width: 400f32,
+            side_panel_width: 550f32,
             ui_change: true,
             snap_distance: 10f32,
             grid: GridOptions {

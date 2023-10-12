@@ -179,7 +179,7 @@ impl EguiComponent for RegFile {
     }
 
     fn top_padding(&self) -> f32 {
-        self.height / 2f32
+        self.height / 4f32
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {

@@ -108,7 +108,7 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
                 },
                 None,
                 padding,
-                1.0f32,
+                0.5f32,
                 clip_rect,
                 e.editor_mode,
             )
