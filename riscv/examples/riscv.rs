@@ -34,13 +34,11 @@ fn main() {
     let memory = if !args.use_elf {
         elf_from_asm(&args);
         let bytes = fs::read("./output").expect("The elf file could not be found");
-        let elf = ElfFile::new(&bytes).unwrap();
-        riscv_elf_parse::Memory::new_from_elf(elf)
+        riscv_elf_parse::Memory::new_from_file(&bytes, true)
     } else {
         let bytes =
             fs::read(format!("{}", args.elf_path)).expect("The elf file could not be found");
-        let elf = ElfFile::new(&bytes).unwrap();
-        riscv_elf_parse::Memory::new_from_elf(elf)
+        riscv_elf_parse::Memory::new_from_file(&bytes, true)
     };
 
     println!("{}", memory);
