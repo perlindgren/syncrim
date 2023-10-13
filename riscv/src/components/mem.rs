@@ -6,12 +6,18 @@ use std::ops::Deref;
 use std::ops::Range;
 use std::{cell::RefCell, collections::BTreeMap, convert::TryFrom, rc::Rc};
 use syncrim::common::{
-    Component, Condition, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, SignalValue,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned, SignalValue,
     Simulator,
 };
-
+pub const RV_MEM_DATA_I_ID:&str = "data_i";
+pub const RV_MEM_ADDR_ID:&str = "addr";
+pub const RV_MEM_CTRL_ID:&str = "sext";
+pub const RV_MEM_SEXT_ID:&str = "sext";
+pub const RV_MEM_SIZE_ID:&str = "size";
+pub const RV_MEM_INT_ADDR_ID:&str = "int_addr";
+pub const RV_MEM_DATA_O_ID:&str = "data_o";
 #[derive(Serialize, Deserialize)]
-pub struct Mem {
+pub struct RVMem {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
     pub(crate) width: f32,
@@ -34,7 +40,7 @@ pub struct Mem {
     // later history... tbd
 }
 
-impl Mem {
+impl RVMem {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: &str,
@@ -51,7 +57,7 @@ impl Mem {
         memory: BTreeMap<usize, u8>,
         range: Range<u32>,
     ) -> Self {
-        Mem {
+        RVMem {
             id: id.to_string(),
             pos,
             width,
@@ -88,7 +94,7 @@ impl Mem {
         for i in range.clone() {
             mem.insert(i as usize, 0u8);
         }
-        Rc::new(Mem::new(
+        Rc::new(RVMem::new(
             id,
             pos,
             width,
@@ -121,7 +127,7 @@ impl Mem {
         memory: BTreeMap<usize, u8>,
         range: Range<u32>,
     ) -> Rc<Self> {
-        Rc::new(Mem::new(
+        Rc::new(RVMem::new(
             id,
             pos,
             width,
@@ -295,7 +301,7 @@ pub enum MemCtrl {
 // }
 
 #[typetag::serde()]
-impl Component for Mem {
+impl Component for RVMem {
     fn to_(&self) {
         trace!("Mem");
     }
@@ -304,15 +310,33 @@ impl Component for Mem {
             self.id.clone(),
             Ports::new(
                 vec![
-                    &self.data,
-                    &self.addr,
-                    &self.ctrl,
-                    &self.sext,
-                    &self.size,
-                    &self.mem_int_addr,
+                    &InputPort {
+                        port_id: RV_MEM_DATA_I_ID.to_string(),
+                        input: self.data.clone(),
+                    },
+                    &InputPort {
+                        port_id: RV_MEM_ADDR_ID.to_string(),
+                        input: self.data.clone(),
+                    },
+                    &InputPort {
+                        port_id: RV_MEM_CTRL_ID.to_string(),
+                        input: self.data.clone(),
+                    },
+                    &InputPort {
+                        port_id: RV_MEM_SEXT_ID.to_string(),
+                        input: self.data.clone(),
+                    },
+                    &InputPort {
+                        port_id: RV_MEM_SIZE_ID.to_string(),
+                        input: self.data.clone(),
+                    },
+                    &InputPort {
+                        port_id: RV_MEM_INT_ADDR_ID.to_string(),
+                        input: self.data.clone(),
+                    },
                 ],
                 OutputType::Combinatorial,
-                vec!["data", "err", "mmio_mux_ctl", "isr_addr"],
+                vec!["data_o", "err", "mmio_mux_ctl", "isr_addr"],
             ),
         )
     }
@@ -349,7 +373,7 @@ impl Component for Mem {
                                 sign != 0,
                                 self.big_endian,
                             );
-                            simulator.set_out_value(&self.id, "data", value);
+                            simulator.set_out_value(&self.id, "data_o", value);
                             let value = self.memory.align(addr as usize, size as usize);
                             trace!("align {:?}", value);
                             simulator.set_out_value(&self.id, "err", value); // align
@@ -377,7 +401,7 @@ impl Component for Mem {
                 }
             }
             _ => {
-                simulator.set_out_value(&self.id, "data", SignalValue::Unknown);
+                simulator.set_out_value(&self.id, "data_o", SignalValue::Unknown);
                 simulator.set_out_value(&self.id, "err", SignalValue::Unknown); // align
             }
         }
@@ -425,7 +449,7 @@ mod test {
                 Rc::new(ProbeOut::new("size")),
                 Rc::new(ProbeOut::new("sign")),
                 Rc::new(ProbeOut::new("mem_int_addr")),
-                Rc::new(Mem {
+                Rc::new(RVMem {
                     id: "mem".into(),
                     pos: (0.0, 0.0),
                     width: 0.0,
@@ -609,7 +633,7 @@ mod test {
                 Rc::new(ProbeOut::new("size")),
                 Rc::new(ProbeOut::new("sign")),
                 Rc::new(ProbeOut::new("mem_int_addr")),
-                Rc::new(Mem {
+                Rc::new(RVMem {
                     id: "mem".into(),
                     pos: (0.0, 0.0),
                     width: 0.0,

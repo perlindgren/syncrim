@@ -35,6 +35,10 @@ pub const DECODER_BRANCH_LOGIC_ENABLE_ID: &str = "branch_logic_enable";
 pub const DECODER_JALR_IMM_ID: &str = "jalr_imm";
 pub const DECODER_MRET_ID: &str = "mret";
 pub const DECODER_MEPC_ID: &str = "mepc";
+pub const DECODER_CSR_CTL_ID:&str = "csr_ctl";
+pub const DECODER_CSR_DATA_MUX_ID:&str = "csr_data_mux";
+pub const DECODER_CSR_DATA_ID:&str = "csr_data";
+pub const DECODER_CSR_ADDR_ID:&str = "csr_addr";
 
 pub const DECODER_HEIGHT: f32 = 600.0;
 pub const DECODER_WIDTH: f32 = 30.0;
@@ -103,6 +107,10 @@ impl Component for Decoder {
                     DECODER_JALR_IMM_ID,
                     DECODER_MEPC_ID,
                     DECODER_MRET_ID,
+                    DECODER_CSR_CTL_ID,
+                    DECODER_CSR_DATA_MUX_ID,
+                    DECODER_CSR_DATA_ID,
+                    DECODER_CSR_ADDR_ID,
                 ],
             ),
         )
@@ -545,7 +553,7 @@ impl Component for Decoder {
         simulator.set_out_value(&self.id, "alu_operand_b_sel", alu_operand_b_sel);
         simulator.set_out_value(&self.id, "regfile_rs1", regfile_rs1);
         simulator.set_out_value(&self.id, "regfile_rs2", regfile_rs2);
-        simulator.set_out_value(&self.id, "regfile_rd", regfile_rd);
+        simulator.set_out_value(&self.id, DECODER_REGFILE_RD_ID, regfile_rd);
         simulator.set_out_value(&self.id, "regfile_we", regfile_we);
         simulator.set_out_value(&self.id, "alu_operator", alu_operator);
         simulator.set_out_value(&self.id, "sign_zero_ext_sel", sign_zero_ext_sel);

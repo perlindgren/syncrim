@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use crate::components::{Mem, Memory};
+use crate::components::{RVMem, Memory};
 use log::*;
 use syncrim::vizia::prelude::*;
 use syncrim::{
@@ -10,7 +10,7 @@ use syncrim::{
 };
 
 #[typetag::serde]
-impl ViziaComponent for Mem {
+impl ViziaComponent for RVMem {
     // create view
     fn view<'a>(&self, cx: &'a mut Context) -> Handle<'a, V> {
         V::new(cx, self, |cx| {

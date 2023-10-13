@@ -6,7 +6,7 @@ use std::{cell::RefCell, rc::Rc};
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
 use syncrim::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalUnsigned, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalUnsigned,Signal, Simulator,
 };
 use syncrim::signal::SignalValue;
 #[allow(non_camel_case_types)]

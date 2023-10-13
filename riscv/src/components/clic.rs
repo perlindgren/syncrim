@@ -1,5 +1,5 @@
-use crate::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, Signal, Simulator,
+use syncrim::common::{
+    InputPort, Signal,
 };
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
@@ -12,15 +12,22 @@ use syncrim::{
 
 use priority_queue::PriorityQueue;
 use std::{cell::RefCell, collections::HashMap};
-
+pub const CLIC_CSR_ADDR_ID:&str = "csr_addr";
+pub const CLIC_CSR_CTL_ID:&str = "csr_ctl";
+pub const CLIC_CSR_DATA_ID:&str = "csr_data";
 pub const CLIC_DATA_ID: &str = "data";
 pub const CLIC_ADDR_ID: &str = "addr";
-pub const CLIC_CTRL_ID: &str = "ctrl";
-pub const CLIC_SIGN_ID: &str = "sign";
-pub const CLIC_SIZE_ID: &str = "size";
+pub const CLIC_DATA_WE_ID: &str = "data_we";
+pub const CLIC_MRET_ID:&str = "mret";
+pub const CLIC_PC_ID:&str = "pc";
+pub const CLIC_DATA_SIZE_ID: &str = "size";
 
-pub const CLIC_DATA_OUT_ID: &str = "data";
-pub const CLIC_ERR_OUT_ID: &str = "err";
+pub const CLIC_CSR_DATA_OUT_ID: &str = "csr_data_o";
+pub const CLIC_MMIO_DATA_OUT_ID: &str = "mmio_data_o";
+pub const CLIC_MEM_INT_ADDR_ID:&str = "mem_int_addr";
+pub const CLIC_BLU_INT_ID:&str = "blu_int";
+pub const CLIC_MRET_OUT_ID:&str = "mret_out";
+pub const CLIC_MEPC_OUT_ID:&str = "mepc_out";
 
 #[derive(Serialize, Deserialize)]
 pub struct CLIC {
@@ -154,28 +161,48 @@ impl Component for CLIC {
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![
-                    self.csr_addr.clone(),
-                    self.csr_ctl.clone(),
-                    self.csr_data.clone(),
-                    self.data.clone(),
-                    self.addr.clone(),
-                    self.data_we.clone(),
-                    self.mret.clone(),
-                    self.pc.clone(),
-                    self.data_size.clone(),
+            Ports::new(
+                vec![
+                    &InputPort {
+                        port_id: CLIC_CSR_ADDR_ID.to_string(),
+                        input: self.csr_addr.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_CSR_CTL_ID.to_string(),
+                        input: self.csr_ctl.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_CSR_DATA_ID.to_string(),
+                        input: self.csr_data.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_DATA_ID.to_string(),
+                        input: self.data.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_ADDR_ID.to_string(),
+                        input: self.addr.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_DATA_WE_ID.to_string(),
+                        input: self.data_we.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_MRET_ID.to_string(),
+                        input: self.mret.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_PC_ID.to_string(),
+                        input: self.pc.clone(),
+                    },
+                    &InputPort {
+                        port_id: CLIC_DATA_SIZE_ID.to_string(),
+                        input: self.data_size.clone(),
+                    },
                 ],
-                out_type: OutputType::Combinatorial,
-                outputs: vec![
-                    "csr_data".into(),
-                    "mmio_data".into(),
-                    "mem_int_addr".into(),
-                    "blu_int".into(),
-                    "mret".into(),
-                    "mepc".into(),
-                ],
-            },
+                OutputType::Combinatorial,
+                vec![CLIC_CSR_DATA_OUT_ID, CLIC_MMIO_DATA_OUT_ID, CLIC_MEM_INT_ADDR_ID, CLIC_BLU_INT_ID, CLIC_MRET_OUT_ID, CLIC_MEPC_OUT_ID],
+            ),
         )
     }
 
@@ -231,10 +258,10 @@ impl Component for CLIC {
             trace!("mret");
             simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
             simulator.set_out_value(&self.id, "blu_int", blu_int);
-            simulator.set_out_value(&self.id, "csr_data", val as u32);
-            simulator.set_out_value(&self.id, "mmio_data", mmio_data);
-            simulator.set_out_value(&self.id, "mepc", mepc);
-            simulator.set_out_value(&self.id, "mret", mret_sig);
+            simulator.set_out_value(&self.id, "csr_data_o", val as u32);
+            simulator.set_out_value(&self.id, "mmio_data_o", mmio_data);
+            simulator.set_out_value(&self.id, "mepc_out", mepc);
+            simulator.set_out_value(&self.id, "mret_out", mret_sig);
             return Ok(());
         }
         match csr_ctl {
@@ -378,10 +405,10 @@ impl Component for CLIC {
         trace!("QUEUE:{:?}", queue);
         simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
         simulator.set_out_value(&self.id, "blu_int", blu_int);
-        simulator.set_out_value(&self.id, "csr_data", val as u32);
-        simulator.set_out_value(&self.id, "mmio_data", mmio_data);
-        simulator.set_out_value(&self.id, "mepc", mepc);
-        simulator.set_out_value(&self.id, "mret", mret_sig);
+        simulator.set_out_value(&self.id, "csr_data_o", val as u32);
+        simulator.set_out_value(&self.id, "mmio_data_o", mmio_data);
+        simulator.set_out_value(&self.id, "mepc_out", mepc);
+        simulator.set_out_value(&self.id, "mret_out", mret_sig);
         Ok(())
     }
 }

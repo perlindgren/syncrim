@@ -53,6 +53,8 @@ impl Component for BranchLogic {
             rs2: dummy.clone(),
             ctrl: dummy.clone(),
             enable: dummy.clone(),
+            mret: dummy.clone(),
+            int: dummy.clone(),
         }))
     }
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {

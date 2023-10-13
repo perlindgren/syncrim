@@ -53,6 +53,8 @@ impl Component for InstrMem {
                 end: 0x1000,
             },
             breakpoints: Rc::new(RefCell::new(HashSet::new())),
+            symbols: HashMap::new(),
+            le:true,
         }))
     }
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
