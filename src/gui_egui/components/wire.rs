@@ -13,7 +13,6 @@ impl EguiComponent for Wire {
         _clip_rect: egui::Rect,
     ) {
         let oh: fn((f32, f32), f32, egui::Vec2) -> egui::Pos2 = offset_helper;
-        let offset = offset;
         let s = scale;
         let o = offset;
         let mut line_vec = vec![];
