@@ -19,11 +19,17 @@ impl InstrMem {
         Window::new("Instruction Memory").show(ctx, |ui| {
             ScrollArea::vertical().show(ui, |ui| {
                 // trace!(":P");
-                let pc: u32 = simulator
-                    .unwrap()
-                    .get_input_value(&self.pc)
-                    .try_into()
-                    .unwrap_or(0);
+                let pc: u32 = {
+                    if simulator.is_some() {
+                        simulator
+                            .unwrap()
+                            .get_input_value(&self.pc)
+                            .try_into()
+                            .unwrap_or(0)
+                    } else {
+                        0
+                    }
+                };
                 for byte in &self.bytes {
                     if byte.0 % 4 == 0 {
                         let bg_color = {
@@ -122,7 +128,7 @@ impl EguiComponent for InstrMem {
         offset.y += self.pos.1 * scale;
         let s = scale;
         let o = offset;
-        self.side_panel(ui.ctx(), simulator);
+        //self.side_panel(ui.ctx(), simulator);
         // The shape
         let rect = Rect {
             min: oh((-self.width / 2f32, -self.height / 2f32), s, o),
@@ -142,7 +148,9 @@ impl EguiComponent for InstrMem {
             ui.label("InstrMem");
         });
         match editor_mode {
-            EditorMode::Simulator => (),
+            EditorMode::Simulator => {
+                self.side_panel(ui.ctx(), simulator);
+            }
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
         }
         Some(vec![r])

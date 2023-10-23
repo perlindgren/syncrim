@@ -266,6 +266,15 @@ fn main() {
     */
     let path = PathBuf::from("riscv.json");
     let mut cs = ComponentStore::load_file(&path);
+    /*cs.store.push(Mux::rc_new(
+        "mmio_data_mux",
+        (750.0, 300.0),
+        Input::new("decoder", "csr_data_mux"),
+        vec![
+            Input::new("reg_file", "reg_a"),
+            Input::new("decoder", "csr_data"),
+        ],
+    ));
     cs.store.push(RVMem::rc_new_from_bytes(
         "data_memory",
         (1540.0, 900.0),
@@ -277,7 +286,7 @@ fn main() {
         Input::new("decoder", "data_mem_ctrl"),
         Input::new("decoder", "data_se"),
         Input::new("decoder", "data_mem_size"),
-        Input::new("zero_c", "out"),
+        Input::new("clic", "mem_int_addr"),
         data_mem,
         range,
     ));
@@ -317,6 +326,18 @@ fn main() {
             Input::new("decoder", "csr_data"),
         ],
     ));
+    cs.store.push(Mux::rc_new(
+                "pc_adder_mux",
+                (400.0, 740.0),
+                Input::new("branch_logic", "out"),
+                vec![
+                    Input::new("pc_adder", "out"),
+                    Input::new("jalr_stripper", "out"),
+                    Input::new("branch_adder", "out"),
+                    Input::new("data_memory", "isr_addr"),
+                    Input::new("clic", "mepc")
+                ],
+            ));*/
     //let path = PathBuf::from("riscv.json");
     //cs.save_file(&path);
 
@@ -420,10 +441,11 @@ fn fern_setup_riscv() {
         // Add blanket level filter -
         // .level(log::LevelFilter::Debug);
         .level_for(
-            "riscv::gui_egui::components::instr_mem",
+            "riscv::components::clic",
             // "riscv::gui_vizia::components::instr_mem",
             log::LevelFilter::Trace,
         )
+        .level_for("riscv::components::branch_logic", log::LevelFilter::Trace)
         .level(log::LevelFilter::Error);
 
     // - and per-module overrides

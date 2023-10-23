@@ -112,13 +112,14 @@ impl EguiComponent for RVMem {
                 color: Color32::BLACK,
             },
         ));
-        self.side_panel(ui.ctx(), simulator);
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
             ui.label("Mem");
         });
         match editor_mode {
-            EditorMode::Simulator => (),
+            EditorMode::Simulator => {
+                self.side_panel(ui.ctx(), simulator);
+            }
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
         }
         Some(vec![r])

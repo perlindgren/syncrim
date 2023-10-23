@@ -1,5 +1,8 @@
-use crate::components::RegFile;
-use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2};
+use crate::components::{Reg, RegFile, RegStore};
+use egui::{
+    Color32, Context, Label, Pos2, Rect, Response, Rounding, ScrollArea, Shape, Stroke, Ui, Vec2,
+    Window,
+};
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -8,14 +11,32 @@ use syncrim::gui_egui::component_ui::{
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
-
+impl RegFile {
+    fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
+        Window::new("Register File").show(ctx, |ui| {
+            ScrollArea::vertical()
+                .auto_shrink([false; 2])
+                .show(ui, |ui| {
+                    for reg in RegStore::full_range() {
+                        ui.horizontal(|ui| {
+                            ui.label(format!(
+                                "{:?}:0x{:08x}",
+                                Reg::try_from(reg).unwrap(),
+                                self.registers.0.borrow().get(reg as usize).unwrap()
+                            ));
+                        });
+                    }
+                });
+        });
+    }
+}
 #[typetag::serde]
 impl EguiComponent for RegFile {
     fn render(
         &self,
         ui: &mut Ui,
         _context: &mut EguiExtra,
-        _simulator: Option<&mut Simulator>,
+        simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
@@ -43,13 +64,27 @@ impl EguiComponent for RegFile {
                 color: Color32::BLACK,
             },
         ));
-
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
             ui.label("RegFile");
         });
         match editor_mode {
-            EditorMode::Simulator => (),
+            EditorMode::Simulator => {
+                ui.allocate_ui_at_rect(rect, |ui| {
+                    ui.vertical(|ui| {
+                        for reg in RegStore::lo_range() {
+                            ui.horizontal(|ui| {
+                                ui.label(format!(
+                                    "{:?}:0x{:08x}",
+                                    Reg::try_from(reg).unwrap(),
+                                    self.registers.0.borrow().get(reg as usize).unwrap()
+                                ));
+                            });
+                        }
+                    });
+                });
+                self.side_panel(ui.ctx(), simulator);
+            }
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
         }
         Some(vec![r])

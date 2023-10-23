@@ -109,6 +109,7 @@ impl Component for BranchLogic {
         match int {
             SignalValue::Data(sig) => {
                 if sig == 1 {
+                    trace!("int");
                     simulator.set_out_value(&self.id, "out", 3);
                     return Ok(()); //if interrupt just return here.
                 }
@@ -118,6 +119,7 @@ impl Component for BranchLogic {
         match mret {
             SignalValue::Data(sig) => {
                 if sig == 1 {
+                    trace!("mret");
                     simulator.set_out_value(&self.id, "out", 4);
                     return Ok(()); //if mret just return here.
                 }
