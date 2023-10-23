@@ -6,7 +6,8 @@ use std::{cell::RefCell, rc::Rc};
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
 use syncrim::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalUnsigned,Signal, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, Signal, SignalUnsigned,
+    Simulator,
 };
 use syncrim::signal::SignalValue;
 #[allow(non_camel_case_types)]
@@ -228,11 +229,10 @@ impl Component for RegFile {
                 .try_into()
                 .unwrap();
             trace!("write_addr {}", write_addr);
-            if write_addr!=0{
+            if write_addr != 0 {
                 self.registers.borrow_mut()[write_addr as usize] = data.try_into().unwrap();
             }
         }
-        
 
         // read after write
         let reg_value_a = self.read_reg(simulator, &self.read_addr1);

@@ -35,10 +35,10 @@ pub const DECODER_BRANCH_LOGIC_ENABLE_ID: &str = "branch_logic_enable";
 pub const DECODER_JALR_IMM_ID: &str = "jalr_imm";
 pub const DECODER_MRET_ID: &str = "mret";
 pub const DECODER_MEPC_ID: &str = "mepc";
-pub const DECODER_CSR_CTL_ID:&str = "csr_ctl";
-pub const DECODER_CSR_DATA_MUX_ID:&str = "csr_data_mux";
-pub const DECODER_CSR_DATA_ID:&str = "csr_data";
-pub const DECODER_CSR_ADDR_ID:&str = "csr_addr";
+pub const DECODER_CSR_CTL_ID: &str = "csr_ctl";
+pub const DECODER_CSR_DATA_MUX_ID: &str = "csr_data_mux";
+pub const DECODER_CSR_DATA_ID: &str = "csr_data";
+pub const DECODER_CSR_ADDR_ID: &str = "csr_addr";
 
 pub const DECODER_HEIGHT: f32 = 600.0;
 pub const DECODER_WIDTH: f32 = 30.0;

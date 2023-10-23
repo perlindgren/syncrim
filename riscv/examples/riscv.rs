@@ -5,7 +5,7 @@ use riscv::components::*;
 use riscv_elf_parse;
 use std::{
     cell::RefCell,
-    collections::{BTreeMap, HashSet, HashMap},
+    collections::{BTreeMap, HashMap, HashSet},
     fs,
     ops::Range,
     path::PathBuf,
@@ -266,65 +266,57 @@ fn main() {
     */
     let path = PathBuf::from("riscv.json");
     let mut cs = ComponentStore::load_file(&path);
-    cs.store.push(
-        RVMem::rc_new_from_bytes(
-            "data_memory",
-            (1540.0, 900.0),
-            100.0,
-            100.0,
-            false,
-            Input::new("reg_file", "reg_b"),
-            Input::new("alu", "result_o"),
-            Input::new("decoder", "data_mem_ctrl"),
-            Input::new("decoder", "data_se"),
-            Input::new("decoder", "data_mem_size"),
-            Input::new("zero_c", "out"),
-            data_mem,
-            range,
-        )
-    );
-    cs.store.push(
-        Rc::new(InstrMem {
-            height: INSTR_MEM_HEIGHT,
-            width: INSTR_MEM_WIDTH,
-            id: "instr_mem".to_string(),
-            pos: (650.0, 900.0),
-            pc: Input::new("reg", "out"),
-            bytes: instr_mem,
-            range: instr_range,
-            breakpoints: Rc::new(RefCell::new(breakpoints)),
-            symbols: memory.symbols,
-            le: true,
-        }),
-    );
-    cs.store.push(
-        Rc::new(CLIC::new(
-            "clic".to_string(),
-            (300.0, 500.0),
-            100.0,
-            100.0,
-            Input::new("reg_file", "reg_b"),        //MMIO data
-            Input::new("alu", "result_o"),          //MMIO address
-            Input::new("decoder", "data_mem_ctrl"), //R/W for MMIO
-            Input::new("decoder", "data_mem_size"), //size for MMIO
-            Input::new("csr_mux", "out"),           //Immediate or register data for CSR op
-            Input::new("decoder", "csr_addr"),      //CSR address
-            Input::new("decoder", "csr_ctl"),       //CSR op
-            Input::new("decoder", "mret"),          //mret signal
-            Input::new("pc_adder", "out"),          //mepc
-        ))
-    );
-    cs.store.push(
-        Mux::rc_new(
-            "csr_mux",
-            (650.0, 300.0),
-            Input::new("decoder", "csr_data_mux"),
-            vec![
-                Input::new("reg_file", "reg_a"),
-                Input::new("decoder", "csr_data"),
-            ],
-        )
-    );
+    cs.store.push(RVMem::rc_new_from_bytes(
+        "data_memory",
+        (1540.0, 900.0),
+        100.0,
+        100.0,
+        false,
+        Input::new("reg_file", "reg_b"),
+        Input::new("alu", "result_o"),
+        Input::new("decoder", "data_mem_ctrl"),
+        Input::new("decoder", "data_se"),
+        Input::new("decoder", "data_mem_size"),
+        Input::new("zero_c", "out"),
+        data_mem,
+        range,
+    ));
+    cs.store.push(Rc::new(InstrMem {
+        height: INSTR_MEM_HEIGHT,
+        width: INSTR_MEM_WIDTH,
+        id: "instr_mem".to_string(),
+        pos: (650.0, 900.0),
+        pc: Input::new("reg", "out"),
+        bytes: instr_mem,
+        range: instr_range,
+        breakpoints: Rc::new(RefCell::new(breakpoints)),
+        symbols: memory.symbols,
+        le: true,
+    }));
+    cs.store.push(Rc::new(CLIC::new(
+        "clic".to_string(),
+        (300.0, 500.0),
+        100.0,
+        100.0,
+        Input::new("reg_file", "reg_b"),        //MMIO data
+        Input::new("alu", "result_o"),          //MMIO address
+        Input::new("decoder", "data_mem_ctrl"), //R/W for MMIO
+        Input::new("decoder", "data_mem_size"), //size for MMIO
+        Input::new("csr_mux", "out"),           //Immediate or register data for CSR op
+        Input::new("decoder", "csr_addr"),      //CSR address
+        Input::new("decoder", "csr_ctl"),       //CSR op
+        Input::new("decoder", "mret"),          //mret signal
+        Input::new("pc_adder", "out"),          //mepc
+    )));
+    cs.store.push(Mux::rc_new(
+        "csr_mux",
+        (650.0, 300.0),
+        Input::new("decoder", "csr_data_mux"),
+        vec![
+            Input::new("reg_file", "reg_a"),
+            Input::new("decoder", "csr_data"),
+        ],
+    ));
     //let path = PathBuf::from("riscv.json");
     //cs.save_file(&path);
 
@@ -346,7 +338,7 @@ fn main() {
                     },
                     breakpoints: Rc::new(RefCell::new(HashSet::new())),
                     symbols: HashMap::new(),
-                    le:true,
+                    le: true,
                 }),
                 Rc::new(ALU {
                     id: "dummy_alu".to_string(),
@@ -428,7 +420,7 @@ fn fern_setup_riscv() {
         // Add blanket level filter -
         // .level(log::LevelFilter::Debug);
         .level_for(
-            "syncrim::simulator",
+            "riscv::gui_egui::components::instr_mem",
             // "riscv::gui_vizia::components::instr_mem",
             log::LevelFilter::Trace,
         )
@@ -437,11 +429,11 @@ fn fern_setup_riscv() {
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
     let f = f
-        .level_for("riscv::components::instr_mem", LevelFilter::Trace)
-        .level_for("riscv::components::clic", LevelFilter::Trace)
-        .level_for("riscv::components::mem", LevelFilter::Trace)
-        .level_for("syncrim::simulator", LevelFilter::Trace)
-        .level_for("syncrim::gui_vizia::gui", LevelFilter::Trace);
+        //.level_for("riscv::components::instr_mem", LevelFilter::Trace)
+        //.level_for("riscv::components::clic", LevelFilter::Trace)
+        //.level_for("riscv::components::mem", LevelFilter::Trace)
+        //.level_for("syncrim::simulator", LevelFilter::Trace)
+        .level_for("riscv::gui_egui::components::instr_mem", LevelFilter::Trace);
 
     f
         // Output to stdout, files, and other Dispatch configurations

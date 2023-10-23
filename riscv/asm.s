@@ -3,6 +3,10 @@
 init:
 	la sp, _stack_start #set stack pointer
 main:
+  la  t0, 0x50000000
+  la  t1, 0xDEADBEEF
+  sw  t1, 0(t0)
+
 	la 	t0, 0x05000101 	#priority 5, enabled, pended, will store at interrupt 0
 	la 	t1, 0x04000101 	#priority 4, enabled, pended, will store at interrupt 1
 	la 	t2, 0x06000100 	#priority 6, enabled, not pended, will store at interrupt 2

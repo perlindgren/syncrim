@@ -111,8 +111,7 @@ impl EguiComponent for CLIC {
 
     fn ports_location(&self) -> Vec<(syncrim::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
-        vec![
-        ]
+        vec![]
     }
 
     fn top_padding(&self) -> f32 {

@@ -6,16 +6,16 @@ use std::ops::Deref;
 use std::ops::Range;
 use std::{cell::RefCell, collections::BTreeMap, convert::TryFrom, rc::Rc};
 use syncrim::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned, SignalValue,
-    Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
+    SignalValue, Simulator,
 };
-pub const RV_MEM_DATA_I_ID:&str = "data_i";
-pub const RV_MEM_ADDR_ID:&str = "addr";
-pub const RV_MEM_CTRL_ID:&str = "sext";
-pub const RV_MEM_SEXT_ID:&str = "sext";
-pub const RV_MEM_SIZE_ID:&str = "size";
-pub const RV_MEM_INT_ADDR_ID:&str = "int_addr";
-pub const RV_MEM_DATA_O_ID:&str = "data_o";
+pub const RV_MEM_DATA_I_ID: &str = "data_i";
+pub const RV_MEM_ADDR_ID: &str = "addr";
+pub const RV_MEM_CTRL_ID: &str = "sext";
+pub const RV_MEM_SEXT_ID: &str = "sext";
+pub const RV_MEM_SIZE_ID: &str = "size";
+pub const RV_MEM_INT_ADDR_ID: &str = "int_addr";
+pub const RV_MEM_DATA_O_ID: &str = "data_o";
 #[derive(Serialize, Deserialize)]
 pub struct RVMem {
     pub(crate) id: Id,
@@ -316,23 +316,23 @@ impl Component for RVMem {
                     },
                     &InputPort {
                         port_id: RV_MEM_ADDR_ID.to_string(),
-                        input: self.data.clone(),
+                        input: self.addr.clone(),
                     },
                     &InputPort {
                         port_id: RV_MEM_CTRL_ID.to_string(),
-                        input: self.data.clone(),
+                        input: self.ctrl.clone(),
                     },
                     &InputPort {
                         port_id: RV_MEM_SEXT_ID.to_string(),
-                        input: self.data.clone(),
+                        input: self.sext.clone(),
                     },
                     &InputPort {
                         port_id: RV_MEM_SIZE_ID.to_string(),
-                        input: self.data.clone(),
+                        input: self.size.clone(),
                     },
                     &InputPort {
                         port_id: RV_MEM_INT_ADDR_ID.to_string(),
-                        input: self.data.clone(),
+                        input: self.mem_int_addr.clone(),
                     },
                 ],
                 OutputType::Combinatorial,

@@ -2,13 +2,12 @@ use crate::common::{
     Component, ComponentStore, Condition, Id, Input, OutputType, Signal, SignalFmt, SignalValue,
     Simulator,
 };
+use log::*;
 use petgraph::{
     algo::toposort,
     dot::{Config, Dot},
     Graph,
 };
-
-use log::*;
 use std::collections::HashMap;
 use std::{fs::File, io::prelude::*, path::PathBuf};
 
@@ -87,6 +86,7 @@ impl Simulator {
             trace!("to_id :{}, ports: {:?}", to_id, ports);
 
             if ports.out_type == OutputType::Combinatorial {
+                trace!("combinatorial, id:{}", to_component.get_id_ports().0);
                 let to_node = id_node.get(to_id).unwrap();
                 let (_, ports) = c.get_id_ports();
                 for in_port in &ports.inputs {
@@ -114,12 +114,22 @@ impl Simulator {
         let top =
             toposort(&graph, None).expect("Topological sort failed, your model contains loops.");
         trace!("--- topologically ordered graph \n{:?}", top);
-
+        //two passes, first add all sequential roots
         let mut ordered_components = vec![];
         for node in &top {
             #[allow(suspicious_double_ref_op)]
             let c = (**node_comp.get(node).unwrap()).clone();
-            ordered_components.push(c);
+            if c.get_id_ports().1.out_type == OutputType::Sequential {
+                ordered_components.push(c);
+            }
+        }
+        //then the rest...
+        for node in &top {
+            #[allow(suspicious_double_ref_op)]
+            let c = (**node_comp.get(node).unwrap()).clone();
+            if c.get_id_ports().1.out_type == OutputType::Combinatorial {
+                ordered_components.push(c);
+            }
         }
 
         let component_ids: Vec<Id> = ordered_components
@@ -211,7 +221,9 @@ impl Simulator {
             .get(&(id.into(), field.into()))
             .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
         let start_index = self.get_id_start_index(id);
-        self.set_value(start_index + index, value.into());
+        let val: SignalValue = value.try_into().unwrap();
+        //trace!("id:{}, field:{}, value:{:?}", id,field, SignalValue::try_from(val).unwrap());
+        self.set_value(start_index + index, val);
     }
 
     /// set fmt by Id (instance) and Id (field)
@@ -228,12 +240,14 @@ impl Simulator {
     pub fn clock(&mut self) {
         // push current state
         self.history.push(self.sim_state.clone());
-
+        trace!("cycle:{}", self.cycle);
         for component in self.ordered_components.clone() {
+            //trace!("evaling component:{}", component.get_id_ports().0);
             match component.clock(self) {
                 Ok(_) => {}
                 Err(cond) => match cond {
-                    Condition::Warning(warn) => trace!("warning {}", warn),
+                    Condition::Warning(warn) => { trace!("warning {}", warn)
+                    }
                     Condition::Error(err) => panic!("err {}", err),
                     Condition::Assert(assert) => {
                         error!("assertion failed {}", assert);
@@ -253,9 +267,14 @@ impl Simulator {
     pub fn run(&mut self) {
         self.running = true;
         while self.running {
-            self.clock()
+            self.clock();
         }
+        //while self.running {
+        //    self.clock()
+        //}
     }
+
+    pub fn run_threaded(&mut self) {}
 
     /// stop the simulator from gui or other external reason
     pub fn stop(&mut self) {

@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use crate::components::{RVMem, Memory};
+use crate::components::{Memory, RVMem};
 use log::*;
 use syncrim::vizia::prelude::*;
 use syncrim::{

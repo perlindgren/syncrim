@@ -6,7 +6,7 @@ use crate::gui_egui::{
     keymap::Shortcuts,
     menu::Menu,
 };
-use eframe::egui;
+use eframe::{egui, Frame};
 use egui::{
     containers, CentralPanel, Color32, Context, PointerButton, Pos2, Rect, ScrollArea, Sense,
     SidePanel, TopBottomPanel, Vec2,
@@ -84,11 +84,11 @@ impl eframe::App for Gui {
             //ctx.set_visuals(Visuals::dark());
             //ctx.set_visuals(Visuals::light());
             self.top_bar(ctx);
-            self.side_panel(ctx);
+            //self.side_panel(ctx);
             let top = containers::panel::PanelState::load(ctx, egui::Id::from("topBar")).unwrap();
-            let side = containers::panel::PanelState::load(ctx, egui::Id::from("leftGui")).unwrap();
+            // let side = containers::panel::PanelState::load(ctx, egui::Id::from("leftGui")).unwrap();
             self.offset = Vec2 {
-                x: side.rect.max.x,
+                x: 200.0,
                 y: top.rect.max.y,
             };
             self.clip_rect = Rect {
@@ -102,9 +102,14 @@ impl eframe::App for Gui {
         } else {
             self.top_bar(ctx);
             if self.simulator.is_some() {
-                self.side_panel(ctx);
+                // self.side_panel(ctx);
                 self.draw_area(ctx, frame);
             }
+        }
+    }
+    fn post_rendering(&mut self, _window_size_px: [u32; 2], _frame: &Frame) {
+        if self.simulator.is_some() {
+            keymap::step(self);
         }
     }
 }
@@ -115,22 +120,23 @@ impl Gui {
             self.ui_change = false;
             true
         } else {
-            (containers::panel::PanelState::load(ctx, egui::Id::from("topBar"))
+            /* (containers::panel::PanelState::load(ctx, egui::Id::from("topBar"))
+            .unwrap()
+            .rect
+            .max
+            .y
+            - self.offset.y)
+            .abs()
+            > 0.1
+            || (containers::panel::PanelState::load(ctx, egui::Id::from("leftGui"))
                 .unwrap()
                 .rect
                 .max
-                .y
-                - self.offset.y)
+                .x
+                - self.offset.x)
                 .abs()
-                > 0.1
-                || (containers::panel::PanelState::load(ctx, egui::Id::from("leftGui"))
-                    .unwrap()
-                    .rect
-                    .max
-                    .x
-                    - self.offset.x)
-                    .abs()
-                    > 0.1
+                > 0.1 */
+            false
         }
     }
 
@@ -167,18 +173,21 @@ impl Gui {
                 }
             });
         }
+        keymap::step(self);
     }
 
     fn side_panel(&mut self, ctx: &Context) {
         SidePanel::left("leftGui").show(ctx, |ui| {
             ScrollArea::vertical().show(ui, |ui| {
                 ui.horizontal(|ui| {
-                    ui.label("0x00000004\n0x00000008\n".repeat(100));
-                    ui.label("100000\n20000\n".repeat(100));
+                    ui.label("0x00000004\n0x00000008\n".repeat(1000));
+                    ui.label("100000\n20000\n".repeat(1000));
                 });
             });
         });
     }
+
+    fn side_panel_inst(&mut self, ctx: &Context, data: u32) {}
 
     fn top_bar(&mut self, ctx: &Context) {
         TopBottomPanel::top("topBar").show(ctx, |ui| Menu::new(ui, self));

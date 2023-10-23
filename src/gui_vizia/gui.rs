@@ -1,7 +1,7 @@
 use crate::{
     common::{ComponentStore, Simulator},
     gui_vizia::{
-        grid::Grid, keymap::init_keymap, menu::Menu, tooltip::new_component_tooltip,
+        grid::Grid, keymap::init_keymap, menu::Menu,
         transport::Transport,
     },
 };
@@ -288,8 +288,8 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
                                     for (i, c) in oc.into_iter().enumerate() {
                                         trace!("build view comp id {}", i);
                                         c.view(cx)
-                                            .tooltip(|cx| new_component_tooltip(cx, &*c))
-                                            .hoverable(true)
+                                            //.tooltip(|cx| new_component_tooltip(cx, &*c))
+                                            //.hoverable(true)
                                             .position_type(PositionType::SelfDirected)
                                             .on_mouse_down(move |ex, button| {
                                                 trace!("on_mouse_down");
@@ -306,7 +306,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
                                                         ex.emit(GuiEvent::ShowLeftPanel(i))
                                                     }
                                                     _ => {}
-                                                }
+                                                };
                                             });
                                     }
                                 })

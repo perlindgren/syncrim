@@ -4,12 +4,12 @@ use crate::{
     gui_vizia::{popup::build_popup, tooltip::new_component_tooltip, ViziaComponent, V},
 };
 
+use log::*;
+use std::{cell::RefCell, rc::Rc};
 use vizia::{
     prelude::*,
     vg::{Paint, Path},
 };
-
-use log::*;
 
 #[typetag::serde]
 impl ViziaComponent for Wire {
@@ -20,9 +20,16 @@ impl ViziaComponent for Wire {
             let surround = 5.0;
 
             for (i, pos) in self.pos[1..].iter().enumerate() {
-                View::build(WireView { surround }, cx, |cx| {
-                    build_popup(cx, self.get_id_ports());
-                })
+                View::build(
+                    WireView {
+                        surround,
+                        drawn: Rc::new(RefCell::new(false)),
+                    },
+                    cx,
+                    |cx| {
+                        build_popup(cx, self.get_id_ports());
+                    },
+                )
                 .position_type(PositionType::SelfDirected)
                 .left(Pixels(f32::min(pos.0, self.pos[i].0) - surround))
                 .top(Pixels(f32::min(pos.1, self.pos[i].1) - surround))
@@ -40,6 +47,7 @@ impl ViziaComponent for Wire {
 
 pub struct WireView {
     surround: f32,
+    drawn: Rc<RefCell<bool>>,
 }
 
 impl View for WireView {
@@ -48,8 +56,10 @@ impl View for WireView {
     }
 
     fn draw(&self, cx: &mut DrawContext<'_>, canvas: &mut Canvas) {
+        //let drawn = self.drawn.borrow().clone();
+        //if !(drawn){
         let bounds = cx.bounds();
-        // trace!("Wire draw {:?}", bounds);
+        trace!("Wire draw {:?}", bounds);
 
         let mut path = Path::new();
         let mut paint = Paint::color(vizia::vg::Color::rgbaf(0.0, 0.0, 0.1, 0.5));
@@ -64,7 +74,9 @@ impl View for WireView {
             bounds.left() + bounds.width() - surround + 0.5,
             bounds.top() + bounds.height() - surround + 0.5,
         );
-
+        self.drawn.replace(true);
         canvas.stroke_path(&path, &paint);
+
+        //}
     }
 }

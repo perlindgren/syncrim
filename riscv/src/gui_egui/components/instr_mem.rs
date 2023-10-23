@@ -1,5 +1,10 @@
 use crate::components::InstrMem;
-use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2};
+use egui::{
+    Color32, Context, Label, Pos2, Rect, Response, RichText, Rounding, ScrollArea, Sense, Shape,
+    SidePanel, Stroke, Ui, Vec2, Window,
+};
+use log::trace;
+use riscv_asm_strings::Stringify;
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -9,13 +14,100 @@ use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
 
+impl InstrMem {
+    fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
+        Window::new("Instruction Memory").show(ctx, |ui| {
+            ScrollArea::vertical().show(ui, |ui| {
+                // trace!(":P");
+                let pc: u32 = simulator
+                    .unwrap()
+                    .get_input_value(&self.pc)
+                    .try_into()
+                    .unwrap_or(0);
+                for byte in &self.bytes {
+                    if byte.0 % 4 == 0 {
+                        let bg_color = {
+                            if pc == (*byte.0 as u32) {
+                                Color32::YELLOW
+                            } else {
+                                Color32::TRANSPARENT
+                            }
+                        };
+                        let breakpoint_color = {
+                            if self.breakpoints.borrow_mut().contains(byte.0) {
+                                Color32::RED
+                            } else {
+                                Color32::TRANSPARENT
+                            }
+                        };
+                        ui.horizontal(|ui| {
+                            ui.label(RichText::new("•").color(breakpoint_color));
+                            match (&self.symbols.get(byte.0)) {
+                                Some(s) => {
+                                    ui.label(format!("{}:", s));
+                                }
+                                None => {}
+                            };
+                            ui.label(format!("0x{:08x}:", byte.0));
+                            let instr = if !self.le {
+                                (*self.bytes.get(&(*(byte.0) as usize)).unwrap() as u32) << 24
+                                    | (*self.bytes.get(&((byte.0 + 1) as usize)).unwrap() as u32)
+                                        << 16
+                                    | (*self.bytes.get(&((byte.0 + 2) as usize)).unwrap() as u32)
+                                        << 8
+                                    | (*self.bytes.get(&((byte.0 + 3) as usize)).unwrap() as u32)
+                            } else {
+                                (*self.bytes.get(&(*(byte.0) as usize)).unwrap() as u32)
+                                    | (*self.bytes.get(&((byte.0 + 1) as usize)).unwrap() as u32)
+                                        << 8
+                                    | (*self.bytes.get(&((byte.0 + 2) as usize)).unwrap() as u32)
+                                        << 16
+                                    | (*self.bytes.get(&((byte.0 + 3) as usize)).unwrap() as u32)
+                                        << 24
+                            };
+                            let instruction_fmt = {
+                                format!(
+                                    "{:?}",
+                                    match asm_riscv::I::try_from(instr) {
+                                        Ok(i) => i.to_string(),
+                                        Err(_) => "Unknown instruction".to_string(),
+                                    }
+                                )
+                            };
+
+                            if ui
+                                .add(
+                                    Label::new(
+                                        RichText::new(format!(
+                                            "0x{:08x}:{}",
+                                            instr, instruction_fmt,
+                                        ))
+                                        .background_color(bg_color),
+                                    )
+                                    .sense(Sense::click()),
+                                )
+                                .clicked()
+                            {
+                                trace!("Clicked");
+                                if !self.breakpoints.borrow_mut().remove(byte.0) {
+                                    self.breakpoints.borrow_mut().insert(*byte.0);
+                                }
+                            };
+                        });
+                    }
+                }
+            });
+        });
+    }
+}
+
 #[typetag::serde]
 impl EguiComponent for InstrMem {
     fn render(
         &self,
         ui: &mut Ui,
-        _context: &mut EguiExtra,
-        _simulator: Option<&mut Simulator>,
+        ctx: &mut EguiExtra,
+        simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
@@ -30,7 +122,7 @@ impl EguiComponent for InstrMem {
         offset.y += self.pos.1 * scale;
         let s = scale;
         let o = offset;
-
+        self.side_panel(ui.ctx(), simulator);
         // The shape
         let rect = Rect {
             min: oh((-self.width / 2f32, -self.height / 2f32), s, o),

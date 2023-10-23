@@ -1,5 +1,9 @@
-use syncrim::common::{EguiComponent, Ports, Simulator};
 use crate::components::RVMem;
+use egui::{
+    Color32, Context, Pos2, Rect, Response, Rounding, ScrollArea, Shape, Slider, Stroke, Ui, Vec2,
+    Window,
+};
+use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
     rect_with_hover, visualize_ports,
@@ -7,7 +11,71 @@ use syncrim::gui_egui::component_ui::{
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
-use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Slider, Stroke, Ui, Vec2};
+
+impl RVMem {
+    fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
+        Window::new("Data Memory").show(ctx, |ui| {
+            ScrollArea::vertical().show(ui, |ui| {
+                //trace!(":P");
+                for byte in self.memory.0.borrow().clone().into_iter() {
+                    if byte.0 % 4 == 0 {
+                        ui.horizontal(|ui| {
+                            ui.label(format!("0x{:08x}:", byte.0));
+                            let word = if self.big_endian {
+                                (*self.memory.0.borrow().get(&((byte.0) as usize)).unwrap() as u32)
+                                    << 24
+                                    | (*self
+                                        .memory
+                                        .0
+                                        .borrow()
+                                        .get(&((byte.0 + 1) as usize))
+                                        .unwrap() as u32)
+                                        << 16
+                                    | (*self
+                                        .memory
+                                        .0
+                                        .borrow()
+                                        .get(&((byte.0 + 2) as usize))
+                                        .unwrap() as u32)
+                                        << 8
+                                    | (*self
+                                        .memory
+                                        .0
+                                        .borrow()
+                                        .get(&((byte.0 + 3) as usize))
+                                        .unwrap() as u32)
+                            } else {
+                                (*self.memory.0.borrow().get(&((byte.0) as usize)).unwrap() as u32)
+                                    | (*self
+                                        .memory
+                                        .0
+                                        .borrow()
+                                        .get(&((byte.0 + 1) as usize))
+                                        .unwrap() as u32)
+                                        << 8
+                                    | (*self
+                                        .memory
+                                        .0
+                                        .borrow()
+                                        .get(&((byte.0 + 2) as usize))
+                                        .unwrap() as u32)
+                                        << 16
+                                    | (*self
+                                        .memory
+                                        .0
+                                        .borrow()
+                                        .get(&((byte.0 + 3) as usize))
+                                        .unwrap() as u32)
+                                        << 24
+                            };
+                            ui.label(format!("0x{:08x}", word));
+                        });
+                    }
+                }
+            });
+        });
+    }
+}
 
 #[typetag::serde]
 impl EguiComponent for RVMem {
@@ -15,7 +83,7 @@ impl EguiComponent for RVMem {
         &self,
         ui: &mut Ui,
         _context: &mut EguiExtra,
-        _simulator: Option<&mut Simulator>,
+        simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
@@ -44,7 +112,7 @@ impl EguiComponent for RVMem {
                 color: Color32::BLACK,
             },
         ));
-
+        self.side_panel(ui.ctx(), simulator);
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
             ui.label("Mem");

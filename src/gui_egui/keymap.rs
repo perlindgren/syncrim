@@ -7,6 +7,7 @@ use crate::gui_egui::Gui;
 use egui::{Key, KeyboardShortcut, Modifiers};
 use rfd::FileDialog;
 use std::path::PathBuf;
+use std::thread;
 
 #[derive(Copy, Clone)]
 pub struct Shortcuts {
@@ -386,11 +387,19 @@ pub fn control_play_toggle_fn(gui: &mut Gui) {
 pub fn control_play_fn(gui: &mut Gui) {
     if !gui.editor_use {
         gui.pause = false;
+        gui.simulator.as_mut().unwrap().running = true;
+        step(gui);
+    }
+}
+pub fn step(gui: &mut Gui) {
+    if gui.simulator.as_ref().unwrap().running == true {
+        gui.simulator.as_mut().unwrap().clock();
     }
 }
 pub fn control_pause_fn(gui: &mut Gui) {
     if !gui.editor_use {
         gui.pause = true;
+        gui.simulator.as_mut().unwrap().running = false;
     }
 }
 pub fn control_reset_fn(gui: &mut Gui) {

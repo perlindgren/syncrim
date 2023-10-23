@@ -1,10 +1,8 @@
-use syncrim::common::{
-    InputPort, Signal,
-};
+use log::trace;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
-use log::trace;
 use serde::{Deserialize, Serialize};
+use syncrim::common::{InputPort, Signal};
 use syncrim::{
     common::{Component, Condition, Id, Input, OutputType, Ports, Simulator},
     signal::{SignalSigned, SignalUnsigned, SignalValue},
@@ -12,22 +10,22 @@ use syncrim::{
 
 use priority_queue::PriorityQueue;
 use std::{cell::RefCell, collections::HashMap};
-pub const CLIC_CSR_ADDR_ID:&str = "csr_addr";
-pub const CLIC_CSR_CTL_ID:&str = "csr_ctl";
-pub const CLIC_CSR_DATA_ID:&str = "csr_data";
+pub const CLIC_CSR_ADDR_ID: &str = "csr_addr";
+pub const CLIC_CSR_CTL_ID: &str = "csr_ctl";
+pub const CLIC_CSR_DATA_ID: &str = "csr_data";
 pub const CLIC_DATA_ID: &str = "data";
 pub const CLIC_ADDR_ID: &str = "addr";
 pub const CLIC_DATA_WE_ID: &str = "data_we";
-pub const CLIC_MRET_ID:&str = "mret";
-pub const CLIC_PC_ID:&str = "pc";
+pub const CLIC_MRET_ID: &str = "mret";
+pub const CLIC_PC_ID: &str = "pc";
 pub const CLIC_DATA_SIZE_ID: &str = "size";
 
 pub const CLIC_CSR_DATA_OUT_ID: &str = "csr_data_o";
 pub const CLIC_MMIO_DATA_OUT_ID: &str = "mmio_data_o";
-pub const CLIC_MEM_INT_ADDR_ID:&str = "mem_int_addr";
-pub const CLIC_BLU_INT_ID:&str = "blu_int";
-pub const CLIC_MRET_OUT_ID:&str = "mret_out";
-pub const CLIC_MEPC_OUT_ID:&str = "mepc_out";
+pub const CLIC_MEM_INT_ADDR_ID: &str = "mem_int_addr";
+pub const CLIC_BLU_INT_ID: &str = "blu_int";
+pub const CLIC_MRET_OUT_ID: &str = "mret_out";
+pub const CLIC_MEPC_OUT_ID: &str = "mepc_out";
 
 #[derive(Serialize, Deserialize)]
 pub struct CLIC {
@@ -201,7 +199,14 @@ impl Component for CLIC {
                     },
                 ],
                 OutputType::Combinatorial,
-                vec![CLIC_CSR_DATA_OUT_ID, CLIC_MMIO_DATA_OUT_ID, CLIC_MEM_INT_ADDR_ID, CLIC_BLU_INT_ID, CLIC_MRET_OUT_ID, CLIC_MEPC_OUT_ID],
+                vec![
+                    CLIC_CSR_DATA_OUT_ID,
+                    CLIC_MMIO_DATA_OUT_ID,
+                    CLIC_MEM_INT_ADDR_ID,
+                    CLIC_BLU_INT_ID,
+                    CLIC_MRET_OUT_ID,
+                    CLIC_MEPC_OUT_ID,
+                ],
             ),
         )
     }
