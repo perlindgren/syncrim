@@ -388,14 +388,13 @@ pub fn control_play_fn(gui: &mut Gui) {
     if !gui.editor_use {
         gui.pause = false;
         gui.simulator.as_mut().unwrap().running = true;
-        step(gui);
     }
 }
-pub fn step(gui: &mut Gui) {
-    if gui.simulator.as_ref().unwrap().running == true {
-        gui.simulator.as_mut().unwrap().clock();
-    }
-}
+//pub fn step(gui: &mut Gui) {
+//    if gui.simulator.as_ref().unwrap().running == true {
+//        gui.simulator.as_mut().unwrap().clock();
+//    }
+//}
 pub fn control_pause_fn(gui: &mut Gui) {
     if !gui.editor_use {
         gui.pause = true;

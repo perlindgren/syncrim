@@ -88,7 +88,7 @@ impl eframe::App for Gui {
             let top = containers::panel::PanelState::load(ctx, egui::Id::from("topBar")).unwrap();
             // let side = containers::panel::PanelState::load(ctx, egui::Id::from("leftGui")).unwrap();
             self.offset = Vec2 {
-                x: 200.0,
+                x: 0.0,
                 y: top.rect.max.y,
             };
             self.clip_rect = Rect {
@@ -104,14 +104,14 @@ impl eframe::App for Gui {
             if self.simulator.is_some() {
                 // self.side_panel(ctx);
                 self.draw_area(ctx, frame);
+                if self.simulator.as_ref().unwrap().running {
+                    self.simulator.as_mut().unwrap().clock();
+                    ctx.request_repaint();
+                }
             }
         }
     }
-    fn post_rendering(&mut self, _window_size_px: [u32; 2], _frame: &Frame) {
-        if self.simulator.is_some() {
-            keymap::step(self);
-        }
-    }
+    fn post_rendering(&mut self, _window_size_px: [u32; 2], frame: &Frame) {}
 }
 
 impl Gui {
@@ -173,7 +173,10 @@ impl Gui {
                 }
             });
         }
-        keymap::step(self);
+        if self.simulator.as_ref().unwrap().running {
+            self.simulator.as_mut().unwrap().clock();
+            ctx.request_repaint();
+        }
     }
 
     fn side_panel(&mut self, ctx: &Context) {
