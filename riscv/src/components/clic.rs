@@ -155,7 +155,20 @@ impl Component for CLIC {
     fn to_(&self) {
         println!("CLIC");
     }
-
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            CLIC_CSR_ADDR_ID => self.csr_addr = new_input,
+            CLIC_CSR_CTL_ID => self.csr_ctl = new_input,
+            CLIC_CSR_DATA_ID => self.csr_data = new_input,
+            CLIC_DATA_ID => self.data = new_input,
+            CLIC_ADDR_ID => self.addr = new_input,
+            CLIC_DATA_WE_ID => self.data_we = new_input,
+            CLIC_MRET_ID => self.mret = new_input,
+            CLIC_PC_ID => self.pc = new_input,
+            CLIC_DATA_SIZE_ID => self.data_size = new_input,
+            _ => (),
+        }
+    }
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

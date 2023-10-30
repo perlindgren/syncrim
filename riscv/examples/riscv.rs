@@ -266,16 +266,16 @@ fn main() {
     */
     let path = PathBuf::from("riscv.json");
     let mut cs = ComponentStore::load_file(&path);
-    /*cs.store.push(Mux::rc_new(
-        "mmio_data_mux",
-        (750.0, 300.0),
-        Input::new("decoder", "csr_data_mux"),
-        vec![
-            Input::new("reg_file", "reg_a"),
-            Input::new("decoder", "csr_data"),
-        ],
-    ));
-    cs.store.push(RVMem::rc_new_from_bytes(
+    let mut i = 0;
+    let mut store = cs.store.clone();
+    for component in cs.store{
+        if (component.get_id_ports().0) == "data_memory"{
+            
+            store.remove(i);
+        }
+        i+=1;
+    }
+    store.push(RVMem::rc_new_from_bytes(
         "data_memory",
         (1540.0, 900.0),
         100.0,
@@ -290,7 +290,19 @@ fn main() {
         data_mem,
         range,
     ));
-    cs.store.push(Rc::new(InstrMem {
+    cs.store = store;
+
+    /*    cs.store.push(Mux::rc_new(
+        "mmio_data_mux",
+        (750.0, 300.0),
+        Input::new("decoder", "csr_data_mux"),
+        vec![
+            Input::new("reg_file", "reg_a"),
+            Input::new("decoder", "csr_data"),
+        ],
+    ));
+
+    * cs.store.push(Rc::new(InstrMem {
         height: INSTR_MEM_HEIGHT,
         width: INSTR_MEM_WIDTH,
         id: "instr_mem".to_string(),

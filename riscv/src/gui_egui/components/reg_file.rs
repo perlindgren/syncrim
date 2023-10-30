@@ -1,7 +1,7 @@
 use crate::components::{Reg, RegFile, RegStore};
 use egui::{
     Color32, Context, Label, Pos2, Rect, Response, Rounding, ScrollArea, Shape, Stroke, Ui, Vec2,
-    Window,
+    Window, RichText
 };
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
@@ -72,14 +72,19 @@ impl EguiComponent for RegFile {
             EditorMode::Simulator => {
                 ui.allocate_ui_at_rect(rect, |ui| {
                     ui.vertical(|ui| {
+                        let mut i = 0.0;
+                        //ui.set_height(15.0*scale);
                         for reg in RegStore::lo_range() {
+                            //ui.set_height(15.0*scale);
                             ui.horizontal(|ui| {
-                                ui.label(format!(
+                                //ui.set_height(15.0*scale);
+                                ui.label(RichText::new(format!(
                                     "{:?}:0x{:08x}",
                                     Reg::try_from(reg).unwrap(),
-                                    self.registers.0.borrow().get(reg as usize).unwrap()
-                                ));
+                                    self.registers.0.borrow().get(reg as usize).unwrap())
+                                ).size(15.0*scale).line_height(Some(15.0*scale)));
                             });
+                            i+=1.0;
                         }
                     });
                 });
