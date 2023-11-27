@@ -1,7 +1,6 @@
 use clap::Parser;
-use riscv::components::*;
-use std::{cell::RefCell, collections::BTreeMap, path::PathBuf, rc::Rc};
-use syncrim::common::{ComponentStore, Input};
+use std::path::PathBuf;
+use syncrim::common::ComponentStore;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -22,9 +21,12 @@ struct Args {
 fn main() {
     let path = PathBuf::from("autosave.json");
     let cs = ComponentStore::load_file(&path);
-    let dummy = Input::new("id", "field");
     #[cfg(feature = "gui-egui")]
     {
+        use riscv::components::*;
+        use std::{cell::RefCell, collections::BTreeMap, path::PathBuf, rc::Rc};
+        use syncrim::common::Input;
+        let dummy = Input::new("id", "field");
         let lib = ComponentStore {
             store: vec![
                 Rc::new(InstrMem {

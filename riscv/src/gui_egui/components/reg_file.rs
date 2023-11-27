@@ -1,8 +1,8 @@
 use crate::components::{Reg, RegFile, RegStore};
 use egui::{
-    Color32, Context, Label, Pos2, Rect, Response, Rounding, ScrollArea, Shape, Stroke, Ui, Vec2,
-    Window, RichText
+    Color32, Context, Pos2, Rect, Response, RichText, Rounding, Shape, Stroke, Ui, Vec2, Window,
 };
+use egui_extras::{Column, TableBuilder};
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -12,18 +12,31 @@ use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
 impl RegFile {
-    fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
+    fn side_panel(&self, ctx: &Context, _simulator: Option<&mut Simulator>) {
         Window::new("Register File").show(ctx, |ui| {
-            ScrollArea::vertical()
-                .auto_shrink([false; 2])
-                .show(ui, |ui| {
+            TableBuilder::new(ui)
+                .column(Column::initial(40.0))
+                .column(Column::initial(85.0))
+                .header(30.0, |mut header| {
+                    header.col(|ui| {
+                        ui.heading("Reg");
+                    });
+                    header.col(|ui| {
+                        ui.heading("Contents");
+                    });
+                })
+                .body(|mut body| {
                     for reg in RegStore::full_range() {
-                        ui.horizontal(|ui| {
-                            ui.label(format!(
-                                "{:?}:0x{:08x}",
-                                Reg::try_from(reg).unwrap(),
-                                self.registers.0.borrow().get(reg as usize).unwrap()
-                            ));
+                        body.row(15.0, |mut row| {
+                            row.col(|ui| {
+                                ui.label(format!("{:?}", Reg::try_from(reg).unwrap()));
+                            });
+                            row.col(|ui| {
+                                ui.label(format!(
+                                    "0x{:08X}",
+                                    self.registers.0.borrow().get(reg as usize).unwrap()
+                                ));
+                            });
                         });
                     }
                 });
@@ -58,7 +71,7 @@ impl EguiComponent for RegFile {
         };
         ui.painter().add(Shape::rect_stroke(
             rect,
-            Rounding::none(),
+            Rounding::ZERO,
             Stroke {
                 width: scale,
                 color: Color32::BLACK,
@@ -72,19 +85,21 @@ impl EguiComponent for RegFile {
             EditorMode::Simulator => {
                 ui.allocate_ui_at_rect(rect, |ui| {
                     ui.vertical(|ui| {
-                        let mut i = 0.0;
                         //ui.set_height(15.0*scale);
                         for reg in RegStore::lo_range() {
                             //ui.set_height(15.0*scale);
                             ui.horizontal(|ui| {
                                 //ui.set_height(15.0*scale);
-                                ui.label(RichText::new(format!(
-                                    "{:?}:0x{:08x}",
-                                    Reg::try_from(reg).unwrap(),
-                                    self.registers.0.borrow().get(reg as usize).unwrap())
-                                ).size(15.0*scale).line_height(Some(15.0*scale)));
+                                ui.label(
+                                    RichText::new(format!(
+                                        "{:?}:0x{:08x}",
+                                        Reg::try_from(reg).unwrap(),
+                                        self.registers.0.borrow().get(reg as usize).unwrap()
+                                    ))
+                                    .size(15.0 * scale)
+                                    .line_height(Some(15.0 * scale)),
+                                );
                             });
-                            i+=1.0;
                         }
                     });
                 });

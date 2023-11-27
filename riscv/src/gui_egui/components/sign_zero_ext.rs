@@ -38,7 +38,7 @@ impl EguiComponent for SZExt {
         };
         ui.painter().add(Shape::rect_stroke(
             rect,
-            Rounding::none(),
+            Rounding::ZERO,
             Stroke {
                 width: scale,
                 color: Color32::BLACK,

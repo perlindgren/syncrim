@@ -38,7 +38,7 @@ impl EguiComponent for CLIC {
         };
         ui.painter().add(Shape::rect_stroke(
             rect,
-            Rounding::none(),
+            Rounding::ZERO,
             Stroke {
                 width: scale,
                 color: Color32::BLACK,
@@ -99,22 +99,6 @@ impl EguiComponent for CLIC {
                 let mut clicked_dropdown = false;
                 input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
                 pos_drag_value(ui, &mut self.pos);
-                pub const CLIC_CSR_ADDR_ID: &str = "csr_addr";
-                pub const CLIC_CSR_CTL_ID: &str = "csr_ctl";
-                pub const CLIC_CSR_DATA_ID: &str = "csr_data";
-                pub const CLIC_DATA_ID: &str = "data";
-                pub const CLIC_ADDR_ID: &str = "addr";
-                pub const CLIC_DATA_WE_ID: &str = "data_we";
-                pub const CLIC_MRET_ID: &str = "mret";
-                pub const CLIC_PC_ID: &str = "pc";
-                pub const CLIC_DATA_SIZE_ID: &str = "size";
-
-                pub const CLIC_CSR_DATA_OUT_ID: &str = "csr_data_o";
-                pub const CLIC_MMIO_DATA_OUT_ID: &str = "mmio_data_o";
-                pub const CLIC_MEM_INT_ADDR_ID: &str = "mem_int_addr";
-                pub const CLIC_BLU_INT_ID: &str = "blu_int";
-                pub const CLIC_MRET_OUT_ID: &str = "mret_out";
-                pub const CLIC_MEPC_OUT_ID: &str = "mepc_out";
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.csr_addr,
@@ -220,7 +204,6 @@ impl EguiComponent for CLIC {
                     -self.height / 2f32,
                 ) + own_pos,
             ),
-
         ]
     }
 

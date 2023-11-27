@@ -1,8 +1,6 @@
 use log::trace;
-use num_enum::IntoPrimitive;
-use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{InputPort, Signal};
+use syncrim::common::InputPort;
 use syncrim::{
     common::{Component, Condition, Id, Input, OutputType, Ports, Simulator},
     signal::{SignalSigned, SignalUnsigned, SignalValue},
@@ -19,7 +17,6 @@ pub const CLIC_DATA_WE_ID: &str = "data_we";
 pub const CLIC_MRET_ID: &str = "mret";
 pub const CLIC_PC_ID: &str = "pc";
 pub const CLIC_DATA_SIZE_ID: &str = "size";
-
 pub const CLIC_CSR_DATA_OUT_ID: &str = "csr_data_o";
 pub const CLIC_MMIO_DATA_OUT_ID: &str = "mmio_data_o";
 pub const CLIC_MEM_INT_ADDR_ID: &str = "mem_int_addr";
@@ -107,18 +104,18 @@ impl CLIC {
         pc: Input,
     ) -> Self {
         CLIC {
-            id: id,
-            pos: pos,
-            width: width,
-            height: height,
-            data: data,
-            addr: addr,
-            data_we: data_we,
-            data_size: data_size,
-            csr_data: csr_data,
-            csr_addr: csr_addr,
-            mret: mret,
-            pc: pc,
+            id,
+            pos,
+            width,
+            height,
+            data,
+            addr,
+            data_we,
+            data_size,
+            csr_data,
+            csr_addr,
+            mret,
+            pc,
             csrstore: {
                 let mut csrstore = HashMap::new();
                 csrstore.insert(0x300, 0); //mstatus
@@ -145,7 +142,7 @@ impl CLIC {
             },
             queue: RefCell::new(PriorityQueue::new()),
             // lines: lines,
-            csr_ctl: csr_ctl,
+            csr_ctl,
         }
     }
 }

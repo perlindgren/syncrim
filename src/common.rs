@@ -77,7 +77,6 @@ pub trait Component {
     fn clock(&self, _simulator: &mut Simulator) -> Result<(), Condition> {
         Ok(())
     }
-
     /// update component internal state
     fn un_clock(&self) {}
 }

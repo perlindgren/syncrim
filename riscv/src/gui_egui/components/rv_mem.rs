@@ -1,8 +1,9 @@
 use crate::components::RVMem;
 use egui::{
-    Color32, Context, Pos2, Rect, Response, Rounding, ScrollArea, Shape, Slider, Stroke, Ui, Vec2,
+    Color32, Context, Label, Pos2, Rect, Response, Rounding, Shape, Slider, Stroke, Ui, Vec2,
     Window,
 };
+use egui_extras::{Column, TableBuilder};
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -13,66 +14,81 @@ use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
 
 impl RVMem {
-    fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
+    fn side_panel(&self, ctx: &Context, _simulator: Option<&mut Simulator>) {
         Window::new("Data Memory").show(ctx, |ui| {
-            ScrollArea::vertical().show(ui, |ui| {
-                //trace!(":P");
-                for byte in self.memory.0.borrow().clone().into_iter() {
-                    if byte.0 % 4 == 0 {
-                        ui.horizontal(|ui| {
-                            ui.label(format!("0x{:08x}:", byte.0));
-                            let word = if self.big_endian {
-                                (*self.memory.0.borrow().get(&((byte.0) as usize)).unwrap() as u32)
-                                    << 24
-                                    | (*self
-                                        .memory
-                                        .0
-                                        .borrow()
-                                        .get(&((byte.0 + 1) as usize))
-                                        .unwrap() as u32)
-                                        << 16
-                                    | (*self
-                                        .memory
-                                        .0
-                                        .borrow()
-                                        .get(&((byte.0 + 2) as usize))
-                                        .unwrap() as u32)
-                                        << 8
-                                    | (*self
-                                        .memory
-                                        .0
-                                        .borrow()
-                                        .get(&((byte.0 + 3) as usize))
-                                        .unwrap() as u32)
-                            } else {
-                                (*self.memory.0.borrow().get(&((byte.0) as usize)).unwrap() as u32)
-                                    | (*self
-                                        .memory
-                                        .0
-                                        .borrow()
-                                        .get(&((byte.0 + 1) as usize))
-                                        .unwrap() as u32)
-                                        << 8
-                                    | (*self
-                                        .memory
-                                        .0
-                                        .borrow()
-                                        .get(&((byte.0 + 2) as usize))
-                                        .unwrap() as u32)
-                                        << 16
-                                    | (*self
-                                        .memory
-                                        .0
-                                        .borrow()
-                                        .get(&((byte.0 + 3) as usize))
-                                        .unwrap() as u32)
-                                        << 24
-                            };
-                            ui.label(format!("0x{:08x}", word));
-                        });
+            TableBuilder::new(ui)
+                .striped(true)
+                .column(Column::initial(75.0))
+                .column(Column::initial(75.0))
+                .column(Column::initial(50.0))
+                .header(30.0, |mut header| {
+                    header.col(|ui| {
+                        ui.heading("Address");
+                    });
+                    header.col(|ui| {
+                        ui.heading("HEX");
+                    });
+                    header.col(|ui| {
+                        ui.heading("ASCII");
+                    });
+                })
+                .body(|mut body| {
+                    for byte in self.memory.0.borrow().clone().into_iter() {
+                        if byte.0 % 4 == 0 {
+                            body.row(15.0, |mut row| {
+                                row.col(|ui| {
+                                    ui.label(format!("0x{:08x}", byte.0));
+                                });
+                                let mut bytes = [0u8; 4];
+                                if self.big_endian {
+                                    bytes[0] = *(self.memory.0.borrow().get(&((byte.0) as usize)))
+                                        .unwrap();
+                                    bytes[1] =
+                                        *(self.memory.0.borrow().get(&((byte.0 + 1) as usize)))
+                                            .unwrap();
+                                    bytes[2] =
+                                        *(self.memory.0.borrow().get(&((byte.0 + 2) as usize)))
+                                            .unwrap();
+                                    bytes[3] =
+                                        *(self.memory.0.borrow().get(&((byte.0 + 3) as usize)))
+                                            .unwrap();
+                                } else {
+                                    bytes[3] = *(self.memory.0.borrow().get(&((byte.0) as usize)))
+                                        .unwrap();
+                                    bytes[2] =
+                                        *(self.memory.0.borrow().get(&((byte.0 + 1) as usize)))
+                                            .unwrap();
+                                    bytes[1] =
+                                        *(self.memory.0.borrow().get(&((byte.0 + 2) as usize)))
+                                            .unwrap();
+                                    bytes[0] =
+                                        *(self.memory.0.borrow().get(&((byte.0 + 3) as usize)))
+                                            .unwrap();
+                                }
+                                let word = format!(
+                                    "0x{:02x}{:02x}{:02x}{:02x}",
+                                    bytes[0], bytes[1], bytes[2], bytes[3]
+                                );
+                                let mut ascii = "".to_string();
+                                for b in bytes {
+                                    if b > 0x1f && b < 0x7f
+                                    // decently printable ascii range
+                                    {
+                                        ascii += &format!("{}", b as char);
+                                    } else {
+                                        ascii += &format!(" ");
+                                    }
+                                }
+                                row.col(|ui| {
+                                    ui.add(Label::new(word).truncate(true));
+                                });
+                                row.col(|ui| {
+                                    ui.add(Label::new(ascii).truncate(true));
+                                });
+                            });
+                        }
                     }
-                }
-            });
+                });
         });
     }
 }
@@ -106,7 +122,7 @@ impl EguiComponent for RVMem {
         };
         ui.painter().add(Shape::rect_stroke(
             rect,
-            Rounding::none(),
+            Rounding::ZERO,
             Stroke {
                 width: scale,
                 color: Color32::BLACK,

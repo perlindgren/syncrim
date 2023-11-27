@@ -7,7 +7,6 @@ use crate::gui_egui::Gui;
 use egui::{Key, KeyboardShortcut, Modifiers};
 use rfd::FileDialog;
 use std::path::PathBuf;
-use std::thread;
 
 #[derive(Copy, Clone)]
 pub struct Shortcuts {

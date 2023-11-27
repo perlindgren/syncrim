@@ -8,8 +8,8 @@ use crate::gui_egui::{
 };
 use eframe::{egui, Frame};
 use egui::{
-    containers, CentralPanel, Color32, Context, PointerButton, Pos2, Rect, ScrollArea, Sense,
-    SidePanel, TopBottomPanel, Vec2,
+    containers, CentralPanel, Color32, Context, PointerButton, Pos2, Rect, Sense, TopBottomPanel,
+    Vec2,
 };
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -111,31 +111,15 @@ impl eframe::App for Gui {
             }
         }
     }
-    fn post_rendering(&mut self, _window_size_px: [u32; 2], frame: &Frame) {}
+    fn post_rendering(&mut self, _window_size_px: [u32; 2], _frame: &Frame) {}
 }
 
 impl Gui {
-    fn should_area_update(&mut self, ctx: &Context) -> bool {
+    fn should_area_update(&mut self, _ctx: &Context) -> bool {
         if self.ui_change {
             self.ui_change = false;
             true
         } else {
-            /* (containers::panel::PanelState::load(ctx, egui::Id::from("topBar"))
-            .unwrap()
-            .rect
-            .max
-            .y
-            - self.offset.y)
-            .abs()
-            > 0.1
-            || (containers::panel::PanelState::load(ctx, egui::Id::from("leftGui"))
-                .unwrap()
-                .rect
-                .max
-                .x
-                - self.offset.x)
-                .abs()
-                > 0.1 */
             false
         }
     }
@@ -178,19 +162,6 @@ impl Gui {
             ctx.request_repaint();
         }
     }
-
-    fn side_panel(&mut self, ctx: &Context) {
-        SidePanel::left("leftGui").show(ctx, |ui| {
-            ScrollArea::vertical().show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    ui.label("0x00000004\n0x00000008\n".repeat(1000));
-                    ui.label("100000\n20000\n".repeat(1000));
-                });
-            });
-        });
-    }
-
-    fn side_panel_inst(&mut self, ctx: &Context, data: u32) {}
 
     fn top_bar(&mut self, ctx: &Context) {
         TopBottomPanel::top("topBar").show(ctx, |ui| Menu::new(ui, self));

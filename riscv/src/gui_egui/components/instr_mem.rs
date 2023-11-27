@@ -1,8 +1,9 @@
 use crate::components::InstrMem;
 use egui::{
-    Color32, Context, Label, Pos2, Rect, Response, RichText, Rounding, ScrollArea, Sense, Shape,
-    SidePanel, Stroke, Ui, Vec2, Window,
+    Color32, Context, Label, Pos2, Rect, Response, RichText, Rounding, Sense, Shape, Stroke, Ui,
+    Vec2, Window,
 };
+use egui_extras::{Column, TableBuilder};
 use log::trace;
 use riscv_asm_strings::Stringify;
 use syncrim::common::{EguiComponent, Ports, Simulator};
@@ -17,92 +18,124 @@ use syncrim::gui_egui::helper::offset_helper;
 impl InstrMem {
     fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
         Window::new("Instruction Memory").show(ctx, |ui| {
-            ScrollArea::vertical().show(ui, |ui| {
-                // trace!(":P");
-                let pc: u32 = {
-                    if simulator.is_some() {
-                        simulator
-                            .unwrap()
-                            .get_input_value(&self.pc)
-                            .try_into()
-                            .unwrap_or(0)
-                    } else {
-                        0
-                    }
-                };
-                for byte in &self.bytes {
-                    if byte.0 % 4 == 0 {
-                        let bg_color = {
-                            if pc == (*byte.0 as u32) {
-                                Color32::YELLOW
-                            } else {
-                                Color32::TRANSPARENT
-                            }
-                        };
-                        let breakpoint_color = {
-                            if self.breakpoints.borrow_mut().contains(byte.0) {
-                                Color32::RED
-                            } else {
-                                Color32::TRANSPARENT
-                            }
-                        };
-                        ui.horizontal(|ui| {
-                            ui.label(RichText::new("•").color(breakpoint_color));
-                            match (&self.symbols.get(byte.0)) {
-                                Some(s) => {
-                                    ui.label(format!("{}:", s));
+            TableBuilder::new(ui)
+                .striped(true)
+                .column(Column::initial(75.0).at_least(75.0))
+                .column(Column::initial(10.0).resizable(false))
+                .column(Column::initial(75.0).at_least(75.0))
+                .column(Column::initial(75.0).at_least(50.0))
+                .column(Column::initial(150.0).at_least(85.0))
+                .resizable(true)
+                .header(30.0, |mut header| {
+                    header.col(|ui| {
+                        ui.heading("Label");
+                    });
+                    header.col(|_ui| {});
+                    header.col(|ui| {
+                        ui.heading("Address");
+                    });
+                    header.col(|ui| {
+                        ui.heading("HEX");
+                    });
+                    header.col(|ui| {
+                        ui.heading("Instruction");
+                    });
+                })
+                .body(|mut body| {
+                    for byte in &self.bytes {
+                        if byte.0 % 4 == 0 {
+                            let pc: u32 = {
+                                if simulator.as_ref().is_some() {
+                                    simulator
+                                        .as_ref()
+                                        .unwrap()
+                                        .get_input_value(&self.pc)
+                                        .try_into()
+                                        .unwrap_or(0)
+                                } else {
+                                    0
                                 }
-                                None => {}
                             };
-                            ui.label(format!("0x{:08x}:", byte.0));
-                            let instr = if !self.le {
-                                (*self.bytes.get(&(*(byte.0) as usize)).unwrap() as u32) << 24
-                                    | (*self.bytes.get(&((byte.0 + 1) as usize)).unwrap() as u32)
-                                        << 16
-                                    | (*self.bytes.get(&((byte.0 + 2) as usize)).unwrap() as u32)
-                                        << 8
-                                    | (*self.bytes.get(&((byte.0 + 3) as usize)).unwrap() as u32)
-                            } else {
-                                (*self.bytes.get(&(*(byte.0) as usize)).unwrap() as u32)
-                                    | (*self.bytes.get(&((byte.0 + 1) as usize)).unwrap() as u32)
-                                        << 8
-                                    | (*self.bytes.get(&((byte.0 + 2) as usize)).unwrap() as u32)
-                                        << 16
-                                    | (*self.bytes.get(&((byte.0 + 3) as usize)).unwrap() as u32)
-                                        << 24
+                            let bg_color = {
+                                if pc == (*byte.0 as u32) {
+                                    Color32::YELLOW
+                                } else {
+                                    Color32::TRANSPARENT
+                                }
                             };
-                            let instruction_fmt = {
-                                format!(
-                                    "{:?}",
-                                    match asm_riscv::I::try_from(instr) {
-                                        Ok(i) => i.to_string(),
-                                        Err(_) => "Unknown instruction".to_string(),
-                                    }
-                                )
+                            let breakpoint_color = {
+                                if self.breakpoints.borrow_mut().contains(byte.0) {
+                                    Color32::RED
+                                } else {
+                                    Color32::TRANSPARENT
+                                }
                             };
+                            body.row(15.0, |mut row| {
+                                //label
+                                row.col(|ui| {
+                                    match &self.symbols.get(byte.0) {
+                                        Some(s) => {
+                                            ui.add(Label::new(format!("{}:", s)).truncate(true));
+                                        }
+                                        None => {}
+                                    };
+                                });
+                                //breakpoint
+                                row.col(|ui| {
+                                    ui.label(RichText::new("•").color(breakpoint_color));
+                                });
+                                //address
+                                row.col(|ui| {
+                                    ui.add(Label::new(format!("0x{:08x}", byte.0)).truncate(true));
+                                });
 
-                            if ui
-                                .add(
-                                    Label::new(
-                                        RichText::new(format!(
-                                            "0x{:08x}:{}",
-                                            instr, instruction_fmt,
-                                        ))
-                                        .background_color(bg_color),
-                                    )
-                                    .sense(Sense::click()),
-                                )
-                                .clicked()
-                            {
-                                trace!("Clicked");
-                                if !self.breakpoints.borrow_mut().remove(byte.0) {
-                                    self.breakpoints.borrow_mut().insert(*byte.0);
+                                let mut bytes = [0u8; 4];
+                                if !self.le {
+                                    bytes[3] = *self.bytes.get(byte.0).unwrap();
+                                    bytes[2] = *self.bytes.get(&(byte.0 + 1)).unwrap();
+                                    bytes[1] = *self.bytes.get(&(byte.0 + 2)).unwrap();
+                                    bytes[0] = *self.bytes.get(&(byte.0 + 3)).unwrap();
+                                } else {
+                                    bytes[0] = *self.bytes.get(byte.0).unwrap();
+                                    bytes[1] = *self.bytes.get(&(byte.0 + 1)).unwrap();
+                                    bytes[2] = *self.bytes.get(&(byte.0 + 2)).unwrap();
+                                    bytes[3] = *self.bytes.get(&(byte.0 + 3)).unwrap();
                                 }
-                            };
-                        });
+                                let instr = ((bytes[3] as u32) << 24)
+                                    | ((bytes[2] as u32) << 16)
+                                    | ((bytes[1] as u32) << 8)
+                                    | (bytes[0] as u32);
+                                let instr_fmt = match asm_riscv::I::try_from(instr) {
+                                    Ok(i) => i.to_string(),
+                                    Err(_) => "Unknown instruction".to_string(),
+                                };
+                                //hex instr
+                                row.col(|ui| {
+                                    ui.add(Label::new(format!("0x{:08X}", instr)).truncate(true));
+                                });
+                                //ui.label(format!("0x{:08X}",instr));});
+                                //formatted instr
+                                row.col(|ui| {
+                                    if ui
+                                        .add(
+                                            Label::new(
+                                                RichText::new(instr_fmt).background_color(bg_color),
+                                            )
+                                            .truncate(true)
+                                            .sense(Sense::click()),
+                                        )
+                                        .clicked()
+                                    {
+                                        trace!("clicked");
+                                        if !self.breakpoints.borrow_mut().remove(byte.0) {
+                                            self.breakpoints.borrow_mut().insert(*byte.0);
+                                        }
+                                    };
+                                });
+                            });
+                        }
                     }
-                }
-            });
+                });
         });
     }
 }
@@ -112,7 +145,7 @@ impl EguiComponent for InstrMem {
     fn render(
         &self,
         ui: &mut Ui,
-        ctx: &mut EguiExtra,
+        _ctx: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
@@ -136,7 +169,7 @@ impl EguiComponent for InstrMem {
         };
         ui.painter().add(Shape::rect_stroke(
             rect,
-            Rounding::none(),
+            Rounding::ZERO,
             Stroke {
                 width: scale,
                 color: Color32::BLACK,

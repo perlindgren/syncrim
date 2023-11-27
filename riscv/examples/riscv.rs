@@ -5,17 +5,14 @@ use riscv::components::*;
 use riscv_elf_parse;
 use std::{
     cell::RefCell,
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{BTreeMap, HashSet},
     fs,
     ops::Range,
     path::PathBuf,
     process::Command,
     rc::Rc,
 };
-use syncrim::{
-    common::{ComponentStore, Input},
-    components::*,
-};
+use syncrim::common::{ComponentStore, Input};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -80,200 +77,29 @@ fn main() {
             data_mem.insert(element.0, element.1);
         }
     }
-    /*
-        let cs = ComponentStore {
-            store: vec![
-                Add::rc_new(
-                    "pc_adder",
-                    (150.0, 120.0),
-                    Input::new("pc_adder_c", "out"),
-                    Input::new("reg", "out"),
-                ),
-                Constant::rc_new("pc_adder_c", (100.0, 100.0), 4),
-                Register::rc_new("reg", (100.0, 140.0), Input::new("pc_adder_mux", "out")),
-                Mux::rc_new(
-                    "pc_adder_mux",
-                    (100.0, 120.0),
-                    Input::new("branch_logic", "out"),
-                    vec![
-                        Input::new("pc_adder", "out"),
-                        Input::new("jalr_stripper", "out"),
-                        Input::new("branch_adder", "out"),
-                    ],
-                ),
-                Add::rc_new(
-                    "jalr_adder",
-                    (100.0, 200.0),
-                    Input::new("reg_file", "reg_a"),
-                    Input::new("jalr_se", "out"),
-                ),
-                Rc::new(BranchLogic {
-                    height: BRANCH_LOGIC_HEIGHT,
-                    width: BRANCH_LOGIC_WIDTH,
-                    id: "branch_logic".to_string(),
-                    pos: (725.0, 300.0),
-                    rs1: Input::new("reg_file", "reg_a"),
-                    rs2: Input::new("reg_file", "reg_b"),
-                    ctrl: Input::new("decoder", "branch_logic_ctl"),
-                    enable: Input::new("decoder", "branch_logic_enable"),
-                }),
-                Rc::new(LSBZero {
-                    height: LSB_ZERO_HEIGHT,
-                    width: LSB_ZERO_WIDTH,
-                    id: "jalr_stripper".to_string(),
-                    pos: (600.0, 1000.0),
-                    data_i: Input::new("jalr_adder", "out"),
-                }),
-                Sext::rc_new(
-                    "jalr_se",
-                    (900.0, 900.0),
-                    Input::new("decoder", "jalr_imm"),
-                    12,
-                    32,
-                ),
-                Mux::rc_new(
-                    "branch_adder_mux",
-                    (500.0, 1000.0),
-                    Input::new("decoder", "pc_imm_sel"),
-                    vec![
-                        Input::new("jal_imm_sext", "out"),
-                        Input::new("branch_imm_sext", "out"),
-                    ],
-                ),
-                Add::rc_new(
-                    "branch_adder",
-                    (50.0, 400.0),
-                    Input::new("reg", "out"),
-                    Input::new("branch_adder_mux", "out"),
-                ),
-                Sext::rc_new(
-                    "jal_imm_sext",
-                    (500.0, 1000.0),
-                    Input::new("decoder", "big_imm"),
-                    21,
-                    32,
-                ),
-                Sext::rc_new(
-                    "branch_imm_sext",
-                    (500.0, 1000.0),
-                    Input::new("decoder", "branch_imm"),
-                    13,
-                    32,
-                ),
-                Rc::new(InstrMem {
-                    height: INSTR_MEM_HEIGHT,
-                    width: INSTR_MEM_WIDTH,
-                    id: "instr_mem".to_string(),
-                    pos: (180.0, 400.0),
-                    pc: Input::new("reg", "out"),
-                    bytes: instr_mem,
-                    range: instr_range,
-                    breakpoints: Rc::new(RefCell::new(breakpoints)),
-                }),
-                Rc::new(Decoder {
-                    height: DECODER_HEIGHT,
-                    width: DECODER_WIDTH,
-                    id: "decoder".to_string(),
-                    pos: (300.0, 150.0),
-                    instruction: Input::new("instr_mem", "instruction"),
-                }),
-                Register::rc_new(
-                    "regfile_we_reg",
-                    (450.0, 50.0),
-                    Input::new("decoder", "regfile_we"),
-                ),
-                Register::rc_new(
-                    "regfile_rd_reg",
-                    (480.0, 50.0),
-                    Input::new("decoder", "regfile_rd"),
-                ),
-                Rc::new(SZExt {
-                    height: SIGN_ZERO_EXT_HEIGHT,
-                    width: SIGN_ZERO_EXT_WIDTH,
-                    id: "imm_szext".to_string(),
-                    pos: (450.0, 1000.0),
-                    data_i: Input::new("decoder", "sign_zero_ext_data"),
-                    sel_i: Input::new("decoder", "sign_zero_ext_sel"),
-                }),
-                Register::rc_new("wb_reg", (100.0, 140.0), Input::new("wb_mux", "out")),
-                Rc::new(RegFile {
-                    id: "reg_file".into(),
-                    pos: (450.0, 150.0),
-                    width: REG_FILE_WIDTH,
-                    height: REG_FILE_HEIGHT,
-                    read_addr1: Input::new("decoder", "regfile_rs1"),
-                    read_addr2: Input::new("decoder", "regfile_rs2"),
-                    write_data: Input::new("wb_reg", "out"),
-                    write_addr: Input::new("regfile_rd_reg", "out"),
-                    write_enable: Input::new("regfile_we_reg", "out"),
-                    registers: RegStore::new(Rc::new(RefCell::new([0; 32]))),
-                    history: RegHistory::new(),
-                }),
-                Mem::rc_new_from_bytes(
-                    "data_memory",
-                    (700.0, 600.0),
-                    100.0,
-                    100.0,
-                    false,
-                    Input::new("reg_file", "reg_b"),
-                    Input::new("alu", "result_o"),
-                    Input::new("decoder", "data_mem_ctrl"),
-                    Input::new("decoder", "data_se"),
-                    Input::new("decoder", "data_mem_size"),
-                    data_mem,
-                    range,
-                ),
-                Constant::rc_new("zero_c", (680.0, 150.0), 0),
-                Mux::rc_new(
-                    "alu_operand_a_mux",
-                    (700.0, 150.0),
-                    Input::new("decoder", "alu_operand_a_sel"),
-                    vec![
-                        Input::new("reg_file", "reg_a"),
-                        Input::new("decoder", "imm_a_mux_data"),
-                        Input::new("zero_c", "out"),
-                    ],
-                ),
-                Mux::rc_new(
-                    "alu_operand_b_mux",
-                    (700.0, 300.0),
-                    Input::new("decoder", "alu_operand_b_sel"),
-                    vec![
-                        Input::new("reg_file", "reg_b"),
-                        Input::new("imm_szext", "out"),
-                        Input::new("pc_adder", "out"),
-                        Input::new("reg", "out"),
-                    ],
-                ),
-                Rc::new(ALU {
-                    id: "alu".to_string(),
-                    pos: (800.0, 225.0),
-                    operator_i: Input::new("decoder", "alu_operator"),
-                    operand_a_i: Input::new("alu_operand_a_mux", "out"),
-                    operand_b_i: Input::new("alu_operand_b_mux", "out"),
-                }),
-                Mux::rc_new(
-                    "wb_mux",
-                    (900.0, 225.0),
-                    Input::new("decoder", "wb_mux"),
-                    vec![
-                        Input::new("alu", "result_o"),
-                        Input::new("data_memory", "data"),
-                    ],
-                ),
-            ],
-        };
-    */
     let path = PathBuf::from("riscv.json");
     let mut cs = ComponentStore::load_file(&path);
     let mut i = 0;
     let mut store = cs.store.clone();
-    for component in cs.store{
-        if (component.get_id_ports().0) == "data_memory"{
-            
+    for component in store.clone() {
+        if component.get_id_ports().0 == "data_memory" {
             store.remove(i);
         }
-        i+=1;
+        i += 1
+    }
+    let mut i = 0;
+    for component in store.clone() {
+        if component.get_id_ports().0 == "instr_mem" {
+            store.remove(i);
+        }
+        i += 1
+    }
+    let mut i = 0;
+    for component in store.clone() {
+        if component.get_id_ports().0 == "clic" {
+            store.remove(i);
+        }
+        i += 1
     }
     store.push(RVMem::rc_new_from_bytes(
         "data_memory",
@@ -290,71 +116,40 @@ fn main() {
         data_mem,
         range,
     ));
-    cs.store = store;
-
-    /*    cs.store.push(Mux::rc_new(
-        "mmio_data_mux",
-        (750.0, 300.0),
-        Input::new("decoder", "csr_data_mux"),
-        vec![
-            Input::new("reg_file", "reg_a"),
-            Input::new("decoder", "csr_data"),
-        ],
-    ));
-
-    * cs.store.push(Rc::new(InstrMem {
-        height: INSTR_MEM_HEIGHT,
-        width: INSTR_MEM_WIDTH,
+    store.push(Rc::new(InstrMem {
+        width: 200.0,
+        height: 100.0,
         id: "instr_mem".to_string(),
         pos: (650.0, 900.0),
-        pc: Input::new("reg", "out"),
         bytes: instr_mem,
-        range: instr_range,
-        breakpoints: Rc::new(RefCell::new(breakpoints)),
-        symbols: memory.symbols,
+        breakpoints: Rc::new(RefCell::new(HashSet::new())),
         le: true,
+        pc: Input::new("reg", "out"),
+        range: Range {
+            start: 0,
+            end: 0x2000,
+        },
+        symbols: memory.symbols,
     }));
-    cs.store.push(Rc::new(CLIC::new(
+    store.push(Rc::new(CLIC::new(
         "clic".to_string(),
-        (300.0, 500.0),
+        (1660.0, 900.0),
         100.0,
         100.0,
-        Input::new("reg_file", "reg_b"),        //MMIO data
-        Input::new("alu", "result_o"),          //MMIO address
-        Input::new("decoder", "data_mem_ctrl"), //R/W for MMIO
-        Input::new("decoder", "data_mem_size"), //size for MMIO
-        Input::new("csr_mux", "out"),           //Immediate or register data for CSR op
-        Input::new("decoder", "csr_addr"),      //CSR address
-        Input::new("decoder", "csr_ctl"),       //CSR op
-        Input::new("decoder", "mret"),          //mret signal
-        Input::new("pc_adder", "out"),          //mepc
+        Input::new("reg_file", "reg_b"),
+        Input::new("alu", "result_o"),
+        Input::new("decoder", "data_mem_ctrl"),
+        Input::new("decoder", "data_mem_size"),
+        Input::new("csr_mux", "out"),
+        Input::new("decoder", "csr_addr"),
+        Input::new("decoder", "csr_ctl"),
+        Input::new("decoder", "mret"),
+        Input::new("pc_adder", "out"),
     )));
-    cs.store.push(Mux::rc_new(
-        "csr_mux",
-        (650.0, 300.0),
-        Input::new("decoder", "csr_data_mux"),
-        vec![
-            Input::new("reg_file", "reg_a"),
-            Input::new("decoder", "csr_data"),
-        ],
-    ));
-    cs.store.push(Mux::rc_new(
-                "pc_adder_mux",
-                (400.0, 740.0),
-                Input::new("branch_logic", "out"),
-                vec![
-                    Input::new("pc_adder", "out"),
-                    Input::new("jalr_stripper", "out"),
-                    Input::new("branch_adder", "out"),
-                    Input::new("data_memory", "isr_addr"),
-                    Input::new("clic", "mepc")
-                ],
-            ));*/
-    //let path = PathBuf::from("riscv.json");
-    //cs.save_file(&path);
-
+    cs.store = store;
     #[cfg(feature = "gui-egui")]
     {
+        use std::collections::HashMap;
         let dummy = Input::new("id", "field");
         let lib = ComponentStore {
             store: vec![
@@ -431,7 +226,8 @@ fn main() {
         };
         let mut component_vec = lib.store.clone();
         component_vec.append(&mut syncrim::gui_egui::editor::Library::default().0.clone());
-        syncrim::gui_egui::gui(cs, &path, syncrim::gui_egui::editor::Library(component_vec));
+        let _ =
+            syncrim::gui_egui::gui(cs, &path, syncrim::gui_egui::editor::Library(component_vec));
     }
 
     #[cfg(feature = "gui-vizia")]
