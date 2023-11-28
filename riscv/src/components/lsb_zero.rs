@@ -41,9 +41,8 @@ impl Component for LSBZero {
         }))
     }
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
-        match target_port_id.as_str() {
-            LSB_ZERO_DATA_I_ID => self.data_i = new_input,
-            _ => (),
+        if target_port_id.as_str() == LSB_ZERO_DATA_I_ID {
+            self.data_i = new_input;
         }
     }
     fn get_id_ports(&self) -> (String, Ports) {

@@ -37,26 +37,25 @@ impl ViziaComponent for InstrMem {
         let data_slice = {
             let mut data_slice = vec![];
             trace!("range {:x?}", self.range);
-            for idx in (self.range.start as usize..self.range.end as usize).step_by(4) {
+            for idx in (self.range.start..self.range.end).step_by(4) {
                 trace!("idx {:x?}", idx);
                 let instr = if self.le {
-                    (*self.bytes.get(&((idx) as usize)).unwrap() as u32)
-                        | (*self.bytes.get(&((idx + 1) as usize)).unwrap() as u32) << 8
-                        | (*self.bytes.get(&((idx + 2) as usize)).unwrap() as u32) << 16
-                        | (*self.bytes.get(&((idx + 3) as usize)).unwrap() as u32) << 24
+                    (*self.bytes.get(&idx).unwrap() as u32)
+                        | (*self.bytes.get(&(idx + 1)).unwrap() as u32) << 8
+                        | (*self.bytes.get(&(idx + 2)).unwrap() as u32) << 16
+                        | (*self.bytes.get(&(idx + 3)).unwrap() as u32) << 24
                 } else {
-                    (*self.bytes.get(&((idx) as usize)).unwrap() as u32) << 24
-                        | (*self.bytes.get(&((idx + 1) as usize)).unwrap() as u32) << 16
-                        | (*self.bytes.get(&((idx + 2) as usize)).unwrap() as u32) << 8
-                        | (*self.bytes.get(&((idx + 3) as usize)).unwrap() as u32)
+                    (*self.bytes.get(&idx).unwrap() as u32) << 24
+                        | (*self.bytes.get(&(idx + 1)).unwrap() as u32) << 16
+                        | (*self.bytes.get(&(idx + 2)).unwrap() as u32) << 8
+                        | (*self.bytes.get(&(idx + 3)).unwrap() as u32)
                 };
                 data_slice.push(
-                    (format!(
+                    format!(
                         "0x{:08x}:    {:08x}         ",
-                        self.range.start as usize + idx,
+                        self.range.start + idx,
                         instr,
-                    ) + //&stringify_instruction(instr, idx, self))
-                    &stringify_instruction(instr)),
+                    ) + &stringify_instruction(instr),
                 );
             }
             data_slice
@@ -65,7 +64,7 @@ impl ViziaComponent for InstrMem {
         let view = View::build(
             InstrMemView {
                 data: self.bytes.clone(),
-                start: self.range.start as usize,
+                start: self.range.start,
                 data_slice,
                 //we may init to 0 range, once view opens this will be updated.
                 slice_range: Range { start: 0, end: 0 },

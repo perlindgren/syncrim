@@ -362,7 +362,7 @@ impl Component for RVMem {
                 match ctrl {
                     MemCtrl::Read => {
                         let addr: u32 = addr.try_into().unwrap();
-                        if !(0x1000 <= addr && addr <= 0x5000) {
+                        if !(0x1000..=0x5000).contains(&addr) {
                             //if not in mmio range
                             let size: u32 = size.try_into().unwrap();
                             let sign: u32 = sign.try_into().unwrap();
@@ -384,7 +384,7 @@ impl Component for RVMem {
                     }
                     MemCtrl::Write => {
                         let addr: u32 = addr.try_into().unwrap();
-                        if !(0x1000 <= addr && addr <= 0x5000) {
+                        if !(0x1000..=0x5000).contains(&addr) {
                             //if not in mmio range
                             let size: u32 = size.try_into().unwrap();
                             trace!("write addr {:?} size {:?}", addr, size);
@@ -481,7 +481,7 @@ mod test {
         assert_eq!(simulator.cycle, 1);
 
         // outputs
-        let out = &Input::new("mem", "data");
+        let out = &Input::new("mem", "data_o");
         let err = &Input::new("mem", "err");
 
         // reset
@@ -666,7 +666,7 @@ mod test {
         assert_eq!(simulator.cycle, 1);
 
         // outputs
-        let out = &Input::new("mem", "data");
+        let out = &Input::new("mem", "data_o");
         let err = &Input::new("mem", "err");
 
         // reset

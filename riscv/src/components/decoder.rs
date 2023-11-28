@@ -70,9 +70,8 @@ impl Component for Decoder {
         }))
     }
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
-        match target_port_id.as_str() {
-            DECODER_INSTRUCTION_ID => self.instruction = new_input,
-            _ => (),
+        if target_port_id.as_str() == DECODER_INSTRUCTION_ID {
+            self.instruction = new_input
         }
     }
     fn get_id_ports(&self) -> (String, Ports) {
@@ -544,7 +543,9 @@ impl Component for Decoder {
                 }
             }
             _ => {
-                panic!("Invalid opcode! {:b}", opcode);
+                if !(opcode == 0 && simulator.cycle == 0) {
+                    panic!("Invalid opcode! {:b}", opcode)
+                }
             }
         };
 

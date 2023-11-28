@@ -78,15 +78,16 @@ impl From<u32> for MMIOEntry {
     }
 }
 
-impl Into<u32> for MMIOEntry {
-    fn into(self) -> u32 {
-        self.clicintip as u32
-            | ((self.clicintie as u32) << 8)
-            | ((self.clicintattr as u32) << 16)
-            | ((self.clicintctl as u32) << 24)
+impl From<MMIOEntry> for u32 {
+    fn from(val: MMIOEntry) -> u32 {
+        val.clicintip as u32
+            | ((val.clicintie as u32) << 8)
+            | ((val.clicintattr as u32) << 16)
+            | ((val.clicintctl as u32) << 24)
     }
 }
 impl CLIC {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: Id,
         pos: (f32, f32),
@@ -262,7 +263,7 @@ impl Component for CLIC {
         if mret == 1 {
             let mut csrstore = self.csrstore.borrow_mut();
             mepc = (*csrstore.get(&0x341).unwrap() as u32).into(); //infallible
-            let mut mstatus = csrstore.get(&0x300).unwrap().clone(); //infallible
+            let mut mstatus = *csrstore.get(&0x300).unwrap(); //infallible
             if mstatus >> 7 & 1 == 1 {
                 mstatus |= 0x8; //if mpie then set mie
             } else {
@@ -287,11 +288,11 @@ impl Component for CLIC {
                 if csrstore.contains_key(&(csr_addr as usize)) {
                     if csr_addr == 0x305 {
                         //mtvec write
-                        csr_data = csr_data | 0b11; //hardwire to vectored mode
+                        csr_data |= 0b11; //hardwire to vectored mode
                     }
                     if csr_addr != 0xf14 {
                         //mhartid RO
-                        val = csrstore.get(&(csr_addr as usize)).unwrap().clone();
+                        val = *csrstore.get(&(csr_addr as usize)).unwrap();
                         csrstore.insert(csr_addr as usize, csr_data as usize);
                     }
                 }
@@ -302,11 +303,11 @@ impl Component for CLIC {
                 if csrstore.contains_key(&(csr_addr as usize)) {
                     if csr_addr == 0x305 {
                         //mtvec set
-                        csr_data = csr_data | 0b11; //hardwire to vectored mode
+                        csr_data |= 0b11; //hardwire to vectored mode
                     }
                     if csr_addr != 0xf14 {
                         //mhartid RO
-                        val = csrstore.get(&(csr_addr as usize)).unwrap().clone();
+                        val = *csrstore.get(&(csr_addr as usize)).unwrap();
                         csrstore.insert(csr_addr as usize, (csr_data as usize) | val);
                     }
                 }
@@ -317,11 +318,11 @@ impl Component for CLIC {
                 if csrstore.contains_key(&(csr_addr as usize)) {
                     if csr_addr == 0x305 {
                         //mtvec clear
-                        csr_data = csr_data | !0b11; //hardwire to vectored mode
+                        csr_data |= !0b11; //hardwire to vectored mode
                     }
                     if csr_addr != 0xf14 {
                         //mhartid RO
-                        val = csrstore.get(&(csr_addr as usize)).unwrap().clone();
+                        val = *csrstore.get(&(csr_addr as usize)).unwrap();
                         csrstore.insert(csr_addr as usize, (!(csr_data as usize)) & val);
                     }
                 }
@@ -332,48 +333,44 @@ impl Component for CLIC {
         //let addr = addr - (addr % 4);
         let mut queue = self.queue.borrow_mut();
         let we: u32 = simulator.get_input_value(&self.data_we).try_into().unwrap();
-        if (0x1000 <= addr) && (addr <= 0x5000) {
+        if (0x1000..=0x5000).contains(&addr) {
             //if within our mmio range
             if we == 2 {
                 trace!("clic mmio write");
                 let old_entries: [u32; 2] = [
-                    self.read(addr as usize - offset as usize, 4 as usize, false, false)
+                    self.read(addr as usize - offset as usize, 4_usize, false, false)
                         .try_into()
                         .unwrap(),
-                    self.read(
-                        addr as usize - offset as usize + 4,
-                        4 as usize,
-                        false,
-                        false,
-                    )
-                    .try_into()
-                    .unwrap(),
+                    self.read(addr as usize - offset as usize + 4, 4_usize, false, false)
+                        .try_into()
+                        .unwrap(),
                 ];
                 let mut mask: u64 = 0;
                 for i in 0..data_size {
-                    mask |= 0xFF << i * 8;
+                    mask |= 0xFF << (i * 8);
                 }
-                mask = mask << offset;
+                mask <<= offset;
                 let mmio_entries: [MMIOEntry; 2] = [
-                    (old_entries[0] ^ (((data << offset * 8) ^ old_entries[0]) & mask as u32))
+                    (old_entries[0] ^ (((data << (offset * 8)) ^ old_entries[0]) & mask as u32))
                         .into(),
                     (old_entries[1]
-                        ^ (((data.checked_shr((4 - offset) * 8)).unwrap_or(0) << offset * 8)
+                        ^ (((data.checked_shr((4 - offset) * 8)).unwrap_or(0) << (offset * 8))
                             ^ old_entries[1])
                             & mask.checked_shr(32).unwrap_or(0) as u32)
                         .into(),
                 ];
-                let mut i = 0;
-                for mmio_entry in mmio_entries {
+                for (i, mmio_entry) in mmio_entries.into_iter().enumerate() {
                     if mmio_entry.clicintie == 1 && mmio_entry.clicintip == 1 {
                         //enqueue self if pending status and enable status are 1, this changes prio dynamically with prio change also.
-                        queue.push((addr - offset + 4 * i - 0x1000) / 4, mmio_entry.clicintctl);
+                        queue.push(
+                            (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
+                            mmio_entry.clicintctl,
+                        );
                     }
                     if mmio_entry.clicintie != 1 || mmio_entry.clicintip != 1 {
                         //dequeue self if pending or enabled status is 0
-                        queue.remove(&((addr - offset + 4 * i - 0x1000) / 4));
+                        queue.remove(&((addr - offset + 4u32 * i as u32 - 0x1000) / 4));
                     }
-                    i += 1;
                 }
                 self.write(
                     addr as usize,
@@ -388,9 +385,9 @@ impl Component for CLIC {
         };
         //Interrupt dispatch
         let mut csrstore = self.csrstore.borrow_mut();
-        let mstatus = csrstore.get(&0x300).unwrap().clone();
-        let mintthresh = csrstore.get(&0x347).unwrap().clone();
-        let mtvec = csrstore.get(&0x305).unwrap().clone();
+        let mstatus = *csrstore.get(&0x300).unwrap();
+        let mintthresh = *csrstore.get(&0x347).unwrap();
+        let mtvec = *csrstore.get(&0x305).unwrap();
         if mstatus & 8 == 8 {
             //if MIE is set
             if !queue.is_empty() {

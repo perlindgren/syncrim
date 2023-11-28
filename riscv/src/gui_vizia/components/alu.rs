@@ -1,7 +1,7 @@
 use crate::components::ALU;
 use log::trace;
 use syncrim::{
-    gui_vizia::{tooltip::new_component_tooltip, ViziaComponent, V},
+    gui_vizia::{ViziaComponent, V},
     vizia::{
         prelude::*,
         vg::{Color, Paint, Path},

@@ -58,9 +58,8 @@ impl Component for InstrMem {
         }))
     }
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
-        match target_port_id.as_str() {
-            INSTR_MEM_PC_ID => self.pc = new_input,
-            _ => (),
+        if target_port_id.as_str() == INSTR_MEM_PC_ID {
+            self.pc = new_input;
         }
     }
     fn get_id_ports(&self) -> (String, Ports) {
@@ -148,7 +147,7 @@ mod test {
                     },
                     breakpoints: Rc::new(RefCell::new(HashSet::new())),
                     symbols: HashMap::new(),
-                    le: true,
+                    le: false,
                 }),
             ],
         };
