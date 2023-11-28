@@ -40,7 +40,7 @@ impl RVMem {
                                     ui.label(format!("0x{:08x}", byte.0));
                                 });
                                 let mut bytes = [0u8; 4];
-                                if self.big_endian {
+                                if !self.big_endian {
                                     bytes[0] = *(self.memory.0.borrow().get(&((byte.0) as usize)))
                                         .unwrap();
                                     bytes[1] =

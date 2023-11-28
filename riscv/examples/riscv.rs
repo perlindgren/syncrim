@@ -58,11 +58,11 @@ fn main() {
     //init data memory with 0's
     let range = Range {
         start: 0x5000_0000u32,
-        end: 0x5000_0500u32,
+        end: 0x5000_2000u32,
     };
     let instr_range = Range {
         start: 0x0000_0000usize,
-        end: 0x0000_2000usize,
+        end: 0x0000_0500usize,
     };
     for address in range.clone() {
         data_mem.insert(address as usize, 0);

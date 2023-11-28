@@ -5,12 +5,6 @@ SECTIONS
   {
     KEEP(*(.text)); 
   }
-
-  . = 0x100;
-  .trap :
-  {
-    KEEP(*(.trap));
-  }
   . = 0x50000000;
   .data :
   {
@@ -22,4 +16,4 @@ SECTIONS
     KEEP(*(.vector_table));  
   }
 }
-PROVIDE(_stack_start = 0x50000500);
+PROVIDE(_stack_start = 0x50002000);
