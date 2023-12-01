@@ -38,6 +38,15 @@ pub struct RVMem {
     pub(crate) memory: Memory,
     pub(crate) range: Range<u32>,
     // later history... tbd
+    //
+    history: RefCell<Vec<MemOp>>,
+    init_state: Memory,
+}
+#[derive(Serialize, Deserialize)]
+struct MemOp {
+    pub data: Option<usize>,
+    pub addr: usize,
+    pub size: u8,
 }
 
 impl RVMem {
@@ -69,8 +78,10 @@ impl RVMem {
             sext,
             size,
             mem_int_addr,
-            memory: Memory::new(memory),
+            memory: Memory::new(memory.clone()),
             range,
+            history: RefCell::new(vec![]),
+            init_state: Memory::new(memory),
         }
     }
 
@@ -342,6 +353,11 @@ impl Component for RVMem {
     }
 
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
+        let mut history_entry = MemOp {
+            data: None,
+            addr: 0,
+            size: 0,
+        };
         let data = simulator.get_input_value(&self.data);
         let addr = simulator.get_input_value(&self.addr);
         let size = simulator.get_input_value(&self.size);
@@ -387,6 +403,19 @@ impl Component for RVMem {
                         if !(0x1000..=0x5000).contains(&addr) {
                             //if not in mmio range
                             let size: u32 = size.try_into().unwrap();
+                            history_entry = MemOp {
+                                data: match self.memory.read(
+                                    addr as usize,
+                                    size as usize,
+                                    false,
+                                    self.big_endian,
+                                ) {
+                                    SignalValue::Data(d) => Some(d as usize),
+                                    _ => None,
+                                },
+                                addr: addr as usize,
+                                size: size as u8,
+                            };
                             trace!("write addr {:?} size {:?}", addr, size);
                             self.memory
                                 .write(addr as usize, size as usize, self.big_endian, data);
@@ -419,8 +448,24 @@ impl Component for RVMem {
         //         )
         //     }
         // }
-
+        self.history.borrow_mut().push(history_entry);
         Ok(())
+    }
+
+    fn un_clock(&self) {
+        let entry = self.history.borrow_mut().pop().unwrap();
+        if let Some(d) = entry.data {
+            self.memory.write(
+                entry.addr,
+                entry.size.into(),
+                self.big_endian,
+                SignalValue::Data(d as u32),
+            )
+        } //self.memory.write(, size, big_endian, data)
+    }
+
+    fn reset(&self) {
+        self.memory.0.swap(&*self.init_state.0.clone());
     }
 }
 
@@ -472,6 +517,8 @@ mod test {
                         start: 0u32,
                         end: 1u32,
                     },
+                    history: RefCell::new(vec![]),
+                    init_state: Memory(Rc::new(RefCell::new(BTreeMap::new()))),
                 }),
             ],
         };
@@ -657,6 +704,8 @@ mod test {
                         start: 0u32,
                         end: 1u32,
                     },
+                    history: RefCell::new(vec![]),
+                    init_state: Memory(Rc::new(RefCell::new(BTreeMap::new()))),
                 }),
             ],
         };

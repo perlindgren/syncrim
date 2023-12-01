@@ -79,6 +79,8 @@ pub trait Component {
     }
     /// update component internal state
     fn un_clock(&self) {}
+    /// reset component internal state to initial value
+    fn reset(&self) {}
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]

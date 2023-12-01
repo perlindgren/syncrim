@@ -77,8 +77,8 @@ pub struct GridOptions {
 }
 #[derive(Clone)]
 pub struct Library(pub Components);
-impl Library {
-    pub fn default() -> Library {
+impl Default for Library {
+    fn default() -> Library {
         let dummy_input = Input::new("id", "field");
         let library: Components = vec![
             Rc::new(Add {

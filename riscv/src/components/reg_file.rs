@@ -161,6 +161,10 @@ impl Component for RegFile {
         trace!("RegFile");
     }
 
+    fn reset(&self) {
+        self.registers.borrow_mut().swap_with_slice(&mut [0; 32]);
+    }
+
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
@@ -220,6 +224,12 @@ impl Component for RegFile {
         }
     }
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
+        let mut regop = RegOp {
+            read_addr1: 0,
+            read_addr2: 0,
+            write_addr2: None,
+            old_data: None,
+        };
         if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_value(&self.write_data);
             trace!("write data {:?}", data);
@@ -229,12 +239,18 @@ impl Component for RegFile {
                 .unwrap();
             trace!("write_addr {}", write_addr);
             if write_addr != 0 {
+                regop.write_addr2 = Some((
+                    write_addr as u8,
+                    self.registers.borrow()[write_addr as usize],
+                ));
+
                 self.registers.borrow_mut()[write_addr as usize] = data.try_into().unwrap();
             }
         }
-
+        self.history.0.borrow_mut().push(regop);
         // read after write
         let reg_value_a = self.read_reg(simulator, &self.read_addr1);
+        //regop.read_addr1 = simulator.get_input_value(&self.read_addr1).try_into().unwrap();
         trace!("reg_value_a {:?}", reg_value_a);
         simulator.set_out_value(&self.id, "reg_a", reg_value_a);
 
@@ -242,6 +258,15 @@ impl Component for RegFile {
         trace!("reg_value_b {:?}", reg_value_b);
         simulator.set_out_value(&self.id, "reg_b", reg_value_b);
         Ok(())
+    }
+
+    fn un_clock(&self) {
+        println!("unclock");
+        let regop = self.history.0.borrow_mut().pop().unwrap();
+        let mut regstore = self.registers.borrow_mut();
+        if let Some(w) = regop.write_addr2 {
+            regstore[w.0 as usize] = w.1
+        }
     }
 }
 

@@ -265,13 +265,13 @@ impl Simulator {
 
     /// free running mode until Halt condition
     pub fn run(&mut self) {
-        self.running = true;
-        while self.running {
-            self.clock();
+        use std::time::Instant;
+        let now = Instant::now();
+        while now.elapsed().as_millis() < 100 {
+            if self.running {
+                self.clock()
+            }
         }
-        //while self.running {
-        //    self.clock()
-        //}
     }
 
     pub fn run_threaded(&mut self) {}
@@ -303,6 +303,10 @@ impl Simulator {
         self.sim_state.iter_mut().for_each(|val| *val = 0.into());
         self.stop();
         self.clock();
+
+        for component in self.ordered_components.clone() {
+            component.reset();
+        }
     }
 
     pub fn get_state(&self) -> bool {

@@ -23,6 +23,11 @@ pub const CLIC_MEM_INT_ADDR_ID: &str = "mem_int_addr";
 pub const CLIC_BLU_INT_ID: &str = "blu_int";
 pub const CLIC_MRET_OUT_ID: &str = "mret_out";
 pub const CLIC_MEPC_OUT_ID: &str = "mepc_out";
+#[derive(Serialize, Deserialize)]
+struct CLICOp {
+    pub mmio_op: Option<([u32; 2], u32)>,
+    pub csr_op: Option<Vec<(usize, u32)>>,
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct CLIC {
@@ -58,6 +63,8 @@ pub struct CLIC {
     pub csrstore: RefCell<HashMap<usize, usize>>, //address, val
     pub mmio: RefCell<HashMap<usize, u8>>,        //address, val
     pub queue: RefCell<PriorityQueue<u32, u8>>,   //prio, id's
+
+    history: RefCell<Vec<CLICOp>>,
 }
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
 pub struct MMIOEntry {
@@ -144,6 +151,7 @@ impl CLIC {
             queue: RefCell::new(PriorityQueue::new()),
             // lines: lines,
             csr_ctl,
+            history: RefCell::new(vec![]),
         }
     }
 }
@@ -223,6 +231,10 @@ impl Component for CLIC {
     }
 
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
+        let mut history_entry = CLICOp {
+            csr_op: None,
+            mmio_op: None,
+        };
         //CSR IO Handling
         let csr_ctl: u32 = simulator
             .get_input_value(&self.csr_ctl)
@@ -269,8 +281,10 @@ impl Component for CLIC {
             } else {
                 mstatus &= !0x8; //if not mpie, ensure not mie
             }
+            let old_val = mstatus;
             mstatus |= 0b1 << 7; //mpie is set on mret
             csrstore.insert(0x300, mstatus);
+            history_entry.csr_op = Some(vec![(0x300, old_val as u32)]);
             trace!("mret");
             simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
             simulator.set_out_value(&self.id, "blu_int", blu_int);
@@ -278,6 +292,7 @@ impl Component for CLIC {
             simulator.set_out_value(&self.id, "mmio_data_o", mmio_data);
             simulator.set_out_value(&self.id, "mepc_out", mepc);
             simulator.set_out_value(&self.id, "mret_out", mret_sig);
+            self.history.borrow_mut().push(history_entry);
             return Ok(());
         }
         match csr_ctl {
@@ -294,6 +309,7 @@ impl Component for CLIC {
                         //mhartid RO
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
                         csrstore.insert(csr_addr as usize, csr_data as usize);
+                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
                     }
                 }
             }
@@ -309,6 +325,7 @@ impl Component for CLIC {
                         //mhartid RO
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
                         csrstore.insert(csr_addr as usize, (csr_data as usize) | val);
+                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
                     }
                 }
             }
@@ -324,6 +341,7 @@ impl Component for CLIC {
                         //mhartid RO
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
                         csrstore.insert(csr_addr as usize, (!(csr_data as usize)) & val);
+                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
                     }
                 }
             }
@@ -345,6 +363,7 @@ impl Component for CLIC {
                         .try_into()
                         .unwrap(),
                 ];
+                history_entry.mmio_op = Some((old_entries, addr - offset));
                 let mut mask: u64 = 0;
                 for i in 0..data_size {
                     mask |= 0xFF << (i * 8);
@@ -397,6 +416,18 @@ impl Component for CLIC {
                                                           //now dispatch
                                                           //make memory output contents of mtvec + id*4 to branch mux
                                                           //set interrupt signal on branch control
+                    match history_entry.csr_op {
+                        Some(ref mut v) => {
+                            v.push((0x300, *csrstore.get(&0x300_usize).unwrap() as u32));
+                            v.push((0x341, *csrstore.get(&0x341_usize).unwrap() as u32));
+                        }
+                        None => {
+                            history_entry.csr_op = Some(vec![
+                                (0x300, *csrstore.get(&0x300_usize).unwrap() as u32),
+                                (0x341, *csrstore.get(&0x341_usize).unwrap() as u32),
+                            ])
+                        }
+                    }
                     csrstore.insert(0x300, (mstatus & !0x8) | 0b1 << 7); //clear interrupt enable, set mpie
                     csrstore.insert(0x341, pc as usize);
                     mem_int_addr = SignalValue::Data((mtvec as u32 + (interrupt.0) * 4) & !0b11);
@@ -415,6 +446,7 @@ impl Component for CLIC {
         }
         trace!("CSR OUT:{:08x}", val);
         trace!("QUEUE:{:?}", queue);
+        self.history.borrow_mut().push(history_entry);
         simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
         simulator.set_out_value(&self.id, "blu_int", blu_int);
         simulator.set_out_value(&self.id, "csr_data_o", val as u32);
@@ -422,6 +454,29 @@ impl Component for CLIC {
         simulator.set_out_value(&self.id, "mepc_out", mepc);
         simulator.set_out_value(&self.id, "mret_out", mret_sig);
         Ok(())
+    }
+
+    fn un_clock(&self) {
+        let entry = self.history.borrow_mut().pop().unwrap();
+        if let Some(ops) = entry.csr_op {
+            for op in ops {
+                self.csrstore.borrow_mut().insert(op.0, op.1 as usize);
+            }
+        }
+        if let Some(op) = entry.mmio_op {
+            self.write(
+                op.1.try_into().unwrap(),
+                4,
+                false,
+                SignalValue::Data(op.0[0]),
+            );
+            self.write(
+                (op.1 + 4).try_into().unwrap(),
+                4,
+                false,
+                SignalValue::Data(op.0[1]),
+            );
+        }
     }
 }
 

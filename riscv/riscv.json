@@ -10019,6 +10019,7 @@
                 "840": 0,
                 "834": 0
             },
+            "history": [],
             "mmio": {
                 "17546": 0,
                 "7169": 0,
@@ -26543,6 +26544,7 @@
             "width": 100.0,
             "height": 100.0,
             "big_endian": false,
+            "history": [],
             "data": {
                 "id": "reg_file",
                 "field": "reg_b"
@@ -26567,6 +26569,7 @@
                 "id": "clic",
                 "field": "mem_int_addr"
             },
+            "init_state": {},
             "memory": {
                 "1342177280": 0,
                 "1342177281": 0,

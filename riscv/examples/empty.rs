@@ -24,7 +24,12 @@ fn main() {
     #[cfg(feature = "gui-egui")]
     {
         use riscv::components::*;
-        use std::{cell::RefCell, collections::BTreeMap, path::PathBuf, rc::Rc};
+        use std::{
+            cell::RefCell,
+            collections::{BTreeMap, HashMap, HashSet},
+            ops::Range,
+            rc::Rc,
+        };
         use syncrim::common::Input;
         let dummy = Input::new("id", "field");
         let lib = ComponentStore {
@@ -36,6 +41,10 @@ fn main() {
                     pos: (0.0, 0.0),
                     pc: dummy.clone(),
                     bytes: BTreeMap::new(),
+                    breakpoints: Rc::new(RefCell::new(HashSet::new())),
+                    le: true,
+                    range: Range { start: 0, end: 0 },
+                    symbols: HashMap::new(),
                 }),
                 Rc::new(ALU {
                     id: "dummy_alu".to_string(),
@@ -52,6 +61,8 @@ fn main() {
                     rs1: dummy.clone(),
                     rs2: dummy.clone(),
                     ctrl: dummy.clone(),
+                    int: dummy.clone(),
+                    mret: dummy.clone(),
                     enable: dummy.clone(),
                 }),
                 Rc::new(Decoder {

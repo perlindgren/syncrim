@@ -111,7 +111,18 @@ impl eframe::App for Gui {
             }
         }
     }
-    fn post_rendering(&mut self, _window_size_px: [u32; 2], _frame: &Frame) {}
+    fn post_rendering(&mut self, _window_size_px: [u32; 2], _frame: &Frame) {
+        if !self.pause {
+            match &mut self.simulator {
+                Some(s) => {
+                    if s.running {
+                        s.run();
+                    }
+                }
+                None => {}
+            }
+        }
+    }
 }
 
 impl Gui {

@@ -41,29 +41,21 @@ impl RVMem {
                                 });
                                 let mut bytes = [0u8; 4];
                                 if !self.big_endian {
-                                    bytes[0] = *(self.memory.0.borrow().get(&((byte.0) as usize)))
-                                        .unwrap();
+                                    bytes[0] = *(self.memory.0.borrow().get(&(byte.0))).unwrap();
                                     bytes[1] =
-                                        *(self.memory.0.borrow().get(&((byte.0 + 1) as usize)))
-                                            .unwrap();
+                                        *(self.memory.0.borrow().get(&(byte.0 + 1))).unwrap();
                                     bytes[2] =
-                                        *(self.memory.0.borrow().get(&((byte.0 + 2) as usize)))
-                                            .unwrap();
+                                        *(self.memory.0.borrow().get(&(byte.0 + 2))).unwrap();
                                     bytes[3] =
-                                        *(self.memory.0.borrow().get(&((byte.0 + 3) as usize)))
-                                            .unwrap();
+                                        *(self.memory.0.borrow().get(&(byte.0 + 3))).unwrap();
                                 } else {
-                                    bytes[3] = *(self.memory.0.borrow().get(&((byte.0) as usize)))
-                                        .unwrap();
+                                    bytes[3] = *(self.memory.0.borrow().get(&(byte.0))).unwrap();
                                     bytes[2] =
-                                        *(self.memory.0.borrow().get(&((byte.0 + 1) as usize)))
-                                            .unwrap();
+                                        *(self.memory.0.borrow().get(&(byte.0 + 1))).unwrap();
                                     bytes[1] =
-                                        *(self.memory.0.borrow().get(&((byte.0 + 2) as usize)))
-                                            .unwrap();
+                                        *(self.memory.0.borrow().get(&(byte.0 + 2))).unwrap();
                                     bytes[0] =
-                                        *(self.memory.0.borrow().get(&((byte.0 + 3) as usize)))
-                                            .unwrap();
+                                        *(self.memory.0.borrow().get(&(byte.0 + 3))).unwrap();
                                 }
                                 let word = format!(
                                     "0x{:02x}{:02x}{:02x}{:02x}",
@@ -76,7 +68,7 @@ impl RVMem {
                                     {
                                         ascii += &format!("{}", b as char);
                                     } else {
-                                        ascii += &format!(" ");
+                                        ascii += " ";
                                     }
                                 }
                                 row.col(|ui| {

@@ -387,6 +387,8 @@ pub fn control_play_fn(gui: &mut Gui) {
     if !gui.editor_use {
         gui.pause = false;
         gui.simulator.as_mut().unwrap().running = true;
+        //gui.simulator.as_mut().unwrap().run();
+        //gui.pause = true;
     }
 }
 //pub fn step(gui: &mut Gui) {
