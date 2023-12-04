@@ -262,7 +262,7 @@ impl Component for RegFile {
     }
 
     fn un_clock(&self) {
-        println!("unclock");
+        //println!("unclock");
         let regop = self.history.0.borrow_mut().pop().unwrap();
         let mut regstore = self.registers.borrow_mut();
         if let Some(w) = regop.write_addr2 {

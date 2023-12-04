@@ -339,10 +339,10 @@ impl Component for CLIC {
                     if csr_addr != 0xf14 {
                         //mhartid RO
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
-                        println!("val:{}", val);
+                        //println!("val:{}", val);
                         csrstore.insert(csr_addr as usize, csr_data as usize);
                         history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
-                        println!("val:{}", val);
+                        //println!("val:{}", val);
                     }
                 }
             }
@@ -426,12 +426,16 @@ impl Component for CLIC {
                     }
                     if mmio_entry.clicintie != 1 || mmio_entry.clicintip != 1 {
                         //dequeue self if pending or enabled status is 0
-                        history_entry.queue_op.push((
-                            (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
-                            mmio_entry.clicintctl,
-                            true,
-                        ));
-                        queue.remove(&((addr - offset + 4u32 * i as u32 - 0x1000) / 4));
+                        if queue
+                            .remove(&((addr - offset + 4u32 * i as u32 - 0x1000) / 4))
+                            .is_some()
+                        {
+                            history_entry.queue_op.push((
+                                (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
+                                mmio_entry.clicintctl,
+                                true,
+                            ));
+                        };
                     }
                 }
                 self.write(
@@ -506,7 +510,7 @@ impl Component for CLIC {
         let mut entry = self.history.borrow_mut().pop().unwrap();
         if let Some(mut ops) = entry.csr_op {
             while let Some(op) = ops.pop() {
-                println!("insert csr {:03x}, {:08x}", op.0, op.1);
+                // println!("insert csr {:03x}, {:08x}", op.0, op.1);
                 self.csrstore.borrow_mut().insert(op.0, op.1 as usize);
             }
         }
@@ -524,16 +528,16 @@ impl Component for CLIC {
                 SignalValue::Data(op.0[1]),
             );
         }
-        println!("queue_op:{:?}", entry.queue_op);
+        // println!("queue_op:{:?}", entry.queue_op);
         while let Some(e) = entry.queue_op.pop() {
             //readd
             if e.2 {
-                println!("re add id:{} prio:{}", e.0, e.1);
+                //   println!("re add id:{} prio:{}", e.0, e.1);
                 self.queue.borrow_mut().push(e.0, e.1);
             }
             //remove
             else {
-                println!("remove id:{} prio:{}", e.0, e.1);
+                //  println!("remove id:{} prio:{}", e.0, e.1);
                 self.queue.borrow_mut().remove(&e.0);
             }
         }
