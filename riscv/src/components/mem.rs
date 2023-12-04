@@ -9,6 +9,8 @@ use syncrim::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
     SignalValue, Simulator,
 };
+//#[feature("gui-egui")]
+//use egui_extras::TableBuilder;
 pub const RV_MEM_DATA_I_ID: &str = "data_i";
 pub const RV_MEM_ADDR_ID: &str = "addr";
 pub const RV_MEM_CTRL_ID: &str = "sext";
@@ -466,6 +468,7 @@ impl Component for RVMem {
 
     fn reset(&self) {
         self.memory.0.swap(&*self.init_state.0.clone());
+        self.history.swap(&RefCell::new(vec![]));
     }
 }
 

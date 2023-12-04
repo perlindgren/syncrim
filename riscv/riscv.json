@@ -26569,6 +26569,7 @@
                 "id": "clic",
                 "field": "mem_int_addr"
             },
+           "drawn" : false,
             "init_state": {},
             "memory": {
                 "1342177280": 0,

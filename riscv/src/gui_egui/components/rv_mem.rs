@@ -12,7 +12,6 @@ use syncrim::gui_egui::component_ui::{
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
-
 impl RVMem {
     fn side_panel(&self, ctx: &Context, _simulator: Option<&mut Simulator>) {
         Window::new("Data Memory").show(ctx, |ui| {
@@ -32,54 +31,49 @@ impl RVMem {
                         ui.heading("ASCII");
                     });
                 })
-                .body(|mut body| {
-                    for byte in self.memory.0.borrow().clone().into_iter() {
-                        if byte.0 % 4 == 0 {
-                            body.row(15.0, |mut row| {
-                                row.col(|ui| {
-                                    ui.label(format!("0x{:08x}", byte.0));
-                                });
-                                let mut bytes = [0u8; 4];
-                                if !self.big_endian {
-                                    bytes[0] = *(self.memory.0.borrow().get(&(byte.0))).unwrap();
-                                    bytes[1] =
-                                        *(self.memory.0.borrow().get(&(byte.0 + 1))).unwrap();
-                                    bytes[2] =
-                                        *(self.memory.0.borrow().get(&(byte.0 + 2))).unwrap();
-                                    bytes[3] =
-                                        *(self.memory.0.borrow().get(&(byte.0 + 3))).unwrap();
-                                } else {
-                                    bytes[3] = *(self.memory.0.borrow().get(&(byte.0))).unwrap();
-                                    bytes[2] =
-                                        *(self.memory.0.borrow().get(&(byte.0 + 1))).unwrap();
-                                    bytes[1] =
-                                        *(self.memory.0.borrow().get(&(byte.0 + 2))).unwrap();
-                                    bytes[0] =
-                                        *(self.memory.0.borrow().get(&(byte.0 + 3))).unwrap();
-                                }
-                                let word = format!(
-                                    "0x{:02x}{:02x}{:02x}{:02x}",
-                                    bytes[0], bytes[1], bytes[2], bytes[3]
-                                );
-                                let mut ascii = "".to_string();
-                                for b in bytes {
-                                    if b > 0x1f && b < 0x7f
-                                    // decently printable ascii range
-                                    {
-                                        ascii += &format!("{}", b as char);
-                                    } else {
-                                        ascii += " ";
-                                    }
-                                }
-                                row.col(|ui| {
-                                    ui.add(Label::new(word).truncate(true));
-                                });
-                                row.col(|ui| {
-                                    ui.add(Label::new(ascii).truncate(true));
-                                });
+                .body(|body| {
+                    body.rows(
+                        15.0,
+                        (self.range.end - self.range.start) as usize,
+                        |index, mut row| {
+                            println!("{}", index);
+                            let address = self.range.start as usize + index * 4;
+                            let memory = self.memory.0.borrow().clone();
+                            row.col(|ui| {
+                                ui.label(format!("0x{:08x}", address));
                             });
-                        }
-                    }
+                            let mut bytes = [0u8; 4];
+                            if !self.big_endian {
+                                bytes[0] = *(memory).get(&address).unwrap();
+                                bytes[1] = *(memory).get(&(address + 1)).unwrap();
+                                bytes[2] = *(memory).get(&(address + 2)).unwrap();
+                                bytes[3] = *(memory).get(&(address + 3)).unwrap();
+                            } else {
+                                bytes[3] = *(memory).get(&address).unwrap();
+                                bytes[2] = *(memory).get(&(address + 1)).unwrap();
+                                bytes[1] = *(memory).get(&(address + 2)).unwrap();
+                                bytes[0] = *(memory).get(&(address + 3)).unwrap();
+                            }
+                            let word = format!(
+                                "0x{:02x}{:02x}{:02x}{:02x}",
+                                bytes[0], bytes[1], bytes[2], bytes[3]
+                            );
+                            let mut ascii = "".to_string();
+                            for b in bytes {
+                                if b > 0x1f && b < 0x7f {
+                                    ascii += &format!("{}", b as char);
+                                } else {
+                                    ascii += " ";
+                                }
+                            }
+                            row.col(|ui| {
+                                ui.add(Label::new(word).truncate(true));
+                            });
+                            row.col(|ui| {
+                                ui.add(Label::new(ascii).truncate(true));
+                            });
+                        },
+                    );
                 });
         });
     }

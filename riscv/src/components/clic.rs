@@ -27,6 +27,8 @@ pub const CLIC_MEPC_OUT_ID: &str = "mepc_out";
 struct CLICOp {
     pub mmio_op: Option<([u32; 2], u32)>,
     pub csr_op: Option<Vec<(usize, u32)>>,
+    //op removed = true, op added = false
+    pub queue_op: Vec<(u32, u8, bool)>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -158,6 +160,34 @@ impl CLIC {
 
 #[typetag::serde()]
 impl Component for CLIC {
+    fn reset(&self) {
+        self.csrstore.swap({
+            let mut csrstore = HashMap::new();
+            csrstore.insert(0x300, 0); //mstatus
+            csrstore.insert(0x305, 0b11); //mtvec, we only support vectored
+            csrstore.insert(0x307, 0); //mtvt
+            csrstore.insert(0x340, 0); //mscratch
+            csrstore.insert(0x341, 0); //mepc
+            csrstore.insert(0x342, 0); //mcause
+            csrstore.insert(0x343, 0); //mtval
+            csrstore.insert(0x345, 0); //mnxti
+            csrstore.insert(0xFB1, 0); //mintstatus
+            csrstore.insert(0x347, 0); //mintthresh
+            csrstore.insert(0x348, 0); //mscratchcsw
+            csrstore.insert(0x349, 0); //mscratchcswl
+            csrstore.insert(0xF14, 0); //mhartid
+            &RefCell::new(csrstore)
+        });
+        self.mmio.swap({
+            let mut mmio = HashMap::new();
+            for i in 0x1000..0x5000 {
+                mmio.insert(i, 0);
+            }
+            &RefCell::new(mmio)
+        });
+        self.queue.swap(&RefCell::new(PriorityQueue::new()));
+        self.history.swap(&RefCell::new(vec![]));
+    }
     fn to_(&self) {
         println!("CLIC");
     }
@@ -234,6 +264,7 @@ impl Component for CLIC {
         let mut history_entry = CLICOp {
             csr_op: None,
             mmio_op: None,
+            queue_op: vec![],
         };
         //CSR IO Handling
         let csr_ctl: u32 = simulator
@@ -308,8 +339,10 @@ impl Component for CLIC {
                     if csr_addr != 0xf14 {
                         //mhartid RO
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
+                        println!("val:{}", val);
                         csrstore.insert(csr_addr as usize, csr_data as usize);
                         history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
+                        println!("val:{}", val);
                     }
                 }
             }
@@ -381,6 +414,11 @@ impl Component for CLIC {
                 for (i, mmio_entry) in mmio_entries.into_iter().enumerate() {
                     if mmio_entry.clicintie == 1 && mmio_entry.clicintip == 1 {
                         //enqueue self if pending status and enable status are 1, this changes prio dynamically with prio change also.
+                        history_entry.queue_op.push((
+                            (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
+                            mmio_entry.clicintctl,
+                            false,
+                        ));
                         queue.push(
                             (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
                             mmio_entry.clicintctl,
@@ -388,6 +426,11 @@ impl Component for CLIC {
                     }
                     if mmio_entry.clicintie != 1 || mmio_entry.clicintip != 1 {
                         //dequeue self if pending or enabled status is 0
+                        history_entry.queue_op.push((
+                            (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
+                            mmio_entry.clicintctl,
+                            true,
+                        ));
                         queue.remove(&((addr - offset + 4u32 * i as u32 - 0x1000) / 4));
                     }
                 }
@@ -416,6 +459,9 @@ impl Component for CLIC {
                                                           //now dispatch
                                                           //make memory output contents of mtvec + id*4 to branch mux
                                                           //set interrupt signal on branch control
+                    history_entry
+                        .queue_op
+                        .push((interrupt.0, interrupt.1, true));
                     match history_entry.csr_op {
                         Some(ref mut v) => {
                             v.push((0x300, *csrstore.get(&0x300_usize).unwrap() as u32));
@@ -457,9 +503,10 @@ impl Component for CLIC {
     }
 
     fn un_clock(&self) {
-        let entry = self.history.borrow_mut().pop().unwrap();
-        if let Some(ops) = entry.csr_op {
-            for op in ops {
+        let mut entry = self.history.borrow_mut().pop().unwrap();
+        if let Some(mut ops) = entry.csr_op {
+            while let Some(op) = ops.pop() {
+                println!("insert csr {:03x}, {:08x}", op.0, op.1);
                 self.csrstore.borrow_mut().insert(op.0, op.1 as usize);
             }
         }
@@ -476,6 +523,19 @@ impl Component for CLIC {
                 false,
                 SignalValue::Data(op.0[1]),
             );
+        }
+        println!("queue_op:{:?}", entry.queue_op);
+        while let Some(e) = entry.queue_op.pop() {
+            //readd
+            if e.2 {
+                println!("re add id:{} prio:{}", e.0, e.1);
+                self.queue.borrow_mut().push(e.0, e.1);
+            }
+            //remove
+            else {
+                println!("remove id:{} prio:{}", e.0, e.1);
+                self.queue.borrow_mut().remove(&e.0);
+            }
         }
     }
 }

@@ -163,6 +163,7 @@ impl Component for RegFile {
 
     fn reset(&self) {
         self.registers.borrow_mut().swap_with_slice(&mut [0; 32]);
+        self.history.0.swap(&RefCell::new(vec![]));
     }
 
     fn get_id_ports(&self) -> (String, Ports) {
