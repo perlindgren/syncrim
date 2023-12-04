@@ -42,7 +42,7 @@ pub struct RVMem {
     // later history... tbd
     //
     history: RefCell<Vec<MemOp>>,
-    init_state: Memory,
+    init_state: BTreeMap<usize, u8>,
 }
 #[derive(Serialize, Deserialize)]
 struct MemOp {
@@ -83,7 +83,7 @@ impl RVMem {
             memory: Memory::new(memory.clone()),
             range,
             history: RefCell::new(vec![]),
-            init_state: Memory::new(memory),
+            init_state: memory.clone(),
         }
     }
 
@@ -467,7 +467,11 @@ impl Component for RVMem {
     }
 
     fn reset(&self) {
-        self.memory.0.swap(&*self.init_state.0.clone());
+        //let mut mem = self.memory.0.borrow_mut();
+        //let b = self.init_state.0.clone();
+        self.memory.0.replace(self.init_state.clone());
+        //mem = self.init_state.0.borrow_mut();
+        //self.memory.0.swap(&*self.init_state.0.clone());
         self.history.swap(&RefCell::new(vec![]));
     }
 }
@@ -521,7 +525,7 @@ mod test {
                         end: 1u32,
                     },
                     history: RefCell::new(vec![]),
-                    init_state: Memory(Rc::new(RefCell::new(BTreeMap::new()))),
+                    init_state: BTreeMap::new(),
                 }),
             ],
         };
@@ -708,7 +712,7 @@ mod test {
                         end: 1u32,
                     },
                     history: RefCell::new(vec![]),
-                    init_state: Memory(Rc::new(RefCell::new(BTreeMap::new()))),
+                    init_state: BTreeMap::new(),
                 }),
             ],
         };
