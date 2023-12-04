@@ -36,7 +36,7 @@ impl RVMem {
                         15.0,
                         (self.range.end - self.range.start) as usize,
                         |index, mut row| {
-                            println!("{}", index);
+                            //println!("{}", index);
                             let address = self.range.start as usize + index * 4;
                             let memory = self.memory.0.borrow().clone();
                             row.col(|ui| {

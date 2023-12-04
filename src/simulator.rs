@@ -267,7 +267,8 @@ impl Simulator {
     pub fn run(&mut self) {
         use std::time::Instant;
         let now = Instant::now();
-        while now.elapsed().as_millis() < 100 {
+        while now.elapsed().as_millis() < 1000 / 30 {
+            //60Hz
             if self.running {
                 self.clock()
             }
