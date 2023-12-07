@@ -311,6 +311,16 @@ fn elf_from_asm(args: &Args) {
     let _ = if cfg!(target_os = "windows") {
         match Command::new("cmd")
             .current_dir(".\\riscv_asm\\")
+            .args(["/C", "cargo clean"])
+            .status()
+        {
+            Ok(_) => {}
+            Err(_) => {
+                panic!("cargo clean unsuccessful")
+            }
+        }
+        match Command::new("cmd")
+            .current_dir(".\\riscv_asm\\")
             .args(["/C", "cargo build --release"])
             .status()
         {
