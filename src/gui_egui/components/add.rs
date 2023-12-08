@@ -71,7 +71,7 @@ impl EguiComponent for Add {
         };
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
-            ui.label("ALU");
+            ui.label("Adder");
         });
         match editor_mode {
             EditorMode::Simulator => (),
