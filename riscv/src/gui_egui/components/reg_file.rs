@@ -92,7 +92,7 @@ impl EguiComponent for RegFile {
                                 //println!("{}", 15.0*scale);
                                 ui.set_height(20.0 * scale);
                                 // ui.set_row_height(15.0*scale);
-                                let label = ui.label(
+                                let _label = ui.label(
                                     RichText::new(format!(
                                         "{:?}:0x{:08x}",
                                         Reg::try_from(reg).unwrap(),
