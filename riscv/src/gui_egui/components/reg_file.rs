@@ -1,6 +1,7 @@
 use crate::components::{Reg, RegFile, RegStore};
 use egui::{
-    Color32, Context, Pos2, Rect, Response, RichText, Rounding, Shape, Stroke, Ui, Vec2, Window,
+    Color32, Context, Label, Pos2, Rect, Response, RichText, Rounding, Shape, Stroke, Ui, Vec2,
+    Window,
 };
 use egui_extras::{Column, TableBuilder};
 use syncrim::common::{EguiComponent, Ports, Simulator};
@@ -85,25 +86,45 @@ impl EguiComponent for RegFile {
             EditorMode::Simulator => {
                 ui.allocate_ui_at_rect(rect, |ui| {
                     ui.set_clip_rect(rect);
-                    ui.vertical(|ui| {
-                        //ui.set_height(15.0*scale);
-                        for reg in RegStore::lo_range() {
-                            ui.horizontal(|ui| {
-                                //println!("{}", 15.0*scale);
-                                ui.set_height(20.0 * scale);
-                                // ui.set_row_height(15.0*scale);
-                                let _label = ui.label(
-                                    RichText::new(format!(
-                                        "{:?}:0x{:08x}",
-                                        Reg::try_from(reg).unwrap(),
-                                        self.registers.0.borrow().get(reg as usize).unwrap()
-                                    ))
-                                    .size(15.0 * scale), //.line_height(Some(15.0 * scale)),
-                                );
-                                //println!("{:?}",label.rect);
+                    TableBuilder::new(ui)
+                        .striped(true)
+                        .column(Column::exact(50.0 * scale))
+                        .column(Column::exact(100.0 * scale))
+                        .header(20.0 * scale, |mut header| {
+                            header.col(|ui| {
+                                ui.label(RichText::new("Reg").size(20.0 * scale));
                             });
-                        }
-                    });
+                            header.col(|ui| {
+                                ui.label(RichText::new("Value").size(20.0 * scale));
+                            });
+                        })
+                        .body(|body| {
+                            body.rows(
+                                15.0 * scale,
+                                RegStore::lo_range().end as usize
+                                    - RegStore::lo_range().start as usize,
+                                |index, mut row| {
+                                    row.col(|ui| {
+                                        ui.add(Label::new(
+                                            RichText::new(format!(
+                                                "{:?}:",
+                                                Reg::try_from(index as u8).unwrap()
+                                            ))
+                                            .size(15.0 * scale),
+                                        ));
+                                    });
+                                    row.col(|ui| {
+                                        ui.add(Label::new(
+                                            RichText::new(format!(
+                                                "0x{:08x}",
+                                                self.registers.0.borrow().get(index).unwrap()
+                                            ))
+                                            .size(15.0 * scale),
+                                        ));
+                                    });
+                                },
+                            );
+                        });
                 });
                 self.side_panel(ui.ctx(), simulator);
             }
