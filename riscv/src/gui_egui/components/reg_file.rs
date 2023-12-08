@@ -84,21 +84,23 @@ impl EguiComponent for RegFile {
         match editor_mode {
             EditorMode::Simulator => {
                 ui.allocate_ui_at_rect(rect, |ui| {
+                    ui.set_clip_rect(rect);
                     ui.vertical(|ui| {
                         //ui.set_height(15.0*scale);
                         for reg in RegStore::lo_range() {
-                            //ui.set_height(15.0*scale);
                             ui.horizontal(|ui| {
-                                //ui.set_height(15.0*scale);
-                                ui.label(
+                                //println!("{}", 15.0*scale);
+                                ui.set_height(20.0 * scale);
+                                // ui.set_row_height(15.0*scale);
+                                let label = ui.label(
                                     RichText::new(format!(
                                         "{:?}:0x{:08x}",
                                         Reg::try_from(reg).unwrap(),
                                         self.registers.0.borrow().get(reg as usize).unwrap()
                                     ))
-                                    .size(15.0 * scale)
-                                    .line_height(Some(15.0 * scale)),
+                                    .size(15.0 * scale), //.line_height(Some(15.0 * scale)),
                                 );
+                                //println!("{:?}",label.rect);
                             });
                         }
                     });
