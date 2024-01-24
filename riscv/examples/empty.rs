@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::path::PathBuf;
-use syncrim::common::ComponentStore;
+use syncrim::{common::ComponentStore, components::Constant};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -20,7 +20,7 @@ struct Args {
 
 fn main() {
     let path = PathBuf::from("autosave.json");
-    let cs = ComponentStore::load_file(&path);
+    let mut cs = ComponentStore::load_file(&path);
     #[cfg(feature = "gui-egui")]
     {
         use riscv::components::*;
@@ -100,10 +100,28 @@ fn main() {
                     data_i: dummy.clone(),
                     sel_i: dummy.clone(),
                 }),
+                Rc::new(CLIC::new(
+                    "dummy_clic".into(),
+                    (0.0, 0.0),
+                    100.0,
+                    100.0,
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                )),
             ],
         };
         let mut component_vec = lib.store.clone();
         component_vec.append(&mut syncrim::gui_egui::editor::Library::default().0.clone());
+        cs.store.push(
+            Constant::rc_new("dummy", (100.0, 100.0), 0),
+        ) ;
         syncrim::gui_egui::gui(cs, &path, syncrim::gui_egui::editor::Library(component_vec)).ok();
     }
 

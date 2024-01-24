@@ -94,11 +94,11 @@ impl Component for ALU {
         let operand_a_i: u32 = simulator
             .get_input_value(&self.operand_a_i)
             .try_into()
-            .unwrap();
+            .unwrap_or(0);
         let operand_b_i: u32 = simulator
             .get_input_value(&self.operand_b_i)
             .try_into()
-            .unwrap();
+            .unwrap_or(0);
         trace!("ALU operand A: {}, operand B:{}", operand_a_i, operand_b_i);
         let mut result_o = 0;
         match operator_i {

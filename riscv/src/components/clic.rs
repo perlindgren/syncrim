@@ -6,6 +6,11 @@ use syncrim::{
     signal::{SignalSigned, SignalUnsigned, SignalValue},
 };
 
+#[cfg(feature="gui-egui")]
+use std::rc::Rc;
+#[cfg(feature="gui-egui")]
+use syncrim::common::EguiComponent;
+
 use priority_queue::PriorityQueue;
 use std::{cell::RefCell, collections::HashMap};
 pub const CLIC_CSR_ADDR_ID: &str = "csr_addr";
@@ -160,6 +165,26 @@ impl CLIC {
 
 #[typetag::serde()]
 impl Component for CLIC {
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy = Input::new("dummy", "out");
+        Box::new(Rc::new(CLIC::new(
+                    "dummy_clic".into(),
+                    (0.0, 0.0),
+                    100.0,
+                    100.0,
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                    dummy.clone(),
+                )))
+    }
+
     fn reset(&self) {
         self.csrstore.swap({
             let mut csrstore = HashMap::new();

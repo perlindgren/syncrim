@@ -177,33 +177,118 @@ impl EguiComponent for CLIC {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![
             (
-                crate::components::CLIC_CSR_DATA_OUT_ID.to_string(),
+                crate::components::CLIC_CSR_ADDR_ID.to_string(),
                 Pos2::new(
                     self.width / 10f32 * 4f32 - self.width / 2f32,
                     -self.height / 2f32,
                 ) + own_pos,
             ),
             (
-                crate::components::CLIC_MMIO_DATA_OUT_ID.to_string(),
+                crate::components::CLIC_CSR_CTL_ID.to_string(),
                 Pos2::new(
                     self.width / 10f32 * 3f32 - self.width / 2f32,
                     -self.height / 2f32,
                 ) + own_pos,
             ),
             (
-                crate::components::CLIC_DATA_ID.to_string(),
+                crate::components::CLIC_CSR_DATA_ID.to_string(),
                 Pos2::new(
                     self.width / 10f32 * 1f32 - self.width / 2f32,
                     -self.height / 2f32,
                 ) + own_pos,
             ),
             (
-                crate::components::CLIC_CSR_DATA_ID.to_string(),
+                crate::components::CLIC_ADDR_ID.to_string(),
                 Pos2::new(
                     self.width / 10f32 * 2f32 - self.width / 2f32,
                     -self.height / 2f32,
                 ) + own_pos,
             ),
+            (
+                crate::components::CLIC_ADDR_ID.to_string(),
+                Pos2::new(
+                    self.width / 10f32 * 4f32 - self.width / 2f32,
+                    -self.height / 2f32,
+                ) + own_pos,
+            ),
+            (
+                crate::components::CLIC_DATA_WE_ID.to_string(),
+                Pos2::new(
+                    -self.width/2f32,
+                    self.height/10f32*4f32 -self.height / 2f32,
+                ) + own_pos,
+            ),
+            (
+                crate::components::CLIC_MRET_ID.to_string(),
+                Pos2::new(
+                    -self.width/2f32,
+                    self.height/10f32*3f32 -self.height / 2f32,
+                ) + own_pos,
+            ),
+            (
+                crate::components::CLIC_PC_ID.to_string(),
+                Pos2::new(
+                    -self.width/2f32,
+                    self.height/10f32*2f32 -self.height / 2f32,
+                ) + own_pos,
+            ),
+            (
+                crate::components::CLIC_DATA_SIZE_ID.to_string(),
+                Pos2::new(
+                    -self.width/2f32,
+                    self.height/10f32*1f32 -self.height / 2f32,
+                ) + own_pos,
+            ),
+            (
+                crate::components::CLIC_CSR_DATA_OUT_ID.to_string(),
+                Pos2::new(
+                    self.width/2f32,
+                    self.height/10f32*4f32 -self.height / 2f32,
+                ) + own_pos,
+            ),
+            (
+                crate::components::CLIC_MMIO_DATA_OUT_ID.to_string(),
+                Pos2::new(
+                    self.width/2f32,
+                    self.height/10f32*3f32 -self.height / 2f32,
+                ) + own_pos,
+            ),
+            (
+                crate::components::CLIC_MEM_INT_ADDR_ID.to_string(),
+                Pos2::new(
+                    self.width/2f32,
+                    self.height/10f32*2f32 -self.height / 2f32,
+                ) + own_pos,
+            ),
+            (
+                crate::components::CLIC_BLU_INT_ID.to_string(),
+                Pos2::new(
+                    self.width/2f32,
+                    self.height/10f32*1f32 -self.height / 2f32,
+                ) + own_pos,
+            ),
+            (
+                crate::components::CLIC_MRET_OUT_ID.to_string(),
+                Pos2::new(
+                    self.width / 10f32 * 3f32 - self.width / 2f32,
+                    self.height / 2f32,
+                ) + own_pos,
+            ),
+            (
+                crate::components::CLIC_MEPC_OUT_ID.to_string(),
+                Pos2::new(
+                    self.width / 10f32 * 2f32 - self.width / 2f32,
+                    self.height / 2f32,
+                ) + own_pos,
+            ),
+            (
+                crate::components::CLIC_DATA_ID.to_string(),
+                Pos2::new(
+                    self.width / 10f32 * 1f32 - self.width / 2f32,
+                    self.height / 2f32,
+                ) + own_pos,
+            ),
+
         ]
     }
 
