@@ -161,6 +161,24 @@ impl RegFile {
             _ => SignalValue::Unknown,
         }
     }
+
+    pub fn dummy() -> RegFile {
+        let dummy = Input::new("id", "field");
+        RegFile {
+            id: "dummy_reg_file".into(),
+            pos: (0.0, 0.0),
+            width: REG_FILE_WIDTH,
+            height: REG_FILE_HEIGHT,
+            stack_depth: dummy.clone(),
+            read_addr1: dummy.clone(),
+            read_addr2: dummy.clone(),
+            write_data: dummy.clone(),
+            write_addr: dummy.clone(),
+            write_enable: dummy.clone(),
+            registers: RegStore::new(Rc::new(RefCell::new([[0; 32]; REG_FILE_MAX_DEPTH]))),
+            history: RegHistory::new(),
+        }
+    }
 }
 
 #[typetag::serde()]
