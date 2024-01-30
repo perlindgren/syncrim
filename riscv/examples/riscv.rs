@@ -125,10 +125,7 @@ fn main() {
         breakpoints: Rc::new(RefCell::new(HashSet::new())),
         le: true,
         pc: Input::new("reg", "out"),
-        range: Range {
-            start: 0,
-            end: 0x2000,
-        },
+        range: instr_range,
         symbols: memory.symbols,
     }));
     store.push(Rc::new(CLIC::new(

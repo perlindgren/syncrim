@@ -34,7 +34,7 @@ impl RVMem {
                 .body(|body| {
                     body.rows(
                         15.0,
-                        (self.range.end - self.range.start) as usize,
+                    ((self.range.end - self.range.start)/4) as usize,
                         |index, mut row| {
                             //println!("{}", index);
                             let address = self.range.start as usize + index * 4;

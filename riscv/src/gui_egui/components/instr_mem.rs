@@ -17,15 +17,15 @@ use syncrim::gui_egui::helper::offset_helper;
 
 impl InstrMem {
     fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
-        Window::new("Instruction Memory").show(ctx, |ui| {
+        Window::new("Instruction Memory").resizable(false).show(ctx, |ui| {
             TableBuilder::new(ui)
                 .striped(true)
                 .column(Column::initial(75.0).at_least(75.0))
                 .column(Column::initial(10.0).resizable(false))
                 .column(Column::initial(75.0).at_least(75.0))
                 .column(Column::initial(75.0).at_least(50.0))
-                .column(Column::initial(150.0).at_least(85.0))
-                .resizable(true)
+                .column(Column::initial(150.0).at_least(85.0).resizable(true))
+                .column(Column::initial(5.0).at_least(5.0).resizable(false))
                 .header(30.0, |mut header| {
                     header.col(|ui| {
                         ui.heading("Label");
@@ -42,7 +42,7 @@ impl InstrMem {
                     });
                 })
                 .body(|body| {
-                    body.rows(15.0, self.range.end - self.range.start, |index, mut row| {
+                    body.rows(15.0, (self.range.end - self.range.start)/4, |index, mut row| {
                         let address = index * 4 + self.range.start;
                         let pc: u32 = {
                             if simulator.as_ref().is_some() {
@@ -108,8 +108,6 @@ impl InstrMem {
                         row.col(|ui| {
                             ui.add(Label::new(format!("0x{:08X}", instr)).truncate(true));
                         });
-                        //ui.label(format!("0x{:08X}",instr));});
-                        //formatted instr
                         row.col(|ui| {
                             if ui
                                 .add(
@@ -125,6 +123,7 @@ impl InstrMem {
                                 }
                             };
                         });
+                        row.col(|_|{});
                     });
                 });
         });
