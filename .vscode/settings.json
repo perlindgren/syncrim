@@ -29,6 +29,7 @@
     "petgraph",
     "println",
     "regfile",
+    "regs",
     "repr",
     "rgbaf",
     "rgbf",

@@ -48,6 +48,9 @@ pub enum Reg {
     t6      = 31,   // Temporaries
 }
 
+pub const REG_FILE_MAX_DEPTH: usize = 4;
+
+pub const REG_FILE_STACK_DEPTH_ID: &str = "stack_depth";
 pub const REG_FILE_READ_ADDR1_ID: &str = "read_addr1";
 pub const REG_FILE_READ_ADDR2_ID: &str = "read_addr2";
 pub const REG_FILE_WRITE_DATA_ID: &str = "write_data";
@@ -68,6 +71,7 @@ pub struct RegFile {
     pub height: f32,
 
     // ports
+    pub stack_depth: Input,
     pub read_addr1: Input,
     pub read_addr2: Input,
     pub write_data: Input,
@@ -81,6 +85,7 @@ pub struct RegFile {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct RegOp {
+    stack_depth: u8,
     read_addr1: u8,
     read_addr2: u8,
     write_addr2: Option<(u8, u32)>,
@@ -103,11 +108,14 @@ impl Default for RegHistory {
     }
 }
 
+// The regfile is [u32; 32]; REG_FILE_MAX_DEPTH]
+type RegStack = [[u32; 32]; REG_FILE_MAX_DEPTH];
+
 #[derive(Serialize, Deserialize, Clone)]
-pub struct RegStore(pub Rc<RefCell<[u32; 32]>>);
+pub struct RegStore(pub Rc<RefCell<RegStack>>);
 
 impl RegStore {
-    pub fn new(regs: Rc<RefCell<[u32; 32]>>) -> Self {
+    pub fn new(regs: Rc<RefCell<RegStack>>) -> Self {
         RegStore(regs)
     }
 
@@ -126,12 +134,12 @@ impl RegStore {
 
 impl Default for RegStore {
     fn default() -> Self {
-        Self::new(Rc::new(RefCell::new([0; 32])))
+        Self::new(Rc::new(RefCell::new([[0; 32]; REG_FILE_MAX_DEPTH])))
     }
 }
 
 impl Deref for RegStore {
-    type Target = RefCell<[u32; 32]>;
+    type Target = RefCell<[[u32; 32]; REG_FILE_MAX_DEPTH]>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -139,12 +147,12 @@ impl Deref for RegStore {
 }
 
 impl RegFile {
-    fn read_reg(&self, simulator: &Simulator, input: &Input) -> SignalValue {
+    fn read_reg(&self, simulator: &Simulator, stack_depth: usize, input: &Input) -> SignalValue {
         match simulator.get_input_value(input) {
             SignalValue::Data(read_addr) => {
                 if read_addr > 0 {
                     trace!("read_addr {}", read_addr);
-                    SignalValue::from(self.registers.borrow()[read_addr as usize])
+                    SignalValue::from(self.registers.borrow()[stack_depth][read_addr as usize])
                 } else {
                     trace!("read_addr {}", read_addr);
                     SignalValue::from(0)
@@ -162,7 +170,9 @@ impl Component for RegFile {
     }
 
     fn reset(&self) {
-        self.registers.borrow_mut().swap_with_slice(&mut [0; 32]);
+        self.registers
+            .borrow_mut()
+            .swap_with_slice(&mut [[0; 32]; REG_FILE_MAX_DEPTH]);
         self.history.0.swap(&RefCell::new(vec![]));
     }
 
@@ -205,8 +215,9 @@ impl Component for RegFile {
             height: REG_FILE_HEIGHT,
             id: id.to_string(),
             pos: (pos.0, pos.1),
-            registers: RegStore::new(Rc::new(RefCell::new([0; 32]))),
+            registers: RegStore::new(Rc::new(RefCell::new([[0; 32]; REG_FILE_MAX_DEPTH]))),
             history: RegHistory::new(),
+            stack_depth: dummy_input.clone(),
             read_addr1: dummy_input.clone(),
             read_addr2: dummy_input.clone(),
             write_data: dummy_input.clone(),
@@ -216,6 +227,7 @@ impl Component for RegFile {
     }
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
+            REG_FILE_STACK_DEPTH_ID => self.stack_depth = new_input,
             REG_FILE_READ_ADDR1_ID => self.read_addr1 = new_input,
             REG_FILE_READ_ADDR2_ID => self.read_addr2 = new_input,
             REG_FILE_WRITE_DATA_ID => self.write_data = new_input,
@@ -226,36 +238,45 @@ impl Component for RegFile {
     }
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let mut regop = RegOp {
+            stack_depth: 0,
             read_addr1: 0,
             read_addr2: 0,
             write_addr2: None,
             old_data: None,
         };
+        let stack_depth: SignalUnsigned = simulator
+            .get_input_value(&self.stack_depth)
+            .try_into()
+            .unwrap();
+        let stack_depth: usize = stack_depth as usize;
+
         if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_value(&self.write_data);
             trace!("write data {:?}", data);
+
             let write_addr: SignalUnsigned = simulator
                 .get_input_value(&self.write_addr)
                 .try_into()
                 .unwrap();
-            trace!("write_addr {}", write_addr);
-            if write_addr != 0 {
-                regop.write_addr2 = Some((
-                    write_addr as u8,
-                    self.registers.borrow()[write_addr as usize],
-                ));
 
-                self.registers.borrow_mut()[write_addr as usize] = data.try_into().unwrap();
-            }
+            trace!("write_addr {}", write_addr);
+
+            regop.write_addr2 = Some((
+                write_addr as u8,
+                self.registers.borrow()[stack_depth as usize][write_addr as usize],
+            ));
+
+            self.registers.borrow_mut()[stack_depth as usize][write_addr as usize] =
+                data.try_into().unwrap();
         }
         self.history.0.borrow_mut().push(regop);
         // read after write
-        let reg_value_a = self.read_reg(simulator, &self.read_addr1);
+        let reg_value_a = self.read_reg(simulator, stack_depth, &self.read_addr1);
         //regop.read_addr1 = simulator.get_input_value(&self.read_addr1).try_into().unwrap();
         trace!("reg_value_a {:?}", reg_value_a);
         simulator.set_out_value(&self.id, "reg_a", reg_value_a);
 
-        let reg_value_b = self.read_reg(simulator, &self.read_addr2);
+        let reg_value_b = self.read_reg(simulator, stack_depth, &self.read_addr2);
         trace!("reg_value_b {:?}", reg_value_b);
         simulator.set_out_value(&self.id, "reg_b", reg_value_b);
         Ok(())
@@ -266,7 +287,7 @@ impl Component for RegFile {
         let regop = self.history.0.borrow_mut().pop().unwrap();
         let mut regstore = self.registers.borrow_mut();
         if let Some(w) = regop.write_addr2 {
-            regstore[w.0 as usize] = w.1
+            regstore[regop.stack_depth as usize][w.0 as usize] = w.1
         }
     }
 }
@@ -285,6 +306,7 @@ mod test {
     fn test_reg_file() {
         let cs = ComponentStore {
             store: vec![
+                Rc::new(ProbeOut::new("stack_depth")),
                 Rc::new(ProbeOut::new("read_reg_1")),
                 Rc::new(ProbeOut::new("read_reg_2")),
                 Rc::new(ProbeOut::new("write_data")),
@@ -298,6 +320,7 @@ mod test {
                     height: 150.0,
 
                     // ports
+                    stack_depth: Input::new("stack_depth", "out"),
                     read_addr1: Input::new("read_reg_1", "out"),
                     read_addr2: Input::new("read_reg_2", "out"),
                     write_data: Input::new("write_data", "out"),
@@ -324,6 +347,7 @@ mod test {
         assert_eq!(simulator.get_input_value(out_reg_2), 0.into());
 
         println!("<setup for clock 2>");
+        simulator.set_out_value("stack_depth", "out", 0);
         simulator.set_out_value("read_reg_1", "out", 0);
         simulator.set_out_value("read_reg_2", "out", 1);
         simulator.set_out_value("write_data", "out", 1337);
@@ -352,5 +376,40 @@ mod test {
         assert_eq!(simulator.cycle, 3);
         assert_eq!(simulator.get_input_value(out_reg_1), 0.into());
         assert_eq!(simulator.get_input_value(out_reg_2), 1337.into());
+
+        println!("<setup for clock 4>");
+        simulator.set_out_value("stack_depth", "out", 1);
+        simulator.set_out_value("read_reg_1", "out", 31);
+        simulator.set_out_value("read_reg_2", "out", 1);
+        simulator.set_out_value("write_data", "out", 1234);
+        simulator.set_out_value("write_addr", "out", 31);
+        simulator.set_out_value("write_enable", "out", true as SignalUnsigned);
+        println!("<clock>");
+        simulator.clock();
+        println!("sim_state {:?}", simulator.sim_state);
+        assert_eq!(simulator.cycle, 4);
+        assert_eq!(simulator.get_input_value(out_reg_1), 1234.into());
+        assert_eq!(simulator.get_input_value(out_reg_2), 0.into());
+
+        println!("<un clock>");
+        simulator.un_clock();
+        println!("sim_state {:?}", simulator.sim_state);
+        assert_eq!(simulator.cycle, 3);
+        assert_eq!(simulator.get_input_value(out_reg_1), 0.into());
+        assert_eq!(simulator.get_input_value(out_reg_2), 1337.into());
+
+        println!("<un clock>");
+        simulator.un_clock();
+        println!("sim_state {:?}", simulator.sim_state);
+        assert_eq!(simulator.cycle, 2);
+        assert_eq!(simulator.get_input_value(out_reg_1), 0.into());
+        assert_eq!(simulator.get_input_value(out_reg_2), 1337.into());
+
+        println!("<un clock>");
+        simulator.un_clock();
+        println!("sim_state {:?}", simulator.sim_state);
+        assert_eq!(simulator.cycle, 1);
+        assert_eq!(simulator.get_input_value(out_reg_1), 0.into());
+        assert_eq!(simulator.get_input_value(out_reg_2), 0.into())
     }
 }
