@@ -23,6 +23,8 @@ pub const CLIC_MEM_INT_ADDR_ID: &str = "mem_int_addr";
 pub const CLIC_BLU_INT_ID: &str = "blu_int";
 pub const CLIC_MRET_OUT_ID: &str = "mret_out";
 pub const CLIC_MEPC_OUT_ID: &str = "mepc_out";
+pub const CLIC_REG_FILE_WRITE_ID: &str = "reg_file_write";
+
 #[derive(Serialize, Deserialize)]
 struct CLICOp {
     pub mmio_op: Option<([u32; 2], u32)>,
@@ -249,6 +251,7 @@ impl Component for CLIC {
                 ],
                 OutputType::Combinatorial,
                 vec![
+                    CLIC_REG_FILE_WRITE_ID,
                     CLIC_CSR_DATA_OUT_ID,
                     CLIC_MMIO_DATA_OUT_ID,
                     CLIC_MEM_INT_ADDR_ID,
