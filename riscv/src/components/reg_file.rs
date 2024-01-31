@@ -51,6 +51,7 @@ pub enum Reg {
 
 pub const REG_FILE_MAX_DEPTH: usize = 4;
 
+pub const REG_FILE_CLIC_WRITE_ID: &str = "clic_write";
 pub const REG_FILE_STACK_DEPTH_ID: &str = "stack_depth";
 pub const REG_FILE_READ_ADDR1_ID: &str = "read_addr1";
 pub const REG_FILE_READ_ADDR2_ID: &str = "read_addr2";
@@ -72,6 +73,7 @@ pub struct RegFile {
     pub height: f32,
 
     // ports
+    pub clic_write: Input,
     pub stack_depth: Input,
     pub read_addr1: Input,
     pub read_addr2: Input,
@@ -109,7 +111,6 @@ impl Default for RegHistory {
     }
 }
 
-// The regfile is [u32; 32]; REG_FILE_MAX_DEPTH]
 type RegStack = [[u32; 32]; REG_FILE_MAX_DEPTH];
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -170,6 +171,7 @@ impl RegFile {
             pos: (0.0, 0.0),
             width: REG_FILE_WIDTH,
             height: REG_FILE_HEIGHT,
+            clic_write: dummy.clone(),
             stack_depth: dummy.clone(),
             read_addr1: dummy.clone(),
             read_addr2: dummy.clone(),
@@ -200,6 +202,10 @@ impl Component for RegFile {
             self.id.clone(),
             Ports {
                 inputs: vec![
+                    InputPort {
+                        port_id: REG_FILE_CLIC_WRITE_ID.to_string(),
+                        input: self.stack_depth.clone(),
+                    },
                     InputPort {
                         port_id: REG_FILE_STACK_DEPTH_ID.to_string(),
                         input: self.stack_depth.clone(),
@@ -240,6 +246,7 @@ impl Component for RegFile {
             pos: (pos.0, pos.1),
             registers: RegStore::new(Rc::new(RefCell::new([[0; 32]; REG_FILE_MAX_DEPTH]))),
             history: RegHistory::new(),
+            clic_write: dummy_input.clone(),
             stack_depth: dummy_input.clone(),
             read_addr1: dummy_input.clone(),
             read_addr2: dummy_input.clone(),
@@ -332,6 +339,7 @@ mod test {
     fn test_reg_file() {
         let cs = ComponentStore {
             store: vec![
+                Rc::new(ProbeOut::new("clic_write")),
                 Rc::new(ProbeOut::new("stack_depth")),
                 Rc::new(ProbeOut::new("read_reg_1")),
                 Rc::new(ProbeOut::new("read_reg_2")),
@@ -346,6 +354,7 @@ mod test {
                     height: 150.0,
 
                     // ports
+                    clic_write: Input::new("clic_write", "out"),
                     stack_depth: Input::new("stack_depth", "out"),
                     read_addr1: Input::new("read_reg_1", "out"),
                     read_addr2: Input::new("read_reg_2", "out"),
