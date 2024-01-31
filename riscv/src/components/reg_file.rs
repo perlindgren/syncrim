@@ -6,7 +6,8 @@ use std::{cell::RefCell, rc::Rc};
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
 use syncrim::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalUnsigned, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, Signal, SignalUnsigned,
+    Simulator,
 };
 use syncrim::signal::SignalValue;
 #[allow(non_camel_case_types)]
@@ -40,8 +41,8 @@ pub enum Reg {
     s7      = 23,   // Saved registers
     s8      = 24,   // Saved registers
     s9      = 25,   // Saved registers
-    s10      = 26,   // Saved registers
-    s11      = 27,   // Saved registers
+    s10     = 26,   // Saved registers
+    s11     = 27,   // Saved registers
     t3      = 28,   // Temporaries
     t4      = 29,   // Temporaries
     t5      = 30,   // Temporaries
@@ -262,10 +263,13 @@ impl Component for RegFile {
             write_addr2: None,
             old_data: None,
         };
-        let stack_depth: SignalUnsigned = simulator
-            .get_input_value(&self.stack_depth)
-            .try_into()
-            .unwrap();
+        let stack_depth: SignalValue = simulator.get_input_value(&self.stack_depth);
+
+        let stack_depth: SignalUnsigned = if let SignalValue::Data(v) = stack_depth {
+            v
+        } else {
+            0
+        };
         let stack_depth: usize = stack_depth as usize;
 
         if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
