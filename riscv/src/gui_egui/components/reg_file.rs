@@ -178,6 +178,13 @@ impl EguiComponent for RegFile {
                 pos_drag_value(ui, &mut self.pos);
                 clicked_dropdown |= input_selector(
                     ui,
+                    &mut self.clic_write,
+                    crate::components::REG_FILE_CLIC_WRITE_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+                clicked_dropdown |= input_selector(
+                    ui,
                     &mut self.stack_depth,
                     crate::components::REG_FILE_STACK_DEPTH_ID.to_string(),
                     id_ports,

@@ -204,7 +204,7 @@ impl Component for RegFile {
                 inputs: vec![
                     InputPort {
                         port_id: REG_FILE_CLIC_WRITE_ID.to_string(),
-                        input: self.stack_depth.clone(),
+                        input: self.clic_write.clone(),
                     },
                     InputPort {
                         port_id: REG_FILE_STACK_DEPTH_ID.to_string(),
