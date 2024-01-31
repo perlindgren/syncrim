@@ -51,6 +51,7 @@ pub enum Reg {
 
 pub const REG_FILE_MAX_DEPTH: usize = 4;
 
+pub const REG_FILE_CLIC_MEPC_ID: &str = "clic_mepc";
 pub const REG_FILE_CLIC_WRITE_ID: &str = "clic_write";
 pub const REG_FILE_STACK_DEPTH_ID: &str = "stack_depth";
 pub const REG_FILE_READ_ADDR1_ID: &str = "read_addr1";
@@ -74,6 +75,7 @@ pub struct RegFile {
 
     // ports
     pub clic_write: Input,
+    pub clic_mepc: Input,
     pub stack_depth: Input,
     pub read_addr1: Input,
     pub read_addr2: Input,
@@ -172,6 +174,7 @@ impl RegFile {
             width: REG_FILE_WIDTH,
             height: REG_FILE_HEIGHT,
             clic_write: dummy.clone(),
+            clic_mepc: dummy.clone(),
             stack_depth: dummy.clone(),
             read_addr1: dummy.clone(),
             read_addr2: dummy.clone(),
@@ -205,6 +208,10 @@ impl Component for RegFile {
                     InputPort {
                         port_id: REG_FILE_CLIC_WRITE_ID.to_string(),
                         input: self.clic_write.clone(),
+                    },
+                    InputPort {
+                        port_id: REG_FILE_CLIC_MEPC_ID.to_string(),
+                        input: self.clic_mepc.clone(),
                     },
                     InputPort {
                         port_id: REG_FILE_STACK_DEPTH_ID.to_string(),
@@ -247,6 +254,7 @@ impl Component for RegFile {
             registers: RegStore::new(Rc::new(RefCell::new([[0; 32]; REG_FILE_MAX_DEPTH]))),
             history: RegHistory::new(),
             clic_write: dummy_input.clone(),
+            clic_mepc: dummy_input.clone(),
             stack_depth: dummy_input.clone(),
             read_addr1: dummy_input.clone(),
             read_addr2: dummy_input.clone(),
@@ -282,6 +290,18 @@ impl Component for RegFile {
             0
         };
         let stack_depth: usize = stack_depth as usize;
+
+        let write_enable: SignalUnsigned = simulator
+            .get_input_value(&self.write_enable)
+            .try_into()
+            .unwrap();
+
+        let clic_write_enable: SignalUnsigned = simulator
+            .get_input_value(&self.clic_write)
+            .try_into()
+            .unwrap();
+
+        assert!(!(write_enable == 1 && clic_write_enable == 1));
 
         if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_value(&self.write_data);
@@ -340,6 +360,7 @@ mod test {
         let cs = ComponentStore {
             store: vec![
                 Rc::new(ProbeOut::new("clic_write")),
+                Rc::new(ProbeOut::new("clic_mepc")),
                 Rc::new(ProbeOut::new("stack_depth")),
                 Rc::new(ProbeOut::new("read_reg_1")),
                 Rc::new(ProbeOut::new("read_reg_2")),
@@ -355,6 +376,7 @@ mod test {
 
                     // ports
                     clic_write: Input::new("clic_write", "out"),
+                    clic_mepc: Input::new("clic_mepc", "out"),
                     stack_depth: Input::new("stack_depth", "out"),
                     read_addr1: Input::new("read_reg_1", "out"),
                     read_addr2: Input::new("read_reg_2", "out"),
@@ -388,6 +410,8 @@ mod test {
         simulator.set_out_value("write_data", "out", 1337);
         simulator.set_out_value("write_addr", "out", 1);
         simulator.set_out_value("write_enable", "out", true as SignalUnsigned);
+
+        // simulator.set_out_value("clic_write", "out", 1); // fatal test
 
         // test write and read to reg # 1 in same cycle
         println!("sim_state {:?}", simulator.sim_state);
