@@ -315,9 +315,14 @@ pub enum MemCtrl {
 
 #[typetag::serde()]
 impl Component for RVMem {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn to_(&self) {
         trace!("Mem");
     }
+
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

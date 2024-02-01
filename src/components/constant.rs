@@ -5,7 +5,7 @@ use log::*;
 use serde::{Deserialize, Serialize};
 use std::{convert::Into, rc::Rc};
 pub const CONSTANT_OUT_ID: &str = "out";
-
+use std::any::Any;
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Constant {
     pub(crate) id: Id,
@@ -41,6 +41,10 @@ impl Component for Constant {
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         simulator.set_out_value(&self.id, CONSTANT_OUT_ID, self.value.get_value());
         Ok(())
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

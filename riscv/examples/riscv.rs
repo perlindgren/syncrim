@@ -90,7 +90,10 @@ fn main() {
     let mut i = 0;
     for component in store.clone() {
         if component.get_id_ports().0 == "instr_mem" {
-            store.remove(i);
+            // bytes: instr_mem,
+            let mut instr_mem_comp = store.get(i).unwrap().clone();
+
+            let instr_mem_comp: &InstrMem = &*instr_mem_comp;
         }
         i += 1
     }
@@ -116,21 +119,21 @@ fn main() {
         data_mem,
         range,
     ));
-    store.push(Rc::new(InstrMem {
-        width: 200.0,
-        height: 100.0,
-        id: "instr_mem".to_string(),
-        pos: (650.0, 900.0),
-        bytes: instr_mem,
-        breakpoints: Rc::new(RefCell::new(HashSet::new())),
-        le: true,
-        pc: Input::new("reg", "out"),
-        range: Range {
-            start: 0,
-            end: 0x2000,
-        },
-        symbols: memory.symbols,
-    }));
+    // store.push(Rc::new(InstrMem {
+    //     width: 200.0,
+    //     height: 100.0,
+    //     id: "instr_mem".to_string(),
+    //     pos: (650.0, 900.0),
+    //     bytes: instr_mem,
+    //     breakpoints: Rc::new(RefCell::new(HashSet::new())),
+    //     le: true,
+    //     pc: Input::new("reg", "out"),
+    //     range: Range {
+    //         start: 0,
+    //         end: 0x2000,
+    //     },
+    //     symbols: memory.symbols,
+    // }));
     store.push(Rc::new(CLIC::new(
         "clic".to_string(),
         (1660.0, 900.0),
@@ -217,7 +220,7 @@ fn main() {
                     pos: (0.0, 0.0),
                     clic_i: dummy.clone(),
                     dec_i: dummy.clone(),
-                })
+                }),
             ],
         };
         let mut component_vec = lib.store.clone();

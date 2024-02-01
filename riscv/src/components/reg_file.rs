@@ -189,6 +189,10 @@ impl RegFile {
 
 #[typetag::serde()]
 impl Component for RegFile {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn to_(&self) {
         trace!("RegFile");
     }

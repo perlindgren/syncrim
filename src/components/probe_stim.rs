@@ -1,6 +1,7 @@
 use crate::common::{Component, Condition, Id, OutputType, Ports, Signal, SignalValue, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::rc::Rc;
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -46,6 +47,9 @@ impl Component for ProbeStim {
     }
 
     // notice we don't implement `un_clock` since the state is already kept in history
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl ProbeStim {

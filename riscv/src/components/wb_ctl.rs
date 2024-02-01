@@ -29,6 +29,10 @@ pub struct WBCtl {
 
 #[typetag::serde()]
 impl Component for WBCtl {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn to_(&self) {
         println!("WBCtl");
     }
@@ -47,8 +51,7 @@ impl Component for WBCtl {
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         if target_port_id.as_str() == WB_CTL_DEC_IN_ID {
             self.dec_i = new_input;
-        }
-        else if target_port_id.as_str() == WB_CTL_INTR_IN_ID {
+        } else if target_port_id.as_str() == WB_CTL_INTR_IN_ID {
             self.clic_i = new_input;
         }
     }
@@ -56,14 +59,16 @@ impl Component for WBCtl {
         (
             self.id.clone(),
             Ports::new(
-                vec![&InputPort {
-                    port_id: WB_CTL_INTR_IN_ID.to_string(),
-                    input: self.clic_i.clone(),
-                },
-                &InputPort {
-                    port_id: WB_CTL_DEC_IN_ID.to_string(),
-                    input: self.dec_i.clone(),
-                }],
+                vec![
+                    &InputPort {
+                        port_id: WB_CTL_INTR_IN_ID.to_string(),
+                        input: self.clic_i.clone(),
+                    },
+                    &InputPort {
+                        port_id: WB_CTL_DEC_IN_ID.to_string(),
+                        input: self.dec_i.clone(),
+                    },
+                ],
                 OutputType::Combinatorial,
                 vec![WB_CTL_WE_OUT_ID, WB_CTL_MUX_CTL_O_ID],
             ),
@@ -71,11 +76,17 @@ impl Component for WBCtl {
     }
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
-        let dec_we:u32 = simulator.get_input_value(&self.dec_i).try_into().unwrap_or(0);
-        let clic_we:u32 = simulator.get_input_value(&self.clic_i).try_into().unwrap_or(0);
+        let dec_we: u32 = simulator
+            .get_input_value(&self.dec_i)
+            .try_into()
+            .unwrap_or(0);
+        let clic_we: u32 = simulator
+            .get_input_value(&self.clic_i)
+            .try_into()
+            .unwrap_or(0);
         assert_ne!(dec_we, clic_we);
-        let mux_ctl = if dec_we != 0 {0} else {1};
-        let we = if dec_we == 1 || clic_we == 1 {1} else {0};
+        let mux_ctl = if dec_we != 0 { 0 } else { 1 };
+        let we = if dec_we == 1 || clic_we == 1 { 1 } else { 0 };
         simulator.set_out_value(&self.id, WB_CTL_MUX_CTL_O_ID, mux_ctl);
         simulator.set_out_value(&self.id, WB_CTL_WE_OUT_ID, we);
         Ok(())

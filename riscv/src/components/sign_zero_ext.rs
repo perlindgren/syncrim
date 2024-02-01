@@ -28,6 +28,10 @@ pub struct SZExt {
 
 #[typetag::serde()]
 impl Component for SZExt {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn to_(&self) {
         println!("s_z_ext");
     }

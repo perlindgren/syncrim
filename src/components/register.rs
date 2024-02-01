@@ -3,6 +3,7 @@ use crate::common::EguiComponent;
 use crate::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::rc::Rc;
 
 pub const REGISTER_R_IN_ID: &str = "r_in";
@@ -59,6 +60,10 @@ impl Component for Register {
         if target_port_id == REGISTER_R_IN_ID {
             self.r_in = new_input;
         }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

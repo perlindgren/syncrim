@@ -26,6 +26,10 @@ pub struct LSBZero {
 
 #[typetag::serde()]
 impl Component for LSBZero {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn to_(&self) {
         println!("LSBZero");
     }
