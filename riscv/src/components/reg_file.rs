@@ -51,8 +51,6 @@ pub enum Reg {
 
 pub const REG_FILE_MAX_DEPTH: usize = 4;
 
-pub const REG_FILE_CLIC_MEPC_ID: &str = "clic_mepc";
-pub const REG_FILE_CLIC_WRITE_ID: &str = "clic_write";
 pub const REG_FILE_STACK_DEPTH_ID: &str = "stack_depth";
 pub const REG_FILE_READ_ADDR1_ID: &str = "read_addr1";
 pub const REG_FILE_READ_ADDR2_ID: &str = "read_addr2";
@@ -74,8 +72,6 @@ pub struct RegFile {
     pub height: f32,
 
     // ports
-    pub clic_write: Input,
-    pub clic_mepc: Input,
     pub stack_depth: Input,
     pub read_addr1: Input,
     pub read_addr2: Input,
@@ -155,12 +151,20 @@ impl RegFile {
     fn read_reg(&self, simulator: &Simulator, stack_depth: usize, input: &Input) -> SignalValue {
         match simulator.get_input_value(input) {
             SignalValue::Data(read_addr) => {
-                if read_addr > 0 {
-                    trace!("read_addr {}", read_addr);
-                    SignalValue::from(self.registers.borrow()[stack_depth][read_addr as usize])
-                } else {
-                    trace!("read_addr {}", read_addr);
-                    SignalValue::from(0)
+                trace!("read_addr {}", read_addr);
+                match read_addr {
+                    0 => {
+                        // reg zero always reads 0
+                        SignalValue::from(0)
+                    }
+                    2 => {
+                        // reg sp shared among all stacks, we use stack_depth 0 for that
+                        SignalValue::from(self.registers.borrow()[0][read_addr as usize])
+                    }
+                    _ => {
+                        // all other registers
+                        SignalValue::from(self.registers.borrow()[stack_depth][read_addr as usize])
+                    }
                 }
             }
             _ => SignalValue::Unknown,
@@ -174,8 +178,6 @@ impl RegFile {
             pos: (0.0, 0.0),
             width: REG_FILE_WIDTH,
             height: REG_FILE_HEIGHT,
-            clic_write: dummy.clone(),
-            clic_mepc: dummy.clone(),
             stack_depth: dummy.clone(),
             read_addr1: dummy.clone(),
             read_addr2: dummy.clone(),
@@ -210,14 +212,6 @@ impl Component for RegFile {
             self.id.clone(),
             Ports {
                 inputs: vec![
-                    InputPort {
-                        port_id: REG_FILE_CLIC_WRITE_ID.to_string(),
-                        input: self.clic_write.clone(),
-                    },
-                    InputPort {
-                        port_id: REG_FILE_CLIC_MEPC_ID.to_string(),
-                        input: self.clic_mepc.clone(),
-                    },
                     InputPort {
                         port_id: REG_FILE_STACK_DEPTH_ID.to_string(),
                         input: self.stack_depth.clone(),
@@ -258,8 +252,6 @@ impl Component for RegFile {
             pos: (pos.0, pos.1),
             registers: RegStore::new(Rc::new(RefCell::new([[0; 32]; REG_FILE_MAX_DEPTH]))),
             history: RegHistory::new(),
-            clic_write: dummy_input.clone(),
-            clic_mepc: dummy_input.clone(),
             stack_depth: dummy_input.clone(),
             read_addr1: dummy_input.clone(),
             read_addr2: dummy_input.clone(),
@@ -287,35 +279,25 @@ impl Component for RegFile {
             write_addr2: None,
             old_data: None,
         };
-        let stack_depth: SignalValue = simulator.get_input_value(&self.stack_depth);
-
-        let stack_depth: SignalUnsigned = if let SignalValue::Data(v) = stack_depth {
-            v
-        } else {
-            0
-        };
-        let stack_depth: usize = stack_depth as usize;
+        let stack_depth: SignalUnsigned = simulator
+            .get_input_value(&self.stack_depth)
+            .try_into()
+            .unwrap();
 
         let write_enable: SignalUnsigned = simulator
             .get_input_value(&self.write_enable)
             .try_into()
             .unwrap();
+        // this can be an uninit , should be unwrapped if write enable is on only
+        let write_addr = simulator.get_input_value(&self.write_addr);
 
-        let clic_write_enable: SignalUnsigned = simulator
-            .get_input_value(&self.clic_write)
-            .try_into()
-            .unwrap();
-
-        assert!(!(write_enable == 1 && clic_write_enable == 1));
+        // all sp read/writes should go to stack_depth 0, since the sp is shared between interrupts
+        let stack_depth = stack_depth as usize;
 
         if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_value(&self.write_data);
+            let write_addr: SignalUnsigned = write_addr.try_into().unwrap();
             trace!("write data {:?}", data);
-
-            let write_addr: SignalUnsigned = simulator
-                .get_input_value(&self.write_addr)
-                .try_into()
-                .unwrap();
 
             trace!("write_addr {}", write_addr);
 
@@ -364,8 +346,6 @@ mod test {
     fn test_reg_file() {
         let cs = ComponentStore {
             store: vec![
-                Rc::new(ProbeOut::new("clic_write")),
-                Rc::new(ProbeOut::new("clic_mepc")),
                 Rc::new(ProbeOut::new("stack_depth")),
                 Rc::new(ProbeOut::new("read_reg_1")),
                 Rc::new(ProbeOut::new("read_reg_2")),
@@ -380,8 +360,6 @@ mod test {
                     height: 150.0,
 
                     // ports
-                    clic_write: Input::new("clic_write", "out"),
-                    clic_mepc: Input::new("clic_mepc", "out"),
                     stack_depth: Input::new("stack_depth", "out"),
                     read_addr1: Input::new("read_reg_1", "out"),
                     read_addr2: Input::new("read_reg_2", "out"),

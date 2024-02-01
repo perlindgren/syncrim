@@ -176,13 +176,7 @@ impl EguiComponent for RegFile {
                 let mut clicked_dropdown = false;
                 input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
                 pos_drag_value(ui, &mut self.pos);
-                clicked_dropdown |= input_selector(
-                    ui,
-                    &mut self.clic_write,
-                    crate::components::REG_FILE_CLIC_WRITE_ID.to_string(),
-                    id_ports,
-                    self.id.clone(),
-                );
+
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.stack_depth,
