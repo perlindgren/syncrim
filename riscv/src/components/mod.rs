@@ -8,6 +8,7 @@ mod lsb_zero;
 mod mem;
 mod reg_file;
 mod sign_zero_ext;
+mod wb_ctl;
 
 pub use alu::*;
 pub use branch_logic::*;
@@ -19,3 +20,4 @@ pub use lsb_zero::*;
 pub use mem::*;
 pub use reg_file::*;
 pub use sign_zero_ext::*;
+pub use wb_ctl::*;

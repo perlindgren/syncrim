@@ -210,6 +210,14 @@ fn main() {
                     data_i: dummy.clone(),
                     sel_i: dummy.clone(),
                 }),
+                Rc::new(WBCtl {
+                    height: WB_CTL_HEIGHT,
+                    width: WB_CTL_WIDTH,
+                    id: "dummy_wbctl".to_string(),
+                    pos: (0.0, 0.0),
+                    clic_i: dummy.clone(),
+                    dec_i: dummy.clone(),
+                })
             ],
         };
         let mut component_vec = lib.store.clone();
