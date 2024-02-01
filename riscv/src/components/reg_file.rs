@@ -171,6 +171,39 @@ impl RegFile {
         }
     }
 
+    fn write_reg(
+        &self,
+        simulator: &Simulator,
+        stack_depth: usize,
+        input: &Input,
+        data: SignalValue,
+    ) {
+        match simulator.get_input_value(input) {
+            SignalValue::Data(write_addr) => {
+                trace!("write_addr {}", write_addr);
+                match write_addr {
+                    0 => {
+                        // reg zero always reads 0
+                        // do nothing on write
+                    }
+                    2 => {
+                        // reg sp shared among all stacks, we use stack_depth 0 for that
+                        self.registers.borrow_mut()[0][write_addr as usize] =
+                            data.try_into().unwrap();
+                    }
+                    _ => {
+                        // all other registers
+                        self.registers.borrow_mut()[stack_depth][write_addr as usize] =
+                            data.try_into().unwrap();
+                    }
+                }
+            }
+            _ => {
+                panic!("Unknown write address")
+            }
+        }
+    }
+
     pub fn dummy() -> RegFile {
         let dummy = Input::new("id", "field");
         RegFile {
@@ -284,35 +317,29 @@ impl Component for RegFile {
             .try_into()
             .unwrap();
 
-        let write_enable: SignalUnsigned = simulator
-            .get_input_value(&self.write_enable)
-            .try_into()
-            .unwrap();
-        // this can be an uninit , should be unwrapped if write enable is on only
-        let write_addr = simulator.get_input_value(&self.write_addr);
-
-        // all sp read/writes should go to stack_depth 0, since the sp is shared between interrupts
         let stack_depth = stack_depth as usize;
 
         if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_value(&self.write_data);
-            let write_addr: SignalUnsigned = write_addr.try_into().unwrap();
             trace!("write data {:?}", data);
 
-            trace!("write_addr {}", write_addr);
+            let write_addr: SignalUnsigned = simulator
+                .get_input_value(&self.write_addr)
+                .try_into()
+                .unwrap();
 
             regop.write_addr2 = Some((
                 write_addr as u8,
-                self.registers.borrow()[stack_depth as usize][write_addr as usize],
+                self.read_reg(simulator, stack_depth, &self.write_addr)
+                    .try_into()
+                    .unwrap(), // read old value
             ));
 
-            self.registers.borrow_mut()[stack_depth as usize][write_addr as usize] =
-                data.try_into().unwrap();
+            self.write_reg(&simulator, stack_depth, &self.write_addr, data);
         }
         self.history.0.borrow_mut().push(regop);
         // read after write
         let reg_value_a = self.read_reg(simulator, stack_depth, &self.read_addr1);
-        //regop.read_addr1 = simulator.get_input_value(&self.read_addr1).try_into().unwrap();
         trace!("reg_value_a {:?}", reg_value_a);
         simulator.set_out_value(&self.id, "reg_a", reg_value_a);
 
