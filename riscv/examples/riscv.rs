@@ -91,9 +91,12 @@ fn main() {
     for component in store.clone() {
         if component.get_id_ports().0 == "instr_mem" {
             // bytes: instr_mem,
-            let mut instr_mem_comp = store.get(i).unwrap().clone();
+            let mut comp = store.get(i).unwrap().clone();
 
-            let instr_mem_comp: &InstrMem = &*instr_mem_comp;
+            let instr_mem_comp: &InstrMem = comp
+                .as_any()
+                .downcast_ref::<InstrMem>()
+                .expect(&format!("Downcast failed for {:?}", comp.to_()));
         }
         i += 1
     }
