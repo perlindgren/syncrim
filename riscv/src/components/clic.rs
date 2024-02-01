@@ -64,9 +64,12 @@ pub struct CLIC {
     // pub lines: Vec<Input>,
 
     //internal state
+    #[serde(skip)]
     pub csrstore: RefCell<HashMap<usize, usize>>, //address, val
-    pub mmio: RefCell<HashMap<usize, u8>>,        //address, val
-    pub queue: RefCell<PriorityQueue<u32, u8>>,   //prio, id's
+    #[serde(skip)]
+    pub mmio: RefCell<HashMap<usize, u8>>, //address, val
+    #[serde(skip)]
+    pub queue: RefCell<PriorityQueue<u32, u8>>, //prio, id's
 
     history: RefCell<Vec<CLICOp>>,
 }

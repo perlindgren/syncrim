@@ -84,6 +84,7 @@ pub struct RegFile {
     pub write_enable: Input,
 
     // data
+    #[serde(skip)]
     pub registers: RegStore,
     pub history: RegHistory,
 }

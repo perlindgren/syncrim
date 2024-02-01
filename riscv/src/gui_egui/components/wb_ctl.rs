@@ -128,19 +128,19 @@ impl EguiComponent for WBCtl {
         vec![
             (
                 crate::components::WB_CTL_INTR_IN_ID.to_string(),
-                Pos2::new(-self.width / 2f32, -self.height/2f32) + own_pos,
+                Pos2::new(-self.width / 2f32, -self.height / 2f32) + own_pos,
             ),
             (
                 crate::components::WB_CTL_DEC_IN_ID.to_string(),
-                Pos2::new(-self.width / 2f32, self.height/2f32) + own_pos,
+                Pos2::new(-self.width / 2f32, self.height / 2f32) + own_pos,
             ),
             (
                 crate::components::WB_CTL_WE_OUT_ID.to_string(),
-                Pos2::new(self.width/2f32, -self.height/2f32) + own_pos,
+                Pos2::new(self.width / 2f32, -self.height / 2f32) + own_pos,
             ),
             (
                 crate::components::WB_CTL_MUX_CTL_O_ID.to_string(),
-                Pos2::new(self.width/2f32, self.height/2f32) + own_pos,
+                Pos2::new(self.width / 2f32, self.height / 2f32) + own_pos,
             ),
         ]
     }
