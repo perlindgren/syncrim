@@ -53,6 +53,9 @@ pub enum Reg {
 pub const REG_FILE_MAX_DEPTH: usize = 4;
 
 pub const REG_FILE_STACK_DEPTH_ID: &str = "stack_depth";
+pub const REG_FILE_CLIC_MEPC_ID: &str = "clic_mepc";
+pub const REG_FILE_CLIC_WE_ID: &str = "clic_ra_we";
+
 pub const REG_FILE_READ_ADDR1_ID: &str = "read_addr1";
 pub const REG_FILE_READ_ADDR2_ID: &str = "read_addr2";
 pub const REG_FILE_WRITE_DATA_ID: &str = "write_data";
@@ -74,6 +77,9 @@ pub struct RegFile {
 
     // ports
     pub stack_depth: Input,
+    pub clic_mepc: Input,
+    pub clic_ra_we: Input,
+
     pub read_addr1: Input,
     pub read_addr2: Input,
     pub write_data: Input,
@@ -184,12 +190,12 @@ impl RegFile {
         }
     }
 
-    fn write_reg(&self, simulator: &Simulator, input: &Input, data: SignalValue) {
+    fn write_reg(&self, simulator: &Simulator, input: SignalValue, data: SignalValue) {
         let stack_depth: SignalUnsigned = simulator
             .get_input_value(&self.stack_depth)
             .try_into()
             .unwrap();
-        match simulator.get_input_value(input) {
+        match input {
             SignalValue::Data(write_addr) => {
                 trace!("write_addr {}", write_addr);
                 match write_addr {
@@ -223,6 +229,8 @@ impl RegFile {
             width: REG_FILE_WIDTH,
             height: REG_FILE_HEIGHT,
             stack_depth: dummy.clone(),
+            clic_mepc: dummy.clone(),
+            clic_ra_we: dummy.clone(),
             read_addr1: dummy.clone(),
             read_addr2: dummy.clone(),
             write_data: dummy.clone(),
@@ -262,6 +270,14 @@ impl Component for RegFile {
                         input: self.stack_depth.clone(),
                     },
                     InputPort {
+                        port_id: REG_FILE_CLIC_MEPC_ID.to_string(),
+                        input: self.stack_depth.clone(),
+                    },
+                    InputPort {
+                        port_id: REG_FILE_CLIC_WE_ID.to_string(),
+                        input: self.stack_depth.clone(),
+                    },
+                    InputPort {
                         port_id: REG_FILE_READ_ADDR1_ID.to_string(),
                         input: self.read_addr1.clone(),
                     },
@@ -298,6 +314,8 @@ impl Component for RegFile {
             registers: RegStore::new(Rc::new(RefCell::new([[0; 32]; REG_FILE_MAX_DEPTH]))),
             history: RegHistory::new(),
             stack_depth: dummy_input.clone(),
+            clic_mepc: dummy_input.clone(),
+            clic_ra_we: dummy_input.clone(),
             read_addr1: dummy_input.clone(),
             read_addr2: dummy_input.clone(),
             write_data: dummy_input.clone(),
@@ -330,6 +348,20 @@ impl Component for RegFile {
             .try_into()
             .unwrap();
 
+        // special handling if clic_ra_we
+        let clic_ra_we: SignalUnsigned = simulator
+            .get_input_value(&self.clic_ra_we)
+            .try_into()
+            .unwrap();
+        if clic_ra_we == (true as SignalUnsigned) {
+            trace!("update ra register");
+            self.write_reg(
+                simulator,
+                0x01.into(),
+                simulator.get_input_value(&self.clic_mepc),
+            );
+        }
+
         let stack_depth = stack_depth as usize;
         *self.stack_depth_state.borrow_mut() = stack_depth as u32;
         let read_addr1 = simulator.get_input_value(&self.read_addr1);
@@ -339,17 +371,14 @@ impl Component for RegFile {
         if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_value(&self.write_data);
             trace!("write data {:?}", data);
-            let write_signal = simulator.get_input_value(&self.write_addr);
-            let write_addr: SignalUnsigned = simulator
-                .get_input_value(&self.write_addr)
-                .try_into()
-                .unwrap();
+            let write_addr = simulator.get_input_value(&self.write_addr);
+
             regop.write_addr2 = Some((
-                write_addr as u8,
-                self.read_reg(simulator, &write_signal).try_into().unwrap(), // read old value
+                TryInto::<SignalUnsigned>::try_into(write_addr).unwrap() as u8,
+                self.read_reg(simulator, &write_addr).try_into().unwrap(), // read old value
             ));
 
-            self.write_reg(&simulator, &self.write_addr, data);
+            self.write_reg(&simulator, write_addr, data);
         }
         self.history.0.borrow_mut().push(regop);
 
