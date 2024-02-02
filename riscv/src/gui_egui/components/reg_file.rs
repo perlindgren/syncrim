@@ -35,7 +35,7 @@ impl RegFile {
                             row.col(|ui| {
                                 ui.label(format!(
                                     "0x{:08X}",
-                                    self.registers.0.borrow()[0].get(reg as usize).unwrap()
+                                    self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
                                 ));
                             });
                         });
@@ -117,7 +117,7 @@ impl EguiComponent for RegFile {
                                         ui.add(Label::new(
                                             RichText::new(format!(
                                                 "0x{:08x}",
-                                                self.registers.0.borrow()[0].get(index).unwrap()
+                                                self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(index).unwrap()
                                             ))
                                             .size(15.0 * scale),
                                         ));

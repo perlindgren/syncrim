@@ -86,6 +86,11 @@ pub struct RegFile {
     // data
     pub registers: RegStore,
     pub history: RegHistory,
+    // this is purely for the graphical view
+    // should be removed eventually with the gui
+    // implementing tabs or something over the different 
+    // register sets
+    pub stack_depth_state: RefCell<u32>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -183,6 +188,7 @@ impl RegFile {
             write_enable: dummy.clone(),
             registers: RegStore::new(Rc::new(RefCell::new([[0; 32]; REG_FILE_MAX_DEPTH]))),
             history: RegHistory::new(),
+            stack_depth_state: 0.into(),
         }
     }
 }
@@ -261,6 +267,7 @@ impl Component for RegFile {
             write_data: dummy_input.clone(),
             write_addr: dummy_input.clone(),
             write_enable: dummy_input.clone(),
+            stack_depth_state: 0.into(),
         }))
     }
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
@@ -289,7 +296,7 @@ impl Component for RegFile {
         } else {
             0
         };
-        let stack_depth: usize = stack_depth as usize;
+        *self.stack_depth_state.borrow_mut() = stack_depth;
 
         let write_enable: SignalUnsigned = simulator
             .get_input_value(&self.write_enable)
@@ -313,7 +320,7 @@ impl Component for RegFile {
                 .unwrap();
 
             trace!("write_addr {}", write_addr);
-
+            regop.stack_depth = stack_depth as u8;
             regop.write_addr2 = Some((
                 write_addr as u8,
                 self.registers.borrow()[stack_depth as usize][write_addr as usize],
@@ -324,12 +331,12 @@ impl Component for RegFile {
         }
         self.history.0.borrow_mut().push(regop);
         // read after write
-        let reg_value_a = self.read_reg(simulator, stack_depth, &self.read_addr1);
+        let reg_value_a = self.read_reg(simulator, stack_depth as usize, &self.read_addr1);
         //regop.read_addr1 = simulator.get_input_value(&self.read_addr1).try_into().unwrap();
         trace!("reg_value_a {:?}", reg_value_a);
         simulator.set_out_value(&self.id, "reg_a", reg_value_a);
 
-        let reg_value_b = self.read_reg(simulator, stack_depth, &self.read_addr2);
+        let reg_value_b = self.read_reg(simulator, stack_depth as usize, &self.read_addr2);
         trace!("reg_value_b {:?}", reg_value_b);
         simulator.set_out_value(&self.id, "reg_b", reg_value_b);
         Ok(())
@@ -387,6 +394,8 @@ mod test {
                     // data
                     registers: RegStore::default(),
                     history: RegHistory::new(),
+
+                    stack_depth_state: 0,
                 }),
             ],
         };

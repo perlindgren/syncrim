@@ -24,6 +24,7 @@ pub const CLIC_BLU_INT_ID: &str = "blu_int";
 pub const CLIC_MRET_OUT_ID: &str = "mret_out";
 pub const CLIC_MEPC_OUT_ID: &str = "mepc_out";
 pub const CLIC_REG_FILE_WRITE_ID: &str = "reg_file_write";
+pub const CLIC_STACK_DEPTH_OUT_ID: &str = "stack_depth_out";
 
 #[derive(Serialize, Deserialize)]
 struct CLICOp {
@@ -67,7 +68,7 @@ pub struct CLIC {
     pub csrstore: RefCell<HashMap<usize, usize>>, //address, val
     pub mmio: RefCell<HashMap<usize, u8>>,        //address, val
     pub queue: RefCell<PriorityQueue<u32, u8>>,   //prio, id's
-
+    pub stack_depth: RefCell<u32>,                         //current register stack depth
     history: RefCell<Vec<CLICOp>>,
 }
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
@@ -156,6 +157,7 @@ impl CLIC {
             // lines: lines,
             csr_ctl,
             history: RefCell::new(vec![]),
+            stack_depth: 0.into(),
         }
     }
 }
@@ -258,6 +260,7 @@ impl Component for CLIC {
                     CLIC_BLU_INT_ID,
                     CLIC_MRET_OUT_ID,
                     CLIC_MEPC_OUT_ID,
+                    CLIC_STACK_DEPTH_OUT_ID,
                 ],
             ),
         )
@@ -306,6 +309,7 @@ impl Component for CLIC {
         let mut mem_int_addr = SignalValue::Uninitialized;
         let mret_sig: SignalValue = mret.into();
         let mut mepc = SignalValue::Uninitialized;
+        let mut stack_depth = self.stack_depth.borrow_mut();
         if mret == 1 {
             let mut csrstore = self.csrstore.borrow_mut();
             mepc = (*csrstore.get(&0x341).unwrap() as u32).into(); //infallible
@@ -327,6 +331,7 @@ impl Component for CLIC {
             simulator.set_out_value(&self.id, "mepc_out", mepc);
             simulator.set_out_value(&self.id, "mret_out", mret_sig);
             self.history.borrow_mut().push(history_entry);
+            *stack_depth -= 1;
             return Ok(());
         }
         match csr_ctl {
@@ -457,6 +462,7 @@ impl Component for CLIC {
         let mstatus = *csrstore.get(&0x300).unwrap();
         let mintthresh = *csrstore.get(&0x347).unwrap();
         let mtvec = *csrstore.get(&0x305).unwrap();
+        //let mut stack_depth = self.stack_depth.borrow_mut();
         if mstatus & 8 == 8 {
             //if MIE is set
             if !queue.is_empty() {
@@ -486,6 +492,7 @@ impl Component for CLIC {
                     mem_int_addr = SignalValue::Data((mtvec as u32 + (interrupt.0) * 4) & !0b11);
 
                     blu_int = SignalValue::Data(1);
+                    *stack_depth +=1;
                     trace!(
                         "interrupt dispatched id:{} prio:{}",
                         interrupt.0,
@@ -499,7 +506,10 @@ impl Component for CLIC {
         }
         trace!("CSR OUT:{:08x}", val);
         trace!("QUEUE:{:?}", queue);
+        mepc = SignalValue::Data(*csrstore.get(&0x341).unwrap() as u32);
+        trace!("MEPC:{:?}", mepc);
         self.history.borrow_mut().push(history_entry);
+        simulator.set_out_value(&self.id, "stack_depth_out", stack_depth.clone());
         simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
         simulator.set_out_value(&self.id, "blu_int", blu_int);
         simulator.set_out_value(&self.id, "csr_data_o", val as u32);
