@@ -349,11 +349,10 @@ impl Component for RegFile {
             .unwrap();
 
         // special handling if clic_ra_we
-        let clic_ra_we: SignalUnsigned = simulator
-            .get_input_value(&self.clic_ra_we)
-            .try_into()
-            .unwrap();
-        if clic_ra_we == (true as SignalUnsigned) {
+        let clic_ra_we =
+            simulator.get_input_value(&self.clic_ra_we) == (true as SignalUnsigned).into();
+
+        if clic_ra_we {
             trace!("update ra register");
             self.write_reg(
                 simulator,

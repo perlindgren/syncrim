@@ -61,8 +61,6 @@ pub struct CLIC {
 
     //PC input for MEPC update
     pub pc: Input,
-    //interurpt lines
-    // pub lines: Vec<Input>,
 
     //internal state
     #[serde(skip)]
