@@ -83,6 +83,11 @@ pub struct RegFile {
     #[serde(skip)]
     pub registers: RegStore,
     pub history: RegHistory,
+    // this is purely for the graphical view
+    // should be removed eventually with the gui
+    // implementing tabs or something over the different 
+    // register sets
+    pub stack_depth_state: RefCell<u32>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -219,6 +224,7 @@ impl RegFile {
             write_enable: dummy.clone(),
             registers: RegStore::new(Rc::new(RefCell::new([[0; 32]; REG_FILE_MAX_DEPTH]))),
             history: RegHistory::new(),
+            stack_depth_state: 0.into(),
         }
     }
 }
@@ -291,6 +297,7 @@ impl Component for RegFile {
             write_data: dummy_input.clone(),
             write_addr: dummy_input.clone(),
             write_enable: dummy_input.clone(),
+            stack_depth_state: 0.into(),
         }))
     }
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
@@ -327,7 +334,6 @@ impl Component for RegFile {
                 .get_input_value(&self.write_addr)
                 .try_into()
                 .unwrap();
-
             regop.write_addr2 = Some((
                 write_addr as u8,
                 self.read_reg(simulator, stack_depth, &self.write_addr)
@@ -343,7 +349,7 @@ impl Component for RegFile {
         trace!("reg_value_a {:?}", reg_value_a);
         simulator.set_out_value(&self.id, "reg_a", reg_value_a);
 
-        let reg_value_b = self.read_reg(simulator, stack_depth, &self.read_addr2);
+        let reg_value_b = self.read_reg(simulator, stack_depth as usize, &self.read_addr2);
         trace!("reg_value_b {:?}", reg_value_b);
         simulator.set_out_value(&self.id, "reg_b", reg_value_b);
         Ok(())
@@ -397,6 +403,8 @@ mod test {
                     // data
                     registers: RegStore::default(),
                     history: RegHistory::new(),
+
+                    stack_depth_state: 0,
                 }),
             ],
         };

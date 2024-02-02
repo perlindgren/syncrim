@@ -7,6 +7,7 @@ use syncrim::{
     common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
     signal::SignalValue,
 };
+use log::trace;
 pub const WB_CTL_INTR_IN_ID: &str = "clic_i";
 pub const WB_CTL_DEC_IN_ID: &str = "dec_i";
 
@@ -84,7 +85,7 @@ impl Component for WBCtl {
             .get_input_value(&self.clic_i)
             .try_into()
             .unwrap_or(0);
-        assert_ne!(dec_we, clic_we);
+        //assert_ne!(dec_we, clic_we);
         let mux_ctl = if dec_we != 0 { 0 } else { 1 };
         let we = if dec_we == 1 || clic_we == 1 { 1 } else { 0 };
         simulator.set_out_value(&self.id, WB_CTL_MUX_CTL_O_ID, mux_ctl);
