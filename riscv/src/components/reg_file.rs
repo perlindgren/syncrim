@@ -1,6 +1,7 @@
 use log::*;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
+use syncrim::simulator;
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
 #[cfg(feature = "gui-egui")]
@@ -87,6 +88,7 @@ pub struct RegFile {
     // should be removed eventually with the gui
     // implementing tabs or something over the different 
     // register sets
+    #[serde(skip)]
     pub stack_depth_state: RefCell<u32>,
 }
 
@@ -153,8 +155,12 @@ impl Deref for RegStore {
 }
 
 impl RegFile {
-    fn read_reg(&self, simulator: &Simulator, stack_depth: usize, input: &Input) -> SignalValue {
-        match simulator.get_input_value(input) {
+    pub fn read_reg(&self, simulator: &Simulator, input: &SignalValue) -> SignalValue {
+        let stack_depth:SignalUnsigned = simulator
+            .get_input_value(&self.stack_depth)
+            .try_into()
+            .unwrap();
+        match input {
             SignalValue::Data(read_addr) => {
                 trace!("read_addr {}", read_addr);
                 match read_addr {
@@ -164,11 +170,11 @@ impl RegFile {
                     }
                     2 => {
                         // reg sp shared among all stacks, we use stack_depth 0 for that
-                        SignalValue::from(self.registers.borrow()[0][read_addr as usize])
+                        SignalValue::from(self.registers.borrow()[0][*read_addr as usize])
                     }
                     _ => {
                         // all other registers
-                        SignalValue::from(self.registers.borrow()[stack_depth][read_addr as usize])
+                        SignalValue::from(self.registers.borrow()[stack_depth as usize][*read_addr as usize])
                     }
                 }
             }
@@ -179,10 +185,13 @@ impl RegFile {
     fn write_reg(
         &self,
         simulator: &Simulator,
-        stack_depth: usize,
         input: &Input,
         data: SignalValue,
     ) {
+        let stack_depth: SignalUnsigned = simulator
+            .get_input_value(&self.stack_depth)
+            .try_into()
+            .unwrap();
         match simulator.get_input_value(input) {
             SignalValue::Data(write_addr) => {
                 trace!("write_addr {}", write_addr);
@@ -198,7 +207,7 @@ impl RegFile {
                     }
                     _ => {
                         // all other registers
-                        self.registers.borrow_mut()[stack_depth][write_addr as usize] =
+                        self.registers.borrow_mut()[stack_depth as usize][write_addr as usize] =
                             data.try_into().unwrap();
                     }
                 }
@@ -323,33 +332,38 @@ impl Component for RegFile {
             .get_input_value(&self.stack_depth)
             .try_into()
             .unwrap();
-
+        
         let stack_depth = stack_depth as usize;
+        *self.stack_depth_state.borrow_mut() = stack_depth as u32;
+        let read_addr1 = simulator.get_input_value(&self.read_addr1);
+        let read_addr2 = simulator.get_input_value(&self.read_addr2);
+        //*depth_state = stack_depth;
 
         if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_value(&self.write_data);
             trace!("write data {:?}", data);
-
+            let write_signal = simulator.get_input_value(&self.write_addr);
             let write_addr: SignalUnsigned = simulator
                 .get_input_value(&self.write_addr)
                 .try_into()
                 .unwrap();
             regop.write_addr2 = Some((
                 write_addr as u8,
-                self.read_reg(simulator, stack_depth, &self.write_addr)
+                self.read_reg(simulator, &write_signal)
                     .try_into()
                     .unwrap(), // read old value
             ));
 
-            self.write_reg(&simulator, stack_depth, &self.write_addr, data);
+            self.write_reg(&simulator, &self.write_addr, data);
         }
         self.history.0.borrow_mut().push(regop);
+
         // read after write
-        let reg_value_a = self.read_reg(simulator, stack_depth, &self.read_addr1);
+        let reg_value_a = self.read_reg(simulator, &read_addr1);
         trace!("reg_value_a {:?}", reg_value_a);
         simulator.set_out_value(&self.id, "reg_a", reg_value_a);
 
-        let reg_value_b = self.read_reg(simulator, stack_depth as usize, &self.read_addr2);
+        let reg_value_b = self.read_reg(simulator, &read_addr2);
         trace!("reg_value_b {:?}", reg_value_b);
         simulator.set_out_value(&self.id, "reg_b", reg_value_b);
         Ok(())
