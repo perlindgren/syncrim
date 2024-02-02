@@ -41,7 +41,7 @@ impl EguiComponent for WBCtl {
             Rounding::ZERO,
             Stroke {
                 width: scale,
-                color: Color32::BLACK,
+                color: Color32::RED,
             },
         ));
 

@@ -72,7 +72,7 @@ pub struct CLIC {
     #[serde(skip)]
     pub queue: RefCell<PriorityQueue<u32, u8>>, //prio, id's
     #[serde(skip)]
-    pub stack_depth: RefCell<u32>,//current register stack depth
+    pub stack_depth: RefCell<u32>, //current register stack depth
     history: RefCell<Vec<CLICOp>>,
 }
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
@@ -499,7 +499,7 @@ impl Component for CLIC {
                     mem_int_addr = SignalValue::Data((mtvec as u32 + (interrupt.0) * 4) & !0b11);
 
                     blu_int = SignalValue::Data(1);
-                    *stack_depth +=1;
+                    *stack_depth += 1;
                     trace!(
                         "interrupt dispatched id:{} prio:{}",
                         interrupt.0,

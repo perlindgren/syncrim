@@ -1,7 +1,6 @@
 use log::*;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
-use syncrim::simulator;
 use std::ops::{Deref, Range};
 use std::{cell::RefCell, rc::Rc};
 #[cfg(feature = "gui-egui")]
@@ -11,6 +10,7 @@ use syncrim::common::{
     Simulator,
 };
 use syncrim::signal::SignalValue;
+use syncrim::simulator;
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
 #[derive(Copy, Clone, Debug, TryFromPrimitive)]
@@ -86,7 +86,7 @@ pub struct RegFile {
     pub history: RegHistory,
     // this is purely for the graphical view
     // should be removed eventually with the gui
-    // implementing tabs or something over the different 
+    // implementing tabs or something over the different
     // register sets
     #[serde(skip)]
     pub stack_depth_state: RefCell<u32>,
@@ -156,7 +156,7 @@ impl Deref for RegStore {
 
 impl RegFile {
     pub fn read_reg(&self, simulator: &Simulator, input: &SignalValue) -> SignalValue {
-        let stack_depth:SignalUnsigned = simulator
+        let stack_depth: SignalUnsigned = simulator
             .get_input_value(&self.stack_depth)
             .try_into()
             .unwrap();
@@ -174,7 +174,9 @@ impl RegFile {
                     }
                     _ => {
                         // all other registers
-                        SignalValue::from(self.registers.borrow()[stack_depth as usize][*read_addr as usize])
+                        SignalValue::from(
+                            self.registers.borrow()[stack_depth as usize][*read_addr as usize],
+                        )
                     }
                 }
             }
@@ -182,12 +184,7 @@ impl RegFile {
         }
     }
 
-    fn write_reg(
-        &self,
-        simulator: &Simulator,
-        input: &Input,
-        data: SignalValue,
-    ) {
+    fn write_reg(&self, simulator: &Simulator, input: &Input, data: SignalValue) {
         let stack_depth: SignalUnsigned = simulator
             .get_input_value(&self.stack_depth)
             .try_into()
@@ -332,7 +329,7 @@ impl Component for RegFile {
             .get_input_value(&self.stack_depth)
             .try_into()
             .unwrap();
-        
+
         let stack_depth = stack_depth as usize;
         *self.stack_depth_state.borrow_mut() = stack_depth as u32;
         let read_addr1 = simulator.get_input_value(&self.read_addr1);
@@ -349,9 +346,7 @@ impl Component for RegFile {
                 .unwrap();
             regop.write_addr2 = Some((
                 write_addr as u8,
-                self.read_reg(simulator, &write_signal)
-                    .try_into()
-                    .unwrap(), // read old value
+                self.read_reg(simulator, &write_signal).try_into().unwrap(), // read old value
             ));
 
             self.write_reg(&simulator, &self.write_addr, data);

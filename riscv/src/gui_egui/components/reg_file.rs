@@ -36,7 +36,9 @@ impl RegFile {
                             row.col(|ui| {
                                 ui.label(format!(
                                     "0x{:08X}",
-                                    self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize][reg as usize]                                    //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
+                                    self.registers.0.borrow()
+                                        [*(self.stack_depth_state.borrow()) as usize]
+                                        [reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
                                 ));
                             });
                         });
@@ -96,7 +98,13 @@ impl EguiComponent for RegFile {
                                 ui.label(RichText::new("Reg").size(20.0 * scale));
                             });
                             header.col(|ui| {
-                                ui.label(RichText::new(format!("Value {}",self.stack_depth_state.borrow()) ).size(20.0 * scale));
+                                ui.label(
+                                    RichText::new(format!(
+                                        "Value {}",
+                                        self.stack_depth_state.borrow()
+                                    ))
+                                    .size(20.0 * scale),
+                                );
                             });
                         })
                         .body(|body| {
@@ -118,7 +126,9 @@ impl EguiComponent for RegFile {
                                         ui.add(Label::new(
                                             RichText::new(format!(
                                                 "0x{:08x}",
-                                                self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize][index]
+                                                self.registers.0.borrow()
+                                                    [*(self.stack_depth_state.borrow()) as usize]
+                                                    [index]
                                             ))
                                             .size(15.0 * scale),
                                         ));
