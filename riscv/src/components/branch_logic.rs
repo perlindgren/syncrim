@@ -41,6 +41,7 @@ impl Component for BranchLogic {
     fn to_(&self) {
         println!("BranchLogic");
     }
+
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy = Input::new("dummy", "out");
@@ -57,6 +58,7 @@ impl Component for BranchLogic {
             int: dummy.clone(),
         }))
     }
+
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
             BRANCH_LOGIC_RS1_ID => self.rs1 = new_input,
@@ -67,6 +69,7 @@ impl Component for BranchLogic {
             _ => (),
         }
     }
+
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
@@ -98,6 +101,7 @@ impl Component for BranchLogic {
             ),
         )
     }
+
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let enable: u32 = simulator.get_input_value(&self.enable).try_into().unwrap();
@@ -214,6 +218,10 @@ impl Component for BranchLogic {
         trace!("BranchLogic Out:{:?}", out);
         simulator.set_out_value(&self.id, "out", out);
         Ok(())
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }
 #[cfg(test)]

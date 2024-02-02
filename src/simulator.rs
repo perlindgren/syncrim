@@ -22,6 +22,9 @@ pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 // ... but not currently implemented ...
 impl Simulator {
     pub fn new(component_store: ComponentStore) -> Result<Self, &'static str> {
+        for component in &component_store.store {
+            component.reset();
+        }
         let mut lens_values = vec![];
 
         let mut id_start_index = HashMap::new();

@@ -7,6 +7,7 @@ use crate::common::{
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::rc::Rc;
 
 pub const SEXT_IN_ID: &str = "sext_in";
@@ -89,6 +90,10 @@ impl Component for Sext {
             }
         }
         Ok(())
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

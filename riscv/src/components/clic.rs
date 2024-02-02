@@ -65,10 +65,14 @@ pub struct CLIC {
     // pub lines: Vec<Input>,
 
     //internal state
+    #[serde(skip)]
     pub csrstore: RefCell<HashMap<usize, usize>>, //address, val
-    pub mmio: RefCell<HashMap<usize, u8>>,        //address, val
-    pub queue: RefCell<PriorityQueue<u32, u8>>,   //prio, id's
-    pub stack_depth: RefCell<u32>,                         //current register stack depth
+    #[serde(skip)]
+    pub mmio: RefCell<HashMap<usize, u8>>, //address, val
+    #[serde(skip)]
+    pub queue: RefCell<PriorityQueue<u32, u8>>, //prio, id's
+    #[serde(skip)]
+    pub stack_depth: RefCell<u32>,//current register stack depth
     history: RefCell<Vec<CLICOp>>,
 }
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
@@ -192,9 +196,11 @@ impl Component for CLIC {
         self.queue.swap(&RefCell::new(PriorityQueue::new()));
         self.history.swap(&RefCell::new(vec![]));
     }
+
     fn to_(&self) {
         println!("CLIC");
     }
+
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
             CLIC_CSR_ADDR_ID => self.csr_addr = new_input,
@@ -209,6 +215,7 @@ impl Component for CLIC {
             _ => (),
         }
     }
+
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
@@ -554,6 +561,10 @@ impl Component for CLIC {
                 self.queue.borrow_mut().remove(&e.0);
             }
         }
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }
 

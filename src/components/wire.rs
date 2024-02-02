@@ -1,7 +1,9 @@
 use crate::common::{Component, Id, Input, InputPort, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::rc::Rc;
+
 pub const WIRE_INPUT_ID: &str = "in";
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -16,6 +18,7 @@ impl Component for Wire {
     fn to_(&self) {
         trace!("Wire");
     }
+
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
@@ -30,6 +33,10 @@ impl Component for Wire {
                 vec![],
             ),
         )
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

@@ -44,6 +44,7 @@ impl Component for ALU {
             operand_b_i: dummy.clone(),
         }))
     }
+
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
             ALU_OPERAND_A_I_ID => self.operand_a_i = new_input,
@@ -52,6 +53,7 @@ impl Component for ALU {
             _ => (),
         }
     }
+
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
@@ -81,6 +83,7 @@ impl Component for ALU {
             ),
         )
     }
+
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let operator_i = match simulator.get_input_value(&self.operator_i) {
@@ -172,7 +175,12 @@ impl Component for ALU {
         simulator.set_out_value(&self.id, "result_o", result_o);
         Ok(())
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
+
 #[cfg(test)]
 mod test {
     use super::*;

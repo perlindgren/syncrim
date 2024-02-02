@@ -18,7 +18,7 @@ pub const RV_MEM_SEXT_ID: &str = "sext";
 pub const RV_MEM_SIZE_ID: &str = "size";
 pub const RV_MEM_INT_ADDR_ID: &str = "int_addr";
 pub const RV_MEM_DATA_O_ID: &str = "data_o";
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct RVMem {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -37,14 +37,16 @@ pub struct RVMem {
     pub(crate) mem_int_addr: Input,
 
     // memory
-    pub(crate) memory: Memory,
+    #[serde(skip)]
+    pub memory: Memory,
     pub(crate) range: Range<u32>,
     // later history... tbd
     //
     history: RefCell<Vec<MemOp>>,
-    init_state: BTreeMap<usize, u8>,
+    #[serde(skip)]
+    pub init_state: BTreeMap<usize, u8>,
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 struct MemOp {
     pub data: Option<usize>,
     pub addr: usize,
@@ -315,9 +317,14 @@ pub enum MemCtrl {
 
 #[typetag::serde()]
 impl Component for RVMem {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn to_(&self) {
         trace!("Mem");
     }
+
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

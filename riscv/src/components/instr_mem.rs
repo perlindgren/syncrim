@@ -25,16 +25,23 @@ pub struct InstrMem {
     pub height: f32,
     pub id: String,
     pub pos: (f32, f32),
+    #[serde(skip)]
     pub bytes: BTreeMap<usize, u8>,
     pub pc: Input,
     pub range: Range<usize>,
+    #[serde(skip)]
     pub breakpoints: Rc<RefCell<HashSet<usize>>>,
+    #[serde(skip)]
     pub symbols: HashMap<usize, String>,
     pub le: bool,
 }
 
 #[typetag::serde()]
 impl Component for InstrMem {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn to_(&self) {
         println!("InstrMem");
     }

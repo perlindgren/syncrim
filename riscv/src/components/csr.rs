@@ -98,4 +98,8 @@ impl Component for CSR {
 
         //simulator.set_out_val(&self.id, "instruction", we);
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }

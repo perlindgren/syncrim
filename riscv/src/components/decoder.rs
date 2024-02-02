@@ -55,6 +55,10 @@ pub struct Decoder {
 
 #[typetag::serde()]
 impl Component for Decoder {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn to_(&self) {
         println!("Decoder");
     }

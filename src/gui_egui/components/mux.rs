@@ -43,8 +43,8 @@ impl EguiComponent for Mux {
             vec![
                 oh((-20f32, pa * (-10f32) - 10f32), s, o),
                 oh((0f32, pa * (-10f32) - 10f32), s, o),
-                oh((20f32, pa * (-10f32) + 10f32), s, o),
-                oh((20f32, pa * (10f32) - 10f32), s, o),
+                oh((10f32, pa * (-10f32) + 10f32), s, o),
+                oh((10f32, pa * (10f32) - 10f32), s, o),
                 oh((0f32, pa * (10f32) + 10f32), s, o),
                 oh((-20f32, pa * (10f32) + 10f32), s, o),
             ],
@@ -53,6 +53,7 @@ impl EguiComponent for Mux {
                 color: Color32::BLACK,
             },
         ));
+
         // select line
         ui.painter().add(Shape::line_segment(
             [
@@ -61,16 +62,17 @@ impl EguiComponent for Mux {
                     s,
                     o,
                 ),
-                oh((20f32, 0f32), s, o),
+                oh((10f32, 0f32), s, o),
             ],
             Stroke {
                 width: scale,
                 color: Color32::RED,
             },
         ));
+
         let rect = Rect {
             min: oh((-20f32, pa * (-10f32) - 10f32), s, o),
-            max: oh((20f32, pa * 10f32 + 10f32), s, o),
+            max: oh((10f32, pa * 10f32 + 10f32), s, o),
         };
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
@@ -180,7 +182,7 @@ impl EguiComponent for Mux {
         }
         v.push((
             crate::components::MUX_OUT_ID.to_string(),
-            Pos2::new(20f32, 0f32) + own_pos,
+            Pos2::new(10f32, 0f32) + own_pos,
         ));
         v
     }

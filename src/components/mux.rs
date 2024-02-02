@@ -6,7 +6,9 @@ use crate::common::{
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::rc::Rc;
+
 pub const MUX_SELECT_ID: &str = "select";
 pub const MUX_TEMPLATE_ID: &str = "in";
 pub const MUX_OUT_ID: &str = "out";
@@ -97,6 +99,10 @@ impl Component for Mux {
                 return;
             }
         }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

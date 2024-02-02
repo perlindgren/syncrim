@@ -70,7 +70,7 @@ fn main() {
     for address in instr_range.clone() {
         instr_mem.insert(address as usize, 0);
     }
-    for element in memory.bytes {
+    for element in memory.bytes.clone() {
         if element.0 < 0x5000_0000 {
             instr_mem.insert(element.0, element.1);
         } else {
@@ -82,15 +82,47 @@ fn main() {
     let mut i = 0;
     let mut store = cs.store.clone();
     for component in store.clone() {
+        // if the component is a data memory
         if component.get_id_ports().0 == "data_memory" {
-            store.remove(i);
+            // pull the trait object from the Component vector
+            let comp = store.remove(i);
+            // and downcast it to an InstrMem, own by cloning
+            let mut data_mem_comp: RVMem = comp
+                .as_any()
+                .downcast_ref::<RVMem>()
+                .expect(&format!("Downcast failed for {:?}", comp.to_()))
+                .clone();
+            // replace the memory contents with ELF contents
+            data_mem_comp.memory = Memory::new(memory.bytes.clone());
+            // also, set the initial state for reset
+            data_mem_comp.init_state = memory.bytes;
+            // repush the mutated RVMem to the Component vector
+            store.push(Rc::new(data_mem_comp));
+            //satisfy borrow checker
+            break;
         }
         i += 1
     }
     let mut i = 0;
     for component in store.clone() {
+        // if the component is an instr mem
         if component.get_id_ports().0 == "instr_mem" {
-            store.remove(i);
+            // pull the trait object from the Component vector
+            let comp = store.remove(i);
+            // and downcast it to an InstrMem, own by cloning
+            let mut instr_mem_comp: InstrMem = comp
+                .as_any()
+                .downcast_ref::<InstrMem>()
+                .expect(&format!("Downcast failed for {:?}", comp.to_()))
+                .clone();
+            // replace the memory contents with ELF contents
+            instr_mem_comp.bytes = instr_mem;
+            // replace the symbols with ELF symbols
+            instr_mem_comp.symbols = memory.symbols;
+            // repush the mutated InstrMem to the Component vector
+            store.push(Rc::new(instr_mem_comp));
+            //satisfy borrow checker
+            break;
         }
         i += 1
     }
@@ -101,36 +133,36 @@ fn main() {
         }
         i += 1
     }
-    store.push(RVMem::rc_new_from_bytes(
-        "data_memory",
-        (1540.0, 900.0),
-        100.0,
-        100.0,
-        false,
-        Input::new("reg_file", "reg_b"),
-        Input::new("alu", "result_o"),
-        Input::new("decoder", "data_mem_ctrl"),
-        Input::new("decoder", "data_se"),
-        Input::new("decoder", "data_mem_size"),
-        Input::new("clic", "mem_int_addr"),
-        data_mem,
-        range,
-    ));
-    store.push(Rc::new(InstrMem {
-        width: 200.0,
-        height: 100.0,
-        id: "instr_mem".to_string(),
-        pos: (650.0, 900.0),
-        bytes: instr_mem,
-        breakpoints: Rc::new(RefCell::new(HashSet::new())),
-        le: true,
-        pc: Input::new("reg", "out"),
-        range: Range {
-            start: 0,
-            end: 0x2000,
-        },
-        symbols: memory.symbols,
-    }));
+    // store.push(RVMem::rc_new_from_bytes(
+    //     "data_memory",
+    //     (1540.0, 900.0),
+    //     100.0,
+    //     100.0,
+    //     false,
+    //     Input::new("reg_file", "reg_b"),
+    //     Input::new("alu", "result_o"),
+    //     Input::new("decoder", "data_mem_ctrl"),
+    //     Input::new("decoder", "data_se"),
+    //     Input::new("decoder", "data_mem_size"),
+    //     Input::new("clic", "mem_int_addr"),
+    //     data_mem,
+    //     range,
+    // ));
+    // store.push(Rc::new(InstrMem {
+    //     width: 200.0,
+    //     height: 100.0,
+    //     id: "instr_mem".to_string(),
+    //     pos: (650.0, 900.0),
+    //     bytes: instr_mem,
+    //     breakpoints: Rc::new(RefCell::new(HashSet::new())),
+    //     le: true,
+    //     pc: Input::new("reg", "out"),
+    //     range: Range {
+    //         start: 0,
+    //         end: 0x2000,
+    //     },
+    //     symbols: memory.symbols,
+    // }));
     store.push(Rc::new(CLIC::new(
         "clic".to_string(),
         (1660.0, 900.0),
@@ -217,7 +249,7 @@ fn main() {
                     pos: (0.0, 0.0),
                     clic_i: dummy.clone(),
                     dec_i: dummy.clone(),
-                })
+                }),
             ],
         };
         let mut component_vec = lib.store.clone();

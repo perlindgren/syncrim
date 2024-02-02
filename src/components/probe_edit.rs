@@ -3,6 +3,7 @@ use crate::common::EguiComponent;
 use crate::common::{Component, Condition, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::{
     rc::Rc,
     sync::{Arc, RwLock},
@@ -69,6 +70,10 @@ impl Component for ProbeEdit {
         trace!("prev {:?}", prev);
         edit_history.push(prev.clone()); // push as current
         edit_history.push(prev); // push as next (to be edited)
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

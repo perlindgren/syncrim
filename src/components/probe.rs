@@ -3,7 +3,9 @@ use crate::common::EguiComponent;
 use crate::common::{Component, Id, Input, InputPort, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::rc::Rc;
+
 pub const PROBE_IN_ID: &str = "in";
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -47,6 +49,10 @@ impl Component for Probe {
         if target_port_id.as_str() == PROBE_IN_ID {
             self.input = new_input
         }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
