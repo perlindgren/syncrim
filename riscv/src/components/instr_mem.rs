@@ -17,7 +17,7 @@ pub const INSTR_MEM_PC_ID: &str = "pc";
 pub const INSTR_MEM_INSTRUCTION_ID: &str = "instruction";
 
 pub const INSTR_MEM_HEIGHT: f32 = 100.0;
-pub const INSTR_MEM_WIDTH: f32 = 200.0;
+pub const INSTR_MEM_WIDTH: f32 = 100.0;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct InstrMem {
