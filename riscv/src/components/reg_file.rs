@@ -64,6 +64,7 @@ pub const REG_FILE_WRITE_ENABLE_ID: &str = "write_enable";
 
 pub const REG_FILE_REG_A_OUT: &str = "reg_a";
 pub const REG_FILE_REG_B_OUT: &str = "reg_b";
+pub const REG_FILE_RA_OUT: &str = "ra";
 
 pub const REG_FILE_WIDTH: f32 = 250.0;
 pub const REG_FILE_HEIGHT: f32 = 500.0;
@@ -299,7 +300,7 @@ impl Component for RegFile {
                     },
                 ],
                 out_type: OutputType::Combinatorial,
-                outputs: vec!["reg_a".into(), "reg_b".into()],
+                outputs: vec!["reg_a".into(), "reg_b".into(), "ra".into()],
             },
         )
     }
@@ -389,6 +390,11 @@ impl Component for RegFile {
         let reg_value_b = self.read_reg(simulator, &read_addr2);
         trace!("reg_value_b {:?}", reg_value_b);
         simulator.set_out_value(&self.id, "reg_b", reg_value_b);
+
+        let reg_value_ra = self.read_reg(simulator, &0x01.into());
+        trace!("reg_value ra {:?}", reg_value_ra);
+        simulator.set_out_value(&self.id, "ra", reg_value_b);
+
         Ok(())
     }
 
