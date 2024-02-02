@@ -20,7 +20,7 @@
                 520.0
             ],
             "r_in": {
-                "id": "data_ra_mux",
+                "id": "wb_mux",
                 "field": "out"
             }
         },
@@ -44,8 +44,8 @@
                 1040.0
             ],
             "r_in": {
-                "id": "dest_mux",
-                "field": "out"
+                "id": "decoder",
+                "field": "regfile_rd"
             }
         },
         {
@@ -68,8 +68,8 @@
                 980.0
             ],
             "r_in": {
-                "id": "wbctl",
-                "field": "we_o"
+                "id": "decoder",
+                "field": "regfile_we"
             }
         },
         {

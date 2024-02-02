@@ -36,6 +36,7 @@ impl Simulator {
 
         trace!("-- allocate storage for lensed outputs");
         for c in &component_store.store {
+            println!("{:?}", c.get_id_ports().0);
             let (id, ports) = c.get_id_ports();
 
             trace!("id {}, ports {:?}", id, ports);
@@ -174,7 +175,7 @@ impl Simulator {
         let nr_out = *self
             .id_nr_outputs
             .get(&input.id)
-            .unwrap_or(panic!("{:?}", input));
+            .unwrap_or_else(||{panic!("{:?}{:?}", self.id_nr_outputs, input)});//_or(panic!("{:?},{:?}",self.id_nr_outputs, input));
         let index = *self
             .id_field_index
             .get(&(input.id.clone(), input.field.clone()))
