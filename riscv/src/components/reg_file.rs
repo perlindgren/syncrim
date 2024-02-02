@@ -50,6 +50,52 @@ pub enum Reg {
     t6      = 31,   // Temporaries
 }
 
+#[rustfmt::skip]
+impl std::convert::TryFrom<u32> for Reg {
+    type Error = ();
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        Ok(match value {
+            0 => Reg::zero, // Hard-wired zero
+            1 => Reg::ra,   // Return address
+            2 => Reg::sp,   // Stack pointer
+            3 => Reg::gp,   // Global pointer
+            4 => Reg::tp,   // Thread pointer
+            5 => Reg::t0,   // Temporaries
+            6 => Reg::t1,   // Temporaries
+            7 => Reg::t2,   // Temporaries
+            8 => Reg::s0,   // Saved register/frame pointer
+            9 => Reg::s1,   // Saved register
+            10 =>Reg::a0,   // Function arguments/return values
+            11 =>Reg::a1,   // Function arguments/return values
+            12 =>Reg::a2,   // Function arguments
+            13 =>Reg::a3,   // Function arguments
+            14 =>Reg::a4,   // Function arguments
+            15 =>Reg::a5,   // Function arguments
+            16 =>Reg::a6,   // Function arguments
+            17 =>Reg::a7,   // Function arguments
+            18 =>Reg::s2,   // Saved registers
+            19 =>Reg::s3,   // Saved registers
+            20 =>Reg::s4,   // Saved registers
+            21 =>Reg::s5,   // Saved registers
+            22 =>Reg::s6,   // Saved registers
+            23 =>Reg::s7,   // Saved registers
+            24 =>Reg::s8,   // Saved registers
+            25 =>Reg::s9,   // Saved registers
+            26 =>Reg::s10,  // Saved registers
+            27 =>Reg::s11,  // Saved registers
+            28 =>Reg::t3,   // Temporaries
+            29 =>Reg::t4,   // Temporaries
+            30 =>Reg::t5,   // Temporaries
+            31 =>Reg::t6,   // Temporaries
+            _ => Err(())?,
+        })
+    }
+}
+
+const REG_ZERO: u32 = Reg::zero as u32;
+const REG_RA: u32 = Reg::ra as u32;
+
 pub const REG_FILE_MAX_DEPTH: usize = 4;
 
 pub const REG_FILE_STACK_DEPTH_ID: &str = "stack_depth";
@@ -106,6 +152,7 @@ pub struct RegOp {
     read_addr2: u8,
     write_addr2: Option<(u8, u32)>,
     old_data: Option<u8>,
+    old_ra: Option<u32>,
 }
 // TODO: Perhaps we want registers to be of Signal type (containing potentially Signal::Unknown)
 
@@ -162,7 +209,8 @@ impl Deref for RegStore {
 }
 
 impl RegFile {
-    pub fn read_reg(&self, simulator: &Simulator, input: &SignalValue) -> SignalValue {
+    pub fn read_reg(&self, simulator: &Simulator, input: impl Into<SignalValue>) -> SignalValue {
+        let input = input.into();
         let stack_depth: SignalUnsigned = simulator
             .get_input_value(&self.stack_depth)
             .try_into()
@@ -170,20 +218,20 @@ impl RegFile {
         match input {
             SignalValue::Data(read_addr) => {
                 trace!("read_addr {}", read_addr);
-                match read_addr {
-                    0 => {
+                let read_reg: Reg = read_addr.try_into().unwrap();
+                let read_addr = read_reg as usize;
+                match read_reg {
+                    Reg::zero => {
                         // reg zero always reads 0
                         SignalValue::from(0)
                     }
-                    2 => {
+                    Reg::sp => {
                         // reg sp shared among all stacks, we use stack_depth 0 for that
-                        SignalValue::from(self.registers.borrow()[0][*read_addr as usize])
+                        SignalValue::from(self.registers.borrow()[0][read_addr])
                     }
                     _ => {
                         // all other registers
-                        SignalValue::from(
-                            self.registers.borrow()[stack_depth as usize][*read_addr as usize],
-                        )
+                        SignalValue::from(self.registers.borrow()[stack_depth as usize][read_addr])
                     }
                 }
             }
@@ -191,7 +239,8 @@ impl RegFile {
         }
     }
 
-    fn write_reg(&self, simulator: &Simulator, input: SignalValue, data: SignalValue) {
+    fn write_reg(&self, simulator: &Simulator, input: impl Into<SignalValue>, data: SignalValue) {
+        let input: SignalValue = input.into();
         let stack_depth: SignalUnsigned = simulator
             .get_input_value(&self.stack_depth)
             .try_into()
@@ -199,12 +248,13 @@ impl RegFile {
         match input {
             SignalValue::Data(write_addr) => {
                 trace!("write_addr {}", write_addr);
-                match write_addr {
-                    0 => {
+                let write_reg: Reg = write_addr.try_into().unwrap();
+                match write_reg {
+                    Reg::zero => {
                         // reg zero always reads 0
                         // do nothing on write
                     }
-                    2 => {
+                    Reg::sp => {
                         // reg sp shared among all stacks, we use stack_depth 0 for that
                         self.registers.borrow_mut()[0][write_addr as usize] =
                             data.try_into().unwrap();
@@ -300,7 +350,11 @@ impl Component for RegFile {
                     },
                 ],
                 out_type: OutputType::Combinatorial,
-                outputs: vec!["reg_a".into(), "reg_b".into(), "ra".into()],
+                outputs: vec![
+                    REG_FILE_REG_A_OUT.into(),
+                    REG_FILE_REG_B_OUT.into(),
+                    REG_FILE_RA_OUT.into(),
+                ],
             },
         )
     }
@@ -343,6 +397,7 @@ impl Component for RegFile {
             read_addr2: 0,
             write_addr2: None,
             old_data: None,
+            old_ra: None,
         };
         let stack_depth: SignalUnsigned = simulator
             .get_input_value(&self.stack_depth)
@@ -355,9 +410,11 @@ impl Component for RegFile {
 
         if clic_ra_we {
             trace!("update ra register");
+            let old_ra = self.read_reg(simulator, REG_RA);
+            regop.old_ra = Some(old_ra.try_into().unwrap());
             self.write_reg(
                 simulator,
-                0x01.into(),
+                REG_RA,
                 simulator.get_input_value(&self.clic_mepc),
             );
         }
@@ -375,7 +432,7 @@ impl Component for RegFile {
 
             regop.write_addr2 = Some((
                 TryInto::<SignalUnsigned>::try_into(write_addr).unwrap() as u8,
-                self.read_reg(simulator, &write_addr).try_into().unwrap(), // read old value
+                self.read_reg(simulator, write_addr).try_into().unwrap(), // read old value
             ));
 
             self.write_reg(&simulator, write_addr, data);
@@ -383,17 +440,17 @@ impl Component for RegFile {
         self.history.0.borrow_mut().push(regop);
 
         // read after write
-        let reg_value_a = self.read_reg(simulator, &read_addr1);
+        let reg_value_a = self.read_reg(simulator, read_addr1);
         trace!("reg_value_a {:?}", reg_value_a);
-        simulator.set_out_value(&self.id, "reg_a", reg_value_a);
+        simulator.set_out_value(&self.id, REG_FILE_REG_A_OUT, reg_value_a);
 
-        let reg_value_b = self.read_reg(simulator, &read_addr2);
+        let reg_value_b = self.read_reg(simulator, read_addr2);
         trace!("reg_value_b {:?}", reg_value_b);
-        simulator.set_out_value(&self.id, "reg_b", reg_value_b);
+        simulator.set_out_value(&self.id, REG_FILE_REG_B_OUT, reg_value_b);
 
-        let reg_value_ra = self.read_reg(simulator, &0x01.into());
+        let reg_value_ra = self.read_reg(simulator, REG_RA);
         trace!("reg_value ra {:?}", reg_value_ra);
-        simulator.set_out_value(&self.id, "ra", reg_value_b);
+        simulator.set_out_value(&self.id, REG_FILE_RA_OUT, reg_value_ra);
 
         Ok(())
     }
