@@ -1,5 +1,6 @@
 mod add;
 mod constant;
+mod cross;
 mod mem;
 mod mux;
 mod probe;

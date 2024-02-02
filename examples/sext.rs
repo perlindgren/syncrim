@@ -22,7 +22,7 @@ fn main() {
                 vec![(220.0, 100.0), (250.0, 100.0)],
                 Input::new("sxt0", "out"),
             ),
-            Probe::rc_new("p1", (260.0, 100.0), Input::new("sxt0", "out")),
+            Cross::rc_new("p1", (260.0, 100.0), Input::new("sxt0", "out")),
         ],
     };
 

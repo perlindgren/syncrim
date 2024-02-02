@@ -92,7 +92,7 @@ impl Default for Library {
                 pos: (0.0, 0.0),
                 value: 0.into(),
             }),
-            Rc::new(Probe {
+            Rc::new(Cross {
                 id: "p".to_string(),
                 pos: (0.0, 0.0),
                 input: dummy_input.clone(),
