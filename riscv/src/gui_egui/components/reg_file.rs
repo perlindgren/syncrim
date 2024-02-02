@@ -12,8 +12,9 @@ use syncrim::gui_egui::component_ui::{
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
+use syncrim::signal::SignalValue;
 impl RegFile {
-    fn side_panel(&self, ctx: &Context, _simulator: Option<&mut Simulator>) {
+    fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
         Window::new("Register File").show(ctx, |ui| {
             TableBuilder::new(ui)
                 .column(Column::initial(40.0))
@@ -35,7 +36,7 @@ impl RegFile {
                             row.col(|ui| {
                                 ui.label(format!(
                                     "0x{:08X}",
-                                    self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
+                                    self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize][reg as usize]                                    //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
                                 ));
                             });
                         });
@@ -95,7 +96,7 @@ impl EguiComponent for RegFile {
                                 ui.label(RichText::new("Reg").size(20.0 * scale));
                             });
                             header.col(|ui| {
-                                ui.label(RichText::new("Value").size(20.0 * scale));
+                                ui.label(RichText::new(format!("Value {}",self.stack_depth_state.borrow()) ).size(20.0 * scale));
                             });
                         })
                         .body(|body| {
@@ -117,7 +118,7 @@ impl EguiComponent for RegFile {
                                         ui.add(Label::new(
                                             RichText::new(format!(
                                                 "0x{:08x}",
-                                                self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(index).unwrap()
+                                                self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize][index]
                                             ))
                                             .size(15.0 * scale),
                                         ));
