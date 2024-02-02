@@ -1,5 +1,6 @@
 mod add;
 mod constant;
+mod cross;
 mod mem;
 mod mux;
 mod probe;
@@ -13,6 +14,7 @@ mod wire;
 
 pub use add::*;
 pub use constant::*;
+pub use cross::*;
 pub use mem::*;
 pub use mux::*;
 pub use probe::*;
