@@ -170,7 +170,11 @@ impl Simulator {
 
     /// get input signal
     pub fn get_input_signal(&self, input: &Input) -> Signal {
-        let nr_out = *self.id_nr_outputs.get(&input.id).unwrap();
+        #[allow(unreachable_code)]
+        let nr_out = *self
+            .id_nr_outputs
+            .get(&input.id)
+            .unwrap_or(panic!("{:?}", input));
         let index = *self
             .id_field_index
             .get(&(input.id.clone(), input.field.clone()))
