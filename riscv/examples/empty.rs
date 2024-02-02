@@ -19,7 +19,7 @@ struct Args {
 }
 
 fn main() {
-    let path = PathBuf::from("autosave.json");
+    let path = PathBuf::from("riscv.json");
     let cs = ComponentStore::load_file(&path);
     #[cfg(feature = "gui-egui")]
     {
@@ -79,19 +79,7 @@ fn main() {
                     pos: (0.0, 0.0),
                     data_i: dummy.clone(),
                 }),
-                Rc::new(RegFile {
-                    id: "dummy_reg_file".into(),
-                    pos: (0.0, 0.0),
-                    width: REG_FILE_WIDTH,
-                    height: REG_FILE_HEIGHT,
-                    read_addr1: dummy.clone(),
-                    read_addr2: dummy.clone(),
-                    write_data: dummy.clone(),
-                    write_addr: dummy.clone(),
-                    write_enable: dummy.clone(),
-                    registers: RegStore::new(Rc::new(RefCell::new([0; 32]))),
-                    history: RegHistory::new(),
-                }),
+                Rc::new(RegFile::dummy()),
                 Rc::new(SZExt {
                     height: SIGN_ZERO_EXT_HEIGHT,
                     width: SIGN_ZERO_EXT_WIDTH,

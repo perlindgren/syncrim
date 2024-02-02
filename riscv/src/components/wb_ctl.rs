@@ -2,6 +2,7 @@ use log::trace;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "gui-egui")]
 use std::rc::Rc;
+
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
 use syncrim::{
@@ -98,6 +99,7 @@ mod test {
     #![allow(unused_imports)]
     use super::*;
 
+    use crate::components::LSBZero;
     use std::rc::Rc;
     use syncrim::{
         common::{ComponentStore, Input, Simulator},

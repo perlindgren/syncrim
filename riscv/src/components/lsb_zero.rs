@@ -7,8 +7,8 @@ use syncrim::{
     common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
     signal::SignalValue,
 };
-pub const LSB_ZERO_DATA_I_ID: &str = "data_i";
 
+pub const LSB_ZERO_DATA_I_ID: &str = "data_i";
 pub const LSB_ZERO_OUT_ID: &str = "out";
 
 pub const LSB_ZERO_HEIGHT: f32 = 10.0;

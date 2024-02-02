@@ -418,6 +418,8 @@ mod test {
         let cs = ComponentStore {
             store: vec![
                 Rc::new(ProbeOut::new("stack_depth")),
+                Rc::new(ProbeOut::new("clic_mepc")),
+                Rc::new(ProbeOut::new("clic_ra_we")),
                 Rc::new(ProbeOut::new("read_reg_1")),
                 Rc::new(ProbeOut::new("read_reg_2")),
                 Rc::new(ProbeOut::new("write_data")),
@@ -432,6 +434,9 @@ mod test {
 
                     // ports
                     stack_depth: Input::new("stack_depth", "out"),
+                    clic_mepc: Input::new("clic_mepc", "out"),
+                    clic_ra_we: Input::new("clic_ra_we", "out"),
+
                     read_addr1: Input::new("read_reg_1", "out"),
                     read_addr2: Input::new("read_reg_2", "out"),
                     write_data: Input::new("write_data", "out"),
@@ -442,7 +447,7 @@ mod test {
                     registers: RegStore::default(),
                     history: RegHistory::new(),
 
-                    stack_depth_state: 0,
+                    stack_depth_state: 0.into(),
                 }),
             ],
         };
