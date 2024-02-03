@@ -100,7 +100,7 @@ pub const REG_FILE_MAX_DEPTH: usize = 4;
 
 pub const REG_FILE_STACK_DEPTH_ID: &str = "stack_depth";
 pub const REG_FILE_CLIC_MEPC_ID: &str = "clic_mepc";
-pub const REG_FILE_CLIC_WE_ID: &str = "clic_ra_we";
+pub const REG_FILE_CLIC_RA_WE_ID: &str = "clic_ra_we";
 
 pub const REG_FILE_READ_ADDR1_ID: &str = "read_addr1";
 pub const REG_FILE_READ_ADDR2_ID: &str = "read_addr2";
@@ -325,7 +325,7 @@ impl Component for RegFile {
                         input: self.stack_depth.clone(),
                     },
                     InputPort {
-                        port_id: REG_FILE_CLIC_WE_ID.to_string(),
+                        port_id: REG_FILE_CLIC_RA_WE_ID.to_string(),
                         input: self.stack_depth.clone(),
                     },
                     InputPort {

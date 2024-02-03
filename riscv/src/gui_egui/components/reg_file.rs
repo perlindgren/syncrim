@@ -13,6 +13,7 @@ use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
 use syncrim::signal::SignalValue;
+
 impl RegFile {
     fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
         Window::new("Register File").show(ctx, |ui| {
@@ -47,6 +48,7 @@ impl RegFile {
         });
     }
 }
+
 #[typetag::serde]
 impl EguiComponent for RegFile {
     fn render(
@@ -195,6 +197,23 @@ impl EguiComponent for RegFile {
                     id_ports,
                     self.id.clone(),
                 );
+
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.clic_mepc,
+                    crate::components::REG_FILE_CLIC_MEPC_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.clic_ra_we,
+                    crate::components::REG_FILE_CLIC_RA_WE_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.read_addr1,
@@ -202,6 +221,7 @@ impl EguiComponent for RegFile {
                     id_ports,
                     self.id.clone(),
                 );
+
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.read_addr2,
@@ -209,6 +229,7 @@ impl EguiComponent for RegFile {
                     id_ports,
                     self.id.clone(),
                 );
+
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.write_data,
