@@ -7,7 +7,7 @@ use std::{
 };
 
 use log::trace;
-use riscv_asm_strings::Stringify;
+use riscv_asm_strings;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
@@ -103,7 +103,7 @@ impl Component for InstrMem {
             format!(
                 "{:?}",
                 match asm_riscv::I::try_from(instr) {
-                    Ok(i) => i.to_string(),
+                    Ok(i) => riscv_asm_strings::StringifyUpperHex::to_string(&i),
                     Err(_) => "Unknown instruction".to_string(),
                 }
             )

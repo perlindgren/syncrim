@@ -5,7 +5,7 @@ use egui::{
 };
 use egui_extras::{Column, TableBuilder};
 use log::trace;
-use riscv_asm_strings::Stringify;
+use riscv_asm_strings;
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -100,8 +100,9 @@ impl InstrMem {
                             | ((bytes[2] as u32) << 16)
                             | ((bytes[1] as u32) << 8)
                             | (bytes[0] as u32);
+
                         let instr_fmt = match asm_riscv::I::try_from(instr) {
-                            Ok(i) => i.to_string(),
+                            Ok(i) => riscv_asm_strings::StringifyUpperHex::to_string(&i),
                             Err(_) => "Unknown instruction".to_string(),
                         };
                         //hex instr
