@@ -11,6 +11,9 @@ SECTIONS
   {
     KEEP(*(.trap));
   }
+
+  
+
   . = 0x50000000;
   .data :
   {
@@ -20,6 +23,11 @@ SECTIONS
   .vector_table : 
   {
     KEEP(*(.vector_table));  
+  }
+  . = 0x50000200;
+  .clic_vec : 
+  {
+    KEEP(*(.clic_vec));  
   }
 }
 PROVIDE(_stack_start = 0x50000500);

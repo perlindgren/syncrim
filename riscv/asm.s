@@ -2,7 +2,7 @@
     .text
 init:
     la       sp, _stack_start    # set stack pointer
-    csrwi    0x350, 4            # set stack_depth
+    csrwi    0x350, 3            # set stack_depth
 main:
     la       t0, 0x50000000
     la       t1, 0xDEADBEEF
@@ -15,7 +15,9 @@ main:
     sw       t0, 0(a0)           # store at CLIC, interrupt 0
     sw       t1, 4(a0)           # store at CLIC + 4, interrupt 1
     sw       t2, 8(a0)           # store at CLIC + 8, interrupt 2
-    la       t0, .vector_table   # load vector table address
+
+# la t0, .vector_table # load vanilla vector table address
+    la       t0, .clic_vec       # load vector table address
     csrw     mtvec, t0           # store vector table address at mtvec
     csrwi    0x347, 0            # set interrupt prio threshold to 0
     csrwi    mstatus, 8          # enable global interrupts
@@ -31,11 +33,13 @@ isr_0: #this interrupt is pended a t the start, it is of middle prio
     sb       a1, 8(a0)           # pend highest prio interrupt
     li       t0, 0x1337          # make it obvious we've come here by setting t0 to 1337
     jr       ra                  # return
+
 isr_1: #this interrupt is pended a t the start, it is of low prio
     li       a0, 0x1000
     sb       zero, 4(a0)         # unpend self
     li       t0, 0x1337          # make it obvious we've come here by setting t1 to 1337
     jr       ra                  # return
+
 isr_2: #this interrupt is pended f rom isr_0, it is of highest prio
     li       a0, 0x1000
     sb       zero, 8(a0)         # unpend self
@@ -254,4 +258,35 @@ trap_2:
     .word    0x74757677
     .word    0x78797A7B
     .word    0x7C7D7E7F
+
+    .section .clic_vec, "aw"
+    .word    isr_0
+    .word    isr_1
+    .word    isr_2
+    .word    0x20212223
+    .word    0x24252627
+    .word    0x28292A2B
+    .word    0x2C2D2E2F
+    .word    0x30313233
+    .word    0x34353637
+    .word    0x38393A3B
+    .word    0x3C3D3E3F
+    .word    0x40414243
+    .word    0x44454647
+    .word    0x48494A4B
+    .word    0x4C4D4E4F
+    .word    0x50515253
+    .word    0x54555657
+    .word    0x58595A5B
+    .word    0x5C5D5E5F
+    .word    0x60616263
+    .word    0x64656667
+    .word    0x68696A6B
+    .word    0x6C6D6E6F
+    .word    0x70717273
+    .word    0x74757677
+    .word    0x78797A7B
+    .word    0x7C7D7E7F
+
+
 
