@@ -26,7 +26,7 @@ pub const CLIC_MEM_INT_ADDR_ID: &str = "mem_int_addr";
 pub const CLIC_BLU_INT_ID: &str = "blu_int";
 pub const CLIC_MRET_OUT_ID: &str = "mret_out";
 pub const CLIC_MEPC_OUT_ID: &str = "mepc_out";
-pub const CLIC_REG_FILE_WRITE_ID: &str = "reg_file_write";
+// pub const CLIC_REG_FILE_WRITE_ID: &str = "reg_file_write";
 pub const CLIC_STACK_DEPTH_OUT_ID: &str = "stack_depth_out";
 
 #[derive(Serialize, Deserialize)]
@@ -265,13 +265,17 @@ impl Component for CLIC {
                         input: self.pc.clone(),
                     },
                     &InputPort {
+                        port_id: CLIC_PC_NEXT_ID.to_string(),
+                        input: self.pc_next.clone(),
+                    },
+                    &InputPort {
                         port_id: CLIC_DATA_SIZE_ID.to_string(),
                         input: self.data_size.clone(),
                     },
                 ],
                 OutputType::Combinatorial,
                 vec![
-                    CLIC_REG_FILE_WRITE_ID,
+                    // CLIC_REG_FILE_WRITE_ID,
                     CLIC_CSR_DATA_OUT_ID,
                     CLIC_MMIO_DATA_OUT_ID,
                     CLIC_MEM_INT_ADDR_ID,
@@ -290,6 +294,7 @@ impl Component for CLIC {
             mmio_op: None,
             queue_op: vec![],
         };
+
         //CSR IO Handling
         let csr_ctl: u32 = simulator
             .get_input_value(&self.csr_ctl)
@@ -303,6 +308,7 @@ impl Component for CLIC {
             .get_input_value(&self.csr_data)
             .try_into()
             .unwrap_or(0);
+
         //MMIO handling
         let addr: u32 = simulator
             .get_input_value(&self.addr)
@@ -316,7 +322,8 @@ impl Component for CLIC {
             .get_input_value(&self.mret)
             .try_into()
             .unwrap_or(0);
-        let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap_or(0);
+        let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
+        let pc_next: u32 = simulator.get_input_value(&self.pc_next).try_into().unwrap();
         let data_size: u32 = simulator
             .get_input_value(&self.data_size)
             .try_into()
@@ -494,9 +501,14 @@ impl Component for CLIC {
         if let Some((old_threshold, current_mepc)) = clic_stack.last() {
             let (old_threshold, current_mepc) = (*old_threshold, *current_mepc);
             trace!("clic stack {:#x?}", clic_stack);
-            trace!("pc {:#X}, current_mepc {:#X}", pc, current_mepc);
-            // uggly haxx, should use separate signal from pc reg
-            if pc == current_mepc + 4 {
+            trace!(
+                "pc {:#X}, pc_next {:#X}, current_mepc {:#X}",
+                pc,
+                pc_next,
+                current_mepc
+            );
+            // check if we are about to return from interrupt in super-clic mode
+            if pc_next == current_mepc {
                 trace!("---- return from interrupt ----");
                 let _ = clic_stack.pop();
                 csrstore.insert(0x347, old_threshold as usize); // set old threshold

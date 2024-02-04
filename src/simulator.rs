@@ -97,7 +97,7 @@ impl Simulator {
                     let from_id = &in_port.input.id;
                     let from_node = id_node.get(from_id);
                     if from_node.is_none() {
-                        println!("id: {} port {} is not connected", to_id, from_id);
+                        println!("to id: {} from port {} is not connected", to_id, from_id);
                         return Err("A port left unconnected");
                     }
                     let from_node = from_node.unwrap();
@@ -175,7 +175,7 @@ impl Simulator {
         let nr_out = *self
             .id_nr_outputs
             .get(&input.id)
-            .unwrap_or_else(||{panic!("{:?}{:?}", self.id_nr_outputs, input)});//_or(panic!("{:?},{:?}",self.id_nr_outputs, input));
+            .unwrap_or_else(|| panic!("\n{:?} not found in \n{:?}", input, self.id_nr_outputs));
         let index = *self
             .id_field_index
             .get(&(input.id.clone(), input.field.clone()))
