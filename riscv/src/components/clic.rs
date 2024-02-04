@@ -529,6 +529,7 @@ impl Component for CLIC {
                         panic!("stack depleted, vanilla click not yet supported");
                     }
                     stack_depth -= 1;
+                    csrstore.insert(0x350, stack_depth);
                     trace!(
                         "interrupt dispatched id:{} prio:{}",
                         interrupt.0, // interrupt id
