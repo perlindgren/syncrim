@@ -7,6 +7,7 @@ use syncrim::{
 };
 
 use priority_queue::PriorityQueue;
+use std::collections::binary_heap::IntoIter;
 use std::{cell::RefCell, collections::HashMap};
 pub const CLIC_CSR_ADDR_ID: &str = "csr_addr";
 pub const CLIC_CSR_CTL_ID: &str = "csr_ctl";
@@ -70,7 +71,9 @@ pub struct CLIC {
     #[serde(skip)]
     pub queue: RefCell<PriorityQueue<u32, u8>>, //prio, id's
     #[serde(skip)]
-    pub stack_depth: RefCell<u32>, //current register stack depth
+    pub threshold_stack: RefCell<Vec<u32>>,
+    // #[serde(skip)]
+    // pub stack_depth: RefCell<u32>, //current register stack depth
     history: RefCell<Vec<CLICOp>>,
 }
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
@@ -146,6 +149,8 @@ impl CLIC {
                 csrstore.insert(0x348, 0); //mscratchcsw
                 csrstore.insert(0x349, 0); //mscratchcswl
                 csrstore.insert(0xF14, 0); //mhartid
+                csrstore.insert(0x350, 0); //stack_depth
+
                 RefCell::new(csrstore)
             },
             mmio: {
@@ -158,8 +163,9 @@ impl CLIC {
             queue: RefCell::new(PriorityQueue::new()),
             // lines: lines,
             csr_ctl,
+            threshold_stack: RefCell::new(Vec::new()),
             history: RefCell::new(vec![]),
-            stack_depth: 0.into(),
+            // stack_depth: 0.into(),
         }
     }
 }
@@ -182,6 +188,7 @@ impl Component for CLIC {
             csrstore.insert(0x348, 0); //mscratchcsw
             csrstore.insert(0x349, 0); //mscratchcswl
             csrstore.insert(0xF14, 0); //mhartid
+            csrstore.insert(0x350, 0); //stack_depth, vanilla clic config
             &RefCell::new(csrstore)
         });
         self.mmio.swap({
@@ -193,6 +200,7 @@ impl Component for CLIC {
         });
         self.queue.swap(&RefCell::new(PriorityQueue::new()));
         self.history.swap(&RefCell::new(vec![]));
+        self.threshold_stack.swap(&RefCell::new(Vec::new()));
     }
 
     fn to_(&self) {
@@ -312,10 +320,13 @@ impl Component for CLIC {
         let mut blu_int = SignalValue::Uninitialized;
         let mut mmio_data = SignalValue::Uninitialized;
         let mut mem_int_addr = SignalValue::Uninitialized;
+
+        // vanilla clic behavior
         let mret_sig: SignalValue = mret.into();
         let mut mepc = SignalValue::Uninitialized;
-        let mut stack_depth = self.stack_depth.borrow_mut();
+        let mut stack_depth = *self.csrstore.borrow().get(&(0x350 as usize)).unwrap();
         if mret == 1 {
+            panic!("currently not supported");
             let mut csrstore = self.csrstore.borrow_mut();
             mepc = (*csrstore.get(&0x341).unwrap() as u32).into(); //infallible
             let mut mstatus = *csrstore.get(&0x300).unwrap(); //infallible
@@ -336,9 +347,10 @@ impl Component for CLIC {
             simulator.set_out_value(&self.id, "mepc_out", mepc);
             simulator.set_out_value(&self.id, "mret_out", mret_sig);
             self.history.borrow_mut().push(history_entry);
-            *stack_depth -= 1;
+            stack_depth -= 1;
             return Ok(());
         }
+
         match csr_ctl {
             0 => {}
             //write
@@ -393,6 +405,8 @@ impl Component for CLIC {
             }
             _ => {}
         }
+
+        // mmio handling
         let offset = addr % 4;
         //let addr = addr - (addr % 4);
         let mut queue = self.queue.borrow_mut();
@@ -462,6 +476,7 @@ impl Component for CLIC {
                 mmio_data = self.read(addr as usize, data_size as usize, false, false);
             }
         };
+
         //Interrupt dispatch
         let mut csrstore = self.csrstore.borrow_mut();
         let mstatus = *csrstore.get(&0x300).unwrap();
@@ -471,15 +486,16 @@ impl Component for CLIC {
         if mstatus & 8 == 8 {
             //if MIE is set
             if !queue.is_empty() {
-                let interrupt = queue.peek().unwrap(); //peek highest prio interrupt
-                if *interrupt.1 as usize > mintthresh {
+                let (interrupt_id, interrupt_priority) = queue.peek().unwrap(); //peek highest prio interrupt
+                let (interrupt_id, interrupt_priority) = (*interrupt_id, *interrupt_priority);
+                if interrupt_priority as usize > mintthresh {
                     let interrupt = queue.pop().unwrap(); //if above threshold, pop it
                                                           //now dispatch
                                                           //make memory output contents of mtvec + id*4 to branch mux
                                                           //set interrupt signal on branch control
                     history_entry
                         .queue_op
-                        .push((interrupt.0, interrupt.1, true));
+                        .push((interrupt_id, interrupt_priority, true));
                     match history_entry.csr_op {
                         Some(ref mut v) => {
                             v.push((0x300, *csrstore.get(&0x300_usize).unwrap() as u32));
@@ -492,16 +508,31 @@ impl Component for CLIC {
                             ])
                         }
                     }
-                    csrstore.insert(0x300, (mstatus & !0x8) | 0b1 << 7); //clear interrupt enable, set mpie
+
+                    //
+                    if stack_depth == 0 {
+                        // vanilla mode
+                        csrstore.insert(0x300, (mstatus & !0x8) | 0b1 << 7); //clear interrupt enable, set mpie
+                    } else {
+                        // super clic
+                        let current_threshold = *csrstore.get(&0x347_usize).unwrap() as u32;
+                        self.threshold_stack.borrow_mut().push(current_threshold);
+                        csrstore.insert(0x347, interrupt_priority as usize); // set new threshold
+                    }
+                    // mepc
                     csrstore.insert(0x341, pc as usize);
                     mem_int_addr = SignalValue::Data((mtvec as u32 + (interrupt.0) * 4) & !0b11);
 
                     blu_int = SignalValue::Data(1);
-                    *stack_depth += 1;
+
+                    if stack_depth == 0 {
+                        panic!("stack depleted, vanilla click not yet supported");
+                    }
+                    stack_depth -= 1;
                     trace!(
                         "interrupt dispatched id:{} prio:{}",
-                        interrupt.0,
-                        interrupt.1
+                        interrupt.0, // interrupt id
+                        interrupt.1  // interrupt priority
                     );
                 }
             }
@@ -514,7 +545,11 @@ impl Component for CLIC {
         mepc = SignalValue::Data(*csrstore.get(&0x341).unwrap() as u32);
         trace!("MEPC:{:?}", mepc);
         self.history.borrow_mut().push(history_entry);
-        simulator.set_out_value(&self.id, "stack_depth_out", stack_depth.clone());
+        simulator.set_out_value(
+            &self.id,
+            "stack_depth_out",
+            SignalValue::Data(stack_depth as u32),
+        );
         simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
         simulator.set_out_value(&self.id, "blu_int", blu_int);
         simulator.set_out_value(&self.id, "csr_data_o", val as u32);
