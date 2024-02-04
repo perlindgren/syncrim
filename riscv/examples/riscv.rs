@@ -177,6 +177,7 @@ fn main() {
         Input::new("decoder", "csr_ctl"),
         Input::new("decoder", "mret"),
         Input::new("pc_adder", "out"),
+        Input::new("pc_next", "out"),
     )));
     cs.store = store;
     #[cfg(feature = "gui-egui")]

@@ -18,6 +18,7 @@ pub const CLIC_ADDR_ID: &str = "addr";
 pub const CLIC_DATA_WE_ID: &str = "data_we";
 pub const CLIC_MRET_ID: &str = "mret";
 pub const CLIC_PC_ID: &str = "pc";
+pub const CLIC_PC_NEXT_ID: &str = "pc_next";
 pub const CLIC_DATA_SIZE_ID: &str = "size";
 pub const CLIC_CSR_DATA_OUT_ID: &str = "csr_data_o";
 pub const CLIC_MMIO_DATA_OUT_ID: &str = "mmio_data_o";
@@ -63,6 +64,7 @@ pub struct CLIC {
 
     //PC input for MEPC update
     pub pc: Input,
+    pub pc_next: Input,
 
     //internal state
     #[serde(skip)]
@@ -121,6 +123,7 @@ impl CLIC {
         csr_ctl: Input,
         mret: Input,
         pc: Input,
+        pc_next: Input,
     ) -> Self {
         CLIC {
             id,
@@ -135,6 +138,7 @@ impl CLIC {
             csr_addr,
             mret,
             pc,
+            pc_next,
             csrstore: {
                 let mut csrstore = HashMap::new();
                 csrstore.insert(0x300, 0); //mstatus
