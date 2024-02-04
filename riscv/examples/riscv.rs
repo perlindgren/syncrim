@@ -126,13 +126,13 @@ fn main() {
         }
         i += 1
     }
-    let mut i = 0;
-    for component in store.clone() {
-        if component.get_id_ports().0 == "clic" {
-            store.remove(i);
-        }
-        i += 1
-    }
+    // let mut i = 0;
+    // for component in store.clone() {
+    //     if component.get_id_ports().0 == "clic" {
+    //         store.remove(i);
+    //     }
+    //     i += 1
+    // }
     // store.push(RVMem::rc_new_from_bytes(
     //     "data_memory",
     //     (1540.0, 900.0),
@@ -163,22 +163,23 @@ fn main() {
     //     },
     //     symbols: memory.symbols,
     // }));
-    store.push(Rc::new(CLIC::new(
-        "clic".to_string(),
-        (1660.0, 900.0),
-        100.0,
-        100.0,
-        Input::new("reg_file", "reg_b"),
-        Input::new("alu", "result_o"),
-        Input::new("decoder", "data_mem_ctrl"),
-        Input::new("decoder", "data_mem_size"),
-        Input::new("csr_mux", "out"),
-        Input::new("decoder", "csr_addr"),
-        Input::new("decoder", "csr_ctl"),
-        Input::new("decoder", "mret"),
-        Input::new("pc_adder", "out"),
-        Input::new("pc_next", "out"),
-    )));
+    // store.push(Rc::new(CLIC::new(
+    //     "clic".to_string(),
+    //     (1660.0, 900.0),
+    //     100.0,
+    //     100.0,
+    //     Input::new("reg_file", "reg_b"),
+    //     Input::new("alu", "result_o"),
+    //     Input::new("decoder", "data_mem_ctrl"),
+    //     Input::new("decoder", "data_mem_size"),
+    //     Input::new("csr_mux", "out"),
+    //     Input::new("decoder", "csr_addr"),
+    //     Input::new("decoder", "csr_ctl"),
+    //     Input::new("decoder", "mret"),
+    //     Input::new("pc_adder", "out"),
+    //     Input::new("pc_adder", "out"),
+    //     //Input::new("pc_adder_mux", "out"),
+    // )));
     cs.store = store;
     #[cfg(feature = "gui-egui")]
     {
@@ -218,7 +219,7 @@ fn main() {
                     ctrl: dummy.clone(),
                     enable: dummy.clone(),
                     int: dummy.clone(),
-                    mret: dummy.clone(),
+                    // mret: dummy.clone(),
                 }),
                 Rc::new(Decoder {
                     width: DECODER_WIDTH,
