@@ -215,6 +215,7 @@ impl RegFile {
             .get_input_value(&self.stack_depth)
             .try_into()
             .unwrap();
+        let stack_depth = if stack_depth as i32 >= 0 {stack_depth} else {0};
         match input {
             SignalValue::Data(read_addr) => {
                 trace!("read_addr {}", read_addr);
@@ -245,6 +246,8 @@ impl RegFile {
             .get_input_value(&self.stack_depth)
             .try_into()
             .unwrap();
+        let stack_depth = if stack_depth as i32 >= 0 {stack_depth} else {0};
+
         match input {
             SignalValue::Data(write_addr) => {
                 trace!("write_addr {}", write_addr);
@@ -408,7 +411,7 @@ impl Component for RegFile {
         let clic_ra_we =
             simulator.get_input_value(&self.clic_ra_we) == (true as SignalUnsigned).into();
 
-        if clic_ra_we {
+        if clic_ra_we && (stack_depth as i32 >= 0) {
             trace!("update ra register");
             let old_ra = self.read_reg(simulator, REG_RA);
             regop.old_ra = Some(old_ra.try_into().unwrap());

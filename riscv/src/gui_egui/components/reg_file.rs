@@ -35,10 +35,12 @@ impl RegFile {
                                 ui.label(format!("{:?}", Reg::try_from(reg).unwrap()));
                             });
                             row.col(|ui| {
+                                let stack_depth = *self.stack_depth_state.borrow() as i32;
+                                let stack_depth = if stack_depth >= 0 {stack_depth as usize} else {0_usize};
                                 ui.label(format!(
                                     "0x{:08X}",
                                     self.registers.0.borrow()
-                                        [*(self.stack_depth_state.borrow()) as usize]
+                                        [stack_depth]
                                         [reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
                                 ));
                             });
@@ -125,11 +127,13 @@ impl EguiComponent for RegFile {
                                         ));
                                     });
                                     row.col(|ui| {
+                                        let stack_depth = *self.stack_depth_state.borrow() as i32;
+                                        let stack_depth = if stack_depth >= 0 {stack_depth as usize} else {0_usize};
                                         ui.add(Label::new(
                                             RichText::new(format!(
                                                 "0x{:08x}",
                                                 self.registers.0.borrow()
-                                                    [*(self.stack_depth_state.borrow()) as usize]
+                                                    [stack_depth]
                                                     [index]
                                             ))
                                             .size(15.0 * scale),

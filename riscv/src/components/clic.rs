@@ -195,6 +195,7 @@ impl Component for CLIC {
             csrstore.insert(0x349, 0); //mscratchcswl
             csrstore.insert(0xF14, 0); //mhartid
             csrstore.insert(0x350, 0); //stack_depth, vanilla clic config
+            csrstore.insert(0x351, 0); //super mtvec
             &RefCell::new(csrstore)
         });
         self.mmio.swap({
@@ -339,7 +340,7 @@ impl Component for CLIC {
         let mut mepc = SignalValue::Uninitialized;
         let mut stack_depth = *self.csrstore.borrow().get(&(0x350 as usize)).unwrap();
         if mret == 1 {
-            panic!("currently not supported");
+            //panic!("currently not supported");
             let mut csrstore = self.csrstore.borrow_mut();
             mepc = (*csrstore.get(&0x341).unwrap() as u32).into(); //infallible
             let mut mstatus = *csrstore.get(&0x300).unwrap(); //infallible
@@ -351,16 +352,20 @@ impl Component for CLIC {
             let old_val = mstatus;
             mstatus |= 0b1 << 7; //mpie is set on mret
             csrstore.insert(0x300, mstatus);
-            history_entry.csr_op = Some(vec![(0x300, old_val as u32)]);
+            history_entry.csr_op = Some(vec![(0x300, old_val as u32), (0x350, stack_depth as u32)]);
             trace!("mret");
             simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
-            simulator.set_out_value(&self.id, CLIC_INTERRUPT_ID, blu_int);
+            // select mepc signal on interrupt mux
+            //simulator.set_out_value(id, field, value)
+            simulator.set_out_value(&self.id, CLIC_INTERRUPT_ID, SignalValue::Data(2));
             simulator.set_out_value(&self.id, "csr_data_o", val as u32);
             simulator.set_out_value(&self.id, "mmio_data_o", mmio_data);
             simulator.set_out_value(&self.id, "mepc_out", mepc);
             // simulator.set_out_value(&self.id, "mret_out", mret_sig);
             self.history.borrow_mut().push(history_entry);
-            stack_depth -= 1;
+            stack_depth += 1;
+            simulator.set_out_value(&self.id, CLIC_STACK_DEPTH_OUT_ID, SignalValue::Data(stack_depth as u32));
+            csrstore.insert(0x350, stack_depth);
             return Ok(());
         }
 
@@ -495,6 +500,7 @@ impl Component for CLIC {
         let mstatus = *csrstore.get(&0x300).unwrap();
         let mut mintthresh = *csrstore.get(&0x347).unwrap();
         let mtvec = *csrstore.get(&0x305).unwrap();
+        let super_mtvec = *csrstore.get(&0x351).unwrap();
         //let mut stack_depth = self.stack_depth.borrow_mut();
 
         // interrupt return, super-clic
@@ -556,11 +562,13 @@ impl Component for CLIC {
                         pc as usize
                     };
 
-                    //
-                    if stack_depth == 0 {
+                    //facepalm
+                    if (stack_depth as i32) <= 0 {
                         // vanilla mode
-                        panic!("no vanilla");
+                        //panic!("no vanilla");
                         csrstore.insert(0x300, (mstatus & !0x8) | 0b1 << 7); //clear interrupt enable, set mpie
+                        // if vanilla mode, use level 0 register.
+                        mem_int_addr = SignalValue::Data((mtvec as u32 + (interrupt_id) * 4) & !0b11);
                     } else {
                         // super clic
                         //  let current_mepc = *csrstore.get(&0x341).unwrap() as u32;
@@ -570,18 +578,21 @@ impl Component for CLIC {
                             .borrow_mut()
                             .push((current_threshold, new_mepc as u32));
                         csrstore.insert(0x347, interrupt_priority as usize); // set new threshold
+                        mem_int_addr = SignalValue::Data((super_mtvec as u32 + (interrupt_id) * 4) & !0b11);
+
                     }
                     // write to csr
                     csrstore.insert(0x341, new_mepc);
-                    mem_int_addr = SignalValue::Data((mtvec as u32 + (interrupt_id) * 4) & !0b11);
+                    blu_int = SignalValue::Data(1); 
 
-                    blu_int = SignalValue::Data(1);
 
-                    if stack_depth == 0 {
-                        panic!("stack depleted, vanilla click not yet supported");
-                    }
                     stack_depth -= 1;
                     csrstore.insert(0x350, stack_depth);
+                    trace!("STACK DEPTH: {}", stack_depth as i32);
+                    //if stack_depth == 0 {
+                    //    panic!("stack depleted, vanilla click not yet supported");
+                    //}
+
                     trace!(
                         "interrupt dispatched id:{} prio:{}",
                         interrupt_id,
