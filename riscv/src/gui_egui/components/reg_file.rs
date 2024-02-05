@@ -106,7 +106,7 @@ impl EguiComponent for RegFile {
                                 ui.label(
                                     RichText::new(format!(
                                         "Value {}",
-                                        self.stack_depth_state.borrow()
+                                        *self.stack_depth_state.borrow() as i32
                                     ))
                                     .size(20.0 * scale),
                                 );
