@@ -43,7 +43,7 @@ impl Component for InstrMem {
     }
 
     fn to_(&self) {
-        println!("InstrMem");
+        //println!("InstrMem");
     }
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {

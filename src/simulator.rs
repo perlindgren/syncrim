@@ -36,7 +36,7 @@ impl Simulator {
 
         trace!("-- allocate storage for lensed outputs");
         for c in &component_store.store {
-            println!("{:?}", c.get_id_ports().0);
+            trace!("{:?}", c.get_id_ports().0);
             let (id, ports) = c.get_id_ports();
 
             trace!("id {}, ports {:?}", id, ports);
