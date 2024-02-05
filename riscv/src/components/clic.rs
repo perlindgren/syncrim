@@ -24,6 +24,7 @@ pub const CLIC_CSR_DATA_OUT_ID: &str = "csr_data_o";
 pub const CLIC_MMIO_DATA_OUT_ID: &str = "mmio_data_o";
 pub const CLIC_MEM_INT_ADDR_ID: &str = "mem_int_addr";
 pub const CLIC_INTERRUPT_ID: &str = "interrupt";
+pub const CLIC_WRITE_RA_ENABLE_ID: &str = "write_ra_enable";
 pub const CLIC_PC_ADDR_OUT_ID: &str = "pc_addr_out";
 pub const CLIC_MEPC_OUT_ID: &str = "mepc_out";
 // pub const CLIC_REG_FILE_WRITE_ID: &str = "reg_file_write";
@@ -492,12 +493,14 @@ impl Component for CLIC {
         //Interrupt dispatch
         let mut csrstore = self.csrstore.borrow_mut();
         let mstatus = *csrstore.get(&0x300).unwrap();
-        let mintthresh = *csrstore.get(&0x347).unwrap();
+        let mut mintthresh = *csrstore.get(&0x347).unwrap();
         let mtvec = *csrstore.get(&0x305).unwrap();
         //let mut stack_depth = self.stack_depth.borrow_mut();
 
         // interrupt return, super-clic
+        let mut return_from_interrupt = None;
         let mut clic_stack = self.clic_stack.borrow_mut();
+
         if let Some((old_threshold, current_mepc)) = clic_stack.last() {
             let (old_threshold, current_mepc) = (*old_threshold, *current_mepc);
             trace!("clic stack {:#x?}", clic_stack);
@@ -512,8 +515,10 @@ impl Component for CLIC {
                 trace!("---- return from interrupt ----");
                 let _ = clic_stack.pop();
                 csrstore.insert(0x347, old_threshold as usize); // set old threshold
+                mintthresh = old_threshold as usize;
                 stack_depth += 1;
                 csrstore.insert(0x350, stack_depth);
+                return_from_interrupt = Some(current_mepc);
             }
         }
         drop(clic_stack);
@@ -544,19 +549,30 @@ impl Component for CLIC {
                         }
                     }
 
+                    // mepc
+                    let new_mepc = if let Some(mepc_current) = return_from_interrupt {
+                        mepc_current as usize
+                    } else {
+                        pc as usize
+                    };
+
                     //
                     if stack_depth == 0 {
                         // vanilla mode
+                        panic!("no vanilla");
                         csrstore.insert(0x300, (mstatus & !0x8) | 0b1 << 7); //clear interrupt enable, set mpie
                     } else {
                         // super clic
                         //  let current_mepc = *csrstore.get(&0x341).unwrap() as u32;
+                        // mepc
                         let current_threshold = *csrstore.get(&0x347_usize).unwrap() as u32;
-                        self.clic_stack.borrow_mut().push((current_threshold, pc));
+                        self.clic_stack
+                            .borrow_mut()
+                            .push((current_threshold, new_mepc as u32));
                         csrstore.insert(0x347, interrupt_priority as usize); // set new threshold
                     }
-                    // mepc
-                    csrstore.insert(0x341, pc as usize);
+                    // write to csr
+                    csrstore.insert(0x341, new_mepc);
                     mem_int_addr = SignalValue::Data((mtvec as u32 + (interrupt_id) * 4) & !0b11);
 
                     blu_int = SignalValue::Data(1);
