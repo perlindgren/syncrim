@@ -1,14 +1,10 @@
-use log::trace;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "gui-egui")]
 use std::rc::Rc;
 
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
-use syncrim::{
-    common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
-    signal::SignalValue,
-};
+use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 pub const WB_CTL_INTR_IN_ID: &str = "clic_i";
 pub const WB_CTL_DEC_IN_ID: &str = "dec_i";
 

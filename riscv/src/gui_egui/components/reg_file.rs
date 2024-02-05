@@ -12,10 +12,9 @@ use syncrim::gui_egui::component_ui::{
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
-use syncrim::signal::SignalValue;
 
 impl RegFile {
-    fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
+    fn side_panel(&self, ctx: &Context, _simulator: Option<&mut Simulator>) {
         Window::new("Register File").show(ctx, |ui| {
             TableBuilder::new(ui)
                 .column(Column::initial(40.0))
@@ -36,12 +35,14 @@ impl RegFile {
                             });
                             row.col(|ui| {
                                 let stack_depth = *self.stack_depth_state.borrow() as i32;
-                                let stack_depth = if stack_depth >= 0 {stack_depth as usize} else {0_usize};
+                                let stack_depth = if stack_depth >= 0 {
+                                    stack_depth as usize
+                                } else {
+                                    0_usize
+                                };
                                 ui.label(format!(
                                     "0x{:08X}",
-                                    self.registers.0.borrow()
-                                        [stack_depth]
-                                        [reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
+                                    self.registers.0.borrow()[stack_depth][reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
                                 ));
                             });
                         });
@@ -128,13 +129,15 @@ impl EguiComponent for RegFile {
                                     });
                                     row.col(|ui| {
                                         let stack_depth = *self.stack_depth_state.borrow() as i32;
-                                        let stack_depth = if stack_depth >= 0 {stack_depth as usize} else {0_usize};
+                                        let stack_depth = if stack_depth >= 0 {
+                                            stack_depth as usize
+                                        } else {
+                                            0_usize
+                                        };
                                         ui.add(Label::new(
                                             RichText::new(format!(
                                                 "0x{:08x}",
-                                                self.registers.0.borrow()
-                                                    [stack_depth]
-                                                    [index]
+                                                self.registers.0.borrow()[stack_depth][index]
                                             ))
                                             .size(15.0 * scale),
                                         ));

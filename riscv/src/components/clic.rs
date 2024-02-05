@@ -7,8 +7,6 @@ use syncrim::{
 };
 
 use priority_queue::PriorityQueue;
-use std::borrow::Borrow;
-use std::collections::binary_heap::IntoIter;
 use std::{cell::RefCell, collections::HashMap};
 pub const CLIC_CSR_ADDR_ID: &str = "csr_addr";
 pub const CLIC_CSR_CTL_ID: &str = "csr_ctl";
@@ -336,8 +334,7 @@ impl Component for CLIC {
         let mut mem_int_addr = SignalValue::Uninitialized;
 
         // vanilla clic behavior
-        let mret_sig: SignalValue = mret.into();
-        let mut mepc = SignalValue::Uninitialized;
+        let mepc;
         let mut stack_depth = *self.csrstore.borrow().get(&(0x350 as usize)).unwrap();
         if mret == 1 {
             //panic!("currently not supported");
@@ -364,7 +361,11 @@ impl Component for CLIC {
             // simulator.set_out_value(&self.id, "mret_out", mret_sig);
             self.history.borrow_mut().push(history_entry);
             stack_depth += 1;
-            simulator.set_out_value(&self.id, CLIC_STACK_DEPTH_OUT_ID, SignalValue::Data(stack_depth as u32));
+            simulator.set_out_value(
+                &self.id,
+                CLIC_STACK_DEPTH_OUT_ID,
+                SignalValue::Data(stack_depth as u32),
+            );
             csrstore.insert(0x350, stack_depth);
             return Ok(());
         }
@@ -567,8 +568,9 @@ impl Component for CLIC {
                         // vanilla mode
                         //panic!("no vanilla");
                         csrstore.insert(0x300, (mstatus & !0x8) | 0b1 << 7); //clear interrupt enable, set mpie
-                        // if vanilla mode, use level 0 register.
-                        mem_int_addr = SignalValue::Data((mtvec as u32 + (interrupt_id) * 4) & !0b11);
+                                                                             // if vanilla mode, use level 0 register.
+                        mem_int_addr =
+                            SignalValue::Data((mtvec as u32 + (interrupt_id) * 4) & !0b11);
                     } else {
                         // super clic
                         //  let current_mepc = *csrstore.get(&0x341).unwrap() as u32;
@@ -578,13 +580,12 @@ impl Component for CLIC {
                             .borrow_mut()
                             .push((current_threshold, new_mepc as u32));
                         csrstore.insert(0x347, interrupt_priority as usize); // set new threshold
-                        mem_int_addr = SignalValue::Data((super_mtvec as u32 + (interrupt_id) * 4) & !0b11);
-
+                        mem_int_addr =
+                            SignalValue::Data((super_mtvec as u32 + (interrupt_id) * 4) & !0b11);
                     }
                     // write to csr
                     csrstore.insert(0x341, new_mepc);
-                    blu_int = SignalValue::Data(1); 
-
+                    blu_int = SignalValue::Data(1);
 
                     stack_depth -= 1;
                     csrstore.insert(0x350, stack_depth);

@@ -6,11 +6,9 @@ use std::{cell::RefCell, rc::Rc};
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
 use syncrim::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, Signal, SignalUnsigned,
-    Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalUnsigned, Simulator,
 };
 use syncrim::signal::SignalValue;
-use syncrim::simulator;
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
 #[derive(Copy, Clone, Debug, TryFromPrimitive)]
@@ -93,7 +91,7 @@ impl std::convert::TryFrom<u32> for Reg {
     }
 }
 
-const REG_ZERO: u32 = Reg::zero as u32;
+//const REG_ZERO: u32 = Reg::zero as u32;
 const REG_RA: u32 = Reg::ra as u32;
 
 pub const REG_FILE_MAX_DEPTH: usize = 4;
@@ -215,7 +213,11 @@ impl RegFile {
             .get_input_value(&self.stack_depth)
             .try_into()
             .unwrap();
-        let stack_depth = if stack_depth as i32 >= 0 {stack_depth} else {0};
+        let stack_depth = if stack_depth as i32 >= 0 {
+            stack_depth
+        } else {
+            0
+        };
         match input {
             SignalValue::Data(read_addr) => {
                 trace!("read_addr {}", read_addr);
@@ -246,7 +248,11 @@ impl RegFile {
             .get_input_value(&self.stack_depth)
             .try_into()
             .unwrap();
-        let stack_depth = if stack_depth as i32 >= 0 {stack_depth} else {0};
+        let stack_depth = if stack_depth as i32 >= 0 {
+            stack_depth
+        } else {
+            0
+        };
 
         match input {
             SignalValue::Data(write_addr) => {
