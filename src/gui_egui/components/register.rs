@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Ports, Simulator};
+use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
 use crate::components::Register;
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -15,7 +15,7 @@ impl EguiComponent for Register {
         &self,
         ui: &mut Ui,
         _context: &mut EguiExtra,
-        _simulator: Option<&mut Simulator>,
+        simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
@@ -53,8 +53,18 @@ impl EguiComponent for Register {
         };
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
-            ui.label("Register");
+            if let Some(s) = &simulator {
+                ui.label({
+                    let r: Result<SignalUnsigned, String> =
+                        s.get_input_value(&self.r_in).try_into();
+                    match r {
+                        Ok(data) => format!("{:#x}", data),
+                        _ => format!("{:?}", r),
+                    }
+                });
+            }
         });
+
         match editor_mode {
             EditorMode::Simulator => (),
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
