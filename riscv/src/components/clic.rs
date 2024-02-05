@@ -23,8 +23,8 @@ pub const CLIC_DATA_SIZE_ID: &str = "size";
 pub const CLIC_CSR_DATA_OUT_ID: &str = "csr_data_o";
 pub const CLIC_MMIO_DATA_OUT_ID: &str = "mmio_data_o";
 pub const CLIC_MEM_INT_ADDR_ID: &str = "mem_int_addr";
-pub const CLIC_BLU_INT_ID: &str = "blu_int";
-pub const CLIC_MRET_OUT_ID: &str = "mret_out";
+pub const CLIC_INTERRUPT_ID: &str = "interrupt";
+pub const CLIC_PC_ADDR_OUT_ID: &str = "pc_addr_out";
 pub const CLIC_MEPC_OUT_ID: &str = "mepc_out";
 // pub const CLIC_REG_FILE_WRITE_ID: &str = "reg_file_write";
 pub const CLIC_STACK_DEPTH_OUT_ID: &str = "stack_depth_out";
@@ -279,8 +279,8 @@ impl Component for CLIC {
                     CLIC_CSR_DATA_OUT_ID,
                     CLIC_MMIO_DATA_OUT_ID,
                     CLIC_MEM_INT_ADDR_ID,
-                    CLIC_BLU_INT_ID,
-                    CLIC_MRET_OUT_ID,
+                    CLIC_PC_ADDR_OUT_ID,
+                    CLIC_INTERRUPT_ID,
                     CLIC_MEPC_OUT_ID,
                     CLIC_STACK_DEPTH_OUT_ID,
                 ],
@@ -329,7 +329,7 @@ impl Component for CLIC {
             .try_into()
             .unwrap_or(0);
         let mut val = 0;
-        let mut blu_int = SignalValue::Uninitialized;
+        let mut blu_int = SignalValue::Data(0); // default to pc
         let mut mmio_data = SignalValue::Uninitialized;
         let mut mem_int_addr = SignalValue::Uninitialized;
 
@@ -353,11 +353,11 @@ impl Component for CLIC {
             history_entry.csr_op = Some(vec![(0x300, old_val as u32)]);
             trace!("mret");
             simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
-            simulator.set_out_value(&self.id, "blu_int", blu_int);
+            simulator.set_out_value(&self.id, CLIC_INTERRUPT_ID, blu_int);
             simulator.set_out_value(&self.id, "csr_data_o", val as u32);
             simulator.set_out_value(&self.id, "mmio_data_o", mmio_data);
             simulator.set_out_value(&self.id, "mepc_out", mepc);
-            simulator.set_out_value(&self.id, "mret_out", mret_sig);
+            // simulator.set_out_value(&self.id, "mret_out", mret_sig);
             self.history.borrow_mut().push(history_entry);
             stack_depth -= 1;
             return Ok(());
@@ -589,11 +589,13 @@ impl Component for CLIC {
             SignalValue::Data(stack_depth as u32),
         );
         simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
-        simulator.set_out_value(&self.id, "blu_int", blu_int);
+        simulator.set_out_value(&self.id, CLIC_INTERRUPT_ID, blu_int);
         simulator.set_out_value(&self.id, "csr_data_o", val as u32);
         simulator.set_out_value(&self.id, "mmio_data_o", mmio_data);
         simulator.set_out_value(&self.id, "mepc_out", mepc);
-        simulator.set_out_value(&self.id, "mret_out", mret_sig);
+        // simulator.set_out_value(&self.id, "mret_out", mret_sig);
+
+        trace!("CLIC_INTERRUPT_ID {:?}", blu_int);
         Ok(())
     }
 

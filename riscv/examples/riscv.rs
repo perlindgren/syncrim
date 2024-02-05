@@ -218,7 +218,7 @@ fn main() {
                     rs2: dummy.clone(),
                     ctrl: dummy.clone(),
                     enable: dummy.clone(),
-                    int: dummy.clone(),
+                    // int: dummy.clone(),
                     // mret: dummy.clone(),
                 }),
                 Rc::new(Decoder {
