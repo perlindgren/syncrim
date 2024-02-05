@@ -167,7 +167,7 @@ impl Component for Decoder {
         match opcode {
             0b0110011 => {
                 //OP
-                alu_operand_a_sel = SignalValue::from(0); //rs1
+                alu_operand_a_sel = SignalValue::from(1); //rs1
                 alu_operand_b_sel = SignalValue::from(0); //rs2
                                                           //rs1 [19:15] rs2 [24:20] rd [11:7]
                 regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
@@ -262,7 +262,7 @@ impl Component for Decoder {
             }
             0b0010011 => {
                 //OP_IMM
-                alu_operand_a_sel = SignalValue::from(0); //rs1
+                alu_operand_a_sel = SignalValue::from(1); //rs1
                 alu_operand_b_sel = SignalValue::from(1); //imm
                 regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
@@ -336,7 +336,7 @@ impl Component for Decoder {
             0b0110111 => {
                 //LUI
                 trace!("opcode=LUI");
-                alu_operand_a_sel = SignalValue::from(1); //big-imm
+                alu_operand_a_sel = SignalValue::from(0); //big-imm
                 alu_operand_b_sel = SignalValue::from(1); //imm
                 regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = 0; //x0 dont care
@@ -350,7 +350,7 @@ impl Component for Decoder {
             0b0010111 => {
                 //AUIPC
                 trace!("opcode=AUIPC");
-                alu_operand_a_sel = SignalValue::from(1); //big-imm
+                alu_operand_a_sel = SignalValue::from(0); //big-imm
                 alu_operand_b_sel = SignalValue::from(3); //PC
                 regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = SignalValue::from(0); //x0 dont care
@@ -422,7 +422,7 @@ impl Component for Decoder {
             0b0000011 => {
                 //LOAD
                 trace!("opcode=LOAD");
-                alu_operand_a_sel = SignalValue::from(0); //rs1
+                alu_operand_a_sel = SignalValue::from(1); //rs1
                 alu_operand_b_sel = SignalValue::from(1); //imm
                 regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
@@ -462,7 +462,7 @@ impl Component for Decoder {
             0b0100011 => {
                 //STORE
                 trace!("opcode=STORE");
-                alu_operand_a_sel = SignalValue::from(0); //rs1
+                alu_operand_a_sel = SignalValue::from(1); //rs1
                 alu_operand_b_sel = SignalValue::from(1); //imm
                 regfile_rd = SignalValue::Uninitialized;
                 regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
@@ -632,7 +632,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x003100b3); //add x1, x2, x3
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 0.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 2.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 3.into());
@@ -688,7 +688,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x40410133); //sub x2, x2, x4
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 0.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 2.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 4.into());
@@ -744,7 +744,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x004121b3); //slt x3, x2, x4
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 0.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 2.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 4.into());
@@ -800,7 +800,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x004131b3); //sltu x3, x2, x4
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 0.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 2.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 4.into());
@@ -856,7 +856,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x001151b3); //srl x3, x2, x1
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 0.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 2.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 1.into());
@@ -912,7 +912,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x401151b3); //sra x3, x2, x1
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 0.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 2.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 1.into());
@@ -968,7 +968,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x001111b3); //sll x3, x2, x1
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 0.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 2.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 1.into());
@@ -1024,7 +1024,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x0020c1b3); //xor x3, x1, x2
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 0.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 2.into());
@@ -1080,7 +1080,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x0020f1b3); //and x3, x1, x2)
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 0.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 2.into());
@@ -1136,7 +1136,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x0060e1b3); //or x3, x1, x6
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 0.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 6.into());
@@ -1230,7 +1230,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x00310093); //addi x1, x2, 3
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 2.into());
         assert_eq!(
@@ -1283,7 +1283,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0xffd0a093); //slti x1, x1, -3
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 1.into());
         assert_eq!(
@@ -1339,7 +1339,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0xffd0b093); //sltiu x1, x1, -3
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 1.into());
         assert_eq!(
@@ -1395,7 +1395,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x00324093); //xori x1, x4, 3
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 4.into());
         assert_eq!(
@@ -1448,7 +1448,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x00326093); //ori x1, x4, 3
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 4.into());
         assert_eq!(
@@ -1501,7 +1501,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x00327093); //andi x1, x4, 3
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 4.into());
         assert_eq!(
@@ -1554,7 +1554,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x00c19093); //slli x1, x3, 12
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 3.into());
         assert_eq!(
@@ -1607,7 +1607,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x0011d093); //srli x1, x3, 1
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 3.into());
         assert_eq!(
@@ -1660,7 +1660,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x4020d093); //srai x1, x1, 2
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 1.into());
         assert_eq!(
@@ -1751,7 +1751,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0xfffff0b7); //lui x1, 0xFFFFF
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(
             simulator.get_input_value(regfile_rs1),
@@ -1804,7 +1804,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0xfffff097); //auipc x1, 0xFFFFF
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 0.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 3.into());
         assert_eq!(
             simulator.get_input_value(regfile_rs1),
@@ -1866,7 +1866,7 @@ mod test {
             simulator.get_input_value(wb_mux),
             SignalValue::Uninitialized
         );
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 5.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 8.into());
@@ -1919,7 +1919,7 @@ mod test {
             simulator.get_input_value(wb_mux),
             SignalValue::Uninitialized
         );
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 5.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 8.into());
@@ -1972,7 +1972,7 @@ mod test {
             simulator.get_input_value(wb_mux),
             SignalValue::Uninitialized
         );
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 5.into());
         assert_eq!(simulator.get_input_value(regfile_rs2), 8.into());
@@ -2022,7 +2022,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x0042a403); //lw x8, 4(x5)
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 1.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 5.into());
         assert_eq!(
@@ -2069,7 +2069,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x00429403); //lh x8, 4(x5)
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 1.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 5.into());
         assert_eq!(
@@ -2116,7 +2116,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x00428403); //lb x8, 4(x5)
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 1.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 5.into());
         assert_eq!(
@@ -2163,7 +2163,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x0042d403); //lhu x8, 4(x5)
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 1.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 5.into());
         assert_eq!(
@@ -2210,7 +2210,7 @@ mod test {
         simulator.set_out_value("instruction", "out", 0x0042c403); //lbu x8, 4(x5)
         simulator.clock();
         assert_eq!(simulator.get_input_value(wb_mux), 1.into());
-        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 0.into());
+        assert_eq!(simulator.get_input_value(alu_operand_a_sel), 1.into());
         assert_eq!(simulator.get_input_value(alu_operand_b_sel), 1.into());
         assert_eq!(simulator.get_input_value(regfile_rs1), 5.into());
         assert_eq!(

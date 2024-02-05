@@ -1,6 +1,6 @@
 use crate::components::SZExt;
 use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2};
-use syncrim::common::{EguiComponent, Ports, Simulator};
+use syncrim::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
     rect_with_hover, visualize_ports,
@@ -15,7 +15,7 @@ impl EguiComponent for SZExt {
         &self,
         ui: &mut Ui,
         _context: &mut EguiExtra,
-        _simulator: Option<&mut Simulator>,
+        simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
@@ -47,7 +47,43 @@ impl EguiComponent for SZExt {
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
-            ui.label("SZExt");
+            if let Some(s) = &simulator {
+                ui.label({
+                    let r: Result<SignalUnsigned, String> =
+                        s.get_input_value(&self.sel_i).try_into();
+                    match r {
+                        Ok(data) => {
+                            if data == 0 {
+                                "Sign Extend"
+                            } else {
+                                "Zero Extend"
+                            }
+                        }
+                        _ => "Undefined",
+                    }
+                });
+                ui.label({
+                    let r: Result<SignalUnsigned, String> =
+                        s.get_input_value(&self.data_i).try_into();
+                    match r {
+                        Ok(data) => format!("In {:#x}", data),
+
+                        _ => "Undefined".to_string(),
+                    }
+                });
+                ui.label({
+                    let r: Result<SignalUnsigned, String> = s
+                        .get_input_value(&Input {
+                            id: self.id.clone(),
+                            field: "out".to_string(),
+                        })
+                        .try_into();
+                    match r {
+                        Ok(data) => format!("Out {:#x}", data),
+                        _ => "Undefined".to_string(),
+                    }
+                });
+            }
         });
         match editor_mode {
             EditorMode::Simulator => (),
@@ -108,7 +144,7 @@ impl EguiComponent for SZExt {
                 );
                 clicked_dropdown |= input_selector(
                     ui,
-                    &mut self.data_i,
+                    &mut self.sel_i,
                     crate::components::SIGN_ZERO_EXT_SEL_I_ID.to_string(),
                     id_ports,
                     self.id.clone(),
