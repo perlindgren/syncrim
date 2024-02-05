@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Ports, SignalValue, Simulator};
+use crate::common::{EguiComponent, Ports, SignalUnsigned, SignalValue, Simulator};
 use crate::components::Cross;
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -54,7 +54,10 @@ impl EguiComponent for Cross {
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
-            ui.label(format!("{:?}", value));
+            match value {
+                SignalValue::Data(data) => ui.label(format!("{:#x?}", data)),
+                _ => ui.label(format!("{:?}", value)),
+            };
         });
         match editor_mode {
             EditorMode::Simulator => (),

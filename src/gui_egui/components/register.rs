@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
+use crate::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
 use crate::components::Register;
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -58,8 +58,20 @@ impl EguiComponent for Register {
                     let r: Result<SignalUnsigned, String> =
                         s.get_input_value(&self.r_in).try_into();
                     match r {
-                        Ok(data) => format!("{:#x}", data),
-                        _ => format!("{:?}", r),
+                        Ok(data) => format!("In {:#x}", data),
+                        _ => format!("In {:?}", r),
+                    }
+                });
+                ui.label({
+                    let r: Result<SignalUnsigned, String> = s
+                        .get_input_value(&Input {
+                            id: self.id.clone(),
+                            field: "out".to_string(),
+                        })
+                        .try_into();
+                    match r {
+                        Ok(data) => format!("Out {:#x}", data),
+                        _ => format!("Out {:?}", r),
                     }
                 });
             }
