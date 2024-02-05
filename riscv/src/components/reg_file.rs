@@ -414,11 +414,15 @@ impl Component for RegFile {
             .unwrap();
 
         // special handling if clic_ra_we
+        // THIS IS 2 WHEN
         let clic_ra_we =
             simulator.get_input_value(&self.clic_ra_we) == (true as SignalUnsigned).into();
 
         if clic_ra_we && (stack_depth as i32 >= 0) {
-            trace!("update ra register");
+            println!(
+                "update ra register {:?}",
+                simulator.get_input_value(&self.clic_mepc)
+            );
             let old_ra = self.read_reg(simulator, REG_RA);
             regop.old_ra = Some(old_ra.try_into().unwrap());
             self.write_reg(

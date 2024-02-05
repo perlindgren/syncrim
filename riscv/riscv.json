@@ -2,14 +2,26 @@
     "store": [
         {
             "type": "Register",
-            "id": "blu_int_reg",
+            "id": "mepc_reg",
             "pos": [
                 1920.0,
-                860.0
+                920.0
             ],
             "r_in": {
                 "id": "clic",
-                "field": "interrupt"
+                "field": "mepc_out"
+            }
+        },
+        {
+            "type": "Register",
+            "id": "regfile_we_reg",
+            "pos": [
+                1920.0,
+                1000.0
+            ],
+            "r_in": {
+                "id": "decoder",
+                "field": "regfile_we"
             }
         },
         {
@@ -26,6 +38,18 @@
         },
         {
             "type": "Register",
+            "id": "regfile_rd_reg",
+            "pos": [
+                1920.0,
+                1060.0
+            ],
+            "r_in": {
+                "id": "decoder",
+                "field": "regfile_rd"
+            }
+        },
+        {
+            "type": "Register",
             "id": "reg",
             "pos": [
                 490.0,
@@ -34,18 +58,6 @@
             "r_in": {
                 "id": "interrupt_mux",
                 "field": "out"
-            }
-        },
-        {
-            "type": "Register",
-            "id": "regfile_we_reg",
-            "pos": [
-                1920.0,
-                980.0
-            ],
-            "r_in": {
-                "id": "decoder",
-                "field": "regfile_we"
             }
         },
         {
@@ -62,26 +74,51 @@
         },
         {
             "type": "Register",
-            "id": "mepc_reg",
+            "id": "rf_ra_we_reg",
             "pos": [
                 1920.0,
-                920.0
+                860.0
             ],
             "r_in": {
                 "id": "clic",
-                "field": "mepc_out"
+                "field": "rf_ra_we"
             }
         },
         {
-            "type": "Register",
-            "id": "regfile_rd_reg",
+            "type": "Constant",
+            "id": "zero_c",
             "pos": [
-                1920.0,
-                1040.0
+                1360.0,
+                420.0
             ],
-            "r_in": {
-                "id": "decoder",
-                "field": "regfile_rd"
+            "value": {
+                "data": {
+                    "Data": 0
+                },
+                "fmt": {
+                    "Hex": [
+                        "_32",
+                        false
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "zero_c_data",
+            "pos": [
+                [
+                    1360.0,
+                    420.0
+                ],
+                [
+                    1380.0,
+                    420.0
+                ]
+            ],
+            "input": {
+                "id": "zero_c",
+                "field": "out"
             }
         },
         {
@@ -105,61 +142,121 @@
         },
         {
             "type": "Wire",
-            "id": "curr_pc",
+            "id": "blu_int_to_rf",
             "pos": [
                 [
-                    520.0,
-                    700.0
+                    1930.0,
+                    860.0
                 ],
                 [
-                    520.0,
-                    1010.0
+                    2020.0,
+                    860.0
                 ],
                 [
-                    1360.0,
-                    1010.0
+                    2020.0,
+                    170.0
                 ],
                 [
-                    1360.0,
-                    650.0
+                    1100.0,
+                    170.0
                 ],
                 [
-                    1380.0,
-                    650.0
+                    1100.0,
+                    250.0
                 ]
             ],
             "input": {
-                "id": "reg",
+                "id": "regfile_we_reg",
                 "field": "out"
             }
         },
         {
             "type": "Wire",
-            "id": "pc_to_branch",
+            "id": "ra_we_to_rf",
             "pos": [
                 [
-                    520.0,
-                    780.0
+                    1930.0,
+                    1000.0
                 ],
                 [
-                    260.0,
-                    780.0
+                    2060.0,
+                    1000.0
                 ],
                 [
-                    260.0,
-                    800.0
+                    2060.0,
+                    150.0
                 ],
                 [
-                    260.0,
-                    800.0
+                    1020.0,
+                    150.0
                 ],
                 [
-                    280.0,
-                    800.0
+                    1020.0,
+                    250.0
                 ]
             ],
             "input": {
-                "id": "reg",
+                "id": "regfile_we_reg",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "mepc_to_rf2",
+            "pos": [
+                [
+                    1930.0,
+                    920.0
+                ],
+                [
+                    2040.0,
+                    920.0
+                ],
+                [
+                    2040.0,
+                    160.0
+                ],
+                [
+                    1060.0,
+                    160.0
+                ],
+                [
+                    1060.0,
+                    250.0
+                ]
+            ],
+            "input": {
+                "id": "mepc_reg",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "mepc_to_rf",
+            "pos": [
+                [
+                    1930.0,
+                    1060.0
+                ],
+                [
+                    2080.0,
+                    1060.0
+                ],
+                [
+                    2080.0,
+                    140.0
+                ],
+                [
+                    980.0,
+                    140.0
+                ],
+                [
+                    980.0,
+                    250.0
+                ]
+            ],
+            "input": {
+                "id": "mepc_reg",
                 "field": "out"
             }
         },
@@ -236,69 +333,50 @@
             }
         },
         {
-            "type": "Constant",
-            "id": "zero_c",
-            "pos": [
-                1360.0,
-                420.0
-            ],
-            "value": {
-                "data": {
-                    "Data": 0
-                },
-                "fmt": {
-                    "Hex": [
-                        "_32",
-                        false
-                    ]
-                }
-            }
-        },
-        {
             "type": "Wire",
-            "id": "zero_c_data",
+            "id": "curr_pc",
             "pos": [
                 [
+                    520.0,
+                    700.0
+                ],
+                [
+                    520.0,
+                    1010.0
+                ],
+                [
                     1360.0,
-                    420.0
+                    1010.0
+                ],
+                [
+                    1360.0,
+                    650.0
                 ],
                 [
                     1380.0,
-                    420.0
+                    650.0
                 ]
             ],
             "input": {
-                "id": "zero_c",
+                "id": "reg",
                 "field": "out"
             }
         },
         {
             "type": "Wire",
-            "id": "blu_int_to_rf",
+            "id": "pc",
             "pos": [
                 [
-                    1930.0,
-                    860.0
+                    500.0,
+                    700.0
                 ],
                 [
-                    2020.0,
-                    860.0
-                ],
-                [
-                    2020.0,
-                    170.0
-                ],
-                [
-                    1100.0,
-                    170.0
-                ],
-                [
-                    1100.0,
-                    250.0
+                    540.0,
+                    700.0
                 ]
             ],
             "input": {
-                "id": "regfile_we_reg",
+                "id": "reg",
                 "field": "out"
             }
         },
@@ -333,231 +411,6 @@
             ],
             "input": {
                 "id": "wb_reg",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "mepc_to_rf2",
-            "pos": [
-                [
-                    1930.0,
-                    920.0
-                ],
-                [
-                    2040.0,
-                    920.0
-                ],
-                [
-                    2040.0,
-                    160.0
-                ],
-                [
-                    1060.0,
-                    160.0
-                ],
-                [
-                    1060.0,
-                    250.0
-                ]
-            ],
-            "input": {
-                "id": "mepc_reg",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "mepc_to_rf",
-            "pos": [
-                [
-                    1930.0,
-                    1040.0
-                ],
-                [
-                    2080.0,
-                    1040.0
-                ],
-                [
-                    2080.0,
-                    140.0
-                ],
-                [
-                    980.0,
-                    140.0
-                ],
-                [
-                    980.0,
-                    250.0
-                ]
-            ],
-            "input": {
-                "id": "mepc_reg",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "pc",
-            "pos": [
-                [
-                    500.0,
-                    700.0
-                ],
-                [
-                    540.0,
-                    700.0
-                ]
-            ],
-            "input": {
-                "id": "reg",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "ra_we_to_rf",
-            "pos": [
-                [
-                    1930.0,
-                    980.0
-                ],
-                [
-                    2060.0,
-                    980.0
-                ],
-                [
-                    2060.0,
-                    150.0
-                ],
-                [
-                    1020.0,
-                    150.0
-                ],
-                [
-                    1020.0,
-                    250.0
-                ]
-            ],
-            "input": {
-                "id": "regfile_we_reg",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Constant",
-            "id": "pc_adder_c",
-            "pos": [
-                520.0,
-                640.0
-            ],
-            "value": {
-                "data": {
-                    "Data": 4
-                },
-                "fmt": {
-                    "Hex": [
-                        "_32",
-                        false
-                    ]
-                }
-            }
-        },
-        {
-            "type": "Add",
-            "id": "pc_adder",
-            "pos": [
-                560.0,
-                670.0
-            ],
-            "a_in": {
-                "id": "pc_adder_c",
-                "field": "out"
-            },
-            "b_in": {
-                "id": "reg",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "pc_p_4",
-            "pos": [
-                [
-                    580.0,
-                    670.0
-                ],
-                [
-                    600.0,
-                    670.0
-                ],
-                [
-                    600.0,
-                    620.0
-                ],
-                [
-                    340.0,
-                    620.0
-                ],
-                [
-                    340.0,
-                    670.0
-                ],
-                [
-                    360.0,
-                    670.0
-                ]
-            ],
-            "input": {
-                "id": "pc_adder",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "pc_c",
-            "pos": [
-                [
-                    520.0,
-                    640.0
-                ],
-                [
-                    540.0,
-                    640.0
-                ]
-            ],
-            "input": {
-                "id": "pc_adder_c",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "pc_plus_4",
-            "pos": [
-                [
-                    600.0,
-                    670.0
-                ],
-                [
-                    600.0,
-                    1000.0
-                ],
-                [
-                    1350.0,
-                    1000.0
-                ],
-                [
-                    1350.0,
-                    630.0
-                ],
-                [
-                    1380.0,
-                    630.0
-                ]
-            ],
-            "input": {
-                "id": "pc_adder",
                 "field": "out"
             }
         },
@@ -618,6 +471,44 @@
         },
         {
             "type": "Wire",
+            "id": "jalr_imm",
+            "pos": [
+                [
+                    755.0,
+                    760.0
+                ],
+                [
+                    775.0,
+                    760.0
+                ],
+                [
+                    775.0,
+                    960.0
+                ],
+                [
+                    90.0,
+                    960.0
+                ],
+                [
+                    90.0,
+                    960.0
+                ],
+                [
+                    90.0,
+                    900.0
+                ],
+                [
+                    100.0,
+                    900.0
+                ]
+            ],
+            "input": {
+                "id": "decoder",
+                "field": "jalr_imm"
+            }
+        },
+        {
+            "type": "Wire",
             "id": "we",
             "pos": [
                 [
@@ -630,19 +521,19 @@
                 ],
                 [
                     820.0,
-                    1040.0
+                    1060.0
                 ],
                 [
                     1870.0,
-                    1040.0
+                    1060.0
                 ],
                 [
                     1870.0,
-                    980.0
+                    1000.0
                 ],
                 [
                     1910.0,
-                    980.0
+                    1000.0
                 ]
             ],
             "input": {
@@ -651,35 +542,49 @@
             }
         },
         {
-            "type": "Sext",
-            "id": "jalr_se",
-            "pos": [
-                140.0,
-                710.0
-            ],
-            "sext_in": {
-                "id": "decoder",
-                "field": "jalr_imm"
-            },
-            "in_size": 12,
-            "out_size": 32
-        },
-        {
             "type": "Wire",
-            "id": "jalr_imm_ext",
+            "id": "branch_imm",
             "pos": [
                 [
-                    180.0,
-                    720.0
+                    755.0,
+                    710.0
                 ],
                 [
-                    260.0,
-                    720.0
+                    755.0,
+                    710.0
+                ],
+                [
+                    790.0,
+                    710.0
+                ],
+                [
+                    790.0,
+                    710.0
+                ],
+                [
+                    790.0,
+                    970.0
+                ],
+                [
+                    790.0,
+                    970.0
+                ],
+                [
+                    80.0,
+                    970.0
+                ],
+                [
+                    80.0,
+                    820.0
+                ],
+                [
+                    100.0,
+                    820.0
                 ]
             ],
             "input": {
-                "id": "jalr_se",
-                "field": "out"
+                "id": "decoder",
+                "field": "branch_imm"
             }
         },
         {
@@ -735,25 +640,293 @@
             }
         },
         {
+            "type": "RegFile",
+            "id": "reg_file",
+            "pos": [
+                1080.0,
+                500.0
+            ],
+            "width": 250.0,
+            "height": 500.0,
+            "stack_depth": {
+                "id": "stack_depth_reg",
+                "field": "out"
+            },
+            "clic_mepc": {
+                "id": "mepc_reg",
+                "field": "out"
+            },
+            "clic_ra_we": {
+                "id": "rf_ra_we_reg",
+                "field": "out"
+            },
+            "read_addr1": {
+                "id": "decoder",
+                "field": "regfile_rs1"
+            },
+            "read_addr2": {
+                "id": "decoder",
+                "field": "regfile_rs2"
+            },
+            "write_data": {
+                "id": "wb_reg",
+                "field": "out"
+            },
+            "write_addr": {
+                "id": "regfile_rd_reg",
+                "field": "out"
+            },
+            "write_enable": {
+                "id": "regfile_we_reg",
+                "field": "out"
+            },
+            "history": [
+                {
+                    "stack_depth": 0,
+                    "read_addr1": 0,
+                    "read_addr2": 0,
+                    "write_addr2": null,
+                    "old_data": null,
+                    "old_ra": null
+                }
+            ]
+        },
+        {
+            "type": "Cross",
+            "id": "c1",
+            "pos": [
+                1230.0,
+                400.0
+            ],
+            "input": {
+                "id": "reg_file",
+                "field": "reg_a"
+            }
+        },
+        {
+            "type": "Mux",
+            "id": "csr_mux",
+            "pos": [
+                1470.0,
+                740.0
+            ],
+            "select": {
+                "id": "decoder",
+                "field": "csr_data_mux"
+            },
+            "m_in": [
+                {
+                    "id": "reg_file",
+                    "field": "reg_a"
+                },
+                {
+                    "id": "decoder",
+                    "field": "csr_data"
+                }
+            ]
+        },
+        {
             "type": "Wire",
-            "id": "rs1",
+            "id": "csr_data",
+            "pos": [
+                [
+                    1480.0,
+                    740.0
+                ],
+                [
+                    1650.0,
+                    740.0
+                ],
+                [
+                    1650.0,
+                    850.0
+                ]
+            ],
+            "input": {
+                "id": "csr_mux",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "rs2_data",
+            "pos": [
+                [
+                    1205.0,
+                    590.0
+                ],
+                [
+                    1380.0,
+                    590.0
+                ]
+            ],
+            "input": {
+                "id": "reg_file",
+                "field": "reg_b"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "reg_b_data",
+            "pos": [
+                [
+                    1230.0,
+                    590.0
+                ],
+                [
+                    1230.0,
+                    810.0
+                ],
+                [
+                    1500.0,
+                    810.0
+                ],
+                [
+                    1500.0,
+                    850.0
+                ]
+            ],
+            "input": {
+                "id": "reg_file",
+                "field": "reg_b"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "reg_a",
+            "pos": [
+                [
+                    1230.0,
+                    400.0
+                ],
+                [
+                    1230.0,
+                    480.0
+                ],
+                [
+                    1270.0,
+                    480.0
+                ]
+            ],
+            "input": {
+                "id": "reg_file",
+                "field": "reg_a"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "w_reg_b",
+            "pos": [
+                [
+                    1270.0,
+                    520.0
+                ],
+                [
+                    1230.0,
+                    520.0
+                ],
+                [
+                    1230.0,
+                    590.0
+                ]
+            ],
+            "input": {
+                "id": "reg_file",
+                "field": "reg_b"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "reg_a_data",
+            "pos": [
+                [
+                    1340.0,
+                    400.0
+                ],
+                [
+                    1340.0,
+                    730.0
+                ],
+                [
+                    1450.0,
+                    730.0
+                ]
+            ],
+            "input": {
+                "id": "reg_file",
+                "field": "reg_a"
+            }
+        },
+        {
+            "type": "Cross",
+            "id": "c0",
+            "pos": [
+                1230.0,
+                590.0
+            ],
+            "input": {
+                "id": "reg_file",
+                "field": "reg_b"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "reg_b",
+            "pos": [
+                [
+                    1500.0,
+                    810.0
+                ],
+                [
+                    1500.0,
+                    810.0
+                ],
+                [
+                    1640.0,
+                    810.0
+                ],
+                [
+                    1640.0,
+                    850.0
+                ]
+            ],
+            "input": {
+                "id": "reg_file",
+                "field": "reg_b"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "szext_sel",
             "pos": [
                 [
                     755.0,
-                    380.0
+                    469.99997
                 ],
                 [
                     755.0,
-                    380.0
+                    469.99997
                 ],
                 [
-                    955.0,
-                    380.0
+                    860.0,
+                    469.99997
+                ],
+                [
+                    860.0,
+                    830.0
+                ],
+                [
+                    1080.0,
+                    830.0
+                ],
+                [
+                    1080.0,
+                    845.0
                 ]
             ],
             "input": {
                 "id": "decoder",
-                "field": "regfile_rs1"
+                "field": "sign_zero_ext_sel"
             }
         },
         {
@@ -819,37 +992,55 @@
             }
         },
         {
+            "type": "Mux",
+            "id": "alu_operand_a_mux",
+            "pos": [
+                1400.0,
+                400.0
+            ],
+            "select": {
+                "id": "decoder",
+                "field": "alu_operand_a_sel"
+            },
+            "m_in": [
+                {
+                    "id": "decoder",
+                    "field": "imm_a_mux_data"
+                },
+                {
+                    "id": "reg_file",
+                    "field": "reg_a"
+                },
+                {
+                    "id": "zero_c",
+                    "field": "out"
+                }
+            ]
+        },
+        {
             "type": "Wire",
-            "id": "szext_sel",
+            "id": "alu_operand_a",
             "pos": [
                 [
-                    755.0,
-                    469.99997
+                    1410.0,
+                    400.0
                 ],
                 [
-                    755.0,
-                    469.99997
+                    1440.0,
+                    400.0
                 ],
                 [
-                    860.0,
-                    469.99997
+                    1440.0,
+                    480.0
                 ],
                 [
-                    860.0,
-                    830.0
-                ],
-                [
-                    1080.0,
-                    830.0
-                ],
-                [
-                    1080.0,
-                    845.0
+                    1460.0,
+                    480.0
                 ]
             ],
             "input": {
-                "id": "decoder",
-                "field": "sign_zero_ext_sel"
+                "id": "alu_operand_a_mux",
+                "field": "out"
             }
         },
         {
@@ -887,6 +1078,32 @@
             }
         },
         {
+            "type": "BranchLogic",
+            "width": 60.0,
+            "height": 60.0,
+            "id": "branch_logic",
+            "pos": [
+                1300.0,
+                500.0
+            ],
+            "rs1": {
+                "id": "reg_file",
+                "field": "reg_a"
+            },
+            "rs2": {
+                "id": "reg_file",
+                "field": "reg_b"
+            },
+            "ctrl": {
+                "id": "decoder",
+                "field": "branch_logic_ctl"
+            },
+            "enable": {
+                "id": "decoder",
+                "field": "branch_logic_enable"
+            }
+        },
+        {
             "type": "Wire",
             "id": "w111111",
             "pos": [
@@ -918,269 +1135,63 @@
         },
         {
             "type": "Wire",
-            "id": "branch_imm",
+            "id": "jal_imm",
             "pos": [
                 [
                     755.0,
-                    710.0
+                    680.0
                 ],
                 [
                     755.0,
-                    710.0
+                    680.0
                 ],
                 [
-                    790.0,
-                    710.0
+                    800.0,
+                    680.0
                 ],
                 [
-                    790.0,
-                    710.0
+                    800.0,
+                    680.0
                 ],
                 [
-                    790.0,
-                    970.0
+                    800.0,
+                    980.0
                 ],
                 [
-                    790.0,
-                    970.0
+                    800.0,
+                    980.0
                 ],
                 [
-                    80.0,
-                    970.0
+                    70.0,
+                    980.0
                 ],
                 [
-                    80.0,
-                    820.0
+                    70.0,
+                    720.0
                 ],
                 [
                     100.0,
-                    820.0
+                    720.0
                 ]
             ],
             "input": {
                 "id": "decoder",
-                "field": "branch_imm"
+                "field": "big_imm"
             }
         },
         {
-            "type": "Wire",
-            "id": "regfile_rd",
+            "type": "Sext",
+            "id": "jalr_se",
             "pos": [
-                [
-                    755.0,
-                    650.0
-                ],
-                [
-                    810.0,
-                    650.0
-                ],
-                [
-                    810.0,
-                    1050.0
-                ],
-                [
-                    1910.0,
-                    1050.0
-                ]
+                140.0,
+                710.0
             ],
-            "input": {
+            "sext_in": {
                 "id": "decoder",
-                "field": "regfile_rd"
-            }
-        },
-        {
-            "type": "RegFile",
-            "id": "reg_file",
-            "pos": [
-                1080.0,
-                500.0
-            ],
-            "width": 250.0,
-            "height": 500.0,
-            "stack_depth": {
-                "id": "stack_depth_reg",
-                "field": "out"
+                "field": "jalr_imm"
             },
-            "clic_mepc": {
-                "id": "mepc_reg",
-                "field": "out"
-            },
-            "clic_ra_we": {
-                "id": "blu_int_reg",
-                "field": "out"
-            },
-            "read_addr1": {
-                "id": "decoder",
-                "field": "regfile_rs1"
-            },
-            "read_addr2": {
-                "id": "decoder",
-                "field": "regfile_rs2"
-            },
-            "write_data": {
-                "id": "wb_reg",
-                "field": "out"
-            },
-            "write_addr": {
-                "id": "regfile_rd_reg",
-                "field": "out"
-            },
-            "write_enable": {
-                "id": "regfile_we_reg",
-                "field": "out"
-            },
-            "history": [
-                {
-                    "stack_depth": 0,
-                    "read_addr1": 0,
-                    "read_addr2": 0,
-                    "write_addr2": null,
-                    "old_data": null,
-                    "old_ra": null
-                }
-            ]
-        },
-        {
-            "type": "Mux",
-            "id": "csr_mux",
-            "pos": [
-                1470.0,
-                740.0
-            ],
-            "select": {
-                "id": "decoder",
-                "field": "csr_data_mux"
-            },
-            "m_in": [
-                {
-                    "id": "reg_file",
-                    "field": "reg_a"
-                },
-                {
-                    "id": "decoder",
-                    "field": "csr_data"
-                }
-            ]
-        },
-        {
-            "type": "Wire",
-            "id": "csr_data",
-            "pos": [
-                [
-                    1480.0,
-                    740.0
-                ],
-                [
-                    1650.0,
-                    740.0
-                ],
-                [
-                    1650.0,
-                    850.0
-                ]
-            ],
-            "input": {
-                "id": "csr_mux",
-                "field": "out"
-            }
-        },
-        {
-            "type": "BranchLogic",
-            "width": 60.0,
-            "height": 60.0,
-            "id": "branch_logic",
-            "pos": [
-                1300.0,
-                500.0
-            ],
-            "rs1": {
-                "id": "reg_file",
-                "field": "reg_a"
-            },
-            "rs2": {
-                "id": "reg_file",
-                "field": "reg_b"
-            },
-            "ctrl": {
-                "id": "decoder",
-                "field": "branch_logic_ctl"
-            },
-            "enable": {
-                "id": "decoder",
-                "field": "branch_logic_enable"
-            }
-        },
-        {
-            "type": "Cross",
-            "id": "c1",
-            "pos": [
-                1230.0,
-                400.0
-            ],
-            "input": {
-                "id": "reg_file",
-                "field": "reg_a"
-            }
-        },
-        {
-            "type": "Cross",
-            "id": "c0",
-            "pos": [
-                1230.0,
-                590.0
-            ],
-            "input": {
-                "id": "reg_file",
-                "field": "reg_b"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "reg_b",
-            "pos": [
-                [
-                    1500.0,
-                    810.0
-                ],
-                [
-                    1500.0,
-                    810.0
-                ],
-                [
-                    1640.0,
-                    810.0
-                ],
-                [
-                    1640.0,
-                    850.0
-                ]
-            ],
-            "input": {
-                "id": "reg_file",
-                "field": "reg_b"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "w_reg_b",
-            "pos": [
-                [
-                    1270.0,
-                    520.0
-                ],
-                [
-                    1230.0,
-                    520.0
-                ],
-                [
-                    1230.0,
-                    590.0
-                ]
-            ],
-            "input": {
-                "id": "reg_file",
-                "field": "reg_b"
-            }
+            "in_size": 12,
+            "out_size": 32
         },
         {
             "type": "Add",
@@ -1249,99 +1260,104 @@
             }
         },
         {
-            "type": "Mux",
-            "id": "alu_operand_a_mux",
-            "pos": [
-                1400.0,
-                400.0
-            ],
-            "select": {
-                "id": "decoder",
-                "field": "alu_operand_a_sel"
-            },
-            "m_in": [
-                {
-                    "id": "decoder",
-                    "field": "imm_a_mux_data"
-                },
-                {
-                    "id": "reg_file",
-                    "field": "reg_a"
-                },
-                {
-                    "id": "zero_c",
-                    "field": "out"
-                }
-            ]
-        },
-        {
             "type": "Wire",
-            "id": "alu_operand_a",
+            "id": "jalr_imm_ext",
             "pos": [
                 [
-                    1410.0,
-                    400.0
+                    180.0,
+                    720.0
                 ],
                 [
-                    1440.0,
-                    400.0
-                ],
-                [
-                    1440.0,
-                    480.0
-                ],
-                [
-                    1460.0,
-                    480.0
+                    260.0,
+                    720.0
                 ]
             ],
             "input": {
-                "id": "alu_operand_a_mux",
+                "id": "jalr_se",
                 "field": "out"
             }
         },
         {
             "type": "Wire",
-            "id": "reg_a_data",
+            "id": "regfile_rd",
             "pos": [
                 [
-                    1340.0,
-                    400.0
+                    755.0,
+                    650.0
                 ],
                 [
-                    1340.0,
-                    730.0
+                    810.0,
+                    650.0
                 ],
                 [
-                    1450.0,
-                    730.0
+                    810.0,
+                    1070.0
+                ],
+                [
+                    1910.0,
+                    1070.0
                 ]
             ],
             "input": {
-                "id": "reg_file",
-                "field": "reg_a"
+                "id": "decoder",
+                "field": "regfile_rd"
             }
         },
         {
             "type": "Wire",
-            "id": "reg_a_data_o",
+            "id": "rs1",
             "pos": [
                 [
-                    1205.0,
-                    400.0
+                    755.0,
+                    380.0
                 ],
                 [
-                    1205.0,
-                    400.0
+                    755.0,
+                    380.0
                 ],
                 [
-                    1380.0,
-                    400.0
+                    955.0,
+                    380.0
                 ]
             ],
             "input": {
-                "id": "reg_file",
-                "field": "reg_a"
+                "id": "decoder",
+                "field": "regfile_rs1"
+            }
+        },
+        {
+            "type": "Constant",
+            "id": "pc_adder_c",
+            "pos": [
+                520.0,
+                640.0
+            ],
+            "value": {
+                "data": {
+                    "Data": 4
+                },
+                "fmt": {
+                    "Hex": [
+                        "_32",
+                        false
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Add",
+            "id": "pc_adder",
+            "pos": [
+                560.0,
+                670.0
+            ],
+            "a_in": {
+                "id": "pc_adder_c",
+                "field": "out"
+            },
+            "b_in": {
+                "id": "reg",
+                "field": "out"
             }
         },
         {
@@ -1373,6 +1389,126 @@
                     "field": "out"
                 }
             ]
+        },
+        {
+            "type": "Wire",
+            "id": "alu_operand_b",
+            "pos": [
+                [
+                    1410.0,
+                    620.0
+                ],
+                [
+                    1440.0,
+                    620.0
+                ],
+                [
+                    1440.0,
+                    520.0
+                ],
+                [
+                    1460.0,
+                    520.0
+                ]
+            ],
+            "input": {
+                "id": "alu_operand_b_mux",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Cross",
+            "id": "c_pc_out",
+            "pos": [
+                600.0,
+                670.0
+            ],
+            "input": {
+                "id": "pc_adder",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "pc_p_4",
+            "pos": [
+                [
+                    580.0,
+                    670.0
+                ],
+                [
+                    600.0,
+                    670.0
+                ],
+                [
+                    600.0,
+                    620.0
+                ],
+                [
+                    340.0,
+                    620.0
+                ],
+                [
+                    340.0,
+                    670.0
+                ],
+                [
+                    360.0,
+                    670.0
+                ]
+            ],
+            "input": {
+                "id": "pc_adder",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "pc_plus_4",
+            "pos": [
+                [
+                    600.0,
+                    670.0
+                ],
+                [
+                    600.0,
+                    1000.0
+                ],
+                [
+                    1350.0,
+                    1000.0
+                ],
+                [
+                    1350.0,
+                    630.0
+                ],
+                [
+                    1380.0,
+                    630.0
+                ]
+            ],
+            "input": {
+                "id": "pc_adder",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "pc_c",
+            "pos": [
+                [
+                    520.0,
+                    640.0
+                ],
+                [
+                    540.0,
+                    640.0
+                ]
+            ],
+            "input": {
+                "id": "pc_adder_c",
+                "field": "out"
+            }
         },
         {
             "type": "ALU",
@@ -1413,6 +1549,18 @@
             }
         },
         {
+            "type": "Cross",
+            "id": "c5",
+            "pos": [
+                1520.0,
+                500.0
+            ],
+            "input": {
+                "id": "alu",
+                "field": "result_o"
+            }
+        },
+        {
             "type": "Wire",
             "id": "alu_result",
             "pos": [
@@ -1431,58 +1579,20 @@
             }
         },
         {
-            "type": "Cross",
-            "id": "c5",
-            "pos": [
-                1520.0,
-                500.0
-            ],
-            "input": {
-                "id": "alu",
-                "field": "result_o"
-            }
-        },
-        {
             "type": "Wire",
-            "id": "alu_operand_b",
+            "id": "reg_a_data_o",
             "pos": [
                 [
-                    1410.0,
-                    620.0
-                ],
-                [
-                    1440.0,
-                    620.0
-                ],
-                [
-                    1440.0,
-                    520.0
-                ],
-                [
-                    1460.0,
-                    520.0
-                ]
-            ],
-            "input": {
-                "id": "alu_operand_b_mux",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "reg_a",
-            "pos": [
-                [
-                    1230.0,
+                    1205.0,
                     400.0
                 ],
                 [
-                    1230.0,
-                    480.0
+                    1205.0,
+                    400.0
                 ],
                 [
-                    1270.0,
-                    480.0
+                    1380.0,
+                    400.0
                 ]
             ],
             "input": {
@@ -1492,130 +1602,32 @@
         },
         {
             "type": "Wire",
-            "id": "reg_b_data",
+            "id": "pc_to_branch",
             "pos": [
                 [
-                    1230.0,
-                    590.0
+                    520.0,
+                    780.0
                 ],
                 [
-                    1230.0,
-                    810.0
+                    260.0,
+                    780.0
                 ],
                 [
-                    1500.0,
-                    810.0
+                    260.0,
+                    800.0
                 ],
                 [
-                    1500.0,
-                    850.0
+                    260.0,
+                    800.0
+                ],
+                [
+                    280.0,
+                    800.0
                 ]
             ],
             "input": {
-                "id": "reg_file",
-                "field": "reg_b"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "rs2_data",
-            "pos": [
-                [
-                    1205.0,
-                    590.0
-                ],
-                [
-                    1380.0,
-                    590.0
-                ]
-            ],
-            "input": {
-                "id": "reg_file",
-                "field": "reg_b"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "jalr_imm",
-            "pos": [
-                [
-                    755.0,
-                    760.0
-                ],
-                [
-                    775.0,
-                    760.0
-                ],
-                [
-                    775.0,
-                    960.0
-                ],
-                [
-                    90.0,
-                    960.0
-                ],
-                [
-                    90.0,
-                    960.0
-                ],
-                [
-                    90.0,
-                    900.0
-                ],
-                [
-                    100.0,
-                    900.0
-                ]
-            ],
-            "input": {
-                "id": "decoder",
-                "field": "jalr_imm"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "jal_imm",
-            "pos": [
-                [
-                    755.0,
-                    680.0
-                ],
-                [
-                    755.0,
-                    680.0
-                ],
-                [
-                    800.0,
-                    680.0
-                ],
-                [
-                    800.0,
-                    680.0
-                ],
-                [
-                    800.0,
-                    980.0
-                ],
-                [
-                    800.0,
-                    980.0
-                ],
-                [
-                    70.0,
-                    980.0
-                ],
-                [
-                    70.0,
-                    720.0
-                ],
-                [
-                    100.0,
-                    720.0
-                ]
-            ],
-            "input": {
-                "id": "decoder",
-                "field": "big_imm"
+                "id": "reg",
+                "field": "out"
             }
         },
         {
@@ -1631,6 +1643,44 @@
             },
             "in_size": 13,
             "out_size": 32
+        },
+        {
+            "type": "Wire",
+            "id": "branch_imm_ext",
+            "pos": [
+                [
+                    180.0,
+                    900.0
+                ],
+                [
+                    180.0,
+                    900.0
+                ],
+                [
+                    200.0,
+                    900.0
+                ],
+                [
+                    200.0,
+                    900.0
+                ],
+                [
+                    200.0,
+                    870.0
+                ],
+                [
+                    200.0,
+                    870.0
+                ],
+                [
+                    220.0,
+                    870.0
+                ]
+            ],
+            "input": {
+                "id": "branch_imm_sext",
+                "field": "out"
+            }
         },
         {
             "type": "Mux",
@@ -1655,24 +1705,6 @@
             ]
         },
         {
-            "type": "Wire",
-            "id": "branch_jal_imm",
-            "pos": [
-                [
-                    250.0,
-                    860.0
-                ],
-                [
-                    280.0,
-                    860.0
-                ]
-            ],
-            "input": {
-                "id": "branch_adder_mux",
-                "field": "out"
-            }
-        },
-        {
             "type": "Add",
             "id": "branch_adder",
             "pos": [
@@ -1685,32 +1717,6 @@
             },
             "b_in": {
                 "id": "branch_adder_mux",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "branch_addr",
-            "pos": [
-                [
-                    320.0,
-                    830.0
-                ],
-                [
-                    340.0,
-                    830.0
-                ],
-                [
-                    340.0,
-                    710.0
-                ],
-                [
-                    360.0,
-                    710.0
-                ]
-            ],
-            "input": {
-                "id": "branch_adder",
                 "field": "out"
             }
         },
@@ -1742,15 +1748,31 @@
         },
         {
             "type": "Wire",
-            "id": "new_pc",
+            "id": "w111",
             "pos": [
                 [
-                    390.0,
+                    410.0,
                     690.0
                 ],
                 [
-                    430.0,
-                    690.0
+                    410.0,
+                    1030.0
+                ],
+                [
+                    1610.0,
+                    1030.0
+                ],
+                [
+                    1610.0,
+                    830.0
+                ],
+                [
+                    1630.0,
+                    830.0
+                ],
+                [
+                    1630.0,
+                    850.0
                 ]
             ],
             "input": {
@@ -1764,6 +1786,24 @@
             "pos": [
                 410.0,
                 690.0
+            ],
+            "input": {
+                "id": "pc_adder_mux",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "new_pc",
+            "pos": [
+                [
+                    390.0,
+                    690.0
+                ],
+                [
+                    430.0,
+                    690.0
+                ]
             ],
             "input": {
                 "id": "pc_adder_mux",
@@ -1829,6 +1869,28 @@
         },
         {
             "type": "Wire",
+            "id": "mret_addr",
+            "pos": [
+                [
+                    1640.0,
+                    950.0
+                ],
+                [
+                    1640.0,
+                    990.0
+                ],
+                [
+                    1659.0,
+                    990.0
+                ]
+            ],
+            "input": {
+                "id": "clic",
+                "field": "mepc_out"
+            }
+        },
+        {
+            "type": "Wire",
             "id": "meps",
             "pos": [
                 [
@@ -1843,98 +1905,6 @@
             "input": {
                 "id": "clic",
                 "field": "mepc_out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "w_stack_depth",
-            "pos": [
-                [
-                    1690.0,
-                    850.0
-                ],
-                [
-                    1690.0,
-                    800.0
-                ],
-                [
-                    1910.0,
-                    800.0
-                ]
-            ],
-            "input": {
-                "id": "clic",
-                "field": "stack_depth_out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "clic_csr_data_o",
-            "pos": [
-                [
-                    1680.0,
-                    850.0
-                ],
-                [
-                    1680.0,
-                    620.0
-                ],
-                [
-                    1800.0,
-                    620.0
-                ],
-                [
-                    1800.0,
-                    540.0
-                ],
-                [
-                    1820.0,
-                    540.0
-                ]
-            ],
-            "input": {
-                "id": "clic",
-                "field": "csr_data_o"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "clic_mmio_d_o",
-            "pos": [
-                [
-                    1660.0,
-                    850.0
-                ],
-                [
-                    1660.0,
-                    570.0
-                ],
-                [
-                    1680.0,
-                    570.0
-                ]
-            ],
-            "input": {
-                "id": "clic",
-                "field": "mmio_data_o"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "clic_interrupt",
-            "pos": [
-                [
-                    1720.0,
-                    860.0
-                ],
-                [
-                    1910.0,
-                    860.0
-                ]
-            ],
-            "input": {
-                "id": "clic",
-                "field": "interrupt"
             }
         },
         {
@@ -1984,55 +1954,25 @@
             ]
         },
         {
-            "type": "Mux",
-            "id": "interrupt_mux",
-            "pos": [
-                450.0,
-                710.0
-            ],
-            "select": {
-                "id": "clic",
-                "field": "interrupt"
-            },
-            "m_in": [
-                {
-                    "id": "pc_adder_mux",
-                    "field": "out"
-                },
-                {
-                    "id": "data_memory",
-                    "field": "isr_addr"
-                },
-                {
-                    "id": "clic",
-                    "field": "mepc_out"
-                }
-            ]
-        },
-        {
             "type": "Wire",
-            "id": "w1111",
+            "id": "mem_data_o",
             "pos": [
                 [
-                    460.0,
-                    710.0
+                    1570.0,
+                    850.0
                 ],
                 [
-                    470.0,
-                    710.0
+                    1570.0,
+                    550.0
                 ],
                 [
-                    470.0,
-                    700.0
-                ],
-                [
-                    480.0,
-                    700.0
+                    1680.0,
+                    550.0
                 ]
             ],
             "input": {
-                "id": "interrupt_mux",
-                "field": "out"
+                "id": "data_memory",
+                "field": "data_o"
             }
         },
         {
@@ -2049,40 +1989,24 @@
         },
         {
             "type": "Wire",
-            "id": "data",
+            "id": "w_stack_depth",
             "pos": [
                 [
-                    430.0,
-                    710.0
-                ],
-                [
-                    420.0,
-                    710.0
-                ],
-                [
-                    420.0,
-                    1020.0
-                ],
-                [
-                    1600.0,
-                    1020.0
-                ],
-                [
-                    1600.0,
-                    830.0
-                ],
-                [
-                    1570.0,
-                    830.0
-                ],
-                [
-                    1570.0,
+                    1690.0,
                     850.0
+                ],
+                [
+                    1690.0,
+                    800.0
+                ],
+                [
+                    1910.0,
+                    800.0
                 ]
             ],
             "input": {
-                "id": "data_memory",
-                "field": "isr_addr"
+                "id": "clic",
+                "field": "stack_depth_out"
             }
         },
         {
@@ -2178,8 +2102,246 @@
             }
         },
         {
+            "type": "Mux",
+            "id": "mepc_isr_mux",
+            "pos": [
+                1680.0,
+                1000.0
+            ],
+            "select": {
+                "id": "clic",
+                "field": "isr_mepc_sel"
+            },
+            "m_in": [
+                {
+                    "id": "clic",
+                    "field": "mepc_out"
+                },
+                {
+                    "id": "data_memory",
+                    "field": "isr_addr"
+                }
+            ]
+        },
+        {
             "type": "Wire",
-            "id": "mem_data_o",
+            "id": "mepc_isr_addr",
+            "pos": [
+                [
+                    1690.0,
+                    1000.0
+                ],
+                [
+                    1690.0,
+                    1000.0
+                ],
+                [
+                    1720.0,
+                    1000.0
+                ],
+                [
+                    1720.0,
+                    1000.0
+                ],
+                [
+                    1720.0,
+                    1040.0
+                ],
+                [
+                    1720.0,
+                    1040.0
+                ],
+                [
+                    420.0,
+                    1040.0
+                ],
+                [
+                    420.0,
+                    1040.0
+                ],
+                [
+                    420.0,
+                    720.0
+                ],
+                [
+                    420.0,
+                    720.0
+                ],
+                [
+                    430.0,
+                    720.0
+                ]
+            ],
+            "input": {
+                "id": "mepc_isr_mux",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "clic_interrupt",
+            "pos": [
+                [
+                    1720.0,
+                    860.0
+                ],
+                [
+                    1910.0,
+                    860.0
+                ]
+            ],
+            "input": {
+                "id": "clic",
+                "field": "interrupt"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "clic_mmio_d_o",
+            "pos": [
+                [
+                    1660.0,
+                    850.0
+                ],
+                [
+                    1660.0,
+                    570.0
+                ],
+                [
+                    1680.0,
+                    570.0
+                ]
+            ],
+            "input": {
+                "id": "clic",
+                "field": "mmio_data_o"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "clic_csr_data_o",
+            "pos": [
+                [
+                    1680.0,
+                    850.0
+                ],
+                [
+                    1680.0,
+                    620.0
+                ],
+                [
+                    1800.0,
+                    620.0
+                ],
+                [
+                    1800.0,
+                    540.0
+                ],
+                [
+                    1820.0,
+                    540.0
+                ]
+            ],
+            "input": {
+                "id": "clic",
+                "field": "csr_data_o"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "branch_addr",
+            "pos": [
+                [
+                    320.0,
+                    830.0
+                ],
+                [
+                    340.0,
+                    830.0
+                ],
+                [
+                    340.0,
+                    710.0
+                ],
+                [
+                    360.0,
+                    710.0
+                ]
+            ],
+            "input": {
+                "id": "branch_adder",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "branch_jal_imm",
+            "pos": [
+                [
+                    250.0,
+                    860.0
+                ],
+                [
+                    280.0,
+                    860.0
+                ]
+            ],
+            "input": {
+                "id": "branch_adder_mux",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Mux",
+            "id": "interrupt_mux",
+            "pos": [
+                450.0,
+                710.0
+            ],
+            "select": {
+                "id": "clic",
+                "field": "interrupt"
+            },
+            "m_in": [
+                {
+                    "id": "pc_adder_mux",
+                    "field": "out"
+                },
+                {
+                    "id": "mepc_isr_mux",
+                    "field": "out"
+                }
+            ]
+        },
+        {
+            "type": "Wire",
+            "id": "w1111",
+            "pos": [
+                [
+                    460.0,
+                    710.0
+                ],
+                [
+                    470.0,
+                    710.0
+                ],
+                [
+                    470.0,
+                    700.0
+                ],
+                [
+                    480.0,
+                    700.0
+                ]
+            ],
+            "input": {
+                "id": "interrupt_mux",
+                "field": "out"
+            }
+        },
+        {
+            "type": "Wire",
+            "id": "isr_addr",
             "pos": [
                 [
                     1570.0,
@@ -2187,100 +2349,32 @@
                 ],
                 [
                     1570.0,
-                    550.0
+                    830.0
                 ],
                 [
-                    1680.0,
-                    550.0
+                    1600.0,
+                    830.0
+                ],
+                [
+                    1600.0,
+                    830.0
+                ],
+                [
+                    1600.0,
+                    1010.0
+                ],
+                [
+                    1600.0,
+                    1010.0
+                ],
+                [
+                    1660.0,
+                    1010.0
                 ]
             ],
             "input": {
                 "id": "data_memory",
                 "field": "data_o"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "w111",
-            "pos": [
-                [
-                    410.0,
-                    690.0
-                ],
-                [
-                    410.0,
-                    1030.0
-                ],
-                [
-                    1610.0,
-                    1030.0
-                ],
-                [
-                    1610.0,
-                    830.0
-                ],
-                [
-                    1630.0,
-                    830.0
-                ],
-                [
-                    1630.0,
-                    850.0
-                ]
-            ],
-            "input": {
-                "id": "pc_adder_mux",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Wire",
-            "id": "branch_imm_ext",
-            "pos": [
-                [
-                    180.0,
-                    900.0
-                ],
-                [
-                    180.0,
-                    900.0
-                ],
-                [
-                    200.0,
-                    900.0
-                ],
-                [
-                    200.0,
-                    900.0
-                ],
-                [
-                    200.0,
-                    870.0
-                ],
-                [
-                    200.0,
-                    870.0
-                ],
-                [
-                    220.0,
-                    870.0
-                ]
-            ],
-            "input": {
-                "id": "branch_imm_sext",
-                "field": "out"
-            }
-        },
-        {
-            "type": "Cross",
-            "id": "c_pc_out",
-            "pos": [
-                600.0,
-                670.0
-            ],
-            "input": {
-                "id": "pc_adder",
-                "field": "out"
             }
         }
     ]

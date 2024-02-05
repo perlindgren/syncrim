@@ -25,6 +25,8 @@ pub const CLIC_INTERRUPT_ID: &str = "interrupt";
 pub const CLIC_WRITE_RA_ENABLE_ID: &str = "write_ra_enable";
 pub const CLIC_PC_ADDR_OUT_ID: &str = "pc_addr_out";
 pub const CLIC_MEPC_OUT_ID: &str = "mepc_out";
+pub const CLIC_MEPC_ISR_MUX: &str = "isr_mepc_sel";
+pub const CLIC_RF_RA_WE: &str = "rf_ra_we";
 // pub const CLIC_REG_FILE_WRITE_ID: &str = "reg_file_write";
 pub const CLIC_STACK_DEPTH_OUT_ID: &str = "stack_depth_out";
 
@@ -283,6 +285,8 @@ impl Component for CLIC {
                     CLIC_INTERRUPT_ID,
                     CLIC_MEPC_OUT_ID,
                     CLIC_STACK_DEPTH_OUT_ID,
+                    CLIC_MEPC_ISR_MUX,
+                    CLIC_RF_RA_WE,
                 ],
             ),
         )
@@ -332,6 +336,7 @@ impl Component for CLIC {
         let mut blu_int = SignalValue::Data(0); // default to pc
         let mut mmio_data = SignalValue::Uninitialized;
         let mut mem_int_addr = SignalValue::Uninitialized;
+        let mut rf_ra_we = SignalValue::Data(0);
 
         // vanilla clic behavior
         let mepc;
@@ -354,10 +359,12 @@ impl Component for CLIC {
             simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
             // select mepc signal on interrupt mux
             //simulator.set_out_value(id, field, value)
-            simulator.set_out_value(&self.id, CLIC_INTERRUPT_ID, SignalValue::Data(2));
+            simulator.set_out_value(&self.id, CLIC_MEPC_ISR_MUX, SignalValue::Data(0));
+            simulator.set_out_value(&self.id, CLIC_INTERRUPT_ID, SignalValue::Data(1));
             simulator.set_out_value(&self.id, "csr_data_o", val as u32);
             simulator.set_out_value(&self.id, "mmio_data_o", mmio_data);
             simulator.set_out_value(&self.id, "mepc_out", mepc);
+            simulator.set_out_value(&self.id, CLIC_RF_RA_WE, rf_ra_we);
             // simulator.set_out_value(&self.id, "mret_out", mret_sig);
             self.history.borrow_mut().push(history_entry);
             stack_depth += 1;
@@ -497,6 +504,7 @@ impl Component for CLIC {
         };
 
         //Interrupt dispatch
+        let mut isr_mepc_select = SignalValue::Uninitialized;
         let mut csrstore = self.csrstore.borrow_mut();
         let mstatus = *csrstore.get(&0x300).unwrap();
         let mut mintthresh = *csrstore.get(&0x347).unwrap();
@@ -586,14 +594,14 @@ impl Component for CLIC {
                     // write to csr
                     csrstore.insert(0x341, new_mepc);
                     blu_int = SignalValue::Data(1);
-
+                    rf_ra_we = SignalValue::Data(1);
                     stack_depth -= 1;
                     csrstore.insert(0x350, stack_depth);
                     trace!("STACK DEPTH: {}", stack_depth as i32);
                     //if stack_depth == 0 {
                     //    panic!("stack depleted, vanilla click not yet supported");
                     //}
-
+                    isr_mepc_select = SignalValue::Data(1);
                     trace!(
                         "interrupt dispatched id:{} prio:{}",
                         interrupt_id,
@@ -616,11 +624,15 @@ impl Component for CLIC {
             "stack_depth_out",
             SignalValue::Data(stack_depth as u32),
         );
+
         simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
         simulator.set_out_value(&self.id, CLIC_INTERRUPT_ID, blu_int);
+        // simulator.set_out_value(&self.id, CLIC_INTERRUPT_MUX, blu_int);
         simulator.set_out_value(&self.id, "csr_data_o", val as u32);
         simulator.set_out_value(&self.id, "mmio_data_o", mmio_data);
         simulator.set_out_value(&self.id, "mepc_out", mepc);
+        simulator.set_out_value(&self.id, CLIC_MEPC_ISR_MUX, isr_mepc_select);
+        simulator.set_out_value(&self.id, CLIC_RF_RA_WE, rf_ra_we);
         // simulator.set_out_value(&self.id, "mret_out", mret_sig);
 
         trace!("CLIC_INTERRUPT_ID {:?}", blu_int);
