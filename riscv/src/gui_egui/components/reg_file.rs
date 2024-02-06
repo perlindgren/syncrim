@@ -57,7 +57,7 @@ impl EguiComponent for RegFile {
     fn render(
         &self,
         ui: &mut Ui,
-        _context: &mut EguiExtra,
+        context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
@@ -89,7 +89,7 @@ impl EguiComponent for RegFile {
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
             ui.label("RegFile");
-        });
+        }, context);
         match editor_mode {
             EditorMode::Simulator => {
                 ui.allocate_ui_at_rect(rect, |ui| {
@@ -117,8 +117,10 @@ impl EguiComponent for RegFile {
                                 15.0 * scale,
                                 RegStore::lo_range().end as usize
                                     - RegStore::lo_range().start as usize,
-                                |index, mut row| {
+                                |mut row| {
+                                    let index = row.index();
                                     row.col(|ui| {
+                                        //let index = row.index().clone();
                                         ui.add(Label::new(
                                             RichText::new(format!(
                                                 "{:?}:",

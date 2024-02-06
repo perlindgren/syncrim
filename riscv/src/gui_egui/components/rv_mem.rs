@@ -35,9 +35,9 @@ impl RVMem {
                     body.rows(
                         15.0,
                         (self.range.end - self.range.start) as usize,
-                        |index, mut row| {
+                        |mut row| {
                             //println!("{}", index);
-                            let address = self.range.start as usize + index * 4;
+                            let address = self.range.start as usize + row.index() * 4;
                             let memory = self.memory.0.borrow().clone();
                             row.col(|ui| {
                                 ui.label(format!("0x{:08x}", address));
@@ -67,8 +67,11 @@ impl RVMem {
                                 }
                             }
                             row.col(|ui| {
-                                ui.add(Label::new(word).truncate(true));
-                            });
+                                ui.add(
+                                    //let label = ui.label(word);
+                                    Label::new(word).truncate(true)
+                            );});
+
                             row.col(|ui| {
                                 ui.add(Label::new(ascii).truncate(true));
                             });
@@ -84,7 +87,7 @@ impl EguiComponent for RVMem {
     fn render(
         &self,
         ui: &mut Ui,
-        _context: &mut EguiExtra,
+        context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
@@ -117,7 +120,7 @@ impl EguiComponent for RVMem {
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
             ui.label("Mem");
-        });
+        }, context);
         match editor_mode {
             EditorMode::Simulator => {
                 self.side_panel(ui.ctx(), simulator);

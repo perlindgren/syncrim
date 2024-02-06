@@ -42,8 +42,8 @@ impl InstrMem {
                     });
                 })
                 .body(|body| {
-                    body.rows(15.0, self.range.end - self.range.start, |index, mut row| {
-                        let address = index * 4 + self.range.start;
+                    body.rows(15.0, self.range.end - self.range.start, |mut row| {
+                        let address = row.index() * 4 + self.range.start;
                         let pc: u32 = {
                             if simulator.as_ref().is_some() {
                                 simulator
@@ -137,7 +137,7 @@ impl EguiComponent for InstrMem {
     fn render(
         &self,
         ui: &mut Ui,
-        _ctx: &mut EguiExtra,
+        context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
@@ -171,7 +171,7 @@ impl EguiComponent for InstrMem {
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
             ui.label("InstrMem");
-        });
+        }, context);
         match editor_mode {
             EditorMode::Simulator => {
                 self.side_panel(ui.ctx(), simulator);
