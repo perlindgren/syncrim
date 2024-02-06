@@ -67,15 +67,15 @@ impl Shortcuts {
         Shortcuts {
             file_new: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::N,
+                logical_key: Key::N,
             },
             file_open: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::O,
+                logical_key: Key::O,
             },
             file_save: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::S,
+                logical_key: Key::S,
             },
             file_save_as: KeyboardShortcut {
                 modifiers: Modifiers {
@@ -85,43 +85,43 @@ impl Shortcuts {
                     mac_cmd: false,
                     command: false,
                 },
-                key: Key::S,
+                logical_key: Key::S,
             },
             file_editor_toggle: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::E,
+                logical_key: Key::E,
             },
             file_preferences: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::P,
+                logical_key: Key::P,
             },
             file_quit: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::Q,
+                logical_key: Key::Q,
             },
             edit_cut: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::X,
+                logical_key: Key::X,
             },
             edit_copy: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::C,
+                logical_key: Key::C,
             },
             edit_paste: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::P,
+                logical_key: Key::P,
             },
             view_zoom_in: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::PlusEquals,
+                logical_key: Key::Plus,
             },
             view_zoom_out: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::Minus,
+                logical_key: Key::Minus,
             },
             view_grid_toggle: KeyboardShortcut {
                 modifiers: ctrl,
-                key: Key::G,
+                logical_key: Key::G,
             },
             view_grid_snap_toggle: KeyboardShortcut {
                 modifiers: Modifiers {
@@ -131,19 +131,19 @@ impl Shortcuts {
                     mac_cmd: false,
                     command: false,
                 },
-                key: Key::G,
+                logical_key: Key::G,
             },
             control_play: KeyboardShortcut {
                 modifiers: none,
-                key: Key::F6,
+                logical_key: Key::F6,
             },
             control_play_toggle: KeyboardShortcut {
                 modifiers: none,
-                key: Key::F5,
+                logical_key: Key::F5,
             },
             control_pause: KeyboardShortcut {
                 modifiers: shift,
-                key: Key::F5,
+                logical_key: Key::F5,
             },
             control_reset: KeyboardShortcut {
                 modifiers: Modifiers {
@@ -153,23 +153,23 @@ impl Shortcuts {
                     mac_cmd: false,
                     command: false,
                 },
-                key: Key::F5,
+                logical_key: Key::F5,
             },
             control_step_forward: KeyboardShortcut {
                 modifiers: none,
-                key: Key::F10,
+                logical_key: Key::F10,
             },
             control_step_back: KeyboardShortcut {
                 modifiers: shift,
-                key: Key::F10,
+                logical_key: Key::F10,
             },
             editor_wire_mode: KeyboardShortcut {
                 modifiers: none,
-                key: Key::W,
+                logical_key: Key::W,
             },
             editor_escape: KeyboardShortcut {
                 modifiers: none,
-                key: Key::Escape,
+                logical_key: Key::Escape,
             },
         }
     }

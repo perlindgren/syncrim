@@ -61,6 +61,7 @@ pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option
             size_rect: Rect::NAN,
             id_tmp: String::new(),
             pos_tmp: Pos2::ZERO,
+            clicked: false,
         },
         None,
         pos,
@@ -105,6 +106,7 @@ pub fn show_library(e: &mut Editor, ui: &mut Ui) {
                     size_rect: Rect::NAN,
                     id_tmp: c.get_id_ports().0,
                     pos_tmp: Pos2::ZERO,
+                    clicked:false
                 },
                 None,
                 padding,
@@ -150,6 +152,7 @@ pub fn add_comp_to_editor(e: &mut Editor) {
             size_rect: Rect::NAN,
             id_tmp: id,
             pos_tmp: pos,
+            clicked: false,
         },
     );
     e.components.push(*instance);

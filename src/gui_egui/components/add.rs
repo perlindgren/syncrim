@@ -16,7 +16,7 @@ impl EguiComponent for Add {
     fn render(
         &self,
         ui: &mut Ui,
-        _context: &mut EguiExtra,
+        context: &mut EguiExtra,
         _simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
@@ -72,7 +72,8 @@ impl EguiComponent for Add {
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
             ui.label("Adder");
-        });
+        }, context);
+
         match editor_mode {
             EditorMode::Simulator => (),
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),

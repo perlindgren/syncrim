@@ -38,6 +38,7 @@ pub struct EguiExtra {
     pub size_rect: Rect,
     pub id_tmp: String,
     pub pos_tmp: Pos2,
+    pub clicked: bool,
 }
 
 pub fn gui(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<(), eframe::Error> {
@@ -111,7 +112,7 @@ impl eframe::App for Gui {
             }
         }
     }
-    fn post_rendering(&mut self, _window_size_px: [u32; 2], _frame: &Frame) {
+/*    fn post_rendering(&mut self, _window_size_px: [u32; 2], _frame: &Frame) {
         if !self.pause {
             match &mut self.simulator {
                 Some(s) => {
@@ -122,7 +123,7 @@ impl eframe::App for Gui {
                 None => {}
             }
         }
-    }
+    }*/
 }
 
 impl Gui {
@@ -136,9 +137,10 @@ impl Gui {
     }
 
     fn draw_area(&mut self, ctx: &Context, frame: egui::Frame) {
-        let central_panel = CentralPanel::default().frame(frame).show(ctx, |ui| {
+        let mut central_panel = CentralPanel::default().frame(frame).show(ctx, |ui| {
             let sim = self.simulator.as_mut().unwrap();
             ui.set_clip_rect(self.clip_rect);
+            //self.
             // Don't draw over the rest of the ui
             for c in &sim.ordered_components.clone() {
                 let old_key = c.as_ref().get_id_ports().0;
@@ -154,23 +156,31 @@ impl Gui {
                 );
                 self.contexts.insert(context.id_tmp.clone(), context);
             }
-        });
-        let cpr = central_panel.response.interact(Sense::drag());
+        }).response;
+        let cpr = central_panel.interact(Sense::click_and_drag());
+        if cpr.clicked() {
+            println!("CLICKED");
+        }
+        if cpr.dragged() {
+            println!("DRAGGED"); 
+        }
         if cpr.dragged_by(PointerButton::Middle) {
+            println!("DRAGGED BY MIDDLE");
             self.pan += cpr.drag_delta();
         }
-        if central_panel.response.hovered() {
+        if cpr.hovered() {
+            //println!("HOVERED");
             ctx.input_mut(|i| {
-                if i.scroll_delta.y > 0f32 {
+                if i.raw_scroll_delta.y > 0f32 {
                     keymap::view_zoom_in_fn(self);
-                } else if i.scroll_delta.y < 0f32 {
+                } else if i.raw_scroll_delta.y < 0f32 {
                     keymap::view_zoom_out_fn(self);
                 }
             });
         }
         if self.simulator.as_ref().unwrap().running {
             self.simulator.as_mut().unwrap().clock();
-            ctx.request_repaint();
+            //ctx.request_repaint();
         }
     }
 
@@ -191,6 +201,7 @@ pub fn create_contexts(components: &Components) -> HashMap<crate::common::Id, Eg
                 size_rect: Rect::NAN,
                 id_tmp: id,
                 pos_tmp: Pos2::new(pos.0, pos.1),
+                clicked: false,
             },
         );
     }

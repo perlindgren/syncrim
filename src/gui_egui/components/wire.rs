@@ -17,7 +17,7 @@ impl EguiComponent for Wire {
     fn render(
         &self,
         ui: &mut Ui,
-        _context: &mut EguiExtra,
+        context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
@@ -70,7 +70,7 @@ impl EguiComponent for Wire {
                         }
                     });
                 }
-            });
+            }, context);
             r_vec.push(r);
         }
 
@@ -119,7 +119,7 @@ impl EguiComponent for Wire {
                             mac_cmd: false,
                             command: false,
                         },
-                        key: Key::Delete,
+                        logical_key: Key::Delete,
                     })
                 }) || ui.ctx().input_mut(|i| {
                     i.consume_shortcut(&KeyboardShortcut {
@@ -130,7 +130,7 @@ impl EguiComponent for Wire {
                             mac_cmd: false,
                             command: false,
                         },
-                        key: Key::X,
+                        logical_key: Key::X,
                     })
                 }) {
                     delete = true;

@@ -14,7 +14,7 @@ impl EguiComponent for Register {
     fn render(
         &self,
         ui: &mut Ui,
-        _context: &mut EguiExtra,
+        context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
@@ -75,8 +75,7 @@ impl EguiComponent for Register {
                     }
                 });
             }
-        });
-
+        }, context);
         match editor_mode {
             EditorMode::Simulator => (),
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),

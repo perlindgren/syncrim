@@ -6,9 +6,11 @@ use crate::gui_egui::helper::{
 };
 use egui::{
     containers, Color32, ComboBox, Context, DragValue, Frame, Key, KeyboardShortcut, Margin,
-    Modifiers, PointerButton, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2, Window,
+    Modifiers, PointerButton, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2, Window, Sense,
 };
 use epaint::{CircleShape, Shadow};
+
+use super::EguiExtra;
 
 pub fn rect_with_hover<P>(
     rect: Rect,
@@ -17,17 +19,28 @@ pub fn rect_with_hover<P>(
     ui: &mut Ui,
     id: String,
     f: P,
+    context: &mut EguiExtra,
 ) -> Response
 where
     P: Fn(&mut Ui),
 {
     let rect = out_of_bounds(rect, clip_rect);
-    let r = ui.allocate_rect(rect, editor_mode_to_sense(editor_mode));
+    let mut r = ui.allocate_rect(rect, editor_mode_to_sense(editor_mode));
+    r.sense = Sense::click();
+    //if r.changed() {println!("changed")}
 
-    if r.hovered() && !r.dragged() {
+    if (!context.clicked && r.clicked()) && !r.dragged() {
+        context.clicked = true;      
+    }
+    else if (context.clicked && r.clicked_elsewhere()) && ! r.dragged() {
+        context.clicked = false;
+    }
+    let display_tooltip = if context.clicked == true || r.hovered() == true {true} else {false};
+    if display_tooltip {
         containers::popup::show_tooltip_for(ui.ctx(), egui::Id::new(id), &rect, |ui| {
             f(ui);
         });
+
     }
     r
 }
@@ -184,9 +197,14 @@ pub fn visualize_ports(
             min: pos - scalev2,
             max: pos + scalev2,
         };
+        //eguiextra part is mad ugly, we're only really accessing the clicked bool
+        //i'm unsure why most of these are even part of the context...
+        //maybe just pass a mutable reference to context.clicked instead of the whole context
+        //i can see how more context could be needed in the future, so keep it this way for
+        //now to avoid changing the interface 100x
         rect_with_hover(rect, clip_rect, EditorMode::Wire, ui, id.clone(), |ui| {
             ui.label(format!("Port id: {}", id));
-        });
+        }, &mut EguiExtra { properties_window:false , size_rect: Rect::ZERO, id_tmp: "".to_string(), pos_tmp: Pos2::ZERO, clicked: (false) });
     }
 }
 
@@ -213,12 +231,12 @@ pub fn drag_logic(
         if ctx.input_mut(|i| {
             i.consume_shortcut(&KeyboardShortcut {
                 modifiers: mod_none,
-                key: Key::Delete,
+                logical_key: Key::Delete,
             })
         }) || ctx.input_mut(|i| {
             i.consume_shortcut(&KeyboardShortcut {
                 modifiers: mod_none,
-                key: Key::X,
+                logical_key: Key::X,
             })
         }) {
             delete = true;

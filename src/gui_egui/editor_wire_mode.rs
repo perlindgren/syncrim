@@ -113,6 +113,7 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
                         size_rect: Rect::NAN,
                         id_tmp: id.to_string(),
                         pos_tmp: Pos2::ZERO,
+                        clicked: false,
                     },
                 );
 
