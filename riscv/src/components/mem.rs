@@ -13,10 +13,10 @@ use syncrim::common::{
 //use egui_extras::TableBuilder;
 pub const RV_MEM_DATA_I_ID: &str = "data_i";
 pub const RV_MEM_ADDR_ID: &str = "addr";
-pub const RV_MEM_CTRL_ID: &str = "sext";
+pub const RV_MEM_CTRL_ID: &str = "ctrl";
 pub const RV_MEM_SEXT_ID: &str = "sext";
 pub const RV_MEM_SIZE_ID: &str = "size";
-// pub const RV_MEM_INT_ADDR_ID: &str = "int_addr";
+pub const RV_INTERRUPT_ID: &str = "interrupt";
 pub const RV_MEM_DATA_O_ID: &str = "data_o";
 #[derive(Serialize, Deserialize, Clone)]
 pub struct RVMem {
@@ -34,6 +34,7 @@ pub struct RVMem {
     pub(crate) ctrl: Input,
     pub(crate) sext: Input,
     pub(crate) size: Input,
+    pub(crate) interrupt: Input,
     //  pub(crate) mem_int_addr: Input,
 
     // memory
@@ -66,7 +67,7 @@ impl RVMem {
         ctrl: Input,
         sext: Input,
         size: Input,
-        // mem_int_addr: Input,
+        interrupt: Input,
         memory: BTreeMap<usize, u8>,
         range: Range<u32>,
     ) -> Self {
@@ -81,7 +82,7 @@ impl RVMem {
             ctrl,
             sext,
             size,
-            // mem_int_addr,
+            interrupt,
             memory: Memory::new(memory.clone()),
             range,
             history: RefCell::new(vec![]),
@@ -101,7 +102,7 @@ impl RVMem {
         ctrl: Input,
         sext: Input,
         size: Input,
-        // mem_int_addr: Input,
+        interrupt: Input,
         range: Range<u32>,
     ) -> Rc<Self> {
         let mut mem = BTreeMap::new();
@@ -110,9 +111,7 @@ impl RVMem {
             mem.insert(i as usize, 0u8);
         }
         Rc::new(RVMem::new(
-            id, pos, width, height, big_endian, data, addr, ctrl, sext, size,
-            // mem_int_addr,
-            mem, range,
+            id, pos, width, height, big_endian, data, addr, ctrl, sext, size, interrupt, mem, range,
         ))
     }
 
@@ -128,14 +127,13 @@ impl RVMem {
         ctrl: Input,
         sext: Input,
         size: Input,
-        // mem_int_addr: Input,
+        interrupt: Input,
         memory: BTreeMap<usize, u8>,
         range: Range<u32>,
     ) -> Rc<Self> {
         Rc::new(RVMem::new(
-            id, pos, width, height, big_endian, data, addr, ctrl, sext, size,
-            // mem_int_addr,
-            memory, range,
+            id, pos, width, height, big_endian, data, addr, ctrl, sext, size, interrupt, memory,
+            range,
         ))
     }
 }
@@ -287,6 +285,7 @@ pub enum MemCtrl {
     None,
     Read,
     Write,
+    ReadIsr,
 }
 
 // impl From<SignalValue> for MemCtrl {
@@ -330,13 +329,13 @@ impl Component for RVMem {
                         port_id: RV_MEM_SIZE_ID.to_string(),
                         input: self.size.clone(),
                     },
-                    // &InputPort {
-                    //     port_id: RV_MEM_INT_ADDR_ID.to_string(),
-                    //     input: self.mem_int_addr.clone(),
-                    // },
+                    &InputPort {
+                        port_id: RV_INTERRUPT_ID.to_string(),
+                        input: self.interrupt.clone(),
+                    },
                 ],
                 OutputType::Combinatorial,
-                vec!["data_o", "err", "mmio_mux_ctl" /* "isr_addr" */],
+                vec!["data_o", "err", "mmio_mux_ctl"],
             ),
         )
     }
@@ -351,6 +350,7 @@ impl Component for RVMem {
         let addr = simulator.get_input_value(&self.addr);
         let size = simulator.get_input_value(&self.size);
         let sign = simulator.get_input_value(&self.sext);
+        let interrupt = simulator.get_input_value(&self.interrupt);
         // let mem_int_addr = simulator.get_input_value(&self.mem_int_addr);
 
         // match mem_int_addr {
@@ -363,8 +363,28 @@ impl Component for RVMem {
 
         match simulator.get_input_value(&self.ctrl) {
             SignalValue::Data(ctrl) => {
-                let ctrl = MemCtrl::try_from(ctrl as u8).unwrap();
+                let interrupt_occurred = SignalValue::Data(true as u32) == interrupt;
+
+                let ctrl: MemCtrl = if interrupt_occurred {
+                    MemCtrl::ReadIsr
+                } else {
+                    MemCtrl::try_from(ctrl as u8).unwrap()
+                };
+
                 match ctrl {
+                    MemCtrl::ReadIsr => {
+                        let addr: u32 = addr.try_into().unwrap();
+
+                        //if not in mmio range
+
+                        trace!("read isr {:?}", addr);
+                        let value = self.memory.read(addr as usize, 4, false, self.big_endian);
+                        simulator.set_out_value(&self.id, "data_o", value);
+                        let error = self.memory.align(addr as usize, 4);
+                        trace!("align {:?}", error);
+                        simulator.set_out_value(&self.id, "err", error); // align
+                        simulator.set_out_value(&self.id, "mmio_mux_ctl", 0);
+                    }
                     MemCtrl::Read => {
                         let addr: u32 = addr.try_into().unwrap();
                         if !(0x1000..=0x5000).contains(&addr) {
@@ -379,9 +399,9 @@ impl Component for RVMem {
                                 self.big_endian,
                             );
                             simulator.set_out_value(&self.id, "data_o", value);
-                            let value = self.memory.align(addr as usize, size as usize);
-                            trace!("align {:?}", value);
-                            simulator.set_out_value(&self.id, "err", value); // align
+                            let error = self.memory.align(addr as usize, size as usize);
+                            trace!("align {:?}", error);
+                            simulator.set_out_value(&self.id, "err", error); // align
                             simulator.set_out_value(&self.id, "mmio_mux_ctl", 0);
                         } else {
                             simulator.set_out_value(&self.id, "mmio_mux_ctl", 1);
@@ -487,7 +507,7 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("size")),
                 Rc::new(ProbeOut::new("sign")),
-                // Rc::new(ProbeOut::new("mem_int_addr")),
+                Rc::new(ProbeOut::new("interrupt")),
                 Rc::new(RVMem {
                     id: "mem".into(),
                     pos: (0.0, 0.0),
@@ -503,7 +523,7 @@ mod test {
                     ctrl: Input::new("ctrl", "out"),
                     size: Input::new("size", "out"),
                     sext: Input::new("sign", "out"),
-                    // mem_int_addr: Input::new("mem_int_addr", "out"),
+                    interrupt: Input::new("sign", "out"),
 
                     // memory
                     memory: Memory(Rc::new(RefCell::new(BTreeMap::new()))),
@@ -538,6 +558,7 @@ mod test {
         simulator.set_out_value("addr", "out", 4);
         simulator.set_out_value("ctrl", "out", MemCtrl::Write as SignalUnsigned);
         simulator.set_out_value("size", "out", 1);
+        simulator.set_out_value("interrupt", "out", false as u32);
         println!("sim_state {:?}", simulator.sim_state);
 
         println!("<clock>");
@@ -673,7 +694,7 @@ mod test {
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("size")),
                 Rc::new(ProbeOut::new("sign")),
-                // Rc::new(ProbeOut::new("mem_int_addr")),
+                Rc::new(ProbeOut::new("interrupt")),
                 Rc::new(RVMem {
                     id: "mem".into(),
                     pos: (0.0, 0.0),
@@ -689,7 +710,7 @@ mod test {
                     ctrl: Input::new("ctrl", "out"),
                     size: Input::new("size", "out"),
                     sext: Input::new("sign", "out"),
-                    // mem_int_addr: Input::new("mem_int_addr", "out"),
+                    interrupt: Input::new("interrupt", "out"),
 
                     // memory
                     memory: Memory(Rc::new(RefCell::new(BTreeMap::new()))),
