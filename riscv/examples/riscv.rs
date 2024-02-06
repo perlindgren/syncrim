@@ -93,9 +93,9 @@ fn main() {
                 .expect(&format!("Downcast failed for {:?}", comp.to_()))
                 .clone();
             // replace the memory contents with ELF contents
-            data_mem_comp.memory = Memory::new(memory.bytes.clone());
+            data_mem_comp.memory = Memory::new(data_mem.clone());
             // also, set the initial state for reset
-            data_mem_comp.init_state = memory.bytes;
+            data_mem_comp.init_state = data_mem;
             // repush the mutated RVMem to the Component vector
             store.push(Rc::new(data_mem_comp));
             //satisfy borrow checker

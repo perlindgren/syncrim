@@ -523,7 +523,8 @@ mod test {
                     ctrl: Input::new("ctrl", "out"),
                     size: Input::new("size", "out"),
                     sext: Input::new("sign", "out"),
-                    interrupt: Input::new("sign", "out"),
+                    //interrupt: Input::new("sign", "out"),
+                    interrupt: Input::new("interrupt", "out"),
 
                     // memory
                     memory: Memory(Rc::new(RefCell::new(BTreeMap::new()))),
@@ -552,7 +553,7 @@ mod test {
             (false as SignalUnsigned).into()
         );
 
-        println!("<setup for write 42 to addr 4>");
+        println!("<setup for write 0xf to addr 4>");
 
         simulator.set_out_value("data", "out", 0xf0);
         simulator.set_out_value("addr", "out", 4);
