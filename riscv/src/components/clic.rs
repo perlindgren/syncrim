@@ -157,7 +157,7 @@ impl CLIC {
                 csrstore.insert(0x349, 0); //mscratchcswl
                 csrstore.insert(0xF14, 0); //mhartid
                 csrstore.insert(0x350, 0); //stack_depth
-                for i in (0xB00..0xBC0) {
+                for i in 0xB00..0xBC0 {
                     csrstore.insert(i, 0); //set up individual interrupt config CSRs
                 }
                 RefCell::new(csrstore)
@@ -201,7 +201,7 @@ impl Component for CLIC {
             csrstore.insert(0xF14, 0); //mhartid
             csrstore.insert(0x350, 0); //stack_depth, vanilla clic config
             csrstore.insert(0x351, 0); //super mtvec
-            for i in (0xB00..0xBBF) {
+            for i in 0xB00..0xBBF {
                 csrstore.insert(i, 0); //set up individual interrupt config CSRs
             }
             &RefCell::new(csrstore)
@@ -343,19 +343,19 @@ impl Component for CLIC {
             .unwrap_or(0);
         let mut val = 0;
         let mut blu_int = false; // default to pc
-        let mut mmio_data = SignalValue::Uninitialized;
+                                 // let mut mmio_data = SignalValue::Uninitialized;
         let mut mem_int_addr = SignalValue::Uninitialized;
         let mut rf_ra_we = SignalValue::Data(0);
         let mut isr_mepc_select = SignalValue::Uninitialized;
         // vanilla clic behavior
-        let mut mepc = SignalValue::Uninitialized;
+        let mepc;
         let mut stack_depth = *self.csrstore.borrow().get(&(0x350 as usize)).unwrap();
         let mut history = self.history.borrow_mut();
 
         if mret == 1 {
             //panic!("currently not supported");
             let mut csrstore = self.csrstore.borrow_mut();
-            mepc = (*csrstore.get(&0x341).unwrap() as u32).into(); //infallible
+            //   mepc = (*csrstore.get(&0x341).unwrap() as u32).into(); //infallible
             let mut mstatus = *csrstore.get(&0x300).unwrap(); //infallible
             if mstatus >> 7 & 1 == 1 {
                 mstatus |= 0x8; //if mpie then set mie
