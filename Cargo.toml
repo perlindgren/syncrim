@@ -29,18 +29,18 @@ optional = true
 
 [dependencies.egui]
 optional = true
-version = "0.23.0"
+version = "0.26.0"
 
 [dependencies.eframe]
 optional = true
-version = "0.23.0"
+version = "0.26.0"
 
 [dependencies.epaint]
 optional = true
-version = "0.23.0"
+version = "0.26.0"
 
 [features]
-default = ["gui-vizia"]
+default = ["gui-egui"]
 components = []
 gui-vizia = ["vizia", "components"]
 gui-egui = ["egui", "eframe", "epaint", "components"]

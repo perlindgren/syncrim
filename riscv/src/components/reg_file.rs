@@ -11,7 +11,7 @@ use syncrim::common::{
 use syncrim::signal::SignalValue;
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
-#[derive(Copy, Clone, Debug, TryFromPrimitive)]
+#[derive(Copy, Clone, Debug, TryFromPrimitive, PartialEq)]
 #[repr(u8)]
 pub enum Reg {
     zero    = 0,    // Hard-wired zero
@@ -53,6 +53,48 @@ impl std::convert::TryFrom<u32> for Reg {
     type Error = ();
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
+        Ok(match value {
+            0 => Reg::zero, // Hard-wired zero
+            1 => Reg::ra,   // Return address
+            2 => Reg::sp,   // Stack pointer
+            3 => Reg::gp,   // Global pointer
+            4 => Reg::tp,   // Thread pointer
+            5 => Reg::t0,   // Temporaries
+            6 => Reg::t1,   // Temporaries
+            7 => Reg::t2,   // Temporaries
+            8 => Reg::s0,   // Saved register/frame pointer
+            9 => Reg::s1,   // Saved register
+            10 =>Reg::a0,   // Function arguments/return values
+            11 =>Reg::a1,   // Function arguments/return values
+            12 =>Reg::a2,   // Function arguments
+            13 =>Reg::a3,   // Function arguments
+            14 =>Reg::a4,   // Function arguments
+            15 =>Reg::a5,   // Function arguments
+            16 =>Reg::a6,   // Function arguments
+            17 =>Reg::a7,   // Function arguments
+            18 =>Reg::s2,   // Saved registers
+            19 =>Reg::s3,   // Saved registers
+            20 =>Reg::s4,   // Saved registers
+            21 =>Reg::s5,   // Saved registers
+            22 =>Reg::s6,   // Saved registers
+            23 =>Reg::s7,   // Saved registers
+            24 =>Reg::s8,   // Saved registers
+            25 =>Reg::s9,   // Saved registers
+            26 =>Reg::s10,  // Saved registers
+            27 =>Reg::s11,  // Saved registers
+            28 =>Reg::t3,   // Temporaries
+            29 =>Reg::t4,   // Temporaries
+            30 =>Reg::t5,   // Temporaries
+            31 =>Reg::t6,   // Temporaries
+            _ => Err(())?,
+        })
+    }
+}
+#[rustfmt::skip]
+impl std::convert::TryFrom<usize> for Reg {
+    type Error = ();
+
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
         Ok(match value {
             0 => Reg::zero, // Hard-wired zero
             1 => Reg::ra,   // Return address

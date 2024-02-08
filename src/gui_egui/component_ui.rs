@@ -213,12 +213,12 @@ pub fn drag_logic(
         if ctx.input_mut(|i| {
             i.consume_shortcut(&KeyboardShortcut {
                 modifiers: mod_none,
-                key: Key::Delete,
+                logical_key: Key::Delete,
             })
         }) || ctx.input_mut(|i| {
             i.consume_shortcut(&KeyboardShortcut {
                 modifiers: mod_none,
-                key: Key::X,
+                logical_key: Key::X,
             })
         }) {
             delete = true;

@@ -119,7 +119,7 @@ impl EguiComponent for Wire {
                             mac_cmd: false,
                             command: false,
                         },
-                        key: Key::Delete,
+                        logical_key: Key::Delete,
                     })
                 }) || ui.ctx().input_mut(|i| {
                     i.consume_shortcut(&KeyboardShortcut {
@@ -130,7 +130,7 @@ impl EguiComponent for Wire {
                             mac_cmd: false,
                             command: false,
                         },
-                        key: Key::X,
+                        logical_key: Key::X,
                     })
                 }) {
                     delete = true;

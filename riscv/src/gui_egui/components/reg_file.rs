@@ -40,10 +40,18 @@ impl RegFile {
                                 } else {
                                     0_usize
                                 };
-                                ui.label(format!(
-                                    "0x{:08X}",
-                                    self.registers.0.borrow()[stack_depth][reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
-                                ));
+                                let register = Reg::try_from(reg).unwrap();
+                                if register == Reg::ra || register == Reg::sp {
+                                    ui.label(format!(
+                                        "0x{:08X}",
+                                        self.registers.0.borrow()[0][reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
+                                    ));
+                                } else {
+                                    ui.label(format!(
+                                        "0x{:08X}",
+                                        self.registers.0.borrow()[stack_depth][reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
+                                    ));
+                                }
                             });
                         });
                     }
@@ -117,7 +125,8 @@ impl EguiComponent for RegFile {
                                 15.0 * scale,
                                 RegStore::lo_range().end as usize
                                     - RegStore::lo_range().start as usize,
-                                |index, mut row| {
+                                |mut row| {
+                                    let index = row.index();
                                     row.col(|ui| {
                                         ui.add(Label::new(
                                             RichText::new(format!(
@@ -134,13 +143,24 @@ impl EguiComponent for RegFile {
                                         } else {
                                             0_usize
                                         };
-                                        ui.add(Label::new(
-                                            RichText::new(format!(
-                                                "0x{:08x}",
-                                                self.registers.0.borrow()[stack_depth][index]
-                                            ))
-                                            .size(15.0 * scale),
-                                        ));
+                                        let register = Reg::try_from(index).unwrap();
+                                        if register == Reg::ra || register == Reg::sp {
+                                            ui.add(Label::new(
+                                                RichText::new(format!(
+                                                    "0x{:08x}",
+                                                    self.registers.0.borrow()[0][index]
+                                                ))
+                                                .size(15.0 * scale),
+                                            ));
+                                        } else {
+                                            ui.add(Label::new(
+                                                RichText::new(format!(
+                                                    "0x{:08x}",
+                                                    self.registers.0.borrow()[stack_depth][index]
+                                                ))
+                                                .size(15.0 * scale),
+                                            ));
+                                        }
                                     });
                                 },
                             );

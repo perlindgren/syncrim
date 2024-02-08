@@ -101,17 +101,19 @@ impl eframe::App for Gui {
             Context::request_repaint(ctx);
         } else {
             self.top_bar(ctx);
-            if self.simulator.is_some() {
-                // self.side_panel(ctx);
-                self.draw_area(ctx, frame);
-                if self.simulator.as_ref().unwrap().running {
-                    self.simulator.as_mut().unwrap().clock();
-                    ctx.request_repaint();
+            match &mut self.simulator {
+                Some(s) => {
+                    if s.running {
+                        s.run();
+                        ctx.request_repaint();
+                    }
                 }
+                None => {},
             }
+            self.draw_area(ctx, frame);
         }
     }
-    fn post_rendering(&mut self, _window_size_px: [u32; 2], _frame: &Frame) {
+ /*   fn post_rendering(&mut self, _window_size_px: [u32; 2], _frame: &Frame) {
         if !self.pause {
             match &mut self.simulator {
                 Some(s) => {
@@ -122,7 +124,7 @@ impl eframe::App for Gui {
                 None => {}
             }
         }
-    }
+    }*/
 }
 
 impl Gui {
@@ -159,11 +161,17 @@ impl Gui {
         if cpr.dragged_by(PointerButton::Middle) {
             self.pan += cpr.drag_delta();
         }
+        ctx.input_mut(|i| {
+            if i.pointer.any_down(){
+                println!("{:?}",i.pointer);
+                println!("{:?}",i.raw);
+            }
+        });
         if central_panel.response.hovered() {
             ctx.input_mut(|i| {
-                if i.scroll_delta.y > 0f32 {
+                if i.raw_scroll_delta.y > 0f32 {
                     keymap::view_zoom_in_fn(self);
-                } else if i.scroll_delta.y < 0f32 {
+                } else if i.raw_scroll_delta.y < 0f32 {
                     keymap::view_zoom_out_fn(self);
                 }
             });

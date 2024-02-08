@@ -42,8 +42,8 @@ impl InstrMem {
                     });
                 })
                 .body(|body| {
-                    body.rows(15.0, self.range.end - self.range.start, |index, mut row| {
-                        let address = index * 4 + self.range.start;
+                    body.rows(15.0, self.range.end - self.range.start, |mut row| {
+                        let address = row.index() * 4 + self.range.start;
                         let pc: u32 = {
                             if simulator.as_ref().is_some() {
                                 simulator
