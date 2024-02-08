@@ -62,7 +62,7 @@ fn main() {
     };
     let instr_range = Range {
         start: 0x0000_0000usize,
-        end: 0x0000_0500usize,
+        end: 0x0000_1000usize,
     };
     for address in range.clone() {
         data_mem.insert(address as usize, 0);

@@ -6,7 +6,7 @@ SECTIONS
     KEEP(*(.text)); 
   }
 
-  . = 0x100;
+  . = 0x200;
   .trap :
   {
     KEEP(*(.trap));
