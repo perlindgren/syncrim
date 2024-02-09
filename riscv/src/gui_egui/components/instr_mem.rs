@@ -58,7 +58,7 @@ impl InstrMem {
                         };
                         let bg_color = {
                             if pc as usize == address {
-                                Color32::YELLOW
+                                Color32::DARK_GRAY
                             } else {
                                 Color32::TRANSPARENT
                             }
