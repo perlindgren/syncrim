@@ -38,24 +38,24 @@ isr_0:
     j isr_0                     # panic loop, we should never end up here
 
 isr_1: #interrupt 1
-    li a0, 1
-    csrrc zero, 0xB01, a0       # clear pending flag
+    #li a0, 1
+    #csrrc zero, 0xB01, a0       # clear pending flag
     jr       ra                 # return
 
 isr_2: #interrupt 2
     li a0, 1
-    csrrc zero, 0xB02, a0       # unpend self
+    #csrrc zero, 0xB02, a0       # unpend self
     csrrs zero, 0xB01, a0       # pend interrupt 1
     csrrs zero, 0xB04, a0       # pend interrupt 4
     nop                         # waste a cycle so we can see the return
     jr       ra                 # return
 isr_3: #interrupt 3
     li a0, 1
-    csrrc zero, 0xB03, a0       # unpend self
+    #csrrc zero, 0xB03, a0       # unpend self
     jr       ra                 # return
 isr_4: #interrupt 4
     li a0, 1
-    csrrc zero, 0xB04, a0       # unpend self
+    #csrrc zero, 0xB04, a0       # unpend self
     la a1, EXIT_VAR
     lw t0, 0(a1)                # t0 = EXIT_VAR
     bnez t0, isr4_exit          # if EXIT_VAR==0
@@ -65,21 +65,21 @@ isr4_exit:
     jr       ra                 # return
 isr_5: #interrupt 5
     li a0, 1
-    csrrc zero, 0xB05, a0       # unpend self
+    #csrrc zero, 0xB05, a0       # unpend self
     jr       ra                 # return
 isr_6: #interrupt 6
     li a0, 1
-    csrrc zero, 0xB06, a0       # unpend self
+    #csrrc zero, 0xB06, a0       # unpend self
     csrrs zero, 0xB08, a0       # pend interrupt 8
     csrrs zero, 0xB03, a0       # pend interrupt 3
     jr       ra                 # return
 isr_7: #interrupt 7
     li a0, 1
-    csrrc zero, 0xB07, a0       # unpend self
+    #csrrc zero, 0xB07, a0       # unpend self
     jr       ra                 # return
 isr_8: #interrupt 8
     li a0, 1
-    csrrc zero, 0xB08, a0       # unpend self
+    #csrrc zero, 0xB08, a0       # unpend self
     csrrs zero, 0xB04, a0       # pend interrupt 4
     csrrs zero, 0xB05, a0       # pend interrupt 5
     jr       ra                 # return
