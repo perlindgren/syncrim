@@ -56,11 +56,11 @@ impl InstrMem {
                                 0
                             }
                         };
-                        let bg_color = {
+                        let (bg_color, fg_color) = {
                             if pc as usize == address {
-                                Color32::DARK_GRAY
+                                (Color32::DARK_GRAY, Color32::WHITE)
                             } else {
-                                Color32::TRANSPARENT
+                                (Color32::TRANSPARENT, Color32::LIGHT_GRAY)
                             }
                         };
                         let breakpoint_color = {
@@ -114,9 +114,13 @@ impl InstrMem {
                         row.col(|ui| {
                             if ui
                                 .add(
-                                    Label::new(RichText::new(instr_fmt).background_color(bg_color))
-                                        .truncate(true)
-                                        .sense(Sense::click()),
+                                    Label::new(
+                                        RichText::new(instr_fmt)
+                                            .color(fg_color)
+                                            .background_color(bg_color),
+                                    )
+                                    .truncate(true)
+                                    .sense(Sense::click()),
                                 )
                                 .clicked()
                             {
