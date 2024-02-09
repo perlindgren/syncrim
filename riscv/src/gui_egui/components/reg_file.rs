@@ -40,10 +40,19 @@ impl RegFile {
                                 } else {
                                     0_usize
                                 };
-                                ui.label(format!(
-                                    "0x{:08X}",
-                                    self.registers.0.borrow()[stack_depth][reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
-                                ));
+                                if Reg::try_from(reg).unwrap() == Reg::ra
+                                    || Reg::try_from(reg).unwrap() == Reg::sp
+                                {
+                                    ui.label(format!(
+                                        "0x{:08X}",
+                                        self.registers.0.borrow()[0][reg as usize]
+                                    ));
+                                } else {
+                                    ui.label(format!(
+                                        "0x{:08X}",
+                                        self.registers.0.borrow()[stack_depth][reg as usize]
+                                    ));
+                                }
                             });
                         });
                     }
@@ -134,13 +143,25 @@ impl EguiComponent for RegFile {
                                         } else {
                                             0_usize
                                         };
-                                        ui.add(Label::new(
-                                            RichText::new(format!(
-                                                "0x{:08x}",
-                                                self.registers.0.borrow()[stack_depth][index]
-                                            ))
-                                            .size(15.0 * scale),
-                                        ));
+                                        if Reg::try_from(index).unwrap() == Reg::ra
+                                            || Reg::try_from(index).unwrap() == Reg::sp
+                                        {
+                                            ui.add(Label::new(
+                                                RichText::new(format!(
+                                                    "0x{:08x}",
+                                                    self.registers.0.borrow()[0][index]
+                                                ))
+                                                .size(15.0 * scale),
+                                            ));
+                                        } else {
+                                            ui.add(Label::new(
+                                                RichText::new(format!(
+                                                    "0x{:08x}",
+                                                    self.registers.0.borrow()[stack_depth][index]
+                                                ))
+                                                .size(15.0 * scale),
+                                            ));
+                                        }
                                     });
                                 },
                             );

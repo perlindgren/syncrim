@@ -460,7 +460,9 @@ impl Component for CLIC {
                             SignalValue::Data((mtvec as u32 + (interrupt_id) * 4) & !0b11);
                     } else {
                         // super clic
-                        clic_stack.push((mintthresh as u32, new_mepc as u32));
+                        if stack_depth != 0 {
+                            clic_stack.push((mintthresh as u32, new_mepc as u32));
+                        }
                         mintthresh = interrupt_priority as usize;
                         mem_int_addr =
                             SignalValue::Data((super_mtvec as u32 + (interrupt_id) * 4) & !0b11);

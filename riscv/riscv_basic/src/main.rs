@@ -52,7 +52,6 @@ mod app {
 
         let mut plain = [0; CODED.len()];
         decode(&CODED, &mut plain);
-//        rprintln!("plain: {}", from_utf8(&plain).unwrap());
 
         (Shared {}, Local {})
     }
