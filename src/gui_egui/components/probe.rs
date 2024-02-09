@@ -38,25 +38,20 @@ impl EguiComponent for Probe {
             .pivot(Align2::CENTER_CENTER)
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);
+                let text = if let SignalValue::Data(v) = value {
+                    format!("{:#010x}", v)
+                } else {
+                    format!("{:?}", value)
+                };
                 match editor_mode {
                     EditorMode::Simulator => ui.label(
-                        RichText::new(format!("{:?}", value))
+                        RichText::new(text.clone())
                             .size(scale * 12f32)
                             .background_color(Color32::LIGHT_BLUE),
                     ),
-                    _ => ui.label(
-                        RichText::new(format!("{:?}", value))
-                            .size(scale * 12f32)
-                            .underline(),
-                    ),
+                    _ => ui.label(RichText::new(text.clone()).size(scale * 12f32).underline()),
                 }
-                .on_hover_text({
-                    let r: Result<SignalUnsigned, String> = value.try_into();
-                    match r {
-                        Ok(data) => format!("{:#x}", data),
-                        _ => format!("{:?}", value),
-                    }
-                });
+                .on_hover_text(text);
             });
 
         let r = rect_with_hover(
@@ -67,7 +62,11 @@ impl EguiComponent for Probe {
             self.id.clone(),
             |ui| {
                 ui.label(format!("Id: {}", self.id.clone()));
-                ui.label(format!("{:?}", value));
+                if let SignalValue::Data(v) = value {
+                    ui.label(format!("{:#010x}", v));
+                } else {
+                    ui.label(format!("{:?}", value));
+                }
             },
         );
         match editor_mode {
