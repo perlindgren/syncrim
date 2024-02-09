@@ -460,7 +460,6 @@ impl Component for CLIC {
                             SignalValue::Data((mtvec as u32 + (interrupt_id) * 4) & !0b11);
                     } else {
                         // super clic
-                        let current_threshold = mintthresh;
                         clic_stack.push((mintthresh as u32, new_mepc as u32));
                         mintthresh = interrupt_priority as usize;
                         mem_int_addr =
@@ -797,7 +796,7 @@ impl CLIC {
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
                         trace!("val:{:x}, csr_data:{:x}", val, csr_data);
                         trace!("{:x}", (val as u32 & !csr_data));
-                        csrstore.insert(csr_addr as usize, (val & !(csr_data as usize)));
+                        csrstore.insert(csr_addr as usize, val & !(csr_data as usize));
                         history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
                         if 0xB00 <= csr_addr && csr_addr <= 0xBBF {
                             self.mmio_op(
