@@ -1,7 +1,7 @@
 MEMORY
 {
+  FLASH : ORIGIN = 0x00000000, LENGTH = 2M
   RAM : ORIGIN = 0x50000000, LENGTH = 16K
-  FLASH : ORIGIN = 0x00000000, LENGTH = 16M
 }
 
 REGION_ALIAS("REGION_TEXT", FLASH);
@@ -21,3 +21,15 @@ PROVIDE(Interrupt6 = DefaultInterruptHandler);
 PROVIDE(Interrupt7 = DefaultInterruptHandler);
 PROVIDE(Interrupt8 = DefaultInterruptHandler);
 PROVIDE(Interrupt9 = DefaultInterruptHandler);
+_stack_start = 0x50001000;
+SECTIONS{
+  /* ### .uninit */
+  .uninit (NOLOAD) : ALIGN(4)
+  {
+    . = ALIGN(4);
+    __suninit = .;
+    *(.uninit .uninit.*);
+    . = ALIGN(4);
+    __euninit = .;
+  } > RAM
+}
