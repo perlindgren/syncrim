@@ -841,18 +841,6 @@ impl CLIC {
         let data: Vec<u8> = (0..size)
             .map(|i| *self.mmio.borrow().get(&(addr + i)).unwrap_or(&0))
             .collect();
-        let debug: Vec<u8> = (0..4)
-            .map(|i| *self.mmio.borrow().get(&(addr + i)).unwrap_or(&0))
-            .collect();
-
-        trace!(
-            "read addr: {:x}, data:{:x},{:x},{:x},{:x}",
-            addr,
-            debug[0],
-            debug[1],
-            debug[2],
-            debug[3]
-        );
         let data = data.as_slice();
 
         match size {
