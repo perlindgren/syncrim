@@ -9,10 +9,10 @@ edition = "2021"
 riscv = {version = "0.11.0", features=["critical-section-single-hart"]}
 volatile-register = "0.2.1"
 critical-section = "1.1.2"
-clic = {git = "https://github.com/onsdagens/clic", branch = "regstack"}
+clic = {git = "https://github.com/onsdagens/clic", branch = "csr_pend"}
 riscv-rt = "0.12.1"
 syncrim-clic-rt = {git = "https://github.com/onsdagens/syncrim-clic-rt", branch = "regstack"}
-rtic = {git = "https://github.com/onsdagens/rtic/", branch="regstack", features =["riscv-clic-backend"]}
+rtic = {git = "https://github.com/onsdagens/rtic/", branch="csr_pend", features =["riscv-clic-backend"]}
 #lab4 = { git = "https://vesuvio-git.neteq.ltu.se/pln/rust_decode" }
 
 [workspace]

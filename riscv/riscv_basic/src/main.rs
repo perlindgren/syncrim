@@ -11,7 +11,6 @@ use riscv_rt as _;
 
 #[rtic::app(device = clic)]
 mod app{
-    use clic::Interrupt;
 
     #[shared]
     struct Shared{}
@@ -24,7 +23,7 @@ mod app{
     #[init]
     fn init(_:init::Context) -> (Shared, Local) {
         let pended = false;
-        rtic::export::pend(Interrupt::Interrupt2);
+        rtic::export::pend(clic::Interrupt2);
         (Shared{},Local{pended})
     }
 
@@ -37,8 +36,8 @@ mod app{
     }
     #[task(binds = Interrupt2, priority = 2)]
     fn i2(_:i2::Context){
-        rtic::export::pend(Interrupt::Interrupt1);
-        rtic::export::pend(Interrupt::Interrupt4);
+        rtic::export::pend(clic::Interrupt1);
+        rtic::export::pend(clic::Interrupt4);
     }
     #[task(binds = Interrupt3, priority = 3)]
     fn i3(_:i3::Context){
@@ -47,7 +46,7 @@ mod app{
     fn i4(cx:i4::Context){
         if !*cx.local.pended{
             *cx.local.pended = true;
-            rtic::export::pend(Interrupt::Interrupt6);
+            rtic::export::pend(clic::Interrupt6);
         }
     }
     #[task(binds = Interrupt5, priority = 5)]
@@ -55,16 +54,16 @@ mod app{
     }
     #[task(binds = Interrupt6, priority = 6)]
     fn i6(_:i6::Context){
-        rtic::export::pend(Interrupt::Interrupt8);
-        rtic::export::pend(Interrupt::Interrupt3);
+        rtic::export::pend(clic::Interrupt8);
+        rtic::export::pend(clic::Interrupt3);
     }
     #[task(binds = Interrupt7, priority = 7)]
     fn i7(_:i7::Context){
     }
     #[task(binds = Interrupt8, priority = 8)]
     fn i8(_:i8::Context){
-        rtic::export::pend(Interrupt::Interrupt4);
-        rtic::export::pend(Interrupt::Interrupt5);
+        rtic::export::pend(clic::Interrupt4);
+        rtic::export::pend(clic::Interrupt5);
     }
 
 }
