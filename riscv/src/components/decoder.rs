@@ -291,19 +291,19 @@ impl Component for Decoder {
                     0b100 => {
                         //XORI
                         alu_operator = SignalValue::from(6);
-                        sign_zero_ext_sel = SignalValue::from(1);
+                        sign_zero_ext_sel = SignalValue::from(0);
                         sign_zero_ext_data = SignalValue::from(imm);
                     }
                     0b110 => {
                         //ORI
                         alu_operator = SignalValue::from(7);
-                        sign_zero_ext_sel = SignalValue::from(1);
+                        sign_zero_ext_sel = SignalValue::from(0);
                         sign_zero_ext_data = SignalValue::from(imm);
                     }
                     0b111 => {
                         //ANDI
                         alu_operator = SignalValue::from(8);
-                        sign_zero_ext_sel = SignalValue::from(1);
+                        sign_zero_ext_sel = SignalValue::from(0);
                         sign_zero_ext_data = SignalValue::from(imm);
                     }
                     0b001 => {
