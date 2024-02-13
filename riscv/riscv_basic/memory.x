@@ -21,7 +21,6 @@ PROVIDE(Interrupt6 = DefaultInterruptHandler);
 PROVIDE(Interrupt7 = DefaultInterruptHandler);
 PROVIDE(Interrupt8 = DefaultInterruptHandler);
 PROVIDE(Interrupt9 = DefaultInterruptHandler);
-_stack_start = 0x50001000;
 SECTIONS{
   /* ### .uninit */
   .uninit (NOLOAD) : ALIGN(4)

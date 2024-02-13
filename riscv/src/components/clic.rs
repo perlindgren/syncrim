@@ -108,6 +108,14 @@ impl From<MMIOEntry> for u32 {
             | ((val.clicintctl as u32) << 24)
     }
 }
+impl From<MMIOEntry> for usize {
+    fn from(val: MMIOEntry) -> usize {
+        val.clicintip as usize
+            | ((val.clicintie as usize) << 8)
+            | ((val.clicintattr as usize) << 16)
+            | ((val.clicintctl as usize) << 24)
+    }
+}
 impl CLIC {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -427,6 +435,7 @@ impl Component for CLIC {
             mmio_data,
             &mut history_entry,
             &mut queue,
+            &mut csrstore,
         );
 
         //Interrupt dispatch
@@ -636,6 +645,7 @@ impl CLIC {
         data: SignalUnsigned,
         history_entry: &mut CLICOp,
         queue: &mut PriorityQueue<u32, u8>,
+        csrstore: &mut HashMap<usize, usize>,
     ) -> Option<SignalValue> {
         let mut mmio_data = None;
         let offset = addr % 4;
@@ -667,6 +677,14 @@ impl CLIC {
                             & mask.checked_shr(32).unwrap_or(0) as u32)
                         .into(),
                 ];
+                csrstore.insert(
+                    (addr as usize - offset as usize - 0x1000_usize) / 4 + 0xB00,
+                    mmio_entries[0].into(),
+                );
+                csrstore.insert(
+                    (addr as usize - offset as usize + 4 - 0x1000_usize) / 4 + 0xB00,
+                    mmio_entries[0].into(),
+                );
                 for (i, mmio_entry) in mmio_entries.into_iter().enumerate() {
                     if mmio_entry.clicintie == 1 && mmio_entry.clicintip == 1 {
                         //enqueue self if pending status and enable status are 1, this changes prio dynamically with prio change also.
@@ -751,6 +769,7 @@ impl CLIC {
                             csr_data,
                             history_entry,
                             queue,
+                            csrstore,
                         );
                     }
                 }
@@ -777,6 +796,7 @@ impl CLIC {
                                 (csr_data) | val as u32,
                                 history_entry,
                                 queue,
+                                csrstore,
                             );
                         }
                     }
@@ -806,6 +826,7 @@ impl CLIC {
                                 (val as u32) & !csr_data,
                                 history_entry,
                                 queue,
+                                csrstore,
                             );
                         }
                     }
@@ -820,7 +841,18 @@ impl CLIC {
         let data: Vec<u8> = (0..size)
             .map(|i| *self.mmio.borrow().get(&(addr + i)).unwrap_or(&0))
             .collect();
+        let debug: Vec<u8> = (0..4)
+            .map(|i| *self.mmio.borrow().get(&(addr + i)).unwrap_or(&0))
+            .collect();
 
+        trace!(
+            "read addr: {:x}, data:{:x},{:x},{:x},{:x}",
+            addr,
+            debug[0],
+            debug[1],
+            debug[2],
+            debug[3]
+        );
         let data = data.as_slice();
 
         match size {
