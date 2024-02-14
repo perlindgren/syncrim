@@ -13,6 +13,7 @@ clic = {git = "https://github.com/onsdagens/clic", branch = "csr_pend"}
 riscv-rt = "0.12.1"
 syncrim-clic-rt = {git = "https://github.com/onsdagens/syncrim-clic-rt", branch = "regstack"}
 rtic = {git = "https://github.com/onsdagens/rtic/", branch="csr_pend", features =["riscv-clic-backend"]}
+syncrim-pac = {git = "https://github.com/onsdagens/syncrim-pac/", branch="gen"}
 #lab4 = { git = "https://vesuvio-git.neteq.ltu.se/pln/rust_decode" }
 
 [workspace]

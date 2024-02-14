@@ -7,6 +7,7 @@
 use core::panic::PanicInfo;
 use syncrim_clic_rt as _;
 use riscv_rt as _;
+use syncrim_pac;
 //static mut COUNTER:u32 = 0x1337;
 
 #[rtic::app(device = clic)]
@@ -29,7 +30,16 @@ mod app{
 
     #[idle]
     fn idle(_:idle::Context) ->! {
-        loop{}
+        let p = unsafe{syncrim_pac::Peripherals::steal()};
+        p.GPIO.enable().write(|w|unsafe{w.bits(0b100)}); // enable pin 2
+        p.GPIO.toggle().write(|w|unsafe{w.bits(0b100)}); // toggle pin 2
+        p.GPIO.toggle().write(|w|unsafe{w.bits(0b1000)}); //toggle pin 3 (should do nothing)
+        loop{
+            p.GPIO.toggle().write(|w|unsafe{w.bits(0b100)});
+            for _ in 0..10_000{
+                riscv::asm::nop();
+            }
+        }
     }
     #[task(binds = Interrupt1, priority = 1)]
     fn i1(_:i1::Context){

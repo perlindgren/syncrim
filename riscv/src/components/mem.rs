@@ -156,7 +156,7 @@ impl Memory {
         ((addr % size != 0) as SignalUnsigned).into()
     }
 
-    fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> SignalValue {
+    pub fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> SignalValue {
         let data: Vec<u8> = (0..size)
             .map(|i| *self.0.borrow().get(&(addr + i)).unwrap_or(&0))
             .collect();
@@ -224,7 +224,7 @@ impl Memory {
         .into()
     }
 
-    fn write(&self, addr: usize, size: usize, big_endian: bool, data: SignalValue) {
+    pub fn write(&self, addr: usize, size: usize, big_endian: bool, data: SignalValue) {
         let data: SignalUnsigned = data.try_into().unwrap();
         match size {
             1 => {

@@ -252,6 +252,19 @@ fn main() {
                     clic_i: dummy.clone(),
                     dec_i: dummy.clone(),
                 }),
+                Rc::new(GPIO {
+                    height: GPIO_HEIGHT,
+                    width: GPIO_WIDTH,
+                    id: "dummy_gpio".to_string(),
+                    pos: (0.0, 0.0),
+                    data_i: dummy.clone(),
+                    addr_i: dummy.clone(),
+                    size_i: dummy.clone(),
+                    we_i: dummy.clone(),
+                    se_i: dummy.clone(),
+                    pins: Pins::default(),
+                    memory: Memory::default(),
+                }),
             ],
         };
         let mut component_vec = lib.store.clone();
@@ -283,8 +296,8 @@ fn fern_setup_riscv() {
         // "riscv::gui_vizia::components::instr_mem",
         //     log::LevelFilter::Trace,
         // )
-        .level_for("riscv::components::wb_ctl", log::LevelFilter::Trace)
-        .level_for("riscv::components::clic", log::LevelFilter::Trace)
+        .level_for("riscv::components::gpio", log::LevelFilter::Trace)
+        //.level_for("riscv::components::clic", log::LevelFilter::Trace)
         .level(log::LevelFilter::Error);
 
     // - and per-module overrides
