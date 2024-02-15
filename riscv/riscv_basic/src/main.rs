@@ -7,12 +7,12 @@
 use core::panic::PanicInfo;
 use syncrim_clic_rt as _;
 use riscv_rt as _;
-use syncrim_pac;
 //static mut COUNTER:u32 = 0x1337;
 
 #[rtic::app(device = clic)]
 mod app{
-
+    use embedded_hal::digital::StatefulOutputPin;
+    use syncrim_hal::gpio::Pins;
     #[shared]
     struct Shared{}
 
@@ -30,15 +30,15 @@ mod app{
 
     #[idle]
     fn idle(_:idle::Context) ->! {
-        let p = unsafe{syncrim_pac::Peripherals::steal()};
-        p.GPIO.enable().write(|w|unsafe{w.bits(0b100)}); // enable pin 2
-        p.GPIO.toggle().write(|w|unsafe{w.bits(0b100)}); // toggle pin 2
-        p.GPIO.toggle().write(|w|unsafe{w.bits(0b1000)}); //toggle pin 3 (should do nothing)
+        let peripherals = syncrim_pac::Peripherals::take().unwrap();
+        let gpio = peripherals.GPIO;
+        let pins = Pins::new(gpio);
+        let mut pin = pins.pin2.into_output();
         loop{
-            p.GPIO.toggle().write(|w|unsafe{w.bits(0b100)});
             for _ in 0..10_000{
-                riscv::asm::nop();
+                riscv::asm::nop()
             }
+            pin.toggle().ok();
         }
     }
     #[task(binds = Interrupt1, priority = 1)]
