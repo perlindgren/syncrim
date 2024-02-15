@@ -1,5 +1,5 @@
 #![no_std]
 use clic::*;
-fn main(){
-   clic::Interrupt; 
+fn main() {
+    clic::Interrupt;
 }
