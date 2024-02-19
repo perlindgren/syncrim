@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Ports, SignalUnsigned, SignalValue, Simulator};
+use crate::common::{EguiComponent, Ports, SignalValue, Simulator};
 use crate::components::Probe;
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,

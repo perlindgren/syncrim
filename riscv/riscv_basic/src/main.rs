@@ -1,5 +1,3 @@
-//! examples/lab4_example
-
 #![no_main]
 #![no_std]
 #![feature(type_alias_impl_trait)]
@@ -13,6 +11,7 @@ use syncrim_clic_rt as _;
 mod app {
     use embedded_hal::digital::StatefulOutputPin;
     use syncrim_hal::gpio::{Output, Pin, Pins};
+    use syncrim_hal::mtime;
     #[shared]
     struct Shared {}
 
@@ -22,6 +21,7 @@ mod app {
     struct Local {
         pended: bool,
         led: Led,
+        mtime: mtime::MTIME,
     }
 
     #[init]
@@ -30,20 +30,18 @@ mod app {
         rtic::export::pend(clic::Interrupt2);
         let peripherals = cx.device;
         let g = peripherals.GPIO;
+        let m = peripherals.MTIME;
         let pins = Pins::new(g);
+        let mut mtime = mtime::MTIME::new(m);
+        mtime.set_compare_in(50_000);
         let led = pins.pin2.into_output();
 
-        (Shared {}, Local { pended, led })
+        (Shared {}, Local { pended, led, mtime })
     }
 
-    #[idle(local = [led])]
-    fn idle(cx: idle::Context) -> ! {
-        loop {
-            for _ in 0..10_000 {
-                riscv::asm::nop()
-            }
-            cx.local.led.toggle().ok();
-        }
+    #[idle]
+    fn idle(_: idle::Context) -> ! {
+        loop{}
     }
     #[task(binds = Interrupt1, priority = 1)]
     fn i1(_: i1::Context) {}
@@ -74,6 +72,11 @@ mod app {
     fn i8(_: i8::Context) {
         rtic::export::pend(clic::Interrupt4);
         rtic::export::pend(clic::Interrupt5);
+    }
+    #[task(binds = MTIME, priority=8, local=[led, mtime])]
+    fn timer(cx: timer::Context) {
+        cx.local.led.toggle().ok();
+        cx.local.mtime.set_compare_in(50_000);
     }
 }
 #[panic_handler]

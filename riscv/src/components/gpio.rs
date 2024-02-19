@@ -180,7 +180,7 @@ impl Component for GPIO {
                             let size: u32 = size.try_into().unwrap();
                             //let data: u32 = size.try_into().unwrap();
                             self.memory.write(addr as usize, size as usize, false, data);
-                            self.handle_gpio_write(addr, data.try_into().unwrap());
+                            self.handle_gpio_write(addr);
                         }
                         _ => {
                             simulator.set_out_value(&self.id, "data_o", SignalValue::Unknown);
@@ -193,13 +193,12 @@ impl Component for GPIO {
                 trace!("ctrl uninit");
             }
         };
-        for pin in &*self.pins.0.borrow(){
+        for pin in &*self.pins.0.borrow() {
             let mut name = GPIO_PIN_O_ID.to_string();
             name.push_str(&format!("{}", pin.id));
-            if pin.state{
+            if pin.state {
                 simulator.set_out_value(&self.id, &name, SignalValue::Data(1));
-            }
-            else {
+            } else {
                 simulator.set_out_value(&self.id, &name, SignalValue::Data(0));
             }
         }
@@ -208,7 +207,7 @@ impl Component for GPIO {
 }
 
 impl GPIO {
-    fn handle_gpio_write(&self, addr: u32, data: u32) {
+    fn handle_gpio_write(&self, addr: u32) {
         let rel_addr = addr - 0x6000_0000;
         let touched_indices = [
             (rel_addr - rel_addr % 4) / 4,

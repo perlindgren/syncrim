@@ -9,22 +9,25 @@ use core::prelude::rust_2021::*;
 extern crate core;
 extern crate compiler_builtins as _;
 use core::panic::PanicInfo;
-use syncrim_clic_rt as _;
 use riscv_rt as _;
+use syncrim_clic_rt as _;
 /// The RTIC application module
 pub mod app {
     /// Always include the device crate which contains the vector table
-    use clic as you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml;
+    use syncrim_pac as you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml;
     /// Holds the maximum priority level for use by async HAL drivers.
     #[no_mangle]
     static RTIC_ASYNC_MAX_LOGICAL_PRIO: u8 = 0u8;
-    use clic::Interrupt;
+    use embedded_hal::digital::StatefulOutputPin;
+    use syncrim_hal::gpio::{Output, Pin, Pins};
+    type Led = Pin<Output>;
     /// User code end
     ///Shared resources
     struct Shared {}
     ///Local resources
     struct Local {
         pended: bool,
+        led: Led,
     }
     /// Execution context
     #[allow(non_snake_case)]
@@ -35,7 +38,7 @@ pub mod app {
         /// Core peripherals
         pub core: rtic::export::Peripherals,
         /// Device peripherals (PAC)
-        pub device: clic::Peripherals,
+        pub device: syncrim_pac::Peripherals,
         /// Critical section token for init
         pub cs: rtic::export::CriticalSection<'a>,
     }
@@ -45,7 +48,7 @@ pub mod app {
         pub unsafe fn new(core: rtic::export::Peripherals) -> Self {
             __rtic_internal_init_Context {
                 __rtic_internal_p: ::core::marker::PhantomData,
-                device: clic::Peripherals::steal(),
+                device: syncrim_pac::Peripherals::steal(),
                 cs: rtic::export::CriticalSection::new(),
                 core,
             }
@@ -59,10 +62,34 @@ pub mod app {
     }
     #[inline(always)]
     #[allow(non_snake_case)]
-    fn init(_: init::Context) -> (Shared, Local) {
+    fn init(cx: init::Context) -> (Shared, Local) {
         let pended = false;
-        rtic::export::pend(Interrupt::Interrupt2);
-        (Shared {}, Local { pended })
+        rtic::export::pend(clic::Interrupt2);
+        let peripherals = cx.device;
+        let g = peripherals.GPIO;
+        let pins = Pins::new(g);
+        let led = pins.pin2.into_output();
+        (Shared {}, Local { pended, led })
+    }
+    impl<'a> __rtic_internal_idleLocalResources<'a> {
+        #[inline(always)]
+        #[allow(missing_docs)]
+        pub unsafe fn new() -> Self {
+            __rtic_internal_idleLocalResources {
+                led: &mut *(&mut *__rtic_internal_local_resource_led.get_mut())
+                    .as_mut_ptr(),
+                __rtic_internal_marker: ::core::marker::PhantomData,
+            }
+        }
+    }
+    #[allow(non_snake_case)]
+    #[allow(non_camel_case_types)]
+    ///Local resources `idle` has access to
+    pub struct __rtic_internal_idleLocalResources<'a> {
+        #[allow(missing_docs)]
+        pub led: &'static mut Led,
+        #[doc(hidden)]
+        pub __rtic_internal_marker: ::core::marker::PhantomData<&'a ()>,
     }
     /// Execution context
     #[allow(non_snake_case)]
@@ -70,6 +97,8 @@ pub mod app {
     pub struct __rtic_internal_idle_Context<'a> {
         #[doc(hidden)]
         __rtic_internal_p: ::core::marker::PhantomData<&'a ()>,
+        /// Local Resources this task has access to
+        pub local: idle::LocalResources<'a>,
     }
     impl<'a> __rtic_internal_idle_Context<'a> {
         #[inline(always)]
@@ -77,6 +106,7 @@ pub mod app {
         pub unsafe fn new() -> Self {
             __rtic_internal_idle_Context {
                 __rtic_internal_p: ::core::marker::PhantomData,
+                local: idle::LocalResources::new(),
             }
         }
     }
@@ -84,13 +114,20 @@ pub mod app {
     ///Idle loop
     pub mod idle {
         #[doc(inline)]
+        pub use super::__rtic_internal_idleLocalResources as LocalResources;
+        #[doc(inline)]
         pub use super::__rtic_internal_idle_Context as Context;
     }
     #[allow(non_snake_case)]
-    fn idle(_: idle::Context) -> ! {
+    fn idle(cx: idle::Context) -> ! {
         use rtic::Mutex as _;
         use rtic::mutex::prelude::*;
-        loop {}
+        loop {
+            for _ in 0..10_000 {
+                riscv::asm::nop()
+            }
+            cx.local.led.toggle().ok();
+        }
     }
     #[allow(non_snake_case)]
     #[no_mangle]
@@ -150,6 +187,12 @@ pub mod app {
     unsafe fn Interrupt8() {
         const PRIORITY: u8 = 8u8;
         rtic::export::run(PRIORITY, || { i8(i8::Context::new()) });
+    }
+    #[allow(non_snake_case)]
+    #[no_mangle]
+    unsafe fn MTIME() {
+        const PRIORITY: u8 = 9u8;
+        rtic::export::run(PRIORITY, || { timer(timer::Context::new()) });
     }
     /// Execution context
     #[allow(non_snake_case)]
@@ -341,6 +384,28 @@ pub mod app {
         #[doc(inline)]
         pub use super::__rtic_internal_i8_Context as Context;
     }
+    /// Execution context
+    #[allow(non_snake_case)]
+    #[allow(non_camel_case_types)]
+    pub struct __rtic_internal_timer_Context<'a> {
+        #[doc(hidden)]
+        __rtic_internal_p: ::core::marker::PhantomData<&'a ()>,
+    }
+    impl<'a> __rtic_internal_timer_Context<'a> {
+        #[inline(always)]
+        #[allow(missing_docs)]
+        pub unsafe fn new() -> Self {
+            __rtic_internal_timer_Context {
+                __rtic_internal_p: ::core::marker::PhantomData,
+            }
+        }
+    }
+    #[allow(non_snake_case)]
+    ///Hardware task
+    pub mod timer {
+        #[doc(inline)]
+        pub use super::__rtic_internal_timer_Context as Context;
+    }
     #[allow(non_snake_case)]
     fn i1(_: i1::Context) {
         use rtic::Mutex as _;
@@ -350,8 +415,8 @@ pub mod app {
     fn i2(_: i2::Context) {
         use rtic::Mutex as _;
         use rtic::mutex::prelude::*;
-        rtic::export::pend(Interrupt::Interrupt1);
-        rtic::export::pend(Interrupt::Interrupt4);
+        rtic::export::pend(clic::Interrupt1);
+        rtic::export::pend(clic::Interrupt4);
     }
     #[allow(non_snake_case)]
     fn i3(_: i3::Context) {
@@ -364,7 +429,7 @@ pub mod app {
         use rtic::mutex::prelude::*;
         if !*cx.local.pended {
             *cx.local.pended = true;
-            rtic::export::pend(Interrupt::Interrupt6);
+            rtic::export::pend(clic::Interrupt6);
         }
     }
     #[allow(non_snake_case)]
@@ -376,8 +441,8 @@ pub mod app {
     fn i6(_: i6::Context) {
         use rtic::Mutex as _;
         use rtic::mutex::prelude::*;
-        rtic::export::pend(Interrupt::Interrupt8);
-        rtic::export::pend(Interrupt::Interrupt3);
+        rtic::export::pend(clic::Interrupt8);
+        rtic::export::pend(clic::Interrupt3);
     }
     #[allow(non_snake_case)]
     fn i7(_: i7::Context) {
@@ -388,8 +453,13 @@ pub mod app {
     fn i8(_: i8::Context) {
         use rtic::Mutex as _;
         use rtic::mutex::prelude::*;
-        rtic::export::pend(Interrupt::Interrupt4);
-        rtic::export::pend(Interrupt::Interrupt5);
+        rtic::export::pend(clic::Interrupt4);
+        rtic::export::pend(clic::Interrupt5);
+    }
+    #[allow(non_snake_case)]
+    fn timer(_: timer::Context) {
+        use rtic::Mutex as _;
+        use rtic::mutex::prelude::*;
     }
     #[allow(non_camel_case_types)]
     #[allow(non_upper_case_globals)]
@@ -397,6 +467,13 @@ pub mod app {
     #[link_section = ".uninit.rtic0"]
     static __rtic_internal_local_resource_pended: rtic::RacyCell<
         core::mem::MaybeUninit<bool>,
+    > = rtic::RacyCell::new(core::mem::MaybeUninit::uninit());
+    #[allow(non_camel_case_types)]
+    #[allow(non_upper_case_globals)]
+    #[doc(hidden)]
+    #[link_section = ".uninit.rtic1"]
+    static __rtic_internal_local_resource_led: rtic::RacyCell<
+        core::mem::MaybeUninit<Led>,
     > = rtic::RacyCell::new(core::mem::MaybeUninit::uninit());
     #[doc(hidden)]
     #[no_mangle]
@@ -508,6 +585,19 @@ pub mod app {
             you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml::Interrupt::Interrupt8,
             8u8,
         );
+        const _: () = if (15usize) <= 9u8 as usize {
+            {
+                ::core::panicking::panic_fmt(
+                    format_args!(
+                        "Maximum priority used by interrupt vector \'MTIME\' is more than supported by hardware",
+                    ),
+                );
+            };
+        };
+        rtic::export::enable(
+            you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml::Interrupt::MTIME,
+            9u8,
+        );
         #[inline(never)]
         fn __rtic_init_resources<F>(f: F)
         where
@@ -522,6 +612,9 @@ pub mod app {
             __rtic_internal_local_resource_pended
                 .get_mut()
                 .write(core::mem::MaybeUninit::new(local_resources.pended));
+            __rtic_internal_local_resource_led
+                .get_mut()
+                .write(core::mem::MaybeUninit::new(local_resources.led));
             rtic::export::interrupt::enable();
         });
         idle(idle::Context::new())

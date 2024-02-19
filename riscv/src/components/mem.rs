@@ -387,7 +387,7 @@ impl Component for RVMem {
                     }
                     MemCtrl::Read => {
                         let addr: u32 = addr.try_into().unwrap();
-                        if !(0x1000..=0x5000).contains(&addr) {
+                        if !(0x1000..=0x500F).contains(&addr) {
                             //if not in mmio range
                             let size: u32 = size.try_into().unwrap();
                             let sign: u32 = sign.try_into().unwrap();
@@ -409,7 +409,7 @@ impl Component for RVMem {
                     }
                     MemCtrl::Write => {
                         let addr: u32 = addr.try_into().unwrap();
-                        if !(0x1000..=0x5000).contains(&addr) {
+                        if !(0x1000..=0x500F).contains(&addr) {
                             //if not in mmio range
                             let size: u32 = size.try_into().unwrap();
                             history_entry = MemOp {

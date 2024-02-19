@@ -14,6 +14,7 @@ main:
     la      t6, 0x06000100
     la      a1, 0x07000100
     la      a2, 0x08000100
+    la      a3, 0x09000100
     csrw 0xB01, t1              # configure interrupt 1 via CSR
     csrw 0xB02, t2              # configure interrupt 2 via CSR
     csrw 0xB03, t3
@@ -22,6 +23,11 @@ main:
     csrw 0xB06, t6
     csrw 0xB07, a1
     csrw 0xB08, a2
+    csrw 0xB09, a3
+    la t1, 0x00005008
+    la t2, 50
+    #fire interrupt at 50
+    sw t2, 0(t1)
     # setup for vector tables and vector table pointers
     la      t0, .clic_vec       # load 0 latency vector table address
     csrw    0x351, t0           # store 0 latency vector table address at super_mtvec
@@ -83,7 +89,16 @@ isr_8: #interrupt 8
     csrrs zero, 0xB04, a0       # pend interrupt 4
     csrrs zero, 0xB05, a0       # pend interrupt 5
     jr       ra                 # return
-
+isr_9:
+    la t0, 0x5000               # timer base
+    lw t1, 0(t0)                # timer lo
+    lw t2, 4(t0)                # timer hi
+    addi t1, t1, 100            # queue self in 100 cycles
+    sw t1, 8(t0)
+    sw t2, 12(t0)
+    nop
+    nop
+    jr ra
     .section .trap, "ax"
 trap_0:
     addi     sp, sp, -0x4c       # allocate space for the context on the stack
@@ -618,7 +633,65 @@ trap_8:
     lw       t6, 0x48(sp)
     addi     sp, sp, 0x4c
     mret                       # return from interrupt
+trap_9:
+    addi     sp, sp, -0x4c       # allocate space for the context on the stack
+    sw       a0, 0x10(sp)        # start by pushing a0 we it to stack CSRs and set threshold
+    csrrs    a0, mstatus, x0     # read and stack mstatus
+    sw       a0, 0x00(sp)
+    csrrs    a0, mepc, x0        # read and stack mepc
+    sw       a0, 0x04(sp)
+#_STORE_PRIO SUBROUTINE
+    csrr     a0, 0x347           # load current threshold
+    sw       a0, 0x08(sp)        # store old threshold on stack
+    li       a0, 0x1000          # base address for the CLIC MMIO
+    lb       a0, 39(a0)          # load prio config register of interrupt 8
+    csrw     0x347, a0           # set the priority
+    csrrsi   x0, mstatus, 8      # enable interrupts (end of critical section)
+#END
+    sw       ra, 0x0c(sp)        # stack the caller saved registers
+    sw       a1, 0x14(sp)
+    sw       a2, 0x18(sp)
+    sw       a3, 0x1c(sp)
+    sw       a4, 0x20(sp)
+    sw       a5, 0x24(sp)
+    sw       a6, 0x28(sp)
+    sw       a7, 0x2c(sp)
+    sw       t0, 0x30(sp)
+    sw       t1, 0x34(sp)
+    sw       t2, 0x38(sp)
+    sw       t3, 0x3c(sp)
+    sw       t4, 0x40(sp)
+    sw       t5, 0x44(sp)
+    sw       t6, 0x48(sp)
 
+    jal      ra, isr_9           # call into the user defined handler
+
+    lw       a0, 0x00(sp)        # restore CSRs and caller saved registers
+    csrrw    x0, mstatus, a0
+    lw       a0, 0x04(sp)
+    csrrw    x0, mepc, a0
+    lw       ra, 0x0c(sp)
+    lw       a0, 0x10(sp)
+    lw       a1, 0x14(sp)
+    lw       a2, 0x18(sp)
+    lw       a3, 0x1c(sp)
+    lw       a4, 0x20(sp)
+    lw       a5, 0x24(sp)
+    lw       a6, 0x28(sp)
+    lw       a7, 0x2c(sp)
+    lw       t0, 0x30(sp)
+    lw       t1, 0x34(sp)
+    lw       t2, 0x38(sp)
+    lw       t3, 0x3c(sp)
+    lw       t4, 0x40(sp)
+    lw       t5, 0x44(sp)
+    #CS
+    csrci    mstatus, 0x8     
+    lw       t6, 0x08(sp)        # load the old threshold from the stack
+    csrw     0x347, t6           # set the priority
+    lw       t6, 0x48(sp)
+    addi     sp, sp, 0x4c
+    mret                       # return from interrupt
 
     .data
 EXIT_VAR: .word 0x00000000
@@ -632,6 +705,7 @@ EXIT_VAR: .word 0x00000000
     .word    trap_6
     .word    trap_7
     .word    trap_8
+    .word    trap_9
     .word    0x20212223
     .word    0x24252627
     .word    0x28292A2B
@@ -667,6 +741,7 @@ EXIT_VAR: .word 0x00000000
     .word    isr_6
     .word    isr_7
     .word    isr_8
+    .word    isr_9
     .word    0x20212223
     .word    0x24252627
     .word    0x28292A2B

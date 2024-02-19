@@ -7,6 +7,7 @@ use syncrim::{
 };
 
 use priority_queue::PriorityQueue;
+
 use std::{cell::RefCell, collections::HashMap};
 pub const CLIC_CSR_ADDR_ID: &str = "csr_addr";
 pub const CLIC_CSR_CTL_ID: &str = "csr_ctl";
@@ -77,6 +78,10 @@ pub struct CLIC {
     pub queue: RefCell<PriorityQueue<u32, u8>>, //prio, id's
     #[serde(skip)]
     pub clic_stack: RefCell<Vec<(u32, u32)>>,
+    #[serde(skip)]
+    pub mtime: RefCell<u64>,
+    #[serde(skip)]
+    pub mtimecomp: RefCell<u64>,
     // #[serde(skip)]
     // pub stack_depth: RefCell<u32>, //current register stack depth
     history: RefCell<Vec<CLICOp>>,
@@ -184,6 +189,8 @@ impl CLIC {
             csr_ctl,
             clic_stack: RefCell::new(Vec::new()),
             history: RefCell::new(vec![]),
+            mtime: 0.into(),
+            mtimecomp: 0.into(),
             // stack_depth: 0.into(),
         }
     }
@@ -216,7 +223,7 @@ impl Component for CLIC {
         });
         self.mmio.swap({
             let mut mmio = HashMap::new();
-            for i in 0x1000..0x5000 {
+            for i in 0x1000..0x5010 {
                 mmio.insert(i, 0);
             }
             &RefCell::new(mmio)
@@ -437,6 +444,46 @@ impl Component for CLIC {
             &mut queue,
             &mut csrstore,
         );
+
+        let mut mtime = self.mtime.borrow_mut();
+        // update mtime
+        let mtime_lo: u32 = self.read(0x5000, 4, false, false).try_into().unwrap();
+        let mtime_hi: u32 = self.read(0x5004, 4, false, false).try_into().unwrap();
+        *mtime = mtime_lo as u64 | ((mtime_hi as u64) << 32);
+        *mtime += 1;
+        self.write(0x5000, 4, false, (*mtime as u32).into());
+        self.write(0x5004, 4, false, ((*mtime >> 32) as u32).into());
+        let mut mtimecomp = self.mtimecomp.borrow_mut();
+        let mtimecomp_lo: u32 = self.read(0x5008, 4, false, false).try_into().unwrap();
+        let mtimecomp_hi: u32 = self.read(0x500C, 4, false, false).try_into().unwrap();
+        *mtimecomp = mtimecomp_lo as u64 | ((mtimecomp_hi as u64) << 32);
+        trace!("MTIMECOMP{}", mtimecomp);
+        trace!("MTIME{}", mtime);
+        if *mtime > *mtimecomp {
+            // set pending bit of interrupt 9, call it the timer interrupt
+            //self.csr_op(&mut csrstore, &mut history_entry,&mut queue, 2, 1, 0xB09);
+            self.mmio_op(
+                0x1024,
+                2,
+                1,
+                1,
+                &mut history_entry,
+                &mut queue,
+                &mut csrstore,
+            );
+        } else {
+            self.mmio_op(
+                0x1024,
+                2,
+                1,
+                0,
+                &mut history_entry,
+                &mut queue,
+                &mut csrstore,
+            );
+            // clear pending bit if compare fails
+            //self.csr_op(&mut csrstore, &mut history_entry, &mut queue, 3, 1, 0xB09);
+        }
 
         //Interrupt dispatch
 
@@ -677,13 +724,20 @@ impl CLIC {
                             & mask.checked_shr(32).unwrap_or(0) as u32)
                         .into(),
                 ];
+                trace!(
+                    "CSRSTORE INSERT {:?}, {:?}, addr: {:x}, {:x}",
+                    mmio_entries[0],
+                    mmio_entries[1],
+                    (addr as usize - offset as usize - 0x1000_usize) / 4 + 0xB00,
+                    (addr as usize - offset as usize + 4 - 0x1000_usize) / 4 + 0xB00,
+                );
                 csrstore.insert(
                     (addr as usize - offset as usize - 0x1000_usize) / 4 + 0xB00,
                     mmio_entries[0].into(),
                 );
                 csrstore.insert(
                     (addr as usize - offset as usize + 4 - 0x1000_usize) / 4 + 0xB00,
-                    mmio_entries[0].into(),
+                    mmio_entries[1].into(),
                 );
                 for (i, mmio_entry) in mmio_entries.into_iter().enumerate() {
                     if mmio_entry.clicintie == 1 && mmio_entry.clicintip == 1 {
@@ -726,7 +780,18 @@ impl CLIC {
             } else if we == 1 {
                 mmio_data = Some(self.read(addr as usize, data_size as usize, false, false));
             }
-        };
+        } else if (0x5000..=0x500F).contains(&addr) {
+            if we == 1 {
+                mmio_data = Some(self.read(addr as usize, data_size as usize, false, false));
+            } else if we == 2 {
+                self.write(
+                    addr as usize,
+                    data_size as usize,
+                    false,
+                    SignalValue::Data(data),
+                );
+            }
+        }
         mmio_data
     }
 
@@ -787,7 +852,7 @@ impl CLIC {
                         csrstore.insert(csr_addr as usize, (csr_data as usize) | val);
                         history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
                         //interrupt config CSR
-                        trace!("SET CSR: {:x}", csr_addr);
+                        trace!("SET CSR: {:x}, curr val: {:x}", csr_addr, val);
                         if 0xB00 <= csr_addr && csr_addr <= 0xBBF {
                             self.mmio_op(
                                 0x1000 + (csr_addr - 0xb00) * 4,

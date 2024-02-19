@@ -9,15 +9,27 @@ edition = "2021"
 riscv = {version = "0.11.0", features=["critical-section-single-hart"]}
 volatile-register = "0.2.1"
 critical-section = "1.1.2"
-clic = {git = "https://github.com/onsdagens/clic", branch = "csr_pend"}
+clic = {git = "https://github.com/onsdagens/clic", branch = "mtime"}
 riscv-rt = "0.12.1"
-syncrim-clic-rt = {git = "https://github.com/onsdagens/syncrim-clic-rt", branch = "regstack"}
-rtic = {git = "https://github.com/onsdagens/rtic/", branch="csr_pend", features =["riscv-clic-backend"]}
+syncrim-clic-rt = {git = "https://github.com/onsdagens/syncrim-clic-rt", branch = "mtime"}
+#rtic = {path = "../../../rtic", features = ["riscv-clic-backend"]}
+rtic = {git = "https://github.com/onsdagens/rtic/", branch="mtime", features =["riscv-clic-backend"]}
 #syncrim-pac = {path = "../../../syncrim-pac/", features = ["critical-section"]}
-syncrim-pac = {git = "https://github.com/onsdagens/syncrim-pac/", branch="gen", features = ["critical-section"]}
+syncrim-pac = {git = "https://github.com/onsdagens/syncrim-pac/", branch="mtime", features = ["critical-section"]}
 #syncrim-hal = {path = "../../../syncrim-hal/"}
-syncrim-hal = {git = "https://github.com/onsdagens/syncrim-hal/"}
+syncrim-hal = {git = "https://github.com/onsdagens/syncrim-hal/", branch="mtime"}
 embedded-hal = "1.0.0"
 #lab4 = { git = "https://vesuvio-git.neteq.ltu.se/pln/rust_decode" }
 
 [workspace]
+
+[patch."https://github.com/onsdagens/syncrim-clic-rt"]
+#syncrim-clic-rt = {path = "../../../syncrim-clic-rt/"}
+[patch."https://github.com/onsdagens/rtic"]
+#rtic = {path = "../../../rtic/rtic"}
+[patch."https://github.com/onsdagens/syncrim-pac"]
+#syncrim-pac = {path = "../../../syncrim-pac/"}
+[patch."https://github.com/onsdagens/syncrim-hal"]
+#syncrim-hal = {path = "../../../syncrim-hal/"}
+[patch."https://github.com/onsdagens/clic"]
+#clic = {path = "../../../clic"}

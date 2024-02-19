@@ -20,7 +20,7 @@ PROVIDE(Interrupt5 = DefaultInterruptHandler);
 PROVIDE(Interrupt6 = DefaultInterruptHandler);
 PROVIDE(Interrupt7 = DefaultInterruptHandler);
 PROVIDE(Interrupt8 = DefaultInterruptHandler);
-PROVIDE(Interrupt9 = DefaultInterruptHandler);
+PROVIDE(MTIME = DefaultInterruptHandler);
 SECTIONS{
   /* ### .uninit */
   .uninit (NOLOAD) : ALIGN(4)

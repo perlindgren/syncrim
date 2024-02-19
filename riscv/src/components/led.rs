@@ -3,10 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
-use syncrim::{
-    common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
-    signal::SignalValue,
-};
+use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 
 pub const LED_I_ID: &str = "input";
 pub const LED_HEIGHT: f32 = 20.0;
@@ -61,7 +58,7 @@ impl Component for LED {
         )
     }
     #[allow(non_snake_case)]
-    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
+    fn clock(&self, _simulator: &mut Simulator) -> Result<(), Condition> {
         Ok(())
     }
 }

@@ -1,6 +1,6 @@
 use crate::components::LED;
-use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2};
 use egui::epaint::RectShape;
+use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2};
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -32,23 +32,21 @@ impl EguiComponent for LED {
         offset.y += self.pos.1 * scale;
         let s = scale;
         let o = offset;
-        let bg_color = 
-            match simulator {
-                Some(s)=>{
-                    let input = s.get_input_value(&self.input);
-                    match input {
-                        SignalValue::Data(d) => {
-                            if d == 1 {
-                                Color32::RED
-                            }
-                            else {
-                                Color32::GRAY
-                            }
-                        },
-                        _=> {Color32::GRAY}
+        let bg_color = match simulator {
+            Some(s) => {
+                let input = s.get_input_value(&self.input);
+                match input {
+                    SignalValue::Data(d) => {
+                        if d == 1 {
+                            Color32::RED
+                        } else {
+                            Color32::GRAY
+                        }
                     }
-                },
-                None => {Color32::GRAY},
+                    _ => Color32::GRAY,
+                }
+            }
+            None => Color32::GRAY,
         };
         // The shape
         let rect = Rect {
@@ -59,10 +57,10 @@ impl EguiComponent for LED {
             rect,
             Rounding::ZERO,
             bg_color,
-            Stroke{
+            Stroke {
                 width: scale,
                 color: Color32::BLACK,
-            }
+            },
         )));
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
@@ -138,12 +136,10 @@ impl EguiComponent for LED {
 
     fn ports_location(&self) -> Vec<(syncrim::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
-        vec![
-            (
-                crate::components::LED_I_ID.to_string(),
-                Pos2::new(-self.width / 2f32, 0.0) + own_pos,
-            ),
-        ]
+        vec![(
+            crate::components::LED_I_ID.to_string(),
+            Pos2::new(-self.width / 2f32, 0.0) + own_pos,
+        )]
     }
 
     fn top_padding(&self) -> f32 {
