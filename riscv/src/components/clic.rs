@@ -216,8 +216,11 @@ impl Component for CLIC {
             csrstore.insert(0xF14, 0); //mhartid
             csrstore.insert(0x350, 0); //stack_depth, vanilla clic config
             csrstore.insert(0x351, 0); //super mtvec
-            for i in 0xB00..0xBBF {
+            for i in 0xB00..=0xBBF {
                 csrstore.insert(i, 0); //set up individual interrupt config CSRs
+            }
+            for i in 0xD00..=0xDBF {
+                csrstore.insert(i,0); //set up timestamping CSRs
             }
             &RefCell::new(csrstore)
         });
@@ -401,7 +404,7 @@ impl Component for CLIC {
 
         if let Some((old_threshold, current_mepc)) = clic_stack.last() {
             let (old_threshold, current_mepc) = (*old_threshold, *current_mepc);
-            trace!("clic stack {:#x?}", clic_stack);
+           // trace!("clic stack {:#x?}", clic_stack);
             trace!(
                 "pc {:#X}, pc_next {:#X}, current_mepc {:#X}",
                 pc,
@@ -541,17 +544,17 @@ impl Component for CLIC {
         // tracing...
         for entry in csrstore.clone().into_iter() {
             if entry.0 >= 0xBFF || entry.0 <= 0xB00 {
-                trace!("{:08x}:{:08x}", entry.0, entry.1);
+               // trace!("{:08x}:{:08x}", entry.0, entry.1);
             }
         }
-        trace!("CSR OUT:{:08x}", csr_out);
+     //   trace!("CSR OUT:{:08x}", csr_out);
         trace!("QUEUE:{:?}", queue);
         simulator.set_out_value(
             &self.id,
             CLIC_STACK_DEPTH_OUT_ID,
             SignalValue::Data(stack_depth as u32),
         );
-
+        trace!("clic_stack:{:x?}", clic_stack);
         let blu_int_value: SignalValue = blu_int.into();
         let blu_int_inv_value: SignalValue = (!blu_int).into();
 
@@ -606,7 +609,7 @@ impl Component for CLIC {
         );
 
         if let Some(interrupt_id) = dispatched_interrupt_id {
-            trace!("clear interrupt id: {}", interrupt_id);
+           // trace!("clear interrupt id: {}", interrupt_id);
             self.csr_op(
                 &mut csrstore,
                 &mut history_entry,
@@ -635,7 +638,7 @@ impl Component for CLIC {
         simulator.set_out_value(&self.id, CLIC_MEPC_ISR_MUX, isr_mepc_select);
         simulator.set_out_value(&self.id, CLIC_RF_RA_WE, rf_ra_we);
         // simulator.set_out_value(&self.id, "mret_out", mret_sig);
-
+        trace!("MINTTHRESH {}", mintthresh);
         trace!("CLIC_INTERRUPT_ID {:?}", blu_int);
         Ok(())
     }
@@ -700,7 +703,7 @@ impl CLIC {
         if (0x1000..=0x5000).contains(&addr) {
             //if within our mmio range
             if we == 2 {
-                trace!("clic mmio write");
+                //trace!("clic mmio write");
                 let old_entries: [u32; 2] = [
                     self.read(addr as usize - offset as usize, 4_usize, false, false)
                         .try_into()
@@ -724,13 +727,13 @@ impl CLIC {
                             & mask.checked_shr(32).unwrap_or(0) as u32)
                         .into(),
                 ];
-                trace!(
+               /* trace!(
                     "CSRSTORE INSERT {:?}, {:?}, addr: {:x}, {:x}",
                     mmio_entries[0],
                     mmio_entries[1],
                     (addr as usize - offset as usize - 0x1000_usize) / 4 + 0xB00,
                     (addr as usize - offset as usize + 4 - 0x1000_usize) / 4 + 0xB00,
-                );
+                );*/
                 csrstore.insert(
                     (addr as usize - offset as usize - 0x1000_usize) / 4 + 0xB00,
                     mmio_entries[0].into(),
@@ -747,10 +750,10 @@ impl CLIC {
                             mmio_entry.clicintctl,
                             false,
                         ));
-                        trace!(
+                       /* trace!(
                             "MMIO QUEUE INTERRUPT {:x}",
                             ((addr - offset + 4u32 * i as u32 - 0x1000) / 4)
-                        );
+                        );*/
                         queue.push(
                             (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
                             mmio_entry.clicintctl,
@@ -805,7 +808,7 @@ impl CLIC {
         csr_addr: SignalUnsigned,
     ) -> u32 {
         // handle CSR operations
-        trace!("CSR OP");
+       // trace!("CSR OP");
         let mut val = 0;
         let mut csr_data = csr_data.clone();
         match csr_ctl {
@@ -824,9 +827,9 @@ impl CLIC {
                         history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
                     }
                     // interrupt config write, mirror in mmio
-                    trace!("CSR_ADDR_NEW:{:x}", csr_addr);
+                   // trace!("CSR_ADDR_NEW:{:x}", csr_addr);
                     if 0xB00 <= csr_addr && csr_addr <= 0xBBF {
-                        trace!("ok do thing");
+                       // trace!("ok do thing");
                         self.mmio_op(
                             0x1000 + (csr_addr - 0xb00) * 4,
                             2,
@@ -852,7 +855,7 @@ impl CLIC {
                         csrstore.insert(csr_addr as usize, (csr_data as usize) | val);
                         history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
                         //interrupt config CSR
-                        trace!("SET CSR: {:x}, curr val: {:x}", csr_addr, val);
+                       // trace!("SET CSR: {:x}, curr val: {:x}", csr_addr, val);
                         if 0xB00 <= csr_addr && csr_addr <= 0xBBF {
                             self.mmio_op(
                                 0x1000 + (csr_addr - 0xb00) * 4,
@@ -869,9 +872,9 @@ impl CLIC {
             }
             //clear
             3 => {
-                trace!("csr clear");
+               // trace!("csr clear");
                 if csrstore.contains_key(&(csr_addr as usize)) {
-                    trace!("ADDR:{:x}", csr_addr);
+                  //  trace!("ADDR:{:x}", csr_addr);
                     if csr_addr == 0x305 {
                         //mtvec clear
                         csr_data |= !0b11; //hardwire to vectored mode
@@ -879,8 +882,8 @@ impl CLIC {
                     if csr_addr != 0xf14 {
                         //mhartid RO
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
-                        trace!("val:{:x}, csr_data:{:x}", val, csr_data);
-                        trace!("{:x}", (val as u32 & !csr_data));
+                        //trace!("val:{:x}, csr_data:{:x}", val, csr_data);
+                       // trace!("{:x}", (val as u32 & !csr_data));
                         csrstore.insert(csr_addr as usize, val & !(csr_data as usize));
                         history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
                         if 0xB00 <= csr_addr && csr_addr <= 0xBBF {
