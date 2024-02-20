@@ -26,7 +26,7 @@ embedded-hal = "1.0.0"
 [patch."https://github.com/onsdagens/syncrim-clic-rt"]
 #syncrim-clic-rt = {path = "../../../syncrim-clic-rt/"}
 [patch."https://github.com/onsdagens/rtic"]
-#rtic = {path = "../../../rtic/rtic"}
+rtic = {path = "../../../rtic/rtic"}
 [patch."https://github.com/onsdagens/syncrim-pac"]
 #syncrim-pac = {path = "../../../syncrim-pac/"}
 [patch."https://github.com/onsdagens/syncrim-hal"]
