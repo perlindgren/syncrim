@@ -1,0 +1,57 @@
+                    0x00310093,//addi x1, x2, 3 # x1=0x5
+                    0xffd0a093,//slti x1, x1, -3 # x1=0x0
+                    0x0030a093,//slti x1, x1, 3 # x1=0x1
+                    0xffd0b093,//sltiu x1, x1, -3 #x1=0x1
+                    0x00313093,//sltiu x1, x2, 3 #x1=0x1
+                    0x00324093,//xori x1, x4, 3 #x1 = 0x9
+                    0x00326093,//ori x1, x4, 3 #x1=0xb
+                    0x00327093,//andi x1, x4, 3 #x1=0x2
+                    0x00c19093,//slli x1, x3, 12 #x1=0x3000
+                    0x0011d093,//srli x1, x3, 1 #x1=0x1
+                    0xffa00093,//addi x1, x0, -6 #x1=0xfffffffa
+                    0x4020d093,//srai x1, x1, 2 #x1=0xfffffffe
+                    0x00500093,//addi x1, x0, 5 #x1=0x5
+                    0x4020d093,//srai x1, x1, 2 #x1=0x1
+                    0xfffff0b7,//lui x1, 0xFFFFF #x1=0xFFFFF000
+                    0xfffff097,//auipc x1, 0xFFFFF #x1=0xFFFFF040
+                    0x00000093,//addi, x1, x0, 0 x1 = 0
+                    0x00408093,//addi x1, x1, 4 x1+=4
+                    0xff9ff16f,//jal, x2, -8 should jump to the addi before and keep incrementing x1.
+                    0x00102023,//sw x1, 0(x0) store x1=4 at 0
+                    0x00002283,//lw x5, 0(x0) x5=4
+                    0x00228213,//addi x4, x5, 2 //x4=6
+                    0x00002303, //lw x6, 0(x0), x6 = 4
+                    0xfff00093,//set x1 to -1 addi x1, x0, -1
+                    0x00102023, //store -1 at 0
+                    0x00000203, //load via lb -1 to x4
+                    0x00004203, //lbu x4 -1 again.
+                    0x004002a3, //sb x4, 5(0)
+                    0x00000033, //add x0, x0, x0, basically nop
+                    //JAL, JALR, BRANCHES TEST BLOCK
+                    0x00000093, //addi, x1, x0, 0 x1=0
+                    0x0080016f, //jal x2, 8
+                    0x0000016f, //jal x2, 0 this is to be jumped over or we will get stuck
+                    0x00410167, //jalr x2, x2, 4
+                    0x0000016f, //jal x2, 0 this is to be jumped over or we will get stuck
+                    0x01000113, //addi x2, x0, 16
+                    0x00000093, //addi x1, x0, 0
+                    0x00408093, //addi x1, x1, 4
+                    0xfe209ee3, //bne x1, x2, -4
+                    0x00208463, //beq, x1, x2, 8
+                    0x0000006f, //jal x0, 0
+                    0xff800093, //addi x1, x0, -8
+                    0x00000113, //addi x2, x0, 0
+                    0x00408093, //addi x1, x1, 4
+                    0xfe20cee3, //blt x1, x2, -4
+                    0xff800093, //addi x1, x0, -8
+                    0x00000113, //addi x2, x0, 0
+                    0x00408093, //addi x1, x1, 4
+                    0xfe116ee3, //bltu, x2, x1, -4
+                    0xff800093, //addi x1, x0, -8
+                    0x00000113, //addi x2, x0, 0
+                    0x00408093, //addi x1, x1, 4
+                    0xfe115ee3, //bge x2, x1, -4
+                    0xff800093, //addi x1, x0, -8
+                    0x00800113, //addi x2, x0, 8
+                    0x00408093, //addi x1, x1, 4
+                    0xfe20fee3, //bgeu x1, x2, -4

@@ -16,12 +16,15 @@ pub mod app {
     use syncrim_pac as you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml;
     /// Holds the maximum priority level for use by async HAL drivers.
     #[no_mangle]
-    static RTIC_ASYNC_MAX_LOGICAL_PRIO: u8 = 1u8;
+    static RTIC_ASYNC_MAX_LOGICAL_PRIO: u8 = 0u8;
+    use embedded_hal::digital::StatefulOutputPin;
+    use syncrim_hal::gpio::{Output, Pin, Pins};
+    type LED = Pin<Output>;
     /// User code end
     ///Shared resources
     struct Shared {
-        low_prio_r: u32,
-        high_prio_r: u32,
+        led: LED,
+        resource: u32,
     }
     ///Local resources
     struct Local {}
@@ -58,11 +61,15 @@ pub mod app {
     }
     #[inline(always)]
     #[allow(non_snake_case)]
-    fn init(_cx: init::Context) -> (Shared, Local) {
-        let low_prio_r = 0;
-        let high_prio_r = 0;
+    fn init(cx: init::Context) -> (Shared, Local) {
+        let peripherals = cx.device;
+        let g = peripherals.GPIO;
+        let pins = Pins::new(g);
+        let led = pins.pin2.into_output();
+        let resource = 0;
         rtic::export::pend(clic::Interrupt2);
-        (Shared { low_prio_r, high_prio_r }, Local {})
+        rtic::export::pend(clic::Interrupt1);
+        (Shared { led, resource }, Local {})
     }
     /// Execution context
     #[allow(non_snake_case)]
@@ -94,6 +101,26 @@ pub mod app {
     }
     #[allow(non_snake_case)]
     #[no_mangle]
+    unsafe fn Interrupt1() {
+        const PRIORITY: u8 = 1u8;
+        rtic::export::run(
+            PRIORITY,
+            || { i1(i1::Context::new(&rtic::export::Priority::new(PRIORITY))) },
+        );
+    }
+    impl<'a> __rtic_internal_i1SharedResources<'a> {
+        #[inline(always)]
+        #[allow(missing_docs)]
+        pub unsafe fn new(priority: &'a rtic::export::Priority) -> Self {
+            __rtic_internal_i1SharedResources {
+                led: shared_resources::led_that_needs_to_be_locked::new(priority),
+                __rtic_internal_marker: core::marker::PhantomData,
+                priority: priority,
+            }
+        }
+    }
+    #[allow(non_snake_case)]
+    #[no_mangle]
     unsafe fn Interrupt2() {
         const PRIORITY: u8 = 2u8;
         rtic::export::run(
@@ -106,10 +133,8 @@ pub mod app {
         #[allow(missing_docs)]
         pub unsafe fn new(priority: &'a rtic::export::Priority) -> Self {
             __rtic_internal_i2SharedResources {
-                low_prio_r: shared_resources::low_prio_r_that_needs_to_be_locked::new(
-                    priority,
-                ),
-                high_prio_r: shared_resources::high_prio_r_that_needs_to_be_locked::new(
+                led: shared_resources::led_that_needs_to_be_locked::new(priority),
+                resource: shared_resources::resource_that_needs_to_be_locked::new(
                     priority,
                 ),
                 __rtic_internal_marker: core::marker::PhantomData,
@@ -131,9 +156,7 @@ pub mod app {
         #[allow(missing_docs)]
         pub unsafe fn new(priority: &'a rtic::export::Priority) -> Self {
             __rtic_internal_i3SharedResources {
-                low_prio_r: shared_resources::low_prio_r_that_needs_to_be_locked::new(
-                    priority,
-                ),
+                led: shared_resources::led_that_needs_to_be_locked::new(priority),
                 __rtic_internal_marker: core::marker::PhantomData,
                 priority: priority,
             }
@@ -153,7 +176,7 @@ pub mod app {
         #[allow(missing_docs)]
         pub unsafe fn new(priority: &'a rtic::export::Priority) -> Self {
             __rtic_internal_i4SharedResources {
-                high_prio_r: shared_resources::high_prio_r_that_needs_to_be_locked::new(
+                resource: shared_resources::resource_that_needs_to_be_locked::new(
                     priority,
                 ),
                 __rtic_internal_marker: core::marker::PhantomData,
@@ -163,12 +186,51 @@ pub mod app {
     }
     #[allow(non_snake_case)]
     #[allow(non_camel_case_types)]
+    ///Shared resources `i1` has access to
+    pub struct __rtic_internal_i1SharedResources<'a> {
+        #[allow(missing_docs)]
+        pub led: shared_resources::led_that_needs_to_be_locked<'a>,
+        #[doc(hidden)]
+        pub __rtic_internal_marker: core::marker::PhantomData<&'a ()>,
+        pub priority: &'a rtic::export::Priority,
+    }
+    /// Execution context
+    #[allow(non_snake_case)]
+    #[allow(non_camel_case_types)]
+    pub struct __rtic_internal_i1_Context<'a> {
+        #[doc(hidden)]
+        __rtic_internal_p: ::core::marker::PhantomData<&'a ()>,
+        /// Shared Resources this task has access to
+        pub shared: i1::SharedResources<'a>,
+        pub priority: &'a rtic::export::Priority,
+    }
+    impl<'a> __rtic_internal_i1_Context<'a> {
+        #[inline(always)]
+        #[allow(missing_docs)]
+        pub unsafe fn new(priority: &'a rtic::export::Priority) -> Self {
+            __rtic_internal_i1_Context {
+                __rtic_internal_p: ::core::marker::PhantomData,
+                priority,
+                shared: i1::SharedResources::new(priority),
+            }
+        }
+    }
+    #[allow(non_snake_case)]
+    ///Hardware task
+    pub mod i1 {
+        #[doc(inline)]
+        pub use super::__rtic_internal_i1SharedResources as SharedResources;
+        #[doc(inline)]
+        pub use super::__rtic_internal_i1_Context as Context;
+    }
+    #[allow(non_snake_case)]
+    #[allow(non_camel_case_types)]
     ///Shared resources `i2` has access to
     pub struct __rtic_internal_i2SharedResources<'a> {
         #[allow(missing_docs)]
-        pub low_prio_r: shared_resources::low_prio_r_that_needs_to_be_locked<'a>,
+        pub led: shared_resources::led_that_needs_to_be_locked<'a>,
         #[allow(missing_docs)]
-        pub high_prio_r: shared_resources::high_prio_r_that_needs_to_be_locked<'a>,
+        pub resource: shared_resources::resource_that_needs_to_be_locked<'a>,
         #[doc(hidden)]
         pub __rtic_internal_marker: core::marker::PhantomData<&'a ()>,
         pub priority: &'a rtic::export::Priority,
@@ -207,7 +269,7 @@ pub mod app {
     ///Shared resources `i3` has access to
     pub struct __rtic_internal_i3SharedResources<'a> {
         #[allow(missing_docs)]
-        pub low_prio_r: shared_resources::low_prio_r_that_needs_to_be_locked<'a>,
+        pub led: shared_resources::led_that_needs_to_be_locked<'a>,
         #[doc(hidden)]
         pub __rtic_internal_marker: core::marker::PhantomData<&'a ()>,
         pub priority: &'a rtic::export::Priority,
@@ -246,7 +308,7 @@ pub mod app {
     ///Shared resources `i4` has access to
     pub struct __rtic_internal_i4SharedResources<'a> {
         #[allow(missing_docs)]
-        pub high_prio_r: shared_resources::high_prio_r_that_needs_to_be_locked<'a>,
+        pub resource: shared_resources::resource_that_needs_to_be_locked<'a>,
         #[doc(hidden)]
         pub __rtic_internal_marker: core::marker::PhantomData<&'a ()>,
         pub priority: &'a rtic::export::Priority,
@@ -281,27 +343,37 @@ pub mod app {
         pub use super::__rtic_internal_i4_Context as Context;
     }
     #[allow(non_snake_case)]
+    fn i1(mut cx: i1::Context) {
+        use rtic::Mutex as _;
+        use rtic::mutex::prelude::*;
+        cx.shared
+            .led
+            .lock(|led| {
+                let _ = led.toggle();
+            });
+    }
+    #[allow(non_snake_case)]
     fn i2(mut cx: i2::Context) {
         use rtic::Mutex as _;
         use rtic::mutex::prelude::*;
         cx.shared
-            .high_prio_r
-            .lock(|high_prio_r| {
+            .resource
+            .lock(|resource| {
                 cx.shared
-                    .low_prio_r
-                    .lock(|low_prio_r| {
+                    .led
+                    .lock(|led| {
                         rtic::export::pend(clic::Interrupt4);
-                        *low_prio_r += 1;
-                        *high_prio_r += 1;
+                        let _ = led.toggle();
+                        *resource += 1;
                     });
-                *high_prio_r += 1;
+                *resource += 1;
             });
         cx.shared
-            .low_prio_r
-            .lock(|low_prio_r| {
+            .led
+            .lock(|led| {
                 rtic::export::pend(clic::Interrupt3);
                 rtic::export::pend(clic::Interrupt4);
-                *low_prio_r += 1;
+                let _ = led.toggle();
             })
     }
     #[allow(non_snake_case)]
@@ -309,9 +381,9 @@ pub mod app {
         use rtic::Mutex as _;
         use rtic::mutex::prelude::*;
         cx.shared
-            .low_prio_r
-            .lock(|low_prio_r| {
-                *low_prio_r += 1;
+            .led
+            .lock(|led| {
+                let _ = led.toggle();
             });
     }
     #[allow(non_snake_case)]
@@ -319,30 +391,30 @@ pub mod app {
         use rtic::Mutex as _;
         use rtic::mutex::prelude::*;
         cx.shared
-            .high_prio_r
-            .lock(|high_prio_r| {
-                *high_prio_r += 1;
+            .resource
+            .lock(|resource| {
+                *resource += 1;
             });
     }
     #[allow(non_camel_case_types)]
     #[allow(non_upper_case_globals)]
     #[doc(hidden)]
     #[link_section = ".uninit.rtic0"]
-    static __rtic_internal_shared_resource_low_prio_r: rtic::RacyCell<
-        core::mem::MaybeUninit<u32>,
+    static __rtic_internal_shared_resource_led: rtic::RacyCell<
+        core::mem::MaybeUninit<LED>,
     > = rtic::RacyCell::new(core::mem::MaybeUninit::uninit());
-    impl<'a> rtic::Mutex for shared_resources::low_prio_r_that_needs_to_be_locked<'a> {
-        type T = u32;
+    impl<'a> rtic::Mutex for shared_resources::led_that_needs_to_be_locked<'a> {
+        type T = LED;
         #[inline(always)]
         fn lock<RTIC_INTERNAL_R>(
             &mut self,
-            f: impl FnOnce(&mut u32) -> RTIC_INTERNAL_R,
+            f: impl FnOnce(&mut LED) -> RTIC_INTERNAL_R,
         ) -> RTIC_INTERNAL_R {
             /// Priority ceiling
             const CEILING: u8 = 3u8;
             unsafe {
                 rtic::export::lock(
-                    __rtic_internal_shared_resource_low_prio_r.get_mut() as *mut _,
+                    __rtic_internal_shared_resource_led.get_mut() as *mut _,
                     self.priority,
                     CEILING,
                     f,
@@ -354,10 +426,10 @@ pub mod app {
     #[allow(non_upper_case_globals)]
     #[doc(hidden)]
     #[link_section = ".uninit.rtic1"]
-    static __rtic_internal_shared_resource_high_prio_r: rtic::RacyCell<
+    static __rtic_internal_shared_resource_resource: rtic::RacyCell<
         core::mem::MaybeUninit<u32>,
     > = rtic::RacyCell::new(core::mem::MaybeUninit::uninit());
-    impl<'a> rtic::Mutex for shared_resources::high_prio_r_that_needs_to_be_locked<'a> {
+    impl<'a> rtic::Mutex for shared_resources::resource_that_needs_to_be_locked<'a> {
         type T = u32;
         #[inline(always)]
         fn lock<RTIC_INTERNAL_R>(
@@ -368,7 +440,7 @@ pub mod app {
             const CEILING: u8 = 4u8;
             unsafe {
                 rtic::export::lock(
-                    __rtic_internal_shared_resource_high_prio_r.get_mut() as *mut _,
+                    __rtic_internal_shared_resource_resource.get_mut() as *mut _,
                     self.priority,
                     CEILING,
                     f,
@@ -379,14 +451,14 @@ pub mod app {
     mod shared_resources {
         #[doc(hidden)]
         #[allow(non_camel_case_types)]
-        pub struct low_prio_r_that_needs_to_be_locked<'a> {
+        pub struct led_that_needs_to_be_locked<'a> {
             __rtic_internal_p: ::core::marker::PhantomData<&'a ()>,
             pub priority: &'a rtic::export::Priority,
         }
-        impl<'a> low_prio_r_that_needs_to_be_locked<'a> {
+        impl<'a> led_that_needs_to_be_locked<'a> {
             #[inline(always)]
             pub unsafe fn new(priority: &'a rtic::export::Priority) -> Self {
-                low_prio_r_that_needs_to_be_locked {
+                led_that_needs_to_be_locked {
                     __rtic_internal_p: ::core::marker::PhantomData,
                     priority,
                 }
@@ -394,14 +466,14 @@ pub mod app {
         }
         #[doc(hidden)]
         #[allow(non_camel_case_types)]
-        pub struct high_prio_r_that_needs_to_be_locked<'a> {
+        pub struct resource_that_needs_to_be_locked<'a> {
             __rtic_internal_p: ::core::marker::PhantomData<&'a ()>,
             pub priority: &'a rtic::export::Priority,
         }
-        impl<'a> high_prio_r_that_needs_to_be_locked<'a> {
+        impl<'a> resource_that_needs_to_be_locked<'a> {
             #[inline(always)]
             pub unsafe fn new(priority: &'a rtic::export::Priority) -> Self {
-                high_prio_r_that_needs_to_be_locked {
+                resource_that_needs_to_be_locked {
                     __rtic_internal_p: ::core::marker::PhantomData,
                     priority,
                 }
@@ -411,10 +483,24 @@ pub mod app {
     #[doc(hidden)]
     #[no_mangle]
     unsafe extern "C" fn main() -> ! {
+        rtic::export::assert_send::<LED>();
         rtic::export::assert_send::<u32>();
         rtic::export::interrupt::disable();
         let mut core: rtic::export::Peripherals = rtic::export::Peripherals::steal()
             .into();
+        const _: () = if (15usize) <= 1u8 as usize {
+            {
+                ::core::panicking::panic_fmt(
+                    format_args!(
+                        "Maximum priority used by interrupt vector \'Interrupt1\' is more than supported by hardware",
+                    ),
+                );
+            };
+        };
+        rtic::export::enable(
+            you_must_enable_the_rt_feature_for_the_pac_in_your_cargo_toml::Interrupt::Interrupt1,
+            1u8,
+        );
         const _: () = if (15usize) <= 2u8 as usize {
             {
                 ::core::panicking::panic_fmt(
@@ -465,12 +551,12 @@ pub mod app {
             let (shared_resources, local_resources) = init(
                 init::Context::new(core.into()),
             );
-            __rtic_internal_shared_resource_low_prio_r
+            __rtic_internal_shared_resource_led
                 .get_mut()
-                .write(core::mem::MaybeUninit::new(shared_resources.low_prio_r));
-            __rtic_internal_shared_resource_high_prio_r
+                .write(core::mem::MaybeUninit::new(shared_resources.led));
+            __rtic_internal_shared_resource_resource
                 .get_mut()
-                .write(core::mem::MaybeUninit::new(shared_resources.high_prio_r));
+                .write(core::mem::MaybeUninit::new(shared_resources.resource));
             rtic::export::interrupt::enable();
         });
         idle(idle::Context::new())

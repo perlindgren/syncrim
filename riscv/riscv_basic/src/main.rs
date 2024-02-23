@@ -1,7 +1,6 @@
 #![no_main]
 #![no_std]
-#![feature(type_alias_impl_trait)]
-
+    #![feature(type_alias_impl_trait)]
 use core::panic::PanicInfo;
 use riscv_rt as _;
 use syncrim_clic_rt as _;
@@ -26,8 +25,9 @@ mod app {
     let peripherals = cx.device;
     let g = peripherals.GPIO;
     let pins = Pins::new(g);
-    let led = pins.pin2.into_output();
+    let mut led = pins.pin2.into_output();
     let resource = 0;
+    let _ = led.toggle();
     rtic::export::pend(clic::Interrupt2);
     rtic::export::pend(clic::Interrupt1);
     //(Shared {low_prio_r, resource}, Local {led, mtime})

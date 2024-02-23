@@ -33,3 +33,5 @@ rtic = {path = "../../../rtic/rtic"}
 #syncrim-hal = {path = "../../../syncrim-hal/"}
 [patch."https://github.com/onsdagens/clic"]
 #clic = {path = "../../../clic"}
+[patch.crates-io]
+#embedded-hal = {path="../../../embedded-hal/embedded-hal/"}
