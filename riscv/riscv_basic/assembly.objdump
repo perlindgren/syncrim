@@ -1,41 +1,3 @@
-warning: unused variable: `app`
-   --> /home/pawel/syncrim-reg-stack/rtic/rtic-macros/src/codegen/bindings/riscvclic.rs:185:9
-    |
-185 |         app: &App,
-    |         ^^^ help: if this is intentional, prefix it with an underscore: `_app`
-    |
-    = note: `#[warn(unused_variables)]` on by default
-
-warning: unused variable: `analysis`
-   --> /home/pawel/syncrim-reg-stack/rtic/rtic-macros/src/codegen/bindings/riscvclic.rs:186:9
-    |
-186 |         analysis: &CodegenAnalysis,
-    |         ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_analysis`
-
-warning: unused variable: `dispatcher_name`
-   --> /home/pawel/syncrim-reg-stack/rtic/rtic-macros/src/codegen/bindings/riscvclic.rs:187:9
-    |
-187 |         dispatcher_name: Ident,
-    |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_dispatcher_name`
-
-warning: unused variable: `lt`
-   --> /home/pawel/syncrim-reg-stack/rtic/rtic-macros/src/codegen/module.rs:106:9
-    |
-106 |     let lt = if ctxt.has_shared_resources(app) {
-    |         ^^ help: if this is intentional, prefix it with an underscore: `_lt`
-
-warning: 4 warnings emitted
-
-warning: unused variable: `priority`
-  --> /home/pawel/syncrim-reg-stack/rtic/rtic/src/export/riscv_clic.rs:10:15
-   |
-10 | pub fn run<F>(priority: u8, f: F)
-   |               ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_priority`
-   |
-   = note: `#[warn(unused_variables)]` on by default
-
-warning: 1 warning emitted
-
 
 riscv_basic:	file format elf32-littleriscv
 
@@ -114,10 +76,10 @@ Disassembly of section .text:
       f4: 13 09 05 00  	mv	s2, a0
       f8: 13 85 06 00  	mv	a0, a3
       fc: 97 10 00 00  	auipc	ra, 0x1
-     100: e7 80 40 bc  	jalr	-0x43c(ra) <.Lline_table_start0+0x119>
+     100: e7 80 40 bc  	jalr	-0x43c(ra) <.Lline_table_start0+0xe1>
      104: 63 06 05 06  	beqz	a0, 0x170 <.Lline_table_start0+0x170>
      108: 97 10 00 00  	auipc	ra, 0x1
-     10c: e7 80 40 bb  	jalr	-0x44c(ra) <.Lline_table_start0+0x115>
+     10c: e7 80 40 bb  	jalr	-0x44c(ra) <.Lline_table_start0+0xdd>
 
 00000110 <.Lpcrel_hi2>:
      110: 17 05 00 50  	auipc	a0, 0x50000
@@ -153,7 +115,7 @@ Disassembly of section .text:
      168: 13 05 00 00  	li	a0, 0x0
      16c: 93 05 00 00  	li	a1, 0x0
      170: 97 10 00 00  	auipc	ra, 0x1
-     174: e7 80 c0 b1  	jalr	-0x4e4(ra) <.Lline_table_start0+0xe5>
+     174: e7 80 c0 b1  	jalr	-0x4e4(ra) <.Lline_table_start0+0xad>
      178: 13 05 09 00  	mv	a0, s2
      17c: 93 85 04 00  	mv	a1, s1
      180: 13 06 04 00  	mv	a2, s0
@@ -221,13 +183,13 @@ Disassembly of section .text:
      268: 6f 00 00 01  	j	0x278 <.Lline_table_start0+0x278>
      26c: 13 05 04 00  	mv	a0, s0
      270: 97 10 00 00  	auipc	ra, 0x1
-     274: e7 80 40 a4  	jalr	-0x5bc(ra) <.Lline_table_start0+0x10d>
+     274: e7 80 40 a4  	jalr	-0x5bc(ra) <.Lline_table_start0+0xd5>
      278: 13 05 04 00  	mv	a0, s0
      27c: 83 20 c1 00  	lw	ra, 0xc(sp)
      280: 03 24 81 00  	lw	s0, 0x8(sp)
      284: 13 01 01 01  	addi	sp, sp, 0x10
      288: 17 13 00 00  	auipc	t1, 0x1
-     28c: 67 00 c3 a2  	jr	-0x5d4(t1) <.Lline_table_start0+0x10d>
+     28c: 67 00 c3 a2  	jr	-0x5d4(t1) <.Lline_table_start0+0xd5>
      290: 93 05 c0 00  	li	a1, 0xc
      294: 63 76 b5 02  	bgeu	a0, a1, 0x2c0 <.Lline_table_start0+0x2c0>
      298: 13 15 25 00  	slli	a0, a0, 0x2
@@ -244,53 +206,53 @@ Disassembly of section .text:
      2c4: 03 24 81 00  	lw	s0, 0x8(sp)
      2c8: 13 01 01 01  	addi	sp, sp, 0x10
      2cc: 17 13 00 00  	auipc	t1, 0x1
-     2d0: 67 00 c3 9e  	jr	-0x614(t1) <.Lline_table_start0+0x111>
+     2d0: 67 00 c3 9e  	jr	-0x614(t1) <.Lline_table_start0+0xd9>
 
 000002d4 <abort>:
      2d4: 6f 00 00 00  	j	0x2d4 <.Lline_table_start0+0x2d4>
 
 000002d8 <Interrupt1>:
-  2d8: 13 05 30 00  	li	a0, 0x3
-  2dc: 73 10 75 34  	csrw	0x347, a0
-  2e0: 37 05 00 60  	lui	a0, 0x60000
-  2e4: 93 05 40 00  	li	a1, 0x4
-  2e8: 23 2a b5 00  	sw	a1, 0x14(a0)
-  2ec: 13 05 10 00  	li	a0, 0x1
-  2f0: 73 10 75 34  	csrw	0x347, a0
-  2f4: 67 80 00 00  	ret
+     2d8: 13 05 30 00  	li	a0, 0x3
+     2dc: 73 10 75 34  	csrw	0x347, a0
+     2e0: 37 05 00 60  	lui	a0, 0x60000
+     2e4: 93 05 40 00  	li	a1, 0x4
+     2e8: 23 2a b5 00  	sw	a1, 0x14(a0)
+     2ec: 13 05 10 00  	li	a0, 0x1
+     2f0: 73 10 75 34  	csrw	0x347, a0
+     2f4: 67 80 00 00  	ret
 
 000002f8 <Interrupt2>:
-  2f8: 13 05 40 00  	li	a0, 0x4
-  2fc: 73 10 75 34  	csrw	0x347, a0
-  300: 73 e0 40 b0  	csrsi	mhpmcounter4, 0x1
-  304: b7 05 00 60  	lui	a1, 0x60000
-  308: 23 aa a5 00  	sw	a0, 0x14(a1)
-  30c: 37 06 00 50  	lui	a2, 0x50000
-  310: 83 26 06 00  	lw	a3, 0x0(a2)
-  314: 93 86 26 00  	addi	a3, a3, 0x2
-  318: 23 20 d6 00  	sw	a3, 0x0(a2)
-  31c: 13 06 20 00  	li	a2, 0x2
-  320: 73 10 76 34  	csrw	0x347, a2
-  324: 93 06 30 00  	li	a3, 0x3
-  328: 73 90 76 34  	csrw	0x347, a3
-  32c: 73 e0 30 b0  	csrsi	mhpmcounter3, 0x1
-  330: 73 e0 40 b0  	csrsi	mhpmcounter4, 0x1
-  334: 23 aa a5 00  	sw	a0, 0x14(a1)
-  338: 73 10 76 34  	csrw	0x347, a2
-  33c: 67 80 00 00  	ret
+     2f8: 13 05 40 00  	li	a0, 0x4
+     2fc: 73 10 75 34  	csrw	0x347, a0
+     300: 73 e0 40 b0  	csrsi	mhpmcounter4, 0x1
+     304: b7 05 00 60  	lui	a1, 0x60000
+     308: 23 aa a5 00  	sw	a0, 0x14(a1)
+     30c: 37 06 00 50  	lui	a2, 0x50000
+     310: 83 26 06 00  	lw	a3, 0x0(a2)
+     314: 93 86 26 00  	addi	a3, a3, 0x2
+     318: 23 20 d6 00  	sw	a3, 0x0(a2)
+     31c: 13 06 20 00  	li	a2, 0x2
+     320: 73 10 76 34  	csrw	0x347, a2
+     324: 93 06 30 00  	li	a3, 0x3
+     328: 73 90 76 34  	csrw	0x347, a3
+     32c: 73 e0 30 b0  	csrsi	mhpmcounter3, 0x1
+     330: 73 e0 40 b0  	csrsi	mhpmcounter4, 0x1
+     334: 23 aa a5 00  	sw	a0, 0x14(a1)
+     338: 73 10 76 34  	csrw	0x347, a2
+     33c: 67 80 00 00  	ret
 
 00000340 <Interrupt3>:
-  340: 37 05 00 60  	lui	a0, 0x60000
-  344: 93 05 40 00  	li	a1, 0x4
-  348: 23 2a b5 00  	sw	a1, 0x14(a0)
-  34c: 67 80 00 00  	ret
+     340: 37 05 00 60  	lui	a0, 0x60000
+     344: 93 05 40 00  	li	a1, 0x4
+     348: 23 2a b5 00  	sw	a1, 0x14(a0)
+     34c: 67 80 00 00  	ret
 
 00000350 <Interrupt4>:
-  350: 37 05 00 50  	lui	a0, 0x50000
-  354: 83 25 05 00  	lw	a1, 0x0(a0)
-  358: 93 85 15 00  	addi	a1, a1, 0x1
-  35c: 23 20 b5 00  	sw	a1, 0x0(a0)
-  360: 67 80 00 00  	ret
+     350: 37 05 00 50  	lui	a0, 0x50000
+     354: 83 25 05 00  	lw	a1, 0x0(a0)
+     358: 93 85 15 00  	addi	a1, a1, 0x1
+     35c: 23 20 b5 00  	sw	a1, 0x0(a0)
+     360: 67 80 00 00  	ret
 
 00000364 <main>:
      364: 13 01 01 ff  	addi	sp, sp, -0x10
@@ -320,7 +282,7 @@ Disassembly of section .text:
      3c4: e7 80 c0 00  	jalr	0xc(ra) <.Lline_table_start0+0x3cc>
      3c8: 6f 00 00 00  	j	0x3c8 <.Lline_table_start0+0x3c8>
 
-000003cc <riscv_basic::app::main::__rtic_init_resources::h77ce3c5411abe491>:
+000003cc <riscv_basic::app::main::__rtic_init_resources::ha9906567aaf9e7e2>:
      3cc: 37 05 00 50  	lui	a0, 0x50000
      3d0: 93 05 10 00  	li	a1, 0x1
      3d4: 23 02 b5 0c  	sb	a1, 0xc4(a0)
@@ -341,7 +303,7 @@ Disassembly of section .text:
      410: 73 20 05 30  	csrs	mstatus, a0
      414: 67 80 00 00  	ret
 
-00000418 <rtic::export::riscv_clic::enable::h21a80212974c46c0>:
+00000418 <rtic::export::riscv_clic::enable::hc7a7d5d0fae0df85>:
      418: 37 06 00 50  	lui	a2, 0x50000
      41c: 93 06 10 00  	li	a3, 0x1
      420: a3 02 d6 0c  	sb	a3, 0xc5(a2)
@@ -382,7 +344,7 @@ Disassembly of section .text:
      4a4: 23 20 d1 05  	sw	t4, 0x40(sp)
      4a8: 23 22 e1 05  	sw	t5, 0x44(sp)
      4ac: 23 24 f1 05  	sw	t6, 0x48(sp)
-     4b0: ef 00 90 00  	jal	0xcb8 <.Lline_table_start0+0x111>
+     4b0: ef 00 90 00  	jal	0xcb8 <.Lline_table_start0+0xd9>
      4b4: 03 25 01 00  	lw	a0, 0x0(sp)
      4b8: 73 10 05 30  	csrw	mstatus, a0
      4bc: 03 25 41 00  	lw	a0, 0x4(sp)
@@ -657,7 +619,7 @@ Disassembly of section .text:
      8c8: 23 20 d1 05  	sw	t4, 0x40(sp)
      8cc: 23 22 e1 05  	sw	t5, 0x44(sp)
      8d0: 23 24 f1 05  	sw	t6, 0x48(sp)
-     8d4: ef 00 40 3e  	jal	0xcb8 <.Lline_table_start0+0x111>
+     8d4: ef 00 40 3e  	jal	0xcb8 <.Lline_table_start0+0xd9>
      8d8: 03 25 01 00  	lw	a0, 0x0(sp)
      8dc: 73 10 05 30  	csrw	mstatus, a0
      8e0: 03 25 41 00  	lw	a0, 0x4(sp)
@@ -712,7 +674,7 @@ Disassembly of section .text:
      99c: 23 20 d1 05  	sw	t4, 0x40(sp)
      9a0: 23 22 e1 05  	sw	t5, 0x44(sp)
      9a4: 23 24 f1 05  	sw	t6, 0x48(sp)
-     9a8: ef 00 00 31  	jal	0xcb8 <.Lline_table_start0+0x111>
+     9a8: ef 00 00 31  	jal	0xcb8 <.Lline_table_start0+0xd9>
      9ac: 03 25 01 00  	lw	a0, 0x0(sp)
      9b0: 73 10 05 30  	csrw	mstatus, a0
      9b4: 03 25 41 00  	lw	a0, 0x4(sp)
@@ -767,7 +729,7 @@ Disassembly of section .text:
      a70: 23 20 d1 05  	sw	t4, 0x40(sp)
      a74: 23 22 e1 05  	sw	t5, 0x44(sp)
      a78: 23 24 f1 05  	sw	t6, 0x48(sp)
-     a7c: ef 00 c0 23  	jal	0xcb8 <.Lline_table_start0+0x111>
+     a7c: ef 00 c0 23  	jal	0xcb8 <.Lline_table_start0+0xd9>
      a80: 03 25 01 00  	lw	a0, 0x0(sp)
      a84: 73 10 05 30  	csrw	mstatus, a0
      a88: 03 25 41 00  	lw	a0, 0x4(sp)
@@ -822,7 +784,7 @@ Disassembly of section .text:
      b44: 23 20 d1 05  	sw	t4, 0x40(sp)
      b48: 23 22 e1 05  	sw	t5, 0x44(sp)
      b4c: 23 24 f1 05  	sw	t6, 0x48(sp)
-     b50: ef 00 80 16  	jal	0xcb8 <.Lline_table_start0+0x111>
+     b50: ef 00 80 16  	jal	0xcb8 <.Lline_table_start0+0xd9>
      b54: 03 25 01 00  	lw	a0, 0x0(sp)
      b58: 73 10 05 30  	csrw	mstatus, a0
      b5c: 03 25 41 00  	lw	a0, 0x4(sp)
@@ -877,7 +839,7 @@ Disassembly of section .text:
      c18: 23 20 d1 05  	sw	t4, 0x40(sp)
      c1c: 23 22 e1 05  	sw	t5, 0x44(sp)
      c20: 23 24 f1 05  	sw	t6, 0x48(sp)
-     c24: ef 00 40 09  	jal	0xcb8 <.Lline_table_start0+0x111>
+     c24: ef 00 40 09  	jal	0xcb8 <.Lline_table_start0+0xd9>
      c28: 03 25 01 00  	lw	a0, 0x0(sp)
      c2c: 73 10 05 30  	csrw	mstatus, a0
      c30: 03 25 41 00  	lw	a0, 0x4(sp)
@@ -917,18 +879,18 @@ Disassembly of section .text:
      cb0: 67 80 00 00  	ret
 
 00000cb4 <UserEnvCall>:
-     cb4: 6f 00 00 00  	j	0xcb4 <.Lline_table_start0+0x10d>
+     cb4: 6f 00 00 00  	j	0xcb4 <.Lline_table_start0+0xd5>
 
 00000cb8 <SupervisorTimer>:
-     cb8: 6f 00 00 00  	j	0xcb8 <.Lline_table_start0+0x111>
+     cb8: 6f 00 00 00  	j	0xcb8 <.Lline_table_start0+0xd9>
 
 00000cbc <default_pre_init>:
      cbc: 67 80 00 00  	ret
 
 00000cc0 <default_mp_hook>:
-     cc0: 63 06 05 00  	beqz	a0, 0xccc <.Lline_table_start0+0x125>
+     cc0: 63 06 05 00  	beqz	a0, 0xccc <.Lline_table_start0+0xed>
      cc4: 73 00 50 10  	wfi
-     cc8: 6f f0 df ff  	j	0xcc4 <.Lline_table_start0+0x11d>
+     cc8: 6f f0 df ff  	j	0xcc4 <.Lline_table_start0+0xe5>
      ccc: 13 05 10 00  	li	a0, 0x1
      cd0: 67 80 00 00  	ret
 
