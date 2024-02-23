@@ -17,121 +17,127 @@ use syncrim::gui_egui::helper::offset_helper;
 
 impl InstrMem {
     fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
-        Window::new("Instruction Memory").resizable(false).show(ctx, |ui| {
-            TableBuilder::new(ui)
-                .striped(true)
-                .column(Column::initial(75.0).at_least(75.0))
-                .column(Column::initial(10.0).resizable(false))
-                .column(Column::initial(75.0).at_least(75.0))
-                .column(Column::initial(75.0).at_least(50.0))
-                .column(Column::initial(150.0).at_least(85.0).resizable(true))
-                .column(Column::initial(5.0).at_least(5.0).resizable(false))
-                .header(30.0, |mut header| {
-                    header.col(|ui| {
-                        ui.heading("Label");
-                    });
-                    header.col(|_ui| {});
-                    header.col(|ui| {
-                        ui.heading("Address");
-                    });
-                    header.col(|ui| {
-                        ui.heading("HEX");
-                    });
-                    header.col(|ui| {
-                        ui.heading("Instruction");
-                    });
-                })
-                .body(|body| {
-                    body.rows(15.0, (self.range.end - self.range.start)/4, |index, mut row| {
-                        let address = index * 4 + self.range.start;
-                        let pc: u32 = {
-                            if simulator.as_ref().is_some() {
-                                simulator
-                                    .as_ref()
-                                    .unwrap()
-                                    .get_input_value(&self.pc)
-                                    .try_into()
-                                    .unwrap_or(0)
-                            } else {
-                                0
-                            }
-                        };
-                        let (bg_color, fg_color) = {
-                            if pc as usize == address {
-                                (Color32::DARK_GRAY, Color32::WHITE)
-                            } else {
-                                (Color32::TRANSPARENT, Color32::LIGHT_GRAY)
-                            }
-                        };
-                        let breakpoint_color = {
-                            if self.breakpoints.borrow_mut().contains(&address) {
-                                Color32::RED
-                            } else {
-                                Color32::TRANSPARENT
-                            }
-                        };
-                        row.col(|ui| match &self.symbols.get(&address) {
-                            Some(s) => {
-                                ui.add(Label::new(format!("{}:", s)).truncate(true));
-                            }
-                            None => {}
+        Window::new("Instruction Memory")
+            .resizable(false)
+            .show(ctx, |ui| {
+                TableBuilder::new(ui)
+                    .striped(true)
+                    .column(Column::initial(75.0).at_least(75.0))
+                    .column(Column::initial(10.0).resizable(false))
+                    .column(Column::initial(75.0).at_least(75.0))
+                    .column(Column::initial(75.0).at_least(50.0))
+                    .column(Column::initial(150.0).at_least(85.0).resizable(true))
+                    .column(Column::initial(5.0).at_least(5.0).resizable(false))
+                    .header(30.0, |mut header| {
+                        header.col(|ui| {
+                            ui.heading("Label");
                         });
-                        //breakpoint
-                        row.col(|ui| {
-                            ui.label(RichText::new("•").color(breakpoint_color));
+                        header.col(|_ui| {});
+                        header.col(|ui| {
+                            ui.heading("Address");
                         });
-                        //address
-                        row.col(|ui| {
-                            ui.add(Label::new(format!("0x{:08x}", address)).truncate(true));
+                        header.col(|ui| {
+                            ui.heading("HEX");
                         });
-                        let mut bytes = [0u8; 4];
-                        if !self.le {
-                            bytes[3] = *self.bytes.get(&address).unwrap();
-                            bytes[2] = *self.bytes.get(&(address + 1)).unwrap();
-                            bytes[1] = *self.bytes.get(&(address + 2)).unwrap();
-                            bytes[0] = *self.bytes.get(&(address + 3)).unwrap();
-                        } else {
-                            bytes[0] = *self.bytes.get(&address).unwrap();
-                            bytes[1] = *self.bytes.get(&(address + 1)).unwrap();
-                            bytes[2] = *self.bytes.get(&(address + 2)).unwrap();
-                            bytes[3] = *self.bytes.get(&(address + 3)).unwrap();
-                        }
-                        let instr = ((bytes[3] as u32) << 24)
-                            | ((bytes[2] as u32) << 16)
-                            | ((bytes[1] as u32) << 8)
-                            | (bytes[0] as u32);
-
-                        let instr_fmt = match asm_riscv::I::try_from(instr) {
-                            Ok(i) => riscv_asm_strings::StringifyUpperHex::to_string(&i),
-                            Err(_) => "Unknown instruction".to_string(),
-                        };
-                        //hex instr
-                        row.col(|ui| {
-                            ui.add(Label::new(format!("0x{:08X}", instr)).truncate(true));
+                        header.col(|ui| {
+                            ui.heading("Instruction");
                         });
-                        row.col(|ui| {
-                            if ui
-                                .add(
-                                    Label::new(
-                                        RichText::new(instr_fmt)
-                                            .color(fg_color)
-                                            .background_color(bg_color),
-                                    )
-                                    .truncate(true)
-                                    .sense(Sense::click()),
-                                )
-                                .clicked()
-                            {
-                                trace!("clicked");
-                                if !self.breakpoints.borrow_mut().remove(&address) {
-                                    self.breakpoints.borrow_mut().insert(address);
+                    })
+                    .body(|body| {
+                        body.rows(
+                            15.0,
+                            (self.range.end - self.range.start) / 4,
+                            |index, mut row| {
+                                let address = index * 4 + self.range.start;
+                                let pc: u32 = {
+                                    if simulator.as_ref().is_some() {
+                                        simulator
+                                            .as_ref()
+                                            .unwrap()
+                                            .get_input_value(&self.pc)
+                                            .try_into()
+                                            .unwrap_or(0)
+                                    } else {
+                                        0
+                                    }
+                                };
+                                let (bg_color, fg_color) = {
+                                    if pc as usize == address {
+                                        (Color32::DARK_GRAY, Color32::WHITE)
+                                    } else {
+                                        (Color32::TRANSPARENT, Color32::LIGHT_GRAY)
+                                    }
+                                };
+                                let breakpoint_color = {
+                                    if self.breakpoints.borrow_mut().contains(&address) {
+                                        Color32::RED
+                                    } else {
+                                        Color32::TRANSPARENT
+                                    }
+                                };
+                                row.col(|ui| match &self.symbols.get(&address) {
+                                    Some(s) => {
+                                        ui.add(Label::new(format!("{}:", s)).truncate(true));
+                                    }
+                                    None => {}
+                                });
+                                //breakpoint
+                                row.col(|ui| {
+                                    ui.label(RichText::new("•").color(breakpoint_color));
+                                });
+                                //address
+                                row.col(|ui| {
+                                    ui.add(Label::new(format!("0x{:08x}", address)).truncate(true));
+                                });
+                                let mut bytes = [0u8; 4];
+                                if !self.le {
+                                    bytes[3] = *self.bytes.get(&address).unwrap();
+                                    bytes[2] = *self.bytes.get(&(address + 1)).unwrap();
+                                    bytes[1] = *self.bytes.get(&(address + 2)).unwrap();
+                                    bytes[0] = *self.bytes.get(&(address + 3)).unwrap();
+                                } else {
+                                    bytes[0] = *self.bytes.get(&address).unwrap();
+                                    bytes[1] = *self.bytes.get(&(address + 1)).unwrap();
+                                    bytes[2] = *self.bytes.get(&(address + 2)).unwrap();
+                                    bytes[3] = *self.bytes.get(&(address + 3)).unwrap();
                                 }
-                            };
-                        });
-                        row.col(|_|{});
+                                let instr = ((bytes[3] as u32) << 24)
+                                    | ((bytes[2] as u32) << 16)
+                                    | ((bytes[1] as u32) << 8)
+                                    | (bytes[0] as u32);
+
+                                let instr_fmt = match asm_riscv::I::try_from(instr) {
+                                    Ok(i) => riscv_asm_strings::StringifyUpperHex::to_string(&i),
+                                    Err(_) => "Unknown instruction".to_string(),
+                                };
+                                //hex instr
+                                row.col(|ui| {
+                                    ui.add(Label::new(format!("0x{:08X}", instr)).truncate(true));
+                                });
+                                row.col(|ui| {
+                                    if ui
+                                        .add(
+                                            Label::new(
+                                                RichText::new(instr_fmt)
+                                                    .color(fg_color)
+                                                    .background_color(bg_color),
+                                            )
+                                            .truncate(true)
+                                            .sense(Sense::click()),
+                                        )
+                                        .clicked()
+                                    {
+                                        trace!("clicked");
+                                        if !self.breakpoints.borrow_mut().remove(&address) {
+                                            self.breakpoints.borrow_mut().insert(address);
+                                        }
+                                    };
+                                });
+                                row.col(|_| {});
+                            },
+                        );
                     });
-                });
-        });
+            });
     }
 }
 
