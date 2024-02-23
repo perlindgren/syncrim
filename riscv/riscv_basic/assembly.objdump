@@ -4,889 +4,898 @@ riscv_basic:	file format elf32-littleriscv
 Disassembly of section .text:
 
 00000000 <_start>:
-       0: b7 00 00 00  	lui	ra, 0
-       4: 67 80 80 00  	jr	8(ra)
+       0: b7 00 00 00  	lui	ra, 0x0
+       4: 67 80 80 00  	jr	0x8(ra)
 
 00000008 <_abs_start>:
-       8: 73 50 40 30  	csrwi	mie, 0
-       c: 73 50 40 34  	csrwi	mip, 0
-      10: 93 00 00 00  	li	ra, 0
-      14: 13 01 00 00  	li	sp, 0
-      18: 93 01 00 00  	li	gp, 0
-      1c: 13 02 00 00  	li	tp, 0
-      20: 93 02 00 00  	li	t0, 0
-      24: 13 03 00 00  	li	t1, 0
-      28: 93 03 00 00  	li	t2, 0
-      2c: 13 04 00 00  	li	s0, 0
-      30: 93 04 00 00  	li	s1, 0
-      34: 93 06 00 00  	li	a3, 0
-      38: 13 07 00 00  	li	a4, 0
-      3c: 93 07 00 00  	li	a5, 0
-      40: 13 08 00 00  	li	a6, 0
-      44: 93 08 00 00  	li	a7, 0
-      48: 13 09 00 00  	li	s2, 0
-      4c: 93 09 00 00  	li	s3, 0
-      50: 13 0a 00 00  	li	s4, 0
-      54: 93 0a 00 00  	li	s5, 0
-      58: 13 0b 00 00  	li	s6, 0
-      5c: 93 0b 00 00  	li	s7, 0
-      60: 13 0c 00 00  	li	s8, 0
-      64: 93 0c 00 00  	li	s9, 0
-      68: 13 0d 00 00  	li	s10, 0
-      6c: 93 0d 00 00  	li	s11, 0
-      70: 13 0e 00 00  	li	t3, 0
-      74: 93 0e 00 00  	li	t4, 0
-      78: 13 0f 00 00  	li	t5, 0
-      7c: 93 0f 00 00  	li	t6, 0
+       8: 73 50 40 30  	csrwi	mie, 0x0
+       c: 73 50 40 34  	csrwi	mip, 0x0
+      10: 93 00 00 00  	li	ra, 0x0
+      14: 13 01 00 00  	li	sp, 0x0
+      18: 93 01 00 00  	li	gp, 0x0
+      1c: 13 02 00 00  	li	tp, 0x0
+      20: 93 02 00 00  	li	t0, 0x0
+      24: 13 03 00 00  	li	t1, 0x0
+      28: 93 03 00 00  	li	t2, 0x0
+      2c: 13 04 00 00  	li	s0, 0x0
+      30: 93 04 00 00  	li	s1, 0x0
+      34: 93 06 00 00  	li	a3, 0x0
+      38: 13 07 00 00  	li	a4, 0x0
+      3c: 93 07 00 00  	li	a5, 0x0
+      40: 13 08 00 00  	li	a6, 0x0
+      44: 93 08 00 00  	li	a7, 0x0
+      48: 13 09 00 00  	li	s2, 0x0
+      4c: 93 09 00 00  	li	s3, 0x0
+      50: 13 0a 00 00  	li	s4, 0x0
+      54: 93 0a 00 00  	li	s5, 0x0
+      58: 13 0b 00 00  	li	s6, 0x0
+      5c: 93 0b 00 00  	li	s7, 0x0
+      60: 13 0c 00 00  	li	s8, 0x0
+      64: 93 0c 00 00  	li	s9, 0x0
+      68: 13 0d 00 00  	li	s10, 0x0
+      6c: 93 0d 00 00  	li	s11, 0x0
+      70: 13 0e 00 00  	li	t3, 0x0
+      74: 93 0e 00 00  	li	t4, 0x0
+      78: 13 0f 00 00  	li	t5, 0x0
+      7c: 93 0f 00 00  	li	t6, 0x0
 
 00000080 <.Lpcrel_hi0>:
-      80: 97 11 00 50  	auipc	gp, 327681
-      84: 93 81 41 84  	addi	gp, gp, -1980
+      80: 97 11 00 50  	auipc	gp, 0x50001
+      84: 93 81 41 84  	addi	gp, gp, -0x7bc
       88: f3 23 40 f1  	csrr	t2, mhartid
-      8c: b7 02 00 00  	lui	t0, 0
+      8c: b7 02 00 00  	lui	t0, 0x0
       90: 93 82 02 00  	mv	t0, t0
-      94: 63 e0 72 24  	bltu	t0, t2, 0x2d4 <abort>
-      98: b7 12 00 00  	lui	t0, 1
-      9c: 93 82 02 80  	addi	t0, t0, -2048
-      a0: 63 8c 03 00  	beqz	t2, 0xb8 <.Lpcrel_hi1>
-      a4: 13 83 03 00  	mv	t1, t2
-      a8: 13 8e 02 00  	mv	t3, t0
-      ac: b3 82 c2 01  	add	t0, t0, t3
-      b0: 13 03 f3 ff  	addi	t1, t1, -1
-      b4: e3 1c 03 fe  	bnez	t1, 0xac <.Lpcrel_hi0+0x2c>
+      94: 63 f4 72 00  	bgeu	t0, t2, 0x9c <.Lline_table_start0+0x9c>
+      98: 6f 00 c0 23  	j	0x2d4 <.Lline_table_start0+0x2d4>
+      9c: b7 12 00 00  	lui	t0, 0x1
+      a0: 93 82 02 80  	addi	t0, t0, -0x800
+      a4: 63 8c 03 00  	beqz	t2, 0xbc <.Lline_table_start0+0xbc>
+      a8: 13 83 03 00  	mv	t1, t2
+      ac: 13 8e 02 00  	mv	t3, t0
+      b0: b3 82 c2 01  	add	t0, t0, t3
+      b4: 13 03 f3 ff  	addi	t1, t1, -0x1
+      b8: e3 1c 03 fe  	bnez	t1, 0xb0 <.Lline_table_start0+0xb0>
 
-000000b8 <.Lpcrel_hi1>:
-      b8: 17 43 00 50  	auipc	t1, 327684
-      bc: 13 03 83 f4  	addi	t1, t1, -184
-      c0: 33 03 53 40  	sub	t1, t1, t0
-      c4: 13 71 03 ff  	andi	sp, t1, -16
-      c8: 33 04 01 00  	add	s0, sp, zero
-      cc: 6f 00 40 00  	j	0xd0 <_start_rust>
+000000bc <.Lpcrel_hi1>:
+      bc: 17 43 00 50  	auipc	t1, 0x50004
+      c0: 13 03 43 f4  	addi	t1, t1, -0xbc
+      c4: 33 03 53 40  	sub	t1, t1, t0
+      c8: 13 71 03 ff  	andi	sp, t1, -0x10
+      cc: 33 04 01 00  	add	s0, sp, zero
+      d0: 6f 00 40 00  	j	0xd4 <.Lline_table_start0+0xd4>
 
-000000d0 <_start_rust>:
-      d0: 13 01 01 ff  	addi	sp, sp, -16
-      d4: 23 26 11 00  	sw	ra, 12(sp)
-      d8: 23 24 81 00  	sw	s0, 8(sp)
-      dc: 23 22 91 00  	sw	s1, 4(sp)
-      e0: 23 20 21 01  	sw	s2, 0(sp)
-      e4: f3 26 40 f1  	csrr	a3, mhartid
-      e8: 13 04 06 00  	mv	s0, a2
-      ec: 93 84 05 00  	mv	s1, a1
-      f0: 13 09 05 00  	mv	s2, a0
-      f4: 13 85 06 00  	mv	a0, a3
-      f8: 97 00 00 00  	auipc	ra, 0
-      fc: e7 80 c0 32  	jalr	812(ra)
-     100: 63 06 05 06  	beqz	a0, 0x16c <.Lpcrel_hi6+0x20>
-     104: 97 00 00 00  	auipc	ra, 0
-     108: e7 80 c0 31  	jalr	796(ra)
+000000d4 <_start_rust>:
+      d4: 13 01 01 ff  	addi	sp, sp, -0x10
+      d8: 23 26 11 00  	sw	ra, 0xc(sp)
+      dc: 23 24 81 00  	sw	s0, 0x8(sp)
+      e0: 23 22 91 00  	sw	s1, 0x4(sp)
+      e4: 23 20 21 01  	sw	s2, 0x0(sp)
+      e8: f3 26 40 f1  	csrr	a3, mhartid
+      ec: 13 04 06 00  	mv	s0, a2
+      f0: 93 84 05 00  	mv	s1, a1
+      f4: 13 09 05 00  	mv	s2, a0
+      f8: 13 85 06 00  	mv	a0, a3
+      fc: 97 10 00 00  	auipc	ra, 0x1
+     100: e7 80 40 bc  	jalr	-0x43c(ra) <.Lline_table_start0+0xe1>
+     104: 63 06 05 06  	beqz	a0, 0x170 <.Lline_table_start0+0x170>
+     108: 97 10 00 00  	auipc	ra, 0x1
+     10c: e7 80 40 bb  	jalr	-0x44c(ra) <.Lline_table_start0+0xdd>
 
-0000010c <.Lpcrel_hi2>:
-     10c: 17 05 00 50  	auipc	a0, 327680
-     110: 13 05 85 fb  	addi	a0, a0, -72
+00000110 <.Lpcrel_hi2>:
+     110: 17 05 00 50  	auipc	a0, 0x50000
+     114: 13 05 45 fb  	addi	a0, a0, -0x4c
 
-00000114 <.Lpcrel_hi3>:
-     114: 97 05 00 50  	auipc	a1, 327680
-     118: 93 85 05 fb  	addi	a1, a1, -80
+00000118 <.Lpcrel_hi3>:
+     118: 97 05 00 50  	auipc	a1, 0x50000
+     11c: 93 85 c5 fa  	addi	a1, a1, -0x54
 
-0000011c <.Lpcrel_hi4>:
-     11c: 17 06 00 50  	auipc	a2, 327680
-     120: 13 06 86 fa  	addi	a2, a2, -88
-     124: 63 7c b5 00  	bgeu	a0, a1, 0x13c <.Lpcrel_hi4+0x20>
-     128: 83 26 06 00  	lw	a3, 0(a2)
-     12c: 13 06 46 00  	addi	a2, a2, 4
-     130: 23 20 d5 00  	sw	a3, 0(a0)
-     134: 13 05 45 00  	addi	a0, a0, 4
-     138: e3 68 b5 fe  	bltu	a0, a1, 0x128 <.Lpcrel_hi4+0xc>
-     13c: 93 06 00 00  	li	a3, 0
-     140: 13 06 00 00  	li	a2, 0
+00000120 <.Lpcrel_hi4>:
+     120: 17 06 00 50  	auipc	a2, 0x50000
+     124: 13 06 46 fa  	addi	a2, a2, -0x5c
+     128: 63 7c b5 00  	bgeu	a0, a1, 0x140 <.Lline_table_start0+0x140>
+     12c: 83 26 06 00  	lw	a3, 0x0(a2)
+     130: 13 06 46 00  	addi	a2, a2, 0x4
+     134: 23 20 d5 00  	sw	a3, 0x0(a0)
+     138: 13 05 45 00  	addi	a0, a0, 0x4
+     13c: e3 68 b5 fe  	bltu	a0, a1, 0x12c <.Lline_table_start0+0x12c>
+     140: 93 06 00 00  	li	a3, 0x0
+     144: 13 06 00 00  	li	a2, 0x0
 
-00000144 <.Lpcrel_hi5>:
-     144: 17 05 00 50  	auipc	a0, 327680
-     148: 13 05 05 f8  	addi	a0, a0, -128
+00000148 <.Lpcrel_hi5>:
+     148: 17 05 00 50  	auipc	a0, 0x50000
+     14c: 13 05 c5 f7  	addi	a0, a0, -0x84
 
-0000014c <.Lpcrel_hi6>:
-     14c: 97 05 00 50  	auipc	a1, 327680
-     150: 93 85 c5 f7  	addi	a1, a1, -132
-     154: 63 78 b5 00  	bgeu	a0, a1, 0x164 <.Lpcrel_hi6+0x18>
-     158: 23 20 05 00  	sw	zero, 0(a0)
-     15c: 13 05 45 00  	addi	a0, a0, 4
-     160: e3 6c b5 fe  	bltu	a0, a1, 0x158 <.Lpcrel_hi6+0xc>
-     164: 13 05 00 00  	li	a0, 0
-     168: 93 05 00 00  	li	a1, 0
-     16c: 97 10 00 00  	auipc	ra, 1
-     170: e7 80 40 b2  	jalr	-1244(ra)
-     174: 13 05 09 00  	mv	a0, s2
-     178: 93 85 04 00  	mv	a1, s1
-     17c: 13 06 04 00  	mv	a2, s0
-     180: 97 00 00 00  	auipc	ra, 0
-     184: e7 80 00 1a  	jalr	416(ra)
-     188: 73 10 00 c0  	unimp
+00000150 <.Lpcrel_hi6>:
+     150: 97 05 00 50  	auipc	a1, 0x50000
+     154: 93 85 85 f7  	addi	a1, a1, -0x88
+     158: 63 78 b5 00  	bgeu	a0, a1, 0x168 <.Lline_table_start0+0x168>
+     15c: 23 20 05 00  	sw	zero, 0x0(a0)
+     160: 13 05 45 00  	addi	a0, a0, 0x4
+     164: e3 6c b5 fe  	bltu	a0, a1, 0x15c <.Lline_table_start0+0x15c>
+     168: 13 05 00 00  	li	a0, 0x0
+     16c: 93 05 00 00  	li	a1, 0x0
+     170: 97 10 00 00  	auipc	ra, 0x1
+     174: e7 80 c0 b1  	jalr	-0x4e4(ra) <.Lline_table_start0+0xad>
+     178: 13 05 09 00  	mv	a0, s2
+     17c: 93 85 04 00  	mv	a1, s1
+     180: 13 06 04 00  	mv	a2, s0
+     184: 97 00 00 00  	auipc	ra, 0x0
+     188: e7 80 00 1e  	jalr	0x1e0(ra) <.Lline_table_start0+0x364>
 
 0000018c <default_start_trap>:
-     18c: 13 01 01 fc  	addi	sp, sp, -64
-     190: 23 20 11 00  	sw	ra, 0(sp)
-     194: 23 22 51 00  	sw	t0, 4(sp)
-     198: 23 24 61 00  	sw	t1, 8(sp)
-     19c: 23 26 71 00  	sw	t2, 12(sp)
-     1a0: 23 28 c1 01  	sw	t3, 16(sp)
-     1a4: 23 2a d1 01  	sw	t4, 20(sp)
-     1a8: 23 2c e1 01  	sw	t5, 24(sp)
-     1ac: 23 2e f1 01  	sw	t6, 28(sp)
-     1b0: 23 20 a1 02  	sw	a0, 32(sp)
-     1b4: 23 22 b1 02  	sw	a1, 36(sp)
-     1b8: 23 24 c1 02  	sw	a2, 40(sp)
-     1bc: 23 26 d1 02  	sw	a3, 44(sp)
-     1c0: 23 28 e1 02  	sw	a4, 48(sp)
-     1c4: 23 2a f1 02  	sw	a5, 52(sp)
-     1c8: 23 2c 01 03  	sw	a6, 56(sp)
-     1cc: 23 2e 11 03  	sw	a7, 60(sp)
+     18c: 13 01 01 fc  	addi	sp, sp, -0x40
+     190: 23 20 11 00  	sw	ra, 0x0(sp)
+     194: 23 22 51 00  	sw	t0, 0x4(sp)
+     198: 23 24 61 00  	sw	t1, 0x8(sp)
+     19c: 23 26 71 00  	sw	t2, 0xc(sp)
+     1a0: 23 28 c1 01  	sw	t3, 0x10(sp)
+     1a4: 23 2a d1 01  	sw	t4, 0x14(sp)
+     1a8: 23 2c e1 01  	sw	t5, 0x18(sp)
+     1ac: 23 2e f1 01  	sw	t6, 0x1c(sp)
+     1b0: 23 20 a1 02  	sw	a0, 0x20(sp)
+     1b4: 23 22 b1 02  	sw	a1, 0x24(sp)
+     1b8: 23 24 c1 02  	sw	a2, 0x28(sp)
+     1bc: 23 26 d1 02  	sw	a3, 0x2c(sp)
+     1c0: 23 28 e1 02  	sw	a4, 0x30(sp)
+     1c4: 23 2a f1 02  	sw	a5, 0x34(sp)
+     1c8: 23 2c 01 03  	sw	a6, 0x38(sp)
+     1cc: 23 2e 11 03  	sw	a7, 0x3c(sp)
      1d0: 33 05 01 00  	add	a0, sp, zero
-     1d4: ef 00 c0 04  	jal	0x220 <_start_trap_rust>
-     1d8: 83 20 01 00  	lw	ra, 0(sp)
-     1dc: 83 22 41 00  	lw	t0, 4(sp)
-     1e0: 03 23 81 00  	lw	t1, 8(sp)
-     1e4: 83 23 c1 00  	lw	t2, 12(sp)
-     1e8: 03 2e 01 01  	lw	t3, 16(sp)
-     1ec: 83 2e 41 01  	lw	t4, 20(sp)
-     1f0: 03 2f 81 01  	lw	t5, 24(sp)
-     1f4: 83 2f c1 01  	lw	t6, 28(sp)
-     1f8: 03 25 01 02  	lw	a0, 32(sp)
-     1fc: 83 25 41 02  	lw	a1, 36(sp)
-     200: 03 26 81 02  	lw	a2, 40(sp)
-     204: 83 26 c1 02  	lw	a3, 44(sp)
-     208: 03 27 01 03  	lw	a4, 48(sp)
-     20c: 83 27 41 03  	lw	a5, 52(sp)
-     210: 03 28 81 03  	lw	a6, 56(sp)
-     214: 83 28 c1 03  	lw	a7, 60(sp)
-     218: 13 01 01 04  	addi	sp, sp, 64
+     1d4: ef 00 c0 04  	jal	0x220 <.Lline_table_start0+0x220>
+     1d8: 83 20 01 00  	lw	ra, 0x0(sp)
+     1dc: 83 22 41 00  	lw	t0, 0x4(sp)
+     1e0: 03 23 81 00  	lw	t1, 0x8(sp)
+     1e4: 83 23 c1 00  	lw	t2, 0xc(sp)
+     1e8: 03 2e 01 01  	lw	t3, 0x10(sp)
+     1ec: 83 2e 41 01  	lw	t4, 0x14(sp)
+     1f0: 03 2f 81 01  	lw	t5, 0x18(sp)
+     1f4: 83 2f c1 01  	lw	t6, 0x1c(sp)
+     1f8: 03 25 01 02  	lw	a0, 0x20(sp)
+     1fc: 83 25 41 02  	lw	a1, 0x24(sp)
+     200: 03 26 81 02  	lw	a2, 0x28(sp)
+     204: 83 26 c1 02  	lw	a3, 0x2c(sp)
+     208: 03 27 01 03  	lw	a4, 0x30(sp)
+     20c: 83 27 41 03  	lw	a5, 0x34(sp)
+     210: 03 28 81 03  	lw	a6, 0x38(sp)
+     214: 83 28 c1 03  	lw	a7, 0x3c(sp)
+     218: 13 01 01 04  	addi	sp, sp, 0x40
      21c: 73 00 20 30  	mret
 
 00000220 <_start_trap_rust>:
-     220: 13 01 01 ff  	addi	sp, sp, -16
-     224: 23 26 11 00  	sw	ra, 12(sp)
-     228: 23 24 81 00  	sw	s0, 8(sp)
+     220: 13 01 01 ff  	addi	sp, sp, -0x10
+     224: 23 26 11 00  	sw	ra, 0xc(sp)
+     228: 23 24 81 00  	sw	s0, 0x8(sp)
      22c: f3 25 20 34  	csrr	a1, mcause
      230: 13 04 05 00  	mv	s0, a0
-     234: 13 95 15 00  	slli	a0, a1, 1
-     238: 13 55 15 00  	srli	a0, a0, 1
-     23c: 63 ca 05 04  	bltz	a1, 0x290 <_start_trap_rust+0x70>
-     240: 93 05 00 01  	li	a1, 16
-     244: 63 74 b5 02  	bgeu	a0, a1, 0x26c <_start_trap_rust+0x4c>
-     248: 13 15 25 00  	slli	a0, a0, 2
-     24c: b7 05 00 50  	lui	a1, 327680
-     250: 93 85 45 00  	addi	a1, a1, 4
+     234: 13 95 15 00  	slli	a0, a1, 0x1
+     238: 13 55 15 00  	srli	a0, a0, 0x1
+     23c: 63 ca 05 04  	bltz	a1, 0x290 <.Lline_table_start0+0x290>
+     240: 93 05 00 01  	li	a1, 0x10
+     244: 63 74 b5 02  	bgeu	a0, a1, 0x26c <.Lline_table_start0+0x26c>
+     248: 13 15 25 00  	slli	a0, a0, 0x2
+     24c: b7 05 00 50  	lui	a1, 0x50000
+     250: 93 85 45 00  	addi	a1, a1, 0x4
      254: 33 85 a5 00  	add	a0, a1, a0
-     258: 83 25 05 00  	lw	a1, 0(a0)
-     25c: 63 88 05 00  	beqz	a1, 0x26c <_start_trap_rust+0x4c>
+     258: 83 25 05 00  	lw	a1, 0x0(a0)
+     25c: 63 88 05 00  	beqz	a1, 0x26c <.Lline_table_start0+0x26c>
      260: 13 05 04 00  	mv	a0, s0
      264: e7 80 05 00  	jalr	a1
-     268: 6f 00 00 01  	j	0x278 <_start_trap_rust+0x58>
+     268: 6f 00 00 01  	j	0x278 <.Lline_table_start0+0x278>
      26c: 13 05 04 00  	mv	a0, s0
-     270: 97 00 00 00  	auipc	ra, 0
-     274: e7 80 80 1a  	jalr	424(ra)
+     270: 97 10 00 00  	auipc	ra, 0x1
+     274: e7 80 40 a4  	jalr	-0x5bc(ra) <.Lline_table_start0+0xd5>
      278: 13 05 04 00  	mv	a0, s0
-     27c: 83 20 c1 00  	lw	ra, 12(sp)
-     280: 03 24 81 00  	lw	s0, 8(sp)
-     284: 13 01 01 01  	addi	sp, sp, 16
-     288: 17 03 00 00  	auipc	t1, 0
-     28c: 67 00 03 19  	jr	400(t1)
-     290: 93 05 c0 00  	li	a1, 12
-     294: 63 76 b5 02  	bgeu	a0, a1, 0x2c0 <_start_trap_rust+0xa0>
-     298: 13 15 25 00  	slli	a0, a0, 2
-     29c: b7 05 00 50  	lui	a1, 327680
-     2a0: 93 85 45 04  	addi	a1, a1, 68
+     27c: 83 20 c1 00  	lw	ra, 0xc(sp)
+     280: 03 24 81 00  	lw	s0, 0x8(sp)
+     284: 13 01 01 01  	addi	sp, sp, 0x10
+     288: 17 13 00 00  	auipc	t1, 0x1
+     28c: 67 00 c3 a2  	jr	-0x5d4(t1) <.Lline_table_start0+0xd5>
+     290: 93 05 c0 00  	li	a1, 0xc
+     294: 63 76 b5 02  	bgeu	a0, a1, 0x2c0 <.Lline_table_start0+0x2c0>
+     298: 13 15 25 00  	slli	a0, a0, 0x2
+     29c: b7 05 00 50  	lui	a1, 0x50000
+     2a0: 93 85 45 04  	addi	a1, a1, 0x44
      2a4: 33 85 a5 00  	add	a0, a1, a0
-     2a8: 03 23 05 00  	lw	t1, 0(a0)
-     2ac: 63 0a 03 00  	beqz	t1, 0x2c0 <_start_trap_rust+0xa0>
-     2b0: 83 20 c1 00  	lw	ra, 12(sp)
-     2b4: 03 24 81 00  	lw	s0, 8(sp)
-     2b8: 13 01 01 01  	addi	sp, sp, 16
+     2a8: 03 23 05 00  	lw	t1, 0x0(a0)
+     2ac: 63 0a 03 00  	beqz	t1, 0x2c0 <.Lline_table_start0+0x2c0>
+     2b0: 83 20 c1 00  	lw	ra, 0xc(sp)
+     2b4: 03 24 81 00  	lw	s0, 0x8(sp)
+     2b8: 13 01 01 01  	addi	sp, sp, 0x10
      2bc: 67 00 03 00  	jr	t1
-     2c0: 83 20 c1 00  	lw	ra, 12(sp)
-     2c4: 03 24 81 00  	lw	s0, 8(sp)
-     2c8: 13 01 01 01  	addi	sp, sp, 16
-     2cc: 17 03 00 00  	auipc	t1, 0
-     2d0: 67 00 03 15  	jr	336(t1)
+     2c0: 83 20 c1 00  	lw	ra, 0xc(sp)
+     2c4: 03 24 81 00  	lw	s0, 0x8(sp)
+     2c8: 13 01 01 01  	addi	sp, sp, 0x10
+     2cc: 17 13 00 00  	auipc	t1, 0x1
+     2d0: 67 00 c3 9e  	jr	-0x614(t1) <.Lline_table_start0+0xd9>
 
 000002d4 <abort>:
-     2d4: 6f 00 00 00  	j	0x2d4 <abort>
+     2d4: 6f 00 00 00  	j	0x2d4 <.Lline_table_start0+0x2d4>
 
-000002d8 <Interrupt7>:
-     2d8: 67 80 00 00  	ret
-
-000002dc <Interrupt2>:
-     2dc: 73 e0 10 b0  	csrsi	2817, 1
-     2e0: 73 e0 40 b0  	csrsi	mhpmcounter4, 1
-     2e4: 67 80 00 00  	ret
-
-000002e8 <Interrupt4>:
-     2e8: 37 05 00 50  	lui	a0, 327680
-     2ec: 83 45 05 00  	lbu	a1, 0(a0)
-     2f0: 63 84 05 00  	beqz	a1, 0x2f8 <Interrupt4+0x10>
+000002d8 <Interrupt1>:
+     2d8: 13 05 30 00  	li	a0, 0x3
+     2dc: 73 10 75 34  	csrw	0x347, a0
+     2e0: 37 05 00 60  	lui	a0, 0x60000
+     2e4: 93 05 40 00  	li	a1, 0x4
+     2e8: 23 2a b5 00  	sw	a1, 0x14(a0)
+     2ec: 13 05 10 00  	li	a0, 0x1
+     2f0: 73 10 75 34  	csrw	0x347, a0
      2f4: 67 80 00 00  	ret
-     2f8: 93 05 10 00  	li	a1, 1
-     2fc: 23 00 b5 00  	sb	a1, 0(a0)
-     300: 73 e0 60 b0  	csrsi	mhpmcounter6, 1
-     304: 67 80 00 00  	ret
 
-00000308 <Interrupt6>:
-     308: 73 e0 80 b0  	csrsi	mhpmcounter8, 1
-     30c: 73 e0 30 b0  	csrsi	mhpmcounter3, 1
-     310: 67 80 00 00  	ret
+000002f8 <Interrupt2>:
+     2f8: 13 05 40 00  	li	a0, 0x4
+     2fc: 73 10 75 34  	csrw	0x347, a0
+     300: 73 e0 40 b0  	csrsi	mhpmcounter4, 0x1
+     304: b7 05 00 60  	lui	a1, 0x60000
+     308: 23 aa a5 00  	sw	a0, 0x14(a1)
+     30c: 37 06 00 50  	lui	a2, 0x50000
+     310: 83 26 06 00  	lw	a3, 0x0(a2)
+     314: 93 86 26 00  	addi	a3, a3, 0x2
+     318: 23 20 d6 00  	sw	a3, 0x0(a2)
+     31c: 13 06 20 00  	li	a2, 0x2
+     320: 73 10 76 34  	csrw	0x347, a2
+     324: 93 06 30 00  	li	a3, 0x3
+     328: 73 90 76 34  	csrw	0x347, a3
+     32c: 73 e0 30 b0  	csrsi	mhpmcounter3, 0x1
+     330: 73 e0 40 b0  	csrsi	mhpmcounter4, 0x1
+     334: 23 aa a5 00  	sw	a0, 0x14(a1)
+     338: 73 10 76 34  	csrw	0x347, a2
+     33c: 67 80 00 00  	ret
 
-00000314 <Interrupt8>:
-     314: 73 e0 40 b0  	csrsi	mhpmcounter4, 1
-     318: 73 e0 50 b0  	csrsi	mhpmcounter5, 1
-     31c: 67 80 00 00  	ret
+00000340 <Interrupt3>:
+     340: 37 05 00 60  	lui	a0, 0x60000
+     344: 93 05 40 00  	li	a1, 0x4
+     348: 23 2a b5 00  	sw	a1, 0x14(a0)
+     34c: 67 80 00 00  	ret
 
-00000320 <main>:
-     320: 13 01 01 ff  	addi	sp, sp, -16
-     324: 23 26 11 00  	sw	ra, 12(sp)
-     328: 13 05 80 00  	li	a0, 8
-     32c: 73 30 05 30  	csrc	mstatus, a0
-     330: 37 05 00 50  	lui	a0, 327680
-     334: 93 05 10 00  	li	a1, 1
-     338: 23 02 b5 0c  	sb	a1, 196(a0)
-     33c: 13 05 10 00  	li	a0, 1
-     340: 93 05 10 00  	li	a1, 1
-     344: 97 00 00 00  	auipc	ra, 0
-     348: e7 80 80 0a  	jalr	168(ra)
-     34c: 13 05 20 00  	li	a0, 2
-     350: 93 05 20 00  	li	a1, 2
-     354: 97 00 00 00  	auipc	ra, 0
-     358: e7 80 80 09  	jalr	152(ra)
-     35c: 13 05 30 00  	li	a0, 3
-     360: 93 05 30 00  	li	a1, 3
-     364: 97 00 00 00  	auipc	ra, 0
-     368: e7 80 80 08  	jalr	136(ra)
-     36c: 13 05 40 00  	li	a0, 4
-     370: 93 05 40 00  	li	a1, 4
-     374: 97 00 00 00  	auipc	ra, 0
-     378: e7 80 80 07  	jalr	120(ra)
-     37c: 13 05 50 00  	li	a0, 5
-     380: 93 05 50 00  	li	a1, 5
-     384: 97 00 00 00  	auipc	ra, 0
-     388: e7 80 80 06  	jalr	104(ra)
-     38c: 13 05 60 00  	li	a0, 6
-     390: 93 05 60 00  	li	a1, 6
-     394: 97 00 00 00  	auipc	ra, 0
-     398: e7 80 80 05  	jalr	88(ra)
-     39c: 13 05 70 00  	li	a0, 7
-     3a0: 93 05 70 00  	li	a1, 7
-     3a4: 97 00 00 00  	auipc	ra, 0
-     3a8: e7 80 80 04  	jalr	72(ra)
-     3ac: 13 05 80 00  	li	a0, 8
-     3b0: 93 05 80 00  	li	a1, 8
-     3b4: 97 00 00 00  	auipc	ra, 0
-     3b8: e7 80 80 03  	jalr	56(ra)
-     3bc: 97 00 00 00  	auipc	ra, 0
-     3c0: e7 80 c0 00  	jalr	12(ra)
-     3c4: 6f 00 00 00  	j	0x3c4 <main+0xa4>
+00000350 <Interrupt4>:
+     350: 37 05 00 50  	lui	a0, 0x50000
+     354: 83 25 05 00  	lw	a1, 0x0(a0)
+     358: 93 85 15 00  	addi	a1, a1, 0x1
+     35c: 23 20 b5 00  	sw	a1, 0x0(a0)
+     360: 67 80 00 00  	ret
 
-000003c8 <riscv_basic::app::main::__rtic_init_resources::he76f56b02b8e8817>:
-     3c8: 37 05 00 50  	lui	a0, 327680
-     3cc: 93 05 10 00  	li	a1, 1
-     3d0: 23 02 b5 0c  	sb	a1, 196(a0)
-     3d4: 73 e0 20 b0  	csrsi	minstret, 1
-     3d8: 37 05 00 50  	lui	a0, 327680
-     3dc: 23 00 05 00  	sb	zero, 0(a0)
-     3e0: 13 05 80 00  	li	a0, 8
-     3e4: 73 20 05 30  	csrs	mstatus, a0
-     3e8: 67 80 00 00  	ret
+00000364 <main>:
+     364: 13 01 01 ff  	addi	sp, sp, -0x10
+     368: 23 26 11 00  	sw	ra, 0xc(sp)
+     36c: 13 05 80 00  	li	a0, 0x8
+     370: 73 30 05 30  	csrc	mstatus, a0
+     374: 37 05 00 50  	lui	a0, 0x50000
+     378: 93 05 10 00  	li	a1, 0x1
+     37c: a3 02 b5 0c  	sb	a1, 0xc5(a0)
+     380: 13 05 10 00  	li	a0, 0x1
+     384: 93 05 10 00  	li	a1, 0x1
+     388: 97 00 00 00  	auipc	ra, 0x0
+     38c: e7 80 00 09  	jalr	0x90(ra) <.Lline_table_start0+0x418>
+     390: 13 05 20 00  	li	a0, 0x2
+     394: 93 05 20 00  	li	a1, 0x2
+     398: 97 00 00 00  	auipc	ra, 0x0
+     39c: e7 80 00 08  	jalr	0x80(ra) <.Lline_table_start0+0x418>
+     3a0: 13 05 30 00  	li	a0, 0x3
+     3a4: 93 05 30 00  	li	a1, 0x3
+     3a8: 97 00 00 00  	auipc	ra, 0x0
+     3ac: e7 80 00 07  	jalr	0x70(ra) <.Lline_table_start0+0x418>
+     3b0: 13 05 40 00  	li	a0, 0x4
+     3b4: 93 05 40 00  	li	a1, 0x4
+     3b8: 97 00 00 00  	auipc	ra, 0x0
+     3bc: e7 80 00 06  	jalr	0x60(ra) <.Lline_table_start0+0x418>
+     3c0: 97 00 00 00  	auipc	ra, 0x0
+     3c4: e7 80 c0 00  	jalr	0xc(ra) <.Lline_table_start0+0x3cc>
+     3c8: 6f 00 00 00  	j	0x3c8 <.Lline_table_start0+0x3c8>
 
-000003ec <rtic::export::riscv_clic::enable::hf45cb0d438ea11ce>:
-     3ec: 37 06 00 50  	lui	a2, 327680
-     3f0: 93 06 10 00  	li	a3, 1
-     3f4: 23 02 d6 0c  	sb	a3, 196(a2)
-     3f8: 13 15 05 01  	slli	a0, a0, 16
-     3fc: 13 55 05 01  	srli	a0, a0, 16
-     400: 13 15 25 00  	slli	a0, a0, 2
-     404: 37 16 00 00  	lui	a2, 1
-     408: 33 05 c5 00  	add	a0, a0, a2
-     40c: a3 01 b5 00  	sb	a1, 3(a0)
-     410: a3 00 d5 00  	sb	a3, 1(a0)
+000003cc <riscv_basic::app::main::__rtic_init_resources::ha9906567aaf9e7e2>:
+     3cc: 37 05 00 50  	lui	a0, 0x50000
+     3d0: 93 05 10 00  	li	a1, 0x1
+     3d4: 23 02 b5 0c  	sb	a1, 0xc4(a0)
+     3d8: 37 05 00 60  	lui	a0, 0x60000
+     3dc: 83 25 05 00  	lw	a1, 0x0(a0)
+     3e0: 03 26 45 00  	lw	a2, 0x4(a0)
+     3e4: 93 e5 45 00  	ori	a1, a1, 0x4
+     3e8: 23 20 b5 00  	sw	a1, 0x0(a0)
+     3ec: 13 76 b6 ff  	andi	a2, a2, -0x5
+     3f0: 23 22 c5 00  	sw	a2, 0x4(a0)
+     3f4: 93 05 40 00  	li	a1, 0x4
+     3f8: 23 2a b5 00  	sw	a1, 0x14(a0)
+     3fc: 73 e0 20 b0  	csrsi	minstret, 0x1
+     400: 73 e0 10 b0  	csrsi	0xb01, 0x1
+     404: 37 05 00 50  	lui	a0, 0x50000
+     408: 23 20 05 00  	sw	zero, 0x0(a0)
+     40c: 13 05 80 00  	li	a0, 0x8
+     410: 73 20 05 30  	csrs	mstatus, a0
      414: 67 80 00 00  	ret
 
-00000418 <UserEnvCall>:
-     418: 6f 00 00 00  	j	0x418 <UserEnvCall>
+00000418 <rtic::export::riscv_clic::enable::hc7a7d5d0fae0df85>:
+     418: 37 06 00 50  	lui	a2, 0x50000
+     41c: 93 06 10 00  	li	a3, 0x1
+     420: a3 02 d6 0c  	sb	a3, 0xc5(a2)
+     424: 13 15 05 01  	slli	a0, a0, 0x10
+     428: 13 55 05 01  	srli	a0, a0, 0x10
+     42c: 13 15 25 00  	slli	a0, a0, 0x2
+     430: 37 16 00 00  	lui	a2, 0x1
+     434: 33 05 c5 00  	add	a0, a0, a2
+     438: a3 01 b5 00  	sb	a1, 0x3(a0)
+     43c: a3 00 d5 00  	sb	a3, 0x1(a0)
+     440: 67 80 00 00  	ret
 
-0000041c <SupervisorTimer>:
-     41c: 6f 00 00 00  	j	0x41c <SupervisorTimer>
+00000444 <handler_0>:
+     444: 13 01 41 fb  	addi	sp, sp, -0x4c
+     448: 23 28 a1 00  	sw	a0, 0x10(sp)
+     44c: 73 25 00 30  	csrr	a0, mstatus
+     450: 23 20 a1 00  	sw	a0, 0x0(sp)
+     454: 73 25 10 34  	csrr	a0, mepc
+     458: 23 22 a1 00  	sw	a0, 0x4(sp)
+     45c: 73 25 70 34  	csrr	a0, 0x347
+     460: 23 24 a1 00  	sw	a0, 0x8(sp)
+     464: 37 15 00 00  	lui	a0, 0x1
+     468: 03 05 35 00  	lb	a0, 0x3(a0)
+     46c: 73 10 75 34  	csrw	0x347, a0
+     470: 73 60 04 30  	csrsi	mstatus, 0x8
+     474: 23 26 11 00  	sw	ra, 0xc(sp)
+     478: 23 2a b1 00  	sw	a1, 0x14(sp)
+     47c: 23 2c c1 00  	sw	a2, 0x18(sp)
+     480: 23 2e d1 00  	sw	a3, 0x1c(sp)
+     484: 23 20 e1 02  	sw	a4, 0x20(sp)
+     488: 23 22 f1 02  	sw	a5, 0x24(sp)
+     48c: 23 24 01 03  	sw	a6, 0x28(sp)
+     490: 23 26 11 03  	sw	a7, 0x2c(sp)
+     494: 23 28 51 02  	sw	t0, 0x30(sp)
+     498: 23 2a 61 02  	sw	t1, 0x34(sp)
+     49c: 23 2c 71 02  	sw	t2, 0x38(sp)
+     4a0: 23 2e c1 03  	sw	t3, 0x3c(sp)
+     4a4: 23 20 d1 05  	sw	t4, 0x40(sp)
+     4a8: 23 22 e1 05  	sw	t5, 0x44(sp)
+     4ac: 23 24 f1 05  	sw	t6, 0x48(sp)
+     4b0: ef 00 90 00  	jal	0xcb8 <.Lline_table_start0+0xd9>
+     4b4: 03 25 01 00  	lw	a0, 0x0(sp)
+     4b8: 73 10 05 30  	csrw	mstatus, a0
+     4bc: 03 25 41 00  	lw	a0, 0x4(sp)
+     4c0: 73 10 15 34  	csrw	mepc, a0
+     4c4: 83 20 c1 00  	lw	ra, 0xc(sp)
+     4c8: 03 25 01 01  	lw	a0, 0x10(sp)
+     4cc: 83 25 41 01  	lw	a1, 0x14(sp)
+     4d0: 03 26 81 01  	lw	a2, 0x18(sp)
+     4d4: 83 26 c1 01  	lw	a3, 0x1c(sp)
+     4d8: 03 27 01 02  	lw	a4, 0x20(sp)
+     4dc: 83 27 41 02  	lw	a5, 0x24(sp)
+     4e0: 03 28 81 02  	lw	a6, 0x28(sp)
+     4e4: 83 28 c1 02  	lw	a7, 0x2c(sp)
+     4e8: 83 22 01 03  	lw	t0, 0x30(sp)
+     4ec: 03 23 41 03  	lw	t1, 0x34(sp)
+     4f0: 83 23 81 03  	lw	t2, 0x38(sp)
+     4f4: 03 2e c1 03  	lw	t3, 0x3c(sp)
+     4f8: 83 2e 01 04  	lw	t4, 0x40(sp)
+     4fc: 03 2f 41 04  	lw	t5, 0x44(sp)
+     500: 73 70 04 30  	csrci	mstatus, 0x8
+     504: 83 2f 81 00  	lw	t6, 0x8(sp)
+     508: 73 90 7f 34  	csrw	0x347, t6
+     50c: 83 2f 81 04  	lw	t6, 0x48(sp)
+     510: 13 01 c1 04  	addi	sp, sp, 0x4c
+     514: 73 00 20 30  	mret
 
-00000420 <default_pre_init>:
-     420: 67 80 00 00  	ret
+00000518 <handler_1>:
+     518: 13 01 41 fb  	addi	sp, sp, -0x4c
+     51c: 23 28 a1 00  	sw	a0, 0x10(sp)
+     520: 73 25 00 30  	csrr	a0, mstatus
+     524: 23 20 a1 00  	sw	a0, 0x0(sp)
+     528: 73 25 10 34  	csrr	a0, mepc
+     52c: 23 22 a1 00  	sw	a0, 0x4(sp)
+     530: 73 25 70 34  	csrr	a0, 0x347
+     534: 23 24 a1 00  	sw	a0, 0x8(sp)
+     538: 37 15 00 00  	lui	a0, 0x1
+     53c: 03 05 75 00  	lb	a0, 0x7(a0)
+     540: 73 10 75 34  	csrw	0x347, a0
+     544: 73 60 04 30  	csrsi	mstatus, 0x8
+     548: 23 26 11 00  	sw	ra, 0xc(sp)
+     54c: 23 2a b1 00  	sw	a1, 0x14(sp)
+     550: 23 2c c1 00  	sw	a2, 0x18(sp)
+     554: 23 2e d1 00  	sw	a3, 0x1c(sp)
+     558: 23 20 e1 02  	sw	a4, 0x20(sp)
+     55c: 23 22 f1 02  	sw	a5, 0x24(sp)
+     560: 23 24 01 03  	sw	a6, 0x28(sp)
+     564: 23 26 11 03  	sw	a7, 0x2c(sp)
+     568: 23 28 51 02  	sw	t0, 0x30(sp)
+     56c: 23 2a 61 02  	sw	t1, 0x34(sp)
+     570: 23 2c 71 02  	sw	t2, 0x38(sp)
+     574: 23 2e c1 03  	sw	t3, 0x3c(sp)
+     578: 23 20 d1 05  	sw	t4, 0x40(sp)
+     57c: 23 22 e1 05  	sw	t5, 0x44(sp)
+     580: 23 24 f1 05  	sw	t6, 0x48(sp)
+     584: ef f0 5f d5  	jal	0x2d8 <.Lline_table_start0+0x2d8>
+     588: 03 25 01 00  	lw	a0, 0x0(sp)
+     58c: 73 10 05 30  	csrw	mstatus, a0
+     590: 03 25 41 00  	lw	a0, 0x4(sp)
+     594: 73 10 15 34  	csrw	mepc, a0
+     598: 83 20 c1 00  	lw	ra, 0xc(sp)
+     59c: 03 25 01 01  	lw	a0, 0x10(sp)
+     5a0: 83 25 41 01  	lw	a1, 0x14(sp)
+     5a4: 03 26 81 01  	lw	a2, 0x18(sp)
+     5a8: 83 26 c1 01  	lw	a3, 0x1c(sp)
+     5ac: 03 27 01 02  	lw	a4, 0x20(sp)
+     5b0: 83 27 41 02  	lw	a5, 0x24(sp)
+     5b4: 03 28 81 02  	lw	a6, 0x28(sp)
+     5b8: 83 28 c1 02  	lw	a7, 0x2c(sp)
+     5bc: 83 22 01 03  	lw	t0, 0x30(sp)
+     5c0: 03 23 41 03  	lw	t1, 0x34(sp)
+     5c4: 83 23 81 03  	lw	t2, 0x38(sp)
+     5c8: 03 2e c1 03  	lw	t3, 0x3c(sp)
+     5cc: 83 2e 01 04  	lw	t4, 0x40(sp)
+     5d0: 03 2f 41 04  	lw	t5, 0x44(sp)
+     5d4: 73 70 04 30  	csrci	mstatus, 0x8
+     5d8: 83 2f 81 00  	lw	t6, 0x8(sp)
+     5dc: 73 90 7f 34  	csrw	0x347, t6
+     5e0: 83 2f 81 04  	lw	t6, 0x48(sp)
+     5e4: 13 01 c1 04  	addi	sp, sp, 0x4c
+     5e8: 73 00 20 30  	mret
 
-00000424 <default_mp_hook>:
-     424: 63 06 05 00  	beqz	a0, 0x430 <default_mp_hook+0xc>
-     428: 73 00 50 10  	wfi
-     42c: 6f f0 df ff  	j	0x428 <default_mp_hook+0x4>
-     430: 13 05 10 00  	li	a0, 1
-     434: 67 80 00 00  	ret
+000005ec <handler_2>:
+     5ec: 13 01 41 fb  	addi	sp, sp, -0x4c
+     5f0: 23 28 a1 00  	sw	a0, 0x10(sp)
+     5f4: 73 25 00 30  	csrr	a0, mstatus
+     5f8: 23 20 a1 00  	sw	a0, 0x0(sp)
+     5fc: 73 25 10 34  	csrr	a0, mepc
+     600: 23 22 a1 00  	sw	a0, 0x4(sp)
+     604: 73 25 70 34  	csrr	a0, 0x347
+     608: 23 24 a1 00  	sw	a0, 0x8(sp)
+     60c: 37 15 00 00  	lui	a0, 0x1
+     610: 03 05 b5 00  	lb	a0, 0xb(a0)
+     614: 73 10 75 34  	csrw	0x347, a0
+     618: 73 60 04 30  	csrsi	mstatus, 0x8
+     61c: 23 26 11 00  	sw	ra, 0xc(sp)
+     620: 23 2a b1 00  	sw	a1, 0x14(sp)
+     624: 23 2c c1 00  	sw	a2, 0x18(sp)
+     628: 23 2e d1 00  	sw	a3, 0x1c(sp)
+     62c: 23 20 e1 02  	sw	a4, 0x20(sp)
+     630: 23 22 f1 02  	sw	a5, 0x24(sp)
+     634: 23 24 01 03  	sw	a6, 0x28(sp)
+     638: 23 26 11 03  	sw	a7, 0x2c(sp)
+     63c: 23 28 51 02  	sw	t0, 0x30(sp)
+     640: 23 2a 61 02  	sw	t1, 0x34(sp)
+     644: 23 2c 71 02  	sw	t2, 0x38(sp)
+     648: 23 2e c1 03  	sw	t3, 0x3c(sp)
+     64c: 23 20 d1 05  	sw	t4, 0x40(sp)
+     650: 23 22 e1 05  	sw	t5, 0x44(sp)
+     654: 23 24 f1 05  	sw	t6, 0x48(sp)
+     658: ef f0 1f ca  	jal	0x2f8 <.Lline_table_start0+0x2f8>
+     65c: 03 25 01 00  	lw	a0, 0x0(sp)
+     660: 73 10 05 30  	csrw	mstatus, a0
+     664: 03 25 41 00  	lw	a0, 0x4(sp)
+     668: 73 10 15 34  	csrw	mepc, a0
+     66c: 83 20 c1 00  	lw	ra, 0xc(sp)
+     670: 03 25 01 01  	lw	a0, 0x10(sp)
+     674: 83 25 41 01  	lw	a1, 0x14(sp)
+     678: 03 26 81 01  	lw	a2, 0x18(sp)
+     67c: 83 26 c1 01  	lw	a3, 0x1c(sp)
+     680: 03 27 01 02  	lw	a4, 0x20(sp)
+     684: 83 27 41 02  	lw	a5, 0x24(sp)
+     688: 03 28 81 02  	lw	a6, 0x28(sp)
+     68c: 83 28 c1 02  	lw	a7, 0x2c(sp)
+     690: 83 22 01 03  	lw	t0, 0x30(sp)
+     694: 03 23 41 03  	lw	t1, 0x34(sp)
+     698: 83 23 81 03  	lw	t2, 0x38(sp)
+     69c: 03 2e c1 03  	lw	t3, 0x3c(sp)
+     6a0: 83 2e 01 04  	lw	t4, 0x40(sp)
+     6a4: 03 2f 41 04  	lw	t5, 0x44(sp)
+     6a8: 73 70 04 30  	csrci	mstatus, 0x8
+     6ac: 83 2f 81 00  	lw	t6, 0x8(sp)
+     6b0: 73 90 7f 34  	csrw	0x347, t6
+     6b4: 83 2f 81 04  	lw	t6, 0x48(sp)
+     6b8: 13 01 c1 04  	addi	sp, sp, 0x4c
+     6bc: 73 00 20 30  	mret
 
-00000438 <default_setup_interrupts>:
-     438: 37 05 00 00  	lui	a0, 0
-     43c: 13 05 c5 18  	addi	a0, a0, 396
-     440: 73 10 55 30  	csrw	mtvec, a0
-     444: 67 80 00 00  	ret
+000006c0 <handler_3>:
+     6c0: 13 01 41 fb  	addi	sp, sp, -0x4c
+     6c4: 23 28 a1 00  	sw	a0, 0x10(sp)
+     6c8: 73 25 00 30  	csrr	a0, mstatus
+     6cc: 23 20 a1 00  	sw	a0, 0x0(sp)
+     6d0: 73 25 10 34  	csrr	a0, mepc
+     6d4: 23 22 a1 00  	sw	a0, 0x4(sp)
+     6d8: 73 25 70 34  	csrr	a0, 0x347
+     6dc: 23 24 a1 00  	sw	a0, 0x8(sp)
+     6e0: 37 15 00 00  	lui	a0, 0x1
+     6e4: 03 05 f5 00  	lb	a0, 0xf(a0)
+     6e8: 73 10 75 34  	csrw	0x347, a0
+     6ec: 73 60 04 30  	csrsi	mstatus, 0x8
+     6f0: 23 26 11 00  	sw	ra, 0xc(sp)
+     6f4: 23 2a b1 00  	sw	a1, 0x14(sp)
+     6f8: 23 2c c1 00  	sw	a2, 0x18(sp)
+     6fc: 23 2e d1 00  	sw	a3, 0x1c(sp)
+     700: 23 20 e1 02  	sw	a4, 0x20(sp)
+     704: 23 22 f1 02  	sw	a5, 0x24(sp)
+     708: 23 24 01 03  	sw	a6, 0x28(sp)
+     70c: 23 26 11 03  	sw	a7, 0x2c(sp)
+     710: 23 28 51 02  	sw	t0, 0x30(sp)
+     714: 23 2a 61 02  	sw	t1, 0x34(sp)
+     718: 23 2c 71 02  	sw	t2, 0x38(sp)
+     71c: 23 2e c1 03  	sw	t3, 0x3c(sp)
+     720: 23 20 d1 05  	sw	t4, 0x40(sp)
+     724: 23 22 e1 05  	sw	t5, 0x44(sp)
+     728: 23 24 f1 05  	sw	t6, 0x48(sp)
+     72c: ef f0 5f c1  	jal	0x340 <.Lline_table_start0+0x340>
+     730: 03 25 01 00  	lw	a0, 0x0(sp)
+     734: 73 10 05 30  	csrw	mstatus, a0
+     738: 03 25 41 00  	lw	a0, 0x4(sp)
+     73c: 73 10 15 34  	csrw	mepc, a0
+     740: 83 20 c1 00  	lw	ra, 0xc(sp)
+     744: 03 25 01 01  	lw	a0, 0x10(sp)
+     748: 83 25 41 01  	lw	a1, 0x14(sp)
+     74c: 03 26 81 01  	lw	a2, 0x18(sp)
+     750: 83 26 c1 01  	lw	a3, 0x1c(sp)
+     754: 03 27 01 02  	lw	a4, 0x20(sp)
+     758: 83 27 41 02  	lw	a5, 0x24(sp)
+     75c: 03 28 81 02  	lw	a6, 0x28(sp)
+     760: 83 28 c1 02  	lw	a7, 0x2c(sp)
+     764: 83 22 01 03  	lw	t0, 0x30(sp)
+     768: 03 23 41 03  	lw	t1, 0x34(sp)
+     76c: 83 23 81 03  	lw	t2, 0x38(sp)
+     770: 03 2e c1 03  	lw	t3, 0x3c(sp)
+     774: 83 2e 01 04  	lw	t4, 0x40(sp)
+     778: 03 2f 41 04  	lw	t5, 0x44(sp)
+     77c: 73 70 04 30  	csrci	mstatus, 0x8
+     780: 83 2f 81 00  	lw	t6, 0x8(sp)
+     784: 73 90 7f 34  	csrw	0x347, t6
+     788: 83 2f 81 04  	lw	t6, 0x48(sp)
+     78c: 13 01 c1 04  	addi	sp, sp, 0x4c
+     790: 73 00 20 30  	mret
 
-00000448 <handler_0>:
-     448: 13 01 41 fb  	addi	sp, sp, -76
-     44c: 23 28 a1 00  	sw	a0, 16(sp)
-     450: 73 25 00 30  	csrr	a0, mstatus
-     454: 23 20 a1 00  	sw	a0, 0(sp)
-     458: 73 25 10 34  	csrr	a0, mepc
-     45c: 23 22 a1 00  	sw	a0, 4(sp)
-     460: 73 25 70 34  	csrr	a0, 839
-     464: 23 24 a1 00  	sw	a0, 8(sp)
-     468: 37 15 00 00  	lui	a0, 1
-     46c: 03 05 35 00  	lb	a0, 3(a0)
-     470: 73 10 75 34  	csrw	839, a0
-     474: 73 60 04 30  	csrsi	mstatus, 8
-     478: 23 26 11 00  	sw	ra, 12(sp)
-     47c: 23 2a b1 00  	sw	a1, 20(sp)
-     480: 23 2c c1 00  	sw	a2, 24(sp)
-     484: 23 2e d1 00  	sw	a3, 28(sp)
-     488: 23 20 e1 02  	sw	a4, 32(sp)
-     48c: 23 22 f1 02  	sw	a5, 36(sp)
-     490: 23 24 01 03  	sw	a6, 40(sp)
-     494: 23 26 11 03  	sw	a7, 44(sp)
-     498: 23 28 51 02  	sw	t0, 48(sp)
-     49c: 23 2a 61 02  	sw	t1, 52(sp)
-     4a0: 23 2c 71 02  	sw	t2, 56(sp)
-     4a4: 23 2e c1 03  	sw	t3, 60(sp)
-     4a8: 23 20 d1 05  	sw	t4, 64(sp)
-     4ac: 23 22 e1 05  	sw	t5, 68(sp)
-     4b0: 23 24 f1 05  	sw	t6, 72(sp)
-     4b4: ef f0 9f f6  	jal	0x41c <SupervisorTimer>
-     4b8: 03 25 01 00  	lw	a0, 0(sp)
-     4bc: 73 10 05 30  	csrw	mstatus, a0
-     4c0: 03 25 41 00  	lw	a0, 4(sp)
-     4c4: 73 10 15 34  	csrw	mepc, a0
-     4c8: 83 20 c1 00  	lw	ra, 12(sp)
-     4cc: 03 25 01 01  	lw	a0, 16(sp)
-     4d0: 83 25 41 01  	lw	a1, 20(sp)
-     4d4: 03 26 81 01  	lw	a2, 24(sp)
-     4d8: 83 26 c1 01  	lw	a3, 28(sp)
-     4dc: 03 27 01 02  	lw	a4, 32(sp)
-     4e0: 83 27 41 02  	lw	a5, 36(sp)
-     4e4: 03 28 81 02  	lw	a6, 40(sp)
-     4e8: 83 28 c1 02  	lw	a7, 44(sp)
-     4ec: 83 22 01 03  	lw	t0, 48(sp)
-     4f0: 03 23 41 03  	lw	t1, 52(sp)
-     4f4: 83 23 81 03  	lw	t2, 56(sp)
-     4f8: 03 2e c1 03  	lw	t3, 60(sp)
-     4fc: 83 2e 01 04  	lw	t4, 64(sp)
-     500: 03 2f 41 04  	lw	t5, 68(sp)
-     504: 73 70 04 30  	csrci	mstatus, 8
-     508: 83 2f 81 00  	lw	t6, 8(sp)
-     50c: 73 90 7f 34  	csrw	839, t6
-     510: 83 2f 81 04  	lw	t6, 72(sp)
-     514: 13 01 c1 04  	addi	sp, sp, 76
-     518: 73 00 20 30  	mret
+00000794 <handler_4>:
+     794: 13 01 41 fb  	addi	sp, sp, -0x4c
+     798: 23 28 a1 00  	sw	a0, 0x10(sp)
+     79c: 73 25 00 30  	csrr	a0, mstatus
+     7a0: 23 20 a1 00  	sw	a0, 0x0(sp)
+     7a4: 73 25 10 34  	csrr	a0, mepc
+     7a8: 23 22 a1 00  	sw	a0, 0x4(sp)
+     7ac: 73 25 70 34  	csrr	a0, 0x347
+     7b0: 23 24 a1 00  	sw	a0, 0x8(sp)
+     7b4: 37 15 00 00  	lui	a0, 0x1
+     7b8: 03 05 35 01  	lb	a0, 0x13(a0)
+     7bc: 73 10 75 34  	csrw	0x347, a0
+     7c0: 73 60 04 30  	csrsi	mstatus, 0x8
+     7c4: 23 26 11 00  	sw	ra, 0xc(sp)
+     7c8: 23 2a b1 00  	sw	a1, 0x14(sp)
+     7cc: 23 2c c1 00  	sw	a2, 0x18(sp)
+     7d0: 23 2e d1 00  	sw	a3, 0x1c(sp)
+     7d4: 23 20 e1 02  	sw	a4, 0x20(sp)
+     7d8: 23 22 f1 02  	sw	a5, 0x24(sp)
+     7dc: 23 24 01 03  	sw	a6, 0x28(sp)
+     7e0: 23 26 11 03  	sw	a7, 0x2c(sp)
+     7e4: 23 28 51 02  	sw	t0, 0x30(sp)
+     7e8: 23 2a 61 02  	sw	t1, 0x34(sp)
+     7ec: 23 2c 71 02  	sw	t2, 0x38(sp)
+     7f0: 23 2e c1 03  	sw	t3, 0x3c(sp)
+     7f4: 23 20 d1 05  	sw	t4, 0x40(sp)
+     7f8: 23 22 e1 05  	sw	t5, 0x44(sp)
+     7fc: 23 24 f1 05  	sw	t6, 0x48(sp)
+     800: ef f0 1f b5  	jal	0x350 <.Lline_table_start0+0x350>
+     804: 03 25 01 00  	lw	a0, 0x0(sp)
+     808: 73 10 05 30  	csrw	mstatus, a0
+     80c: 03 25 41 00  	lw	a0, 0x4(sp)
+     810: 73 10 15 34  	csrw	mepc, a0
+     814: 83 20 c1 00  	lw	ra, 0xc(sp)
+     818: 03 25 01 01  	lw	a0, 0x10(sp)
+     81c: 83 25 41 01  	lw	a1, 0x14(sp)
+     820: 03 26 81 01  	lw	a2, 0x18(sp)
+     824: 83 26 c1 01  	lw	a3, 0x1c(sp)
+     828: 03 27 01 02  	lw	a4, 0x20(sp)
+     82c: 83 27 41 02  	lw	a5, 0x24(sp)
+     830: 03 28 81 02  	lw	a6, 0x28(sp)
+     834: 83 28 c1 02  	lw	a7, 0x2c(sp)
+     838: 83 22 01 03  	lw	t0, 0x30(sp)
+     83c: 03 23 41 03  	lw	t1, 0x34(sp)
+     840: 83 23 81 03  	lw	t2, 0x38(sp)
+     844: 03 2e c1 03  	lw	t3, 0x3c(sp)
+     848: 83 2e 01 04  	lw	t4, 0x40(sp)
+     84c: 03 2f 41 04  	lw	t5, 0x44(sp)
+     850: 73 70 04 30  	csrci	mstatus, 0x8
+     854: 83 2f 81 00  	lw	t6, 0x8(sp)
+     858: 73 90 7f 34  	csrw	0x347, t6
+     85c: 83 2f 81 04  	lw	t6, 0x48(sp)
+     860: 13 01 c1 04  	addi	sp, sp, 0x4c
+     864: 73 00 20 30  	mret
 
-0000051c <handler_1>:
-     51c: 13 01 41 fb  	addi	sp, sp, -76
-     520: 23 28 a1 00  	sw	a0, 16(sp)
-     524: 73 25 00 30  	csrr	a0, mstatus
-     528: 23 20 a1 00  	sw	a0, 0(sp)
-     52c: 73 25 10 34  	csrr	a0, mepc
-     530: 23 22 a1 00  	sw	a0, 4(sp)
-     534: 73 25 70 34  	csrr	a0, 839
-     538: 23 24 a1 00  	sw	a0, 8(sp)
-     53c: 37 15 00 00  	lui	a0, 1
-     540: 03 05 75 00  	lb	a0, 7(a0)
-     544: 73 10 75 34  	csrw	839, a0
-     548: 73 60 04 30  	csrsi	mstatus, 8
-     54c: 23 26 11 00  	sw	ra, 12(sp)
-     550: 23 2a b1 00  	sw	a1, 20(sp)
-     554: 23 2c c1 00  	sw	a2, 24(sp)
-     558: 23 2e d1 00  	sw	a3, 28(sp)
-     55c: 23 20 e1 02  	sw	a4, 32(sp)
-     560: 23 22 f1 02  	sw	a5, 36(sp)
-     564: 23 24 01 03  	sw	a6, 40(sp)
-     568: 23 26 11 03  	sw	a7, 44(sp)
-     56c: 23 28 51 02  	sw	t0, 48(sp)
-     570: 23 2a 61 02  	sw	t1, 52(sp)
-     574: 23 2c 71 02  	sw	t2, 56(sp)
-     578: 23 2e c1 03  	sw	t3, 60(sp)
-     57c: 23 20 d1 05  	sw	t4, 64(sp)
-     580: 23 22 e1 05  	sw	t5, 68(sp)
-     584: 23 24 f1 05  	sw	t6, 72(sp)
-     588: ef f0 1f d5  	jal	0x2d8 <Interrupt7>
-     58c: 03 25 01 00  	lw	a0, 0(sp)
-     590: 73 10 05 30  	csrw	mstatus, a0
-     594: 03 25 41 00  	lw	a0, 4(sp)
-     598: 73 10 15 34  	csrw	mepc, a0
-     59c: 83 20 c1 00  	lw	ra, 12(sp)
-     5a0: 03 25 01 01  	lw	a0, 16(sp)
-     5a4: 83 25 41 01  	lw	a1, 20(sp)
-     5a8: 03 26 81 01  	lw	a2, 24(sp)
-     5ac: 83 26 c1 01  	lw	a3, 28(sp)
-     5b0: 03 27 01 02  	lw	a4, 32(sp)
-     5b4: 83 27 41 02  	lw	a5, 36(sp)
-     5b8: 03 28 81 02  	lw	a6, 40(sp)
-     5bc: 83 28 c1 02  	lw	a7, 44(sp)
-     5c0: 83 22 01 03  	lw	t0, 48(sp)
-     5c4: 03 23 41 03  	lw	t1, 52(sp)
-     5c8: 83 23 81 03  	lw	t2, 56(sp)
-     5cc: 03 2e c1 03  	lw	t3, 60(sp)
-     5d0: 83 2e 01 04  	lw	t4, 64(sp)
-     5d4: 03 2f 41 04  	lw	t5, 68(sp)
-     5d8: 73 70 04 30  	csrci	mstatus, 8
-     5dc: 83 2f 81 00  	lw	t6, 8(sp)
-     5e0: 73 90 7f 34  	csrw	839, t6
-     5e4: 83 2f 81 04  	lw	t6, 72(sp)
-     5e8: 13 01 c1 04  	addi	sp, sp, 76
-     5ec: 73 00 20 30  	mret
+00000868 <handler_5>:
+     868: 13 01 41 fb  	addi	sp, sp, -0x4c
+     86c: 23 28 a1 00  	sw	a0, 0x10(sp)
+     870: 73 25 00 30  	csrr	a0, mstatus
+     874: 23 20 a1 00  	sw	a0, 0x0(sp)
+     878: 73 25 10 34  	csrr	a0, mepc
+     87c: 23 22 a1 00  	sw	a0, 0x4(sp)
+     880: 73 25 70 34  	csrr	a0, 0x347
+     884: 23 24 a1 00  	sw	a0, 0x8(sp)
+     888: 37 15 00 00  	lui	a0, 0x1
+     88c: 03 05 75 01  	lb	a0, 0x17(a0)
+     890: 73 10 75 34  	csrw	0x347, a0
+     894: 73 60 04 30  	csrsi	mstatus, 0x8
+     898: 23 26 11 00  	sw	ra, 0xc(sp)
+     89c: 23 2a b1 00  	sw	a1, 0x14(sp)
+     8a0: 23 2c c1 00  	sw	a2, 0x18(sp)
+     8a4: 23 2e d1 00  	sw	a3, 0x1c(sp)
+     8a8: 23 20 e1 02  	sw	a4, 0x20(sp)
+     8ac: 23 22 f1 02  	sw	a5, 0x24(sp)
+     8b0: 23 24 01 03  	sw	a6, 0x28(sp)
+     8b4: 23 26 11 03  	sw	a7, 0x2c(sp)
+     8b8: 23 28 51 02  	sw	t0, 0x30(sp)
+     8bc: 23 2a 61 02  	sw	t1, 0x34(sp)
+     8c0: 23 2c 71 02  	sw	t2, 0x38(sp)
+     8c4: 23 2e c1 03  	sw	t3, 0x3c(sp)
+     8c8: 23 20 d1 05  	sw	t4, 0x40(sp)
+     8cc: 23 22 e1 05  	sw	t5, 0x44(sp)
+     8d0: 23 24 f1 05  	sw	t6, 0x48(sp)
+     8d4: ef 00 40 3e  	jal	0xcb8 <.Lline_table_start0+0xd9>
+     8d8: 03 25 01 00  	lw	a0, 0x0(sp)
+     8dc: 73 10 05 30  	csrw	mstatus, a0
+     8e0: 03 25 41 00  	lw	a0, 0x4(sp)
+     8e4: 73 10 15 34  	csrw	mepc, a0
+     8e8: 83 20 c1 00  	lw	ra, 0xc(sp)
+     8ec: 03 25 01 01  	lw	a0, 0x10(sp)
+     8f0: 83 25 41 01  	lw	a1, 0x14(sp)
+     8f4: 03 26 81 01  	lw	a2, 0x18(sp)
+     8f8: 83 26 c1 01  	lw	a3, 0x1c(sp)
+     8fc: 03 27 01 02  	lw	a4, 0x20(sp)
+     900: 83 27 41 02  	lw	a5, 0x24(sp)
+     904: 03 28 81 02  	lw	a6, 0x28(sp)
+     908: 83 28 c1 02  	lw	a7, 0x2c(sp)
+     90c: 83 22 01 03  	lw	t0, 0x30(sp)
+     910: 03 23 41 03  	lw	t1, 0x34(sp)
+     914: 83 23 81 03  	lw	t2, 0x38(sp)
+     918: 03 2e c1 03  	lw	t3, 0x3c(sp)
+     91c: 83 2e 01 04  	lw	t4, 0x40(sp)
+     920: 03 2f 41 04  	lw	t5, 0x44(sp)
+     924: 73 70 04 30  	csrci	mstatus, 0x8
+     928: 83 2f 81 00  	lw	t6, 0x8(sp)
+     92c: 73 90 7f 34  	csrw	0x347, t6
+     930: 83 2f 81 04  	lw	t6, 0x48(sp)
+     934: 13 01 c1 04  	addi	sp, sp, 0x4c
+     938: 73 00 20 30  	mret
 
-000005f0 <handler_2>:
-     5f0: 13 01 41 fb  	addi	sp, sp, -76
-     5f4: 23 28 a1 00  	sw	a0, 16(sp)
-     5f8: 73 25 00 30  	csrr	a0, mstatus
-     5fc: 23 20 a1 00  	sw	a0, 0(sp)
-     600: 73 25 10 34  	csrr	a0, mepc
-     604: 23 22 a1 00  	sw	a0, 4(sp)
-     608: 73 25 70 34  	csrr	a0, 839
-     60c: 23 24 a1 00  	sw	a0, 8(sp)
-     610: 37 15 00 00  	lui	a0, 1
-     614: 03 05 b5 00  	lb	a0, 11(a0)
-     618: 73 10 75 34  	csrw	839, a0
-     61c: 73 60 04 30  	csrsi	mstatus, 8
-     620: 23 26 11 00  	sw	ra, 12(sp)
-     624: 23 2a b1 00  	sw	a1, 20(sp)
-     628: 23 2c c1 00  	sw	a2, 24(sp)
-     62c: 23 2e d1 00  	sw	a3, 28(sp)
-     630: 23 20 e1 02  	sw	a4, 32(sp)
-     634: 23 22 f1 02  	sw	a5, 36(sp)
-     638: 23 24 01 03  	sw	a6, 40(sp)
-     63c: 23 26 11 03  	sw	a7, 44(sp)
-     640: 23 28 51 02  	sw	t0, 48(sp)
-     644: 23 2a 61 02  	sw	t1, 52(sp)
-     648: 23 2c 71 02  	sw	t2, 56(sp)
-     64c: 23 2e c1 03  	sw	t3, 60(sp)
-     650: 23 20 d1 05  	sw	t4, 64(sp)
-     654: 23 22 e1 05  	sw	t5, 68(sp)
-     658: 23 24 f1 05  	sw	t6, 72(sp)
-     65c: ef f0 1f c8  	jal	0x2dc <Interrupt2>
-     660: 03 25 01 00  	lw	a0, 0(sp)
-     664: 73 10 05 30  	csrw	mstatus, a0
-     668: 03 25 41 00  	lw	a0, 4(sp)
-     66c: 73 10 15 34  	csrw	mepc, a0
-     670: 83 20 c1 00  	lw	ra, 12(sp)
-     674: 03 25 01 01  	lw	a0, 16(sp)
-     678: 83 25 41 01  	lw	a1, 20(sp)
-     67c: 03 26 81 01  	lw	a2, 24(sp)
-     680: 83 26 c1 01  	lw	a3, 28(sp)
-     684: 03 27 01 02  	lw	a4, 32(sp)
-     688: 83 27 41 02  	lw	a5, 36(sp)
-     68c: 03 28 81 02  	lw	a6, 40(sp)
-     690: 83 28 c1 02  	lw	a7, 44(sp)
-     694: 83 22 01 03  	lw	t0, 48(sp)
-     698: 03 23 41 03  	lw	t1, 52(sp)
-     69c: 83 23 81 03  	lw	t2, 56(sp)
-     6a0: 03 2e c1 03  	lw	t3, 60(sp)
-     6a4: 83 2e 01 04  	lw	t4, 64(sp)
-     6a8: 03 2f 41 04  	lw	t5, 68(sp)
-     6ac: 73 70 04 30  	csrci	mstatus, 8
-     6b0: 83 2f 81 00  	lw	t6, 8(sp)
-     6b4: 73 90 7f 34  	csrw	839, t6
-     6b8: 83 2f 81 04  	lw	t6, 72(sp)
-     6bc: 13 01 c1 04  	addi	sp, sp, 76
-     6c0: 73 00 20 30  	mret
+0000093c <handler_6>:
+     93c: 13 01 41 fb  	addi	sp, sp, -0x4c
+     940: 23 28 a1 00  	sw	a0, 0x10(sp)
+     944: 73 25 00 30  	csrr	a0, mstatus
+     948: 23 20 a1 00  	sw	a0, 0x0(sp)
+     94c: 73 25 10 34  	csrr	a0, mepc
+     950: 23 22 a1 00  	sw	a0, 0x4(sp)
+     954: 73 25 70 34  	csrr	a0, 0x347
+     958: 23 24 a1 00  	sw	a0, 0x8(sp)
+     95c: 37 15 00 00  	lui	a0, 0x1
+     960: 03 05 b5 01  	lb	a0, 0x1b(a0)
+     964: 73 10 75 34  	csrw	0x347, a0
+     968: 73 60 04 30  	csrsi	mstatus, 0x8
+     96c: 23 26 11 00  	sw	ra, 0xc(sp)
+     970: 23 2a b1 00  	sw	a1, 0x14(sp)
+     974: 23 2c c1 00  	sw	a2, 0x18(sp)
+     978: 23 2e d1 00  	sw	a3, 0x1c(sp)
+     97c: 23 20 e1 02  	sw	a4, 0x20(sp)
+     980: 23 22 f1 02  	sw	a5, 0x24(sp)
+     984: 23 24 01 03  	sw	a6, 0x28(sp)
+     988: 23 26 11 03  	sw	a7, 0x2c(sp)
+     98c: 23 28 51 02  	sw	t0, 0x30(sp)
+     990: 23 2a 61 02  	sw	t1, 0x34(sp)
+     994: 23 2c 71 02  	sw	t2, 0x38(sp)
+     998: 23 2e c1 03  	sw	t3, 0x3c(sp)
+     99c: 23 20 d1 05  	sw	t4, 0x40(sp)
+     9a0: 23 22 e1 05  	sw	t5, 0x44(sp)
+     9a4: 23 24 f1 05  	sw	t6, 0x48(sp)
+     9a8: ef 00 00 31  	jal	0xcb8 <.Lline_table_start0+0xd9>
+     9ac: 03 25 01 00  	lw	a0, 0x0(sp)
+     9b0: 73 10 05 30  	csrw	mstatus, a0
+     9b4: 03 25 41 00  	lw	a0, 0x4(sp)
+     9b8: 73 10 15 34  	csrw	mepc, a0
+     9bc: 83 20 c1 00  	lw	ra, 0xc(sp)
+     9c0: 03 25 01 01  	lw	a0, 0x10(sp)
+     9c4: 83 25 41 01  	lw	a1, 0x14(sp)
+     9c8: 03 26 81 01  	lw	a2, 0x18(sp)
+     9cc: 83 26 c1 01  	lw	a3, 0x1c(sp)
+     9d0: 03 27 01 02  	lw	a4, 0x20(sp)
+     9d4: 83 27 41 02  	lw	a5, 0x24(sp)
+     9d8: 03 28 81 02  	lw	a6, 0x28(sp)
+     9dc: 83 28 c1 02  	lw	a7, 0x2c(sp)
+     9e0: 83 22 01 03  	lw	t0, 0x30(sp)
+     9e4: 03 23 41 03  	lw	t1, 0x34(sp)
+     9e8: 83 23 81 03  	lw	t2, 0x38(sp)
+     9ec: 03 2e c1 03  	lw	t3, 0x3c(sp)
+     9f0: 83 2e 01 04  	lw	t4, 0x40(sp)
+     9f4: 03 2f 41 04  	lw	t5, 0x44(sp)
+     9f8: 73 70 04 30  	csrci	mstatus, 0x8
+     9fc: 83 2f 81 00  	lw	t6, 0x8(sp)
+     a00: 73 90 7f 34  	csrw	0x347, t6
+     a04: 83 2f 81 04  	lw	t6, 0x48(sp)
+     a08: 13 01 c1 04  	addi	sp, sp, 0x4c
+     a0c: 73 00 20 30  	mret
 
-000006c4 <handler_3>:
-     6c4: 13 01 41 fb  	addi	sp, sp, -76
-     6c8: 23 28 a1 00  	sw	a0, 16(sp)
-     6cc: 73 25 00 30  	csrr	a0, mstatus
-     6d0: 23 20 a1 00  	sw	a0, 0(sp)
-     6d4: 73 25 10 34  	csrr	a0, mepc
-     6d8: 23 22 a1 00  	sw	a0, 4(sp)
-     6dc: 73 25 70 34  	csrr	a0, 839
-     6e0: 23 24 a1 00  	sw	a0, 8(sp)
-     6e4: 37 15 00 00  	lui	a0, 1
-     6e8: 03 05 f5 00  	lb	a0, 15(a0)
-     6ec: 73 10 75 34  	csrw	839, a0
-     6f0: 73 60 04 30  	csrsi	mstatus, 8
-     6f4: 23 26 11 00  	sw	ra, 12(sp)
-     6f8: 23 2a b1 00  	sw	a1, 20(sp)
-     6fc: 23 2c c1 00  	sw	a2, 24(sp)
-     700: 23 2e d1 00  	sw	a3, 28(sp)
-     704: 23 20 e1 02  	sw	a4, 32(sp)
-     708: 23 22 f1 02  	sw	a5, 36(sp)
-     70c: 23 24 01 03  	sw	a6, 40(sp)
-     710: 23 26 11 03  	sw	a7, 44(sp)
-     714: 23 28 51 02  	sw	t0, 48(sp)
-     718: 23 2a 61 02  	sw	t1, 52(sp)
-     71c: 23 2c 71 02  	sw	t2, 56(sp)
-     720: 23 2e c1 03  	sw	t3, 60(sp)
-     724: 23 20 d1 05  	sw	t4, 64(sp)
-     728: 23 22 e1 05  	sw	t5, 68(sp)
-     72c: 23 24 f1 05  	sw	t6, 72(sp)
-     730: ef f0 9f ba  	jal	0x2d8 <Interrupt7>
-     734: 03 25 01 00  	lw	a0, 0(sp)
-     738: 73 10 05 30  	csrw	mstatus, a0
-     73c: 03 25 41 00  	lw	a0, 4(sp)
-     740: 73 10 15 34  	csrw	mepc, a0
-     744: 83 20 c1 00  	lw	ra, 12(sp)
-     748: 03 25 01 01  	lw	a0, 16(sp)
-     74c: 83 25 41 01  	lw	a1, 20(sp)
-     750: 03 26 81 01  	lw	a2, 24(sp)
-     754: 83 26 c1 01  	lw	a3, 28(sp)
-     758: 03 27 01 02  	lw	a4, 32(sp)
-     75c: 83 27 41 02  	lw	a5, 36(sp)
-     760: 03 28 81 02  	lw	a6, 40(sp)
-     764: 83 28 c1 02  	lw	a7, 44(sp)
-     768: 83 22 01 03  	lw	t0, 48(sp)
-     76c: 03 23 41 03  	lw	t1, 52(sp)
-     770: 83 23 81 03  	lw	t2, 56(sp)
-     774: 03 2e c1 03  	lw	t3, 60(sp)
-     778: 83 2e 01 04  	lw	t4, 64(sp)
-     77c: 03 2f 41 04  	lw	t5, 68(sp)
-     780: 73 70 04 30  	csrci	mstatus, 8
-     784: 83 2f 81 00  	lw	t6, 8(sp)
-     788: 73 90 7f 34  	csrw	839, t6
-     78c: 83 2f 81 04  	lw	t6, 72(sp)
-     790: 13 01 c1 04  	addi	sp, sp, 76
-     794: 73 00 20 30  	mret
+00000a10 <handler_7>:
+     a10: 13 01 41 fb  	addi	sp, sp, -0x4c
+     a14: 23 28 a1 00  	sw	a0, 0x10(sp)
+     a18: 73 25 00 30  	csrr	a0, mstatus
+     a1c: 23 20 a1 00  	sw	a0, 0x0(sp)
+     a20: 73 25 10 34  	csrr	a0, mepc
+     a24: 23 22 a1 00  	sw	a0, 0x4(sp)
+     a28: 73 25 70 34  	csrr	a0, 0x347
+     a2c: 23 24 a1 00  	sw	a0, 0x8(sp)
+     a30: 37 15 00 00  	lui	a0, 0x1
+     a34: 03 05 f5 01  	lb	a0, 0x1f(a0)
+     a38: 73 10 75 34  	csrw	0x347, a0
+     a3c: 73 60 04 30  	csrsi	mstatus, 0x8
+     a40: 23 26 11 00  	sw	ra, 0xc(sp)
+     a44: 23 2a b1 00  	sw	a1, 0x14(sp)
+     a48: 23 2c c1 00  	sw	a2, 0x18(sp)
+     a4c: 23 2e d1 00  	sw	a3, 0x1c(sp)
+     a50: 23 20 e1 02  	sw	a4, 0x20(sp)
+     a54: 23 22 f1 02  	sw	a5, 0x24(sp)
+     a58: 23 24 01 03  	sw	a6, 0x28(sp)
+     a5c: 23 26 11 03  	sw	a7, 0x2c(sp)
+     a60: 23 28 51 02  	sw	t0, 0x30(sp)
+     a64: 23 2a 61 02  	sw	t1, 0x34(sp)
+     a68: 23 2c 71 02  	sw	t2, 0x38(sp)
+     a6c: 23 2e c1 03  	sw	t3, 0x3c(sp)
+     a70: 23 20 d1 05  	sw	t4, 0x40(sp)
+     a74: 23 22 e1 05  	sw	t5, 0x44(sp)
+     a78: 23 24 f1 05  	sw	t6, 0x48(sp)
+     a7c: ef 00 c0 23  	jal	0xcb8 <.Lline_table_start0+0xd9>
+     a80: 03 25 01 00  	lw	a0, 0x0(sp)
+     a84: 73 10 05 30  	csrw	mstatus, a0
+     a88: 03 25 41 00  	lw	a0, 0x4(sp)
+     a8c: 73 10 15 34  	csrw	mepc, a0
+     a90: 83 20 c1 00  	lw	ra, 0xc(sp)
+     a94: 03 25 01 01  	lw	a0, 0x10(sp)
+     a98: 83 25 41 01  	lw	a1, 0x14(sp)
+     a9c: 03 26 81 01  	lw	a2, 0x18(sp)
+     aa0: 83 26 c1 01  	lw	a3, 0x1c(sp)
+     aa4: 03 27 01 02  	lw	a4, 0x20(sp)
+     aa8: 83 27 41 02  	lw	a5, 0x24(sp)
+     aac: 03 28 81 02  	lw	a6, 0x28(sp)
+     ab0: 83 28 c1 02  	lw	a7, 0x2c(sp)
+     ab4: 83 22 01 03  	lw	t0, 0x30(sp)
+     ab8: 03 23 41 03  	lw	t1, 0x34(sp)
+     abc: 83 23 81 03  	lw	t2, 0x38(sp)
+     ac0: 03 2e c1 03  	lw	t3, 0x3c(sp)
+     ac4: 83 2e 01 04  	lw	t4, 0x40(sp)
+     ac8: 03 2f 41 04  	lw	t5, 0x44(sp)
+     acc: 73 70 04 30  	csrci	mstatus, 0x8
+     ad0: 83 2f 81 00  	lw	t6, 0x8(sp)
+     ad4: 73 90 7f 34  	csrw	0x347, t6
+     ad8: 83 2f 81 04  	lw	t6, 0x48(sp)
+     adc: 13 01 c1 04  	addi	sp, sp, 0x4c
+     ae0: 73 00 20 30  	mret
 
-00000798 <handler_4>:
-     798: 13 01 41 fb  	addi	sp, sp, -76
-     79c: 23 28 a1 00  	sw	a0, 16(sp)
-     7a0: 73 25 00 30  	csrr	a0, mstatus
-     7a4: 23 20 a1 00  	sw	a0, 0(sp)
-     7a8: 73 25 10 34  	csrr	a0, mepc
-     7ac: 23 22 a1 00  	sw	a0, 4(sp)
-     7b0: 73 25 70 34  	csrr	a0, 839
-     7b4: 23 24 a1 00  	sw	a0, 8(sp)
-     7b8: 37 15 00 00  	lui	a0, 1
-     7bc: 03 05 35 01  	lb	a0, 19(a0)
-     7c0: 73 10 75 34  	csrw	839, a0
-     7c4: 73 60 04 30  	csrsi	mstatus, 8
-     7c8: 23 26 11 00  	sw	ra, 12(sp)
-     7cc: 23 2a b1 00  	sw	a1, 20(sp)
-     7d0: 23 2c c1 00  	sw	a2, 24(sp)
-     7d4: 23 2e d1 00  	sw	a3, 28(sp)
-     7d8: 23 20 e1 02  	sw	a4, 32(sp)
-     7dc: 23 22 f1 02  	sw	a5, 36(sp)
-     7e0: 23 24 01 03  	sw	a6, 40(sp)
-     7e4: 23 26 11 03  	sw	a7, 44(sp)
-     7e8: 23 28 51 02  	sw	t0, 48(sp)
-     7ec: 23 2a 61 02  	sw	t1, 52(sp)
-     7f0: 23 2c 71 02  	sw	t2, 56(sp)
-     7f4: 23 2e c1 03  	sw	t3, 60(sp)
-     7f8: 23 20 d1 05  	sw	t4, 64(sp)
-     7fc: 23 22 e1 05  	sw	t5, 68(sp)
-     800: 23 24 f1 05  	sw	t6, 72(sp)
-     804: ef f0 5f ae  	jal	0x2e8 <Interrupt4>
-     808: 03 25 01 00  	lw	a0, 0(sp)
-     80c: 73 10 05 30  	csrw	mstatus, a0
-     810: 03 25 41 00  	lw	a0, 4(sp)
-     814: 73 10 15 34  	csrw	mepc, a0
-     818: 83 20 c1 00  	lw	ra, 12(sp)
-     81c: 03 25 01 01  	lw	a0, 16(sp)
-     820: 83 25 41 01  	lw	a1, 20(sp)
-     824: 03 26 81 01  	lw	a2, 24(sp)
-     828: 83 26 c1 01  	lw	a3, 28(sp)
-     82c: 03 27 01 02  	lw	a4, 32(sp)
-     830: 83 27 41 02  	lw	a5, 36(sp)
-     834: 03 28 81 02  	lw	a6, 40(sp)
-     838: 83 28 c1 02  	lw	a7, 44(sp)
-     83c: 83 22 01 03  	lw	t0, 48(sp)
-     840: 03 23 41 03  	lw	t1, 52(sp)
-     844: 83 23 81 03  	lw	t2, 56(sp)
-     848: 03 2e c1 03  	lw	t3, 60(sp)
-     84c: 83 2e 01 04  	lw	t4, 64(sp)
-     850: 03 2f 41 04  	lw	t5, 68(sp)
-     854: 73 70 04 30  	csrci	mstatus, 8
-     858: 83 2f 81 00  	lw	t6, 8(sp)
-     85c: 73 90 7f 34  	csrw	839, t6
-     860: 83 2f 81 04  	lw	t6, 72(sp)
-     864: 13 01 c1 04  	addi	sp, sp, 76
-     868: 73 00 20 30  	mret
+00000ae4 <handler_8>:
+     ae4: 13 01 41 fb  	addi	sp, sp, -0x4c
+     ae8: 23 28 a1 00  	sw	a0, 0x10(sp)
+     aec: 73 25 00 30  	csrr	a0, mstatus
+     af0: 23 20 a1 00  	sw	a0, 0x0(sp)
+     af4: 73 25 10 34  	csrr	a0, mepc
+     af8: 23 22 a1 00  	sw	a0, 0x4(sp)
+     afc: 73 25 70 34  	csrr	a0, 0x347
+     b00: 23 24 a1 00  	sw	a0, 0x8(sp)
+     b04: 37 15 00 00  	lui	a0, 0x1
+     b08: 03 05 35 02  	lb	a0, 0x23(a0)
+     b0c: 73 10 75 34  	csrw	0x347, a0
+     b10: 73 60 04 30  	csrsi	mstatus, 0x8
+     b14: 23 26 11 00  	sw	ra, 0xc(sp)
+     b18: 23 2a b1 00  	sw	a1, 0x14(sp)
+     b1c: 23 2c c1 00  	sw	a2, 0x18(sp)
+     b20: 23 2e d1 00  	sw	a3, 0x1c(sp)
+     b24: 23 20 e1 02  	sw	a4, 0x20(sp)
+     b28: 23 22 f1 02  	sw	a5, 0x24(sp)
+     b2c: 23 24 01 03  	sw	a6, 0x28(sp)
+     b30: 23 26 11 03  	sw	a7, 0x2c(sp)
+     b34: 23 28 51 02  	sw	t0, 0x30(sp)
+     b38: 23 2a 61 02  	sw	t1, 0x34(sp)
+     b3c: 23 2c 71 02  	sw	t2, 0x38(sp)
+     b40: 23 2e c1 03  	sw	t3, 0x3c(sp)
+     b44: 23 20 d1 05  	sw	t4, 0x40(sp)
+     b48: 23 22 e1 05  	sw	t5, 0x44(sp)
+     b4c: 23 24 f1 05  	sw	t6, 0x48(sp)
+     b50: ef 00 80 16  	jal	0xcb8 <.Lline_table_start0+0xd9>
+     b54: 03 25 01 00  	lw	a0, 0x0(sp)
+     b58: 73 10 05 30  	csrw	mstatus, a0
+     b5c: 03 25 41 00  	lw	a0, 0x4(sp)
+     b60: 73 10 15 34  	csrw	mepc, a0
+     b64: 83 20 c1 00  	lw	ra, 0xc(sp)
+     b68: 03 25 01 01  	lw	a0, 0x10(sp)
+     b6c: 83 25 41 01  	lw	a1, 0x14(sp)
+     b70: 03 26 81 01  	lw	a2, 0x18(sp)
+     b74: 83 26 c1 01  	lw	a3, 0x1c(sp)
+     b78: 03 27 01 02  	lw	a4, 0x20(sp)
+     b7c: 83 27 41 02  	lw	a5, 0x24(sp)
+     b80: 03 28 81 02  	lw	a6, 0x28(sp)
+     b84: 83 28 c1 02  	lw	a7, 0x2c(sp)
+     b88: 83 22 01 03  	lw	t0, 0x30(sp)
+     b8c: 03 23 41 03  	lw	t1, 0x34(sp)
+     b90: 83 23 81 03  	lw	t2, 0x38(sp)
+     b94: 03 2e c1 03  	lw	t3, 0x3c(sp)
+     b98: 83 2e 01 04  	lw	t4, 0x40(sp)
+     b9c: 03 2f 41 04  	lw	t5, 0x44(sp)
+     ba0: 73 70 04 30  	csrci	mstatus, 0x8
+     ba4: 83 2f 81 00  	lw	t6, 0x8(sp)
+     ba8: 73 90 7f 34  	csrw	0x347, t6
+     bac: 83 2f 81 04  	lw	t6, 0x48(sp)
+     bb0: 13 01 c1 04  	addi	sp, sp, 0x4c
+     bb4: 73 00 20 30  	mret
 
-0000086c <handler_5>:
-     86c: 13 01 41 fb  	addi	sp, sp, -76
-     870: 23 28 a1 00  	sw	a0, 16(sp)
-     874: 73 25 00 30  	csrr	a0, mstatus
-     878: 23 20 a1 00  	sw	a0, 0(sp)
-     87c: 73 25 10 34  	csrr	a0, mepc
-     880: 23 22 a1 00  	sw	a0, 4(sp)
-     884: 73 25 70 34  	csrr	a0, 839
-     888: 23 24 a1 00  	sw	a0, 8(sp)
-     88c: 37 15 00 00  	lui	a0, 1
-     890: 03 05 75 01  	lb	a0, 23(a0)
-     894: 73 10 75 34  	csrw	839, a0
-     898: 73 60 04 30  	csrsi	mstatus, 8
-     89c: 23 26 11 00  	sw	ra, 12(sp)
-     8a0: 23 2a b1 00  	sw	a1, 20(sp)
-     8a4: 23 2c c1 00  	sw	a2, 24(sp)
-     8a8: 23 2e d1 00  	sw	a3, 28(sp)
-     8ac: 23 20 e1 02  	sw	a4, 32(sp)
-     8b0: 23 22 f1 02  	sw	a5, 36(sp)
-     8b4: 23 24 01 03  	sw	a6, 40(sp)
-     8b8: 23 26 11 03  	sw	a7, 44(sp)
-     8bc: 23 28 51 02  	sw	t0, 48(sp)
-     8c0: 23 2a 61 02  	sw	t1, 52(sp)
-     8c4: 23 2c 71 02  	sw	t2, 56(sp)
-     8c8: 23 2e c1 03  	sw	t3, 60(sp)
-     8cc: 23 20 d1 05  	sw	t4, 64(sp)
-     8d0: 23 22 e1 05  	sw	t5, 68(sp)
-     8d4: 23 24 f1 05  	sw	t6, 72(sp)
-     8d8: ef f0 1f a0  	jal	0x2d8 <Interrupt7>
-     8dc: 03 25 01 00  	lw	a0, 0(sp)
-     8e0: 73 10 05 30  	csrw	mstatus, a0
-     8e4: 03 25 41 00  	lw	a0, 4(sp)
-     8e8: 73 10 15 34  	csrw	mepc, a0
-     8ec: 83 20 c1 00  	lw	ra, 12(sp)
-     8f0: 03 25 01 01  	lw	a0, 16(sp)
-     8f4: 83 25 41 01  	lw	a1, 20(sp)
-     8f8: 03 26 81 01  	lw	a2, 24(sp)
-     8fc: 83 26 c1 01  	lw	a3, 28(sp)
-     900: 03 27 01 02  	lw	a4, 32(sp)
-     904: 83 27 41 02  	lw	a5, 36(sp)
-     908: 03 28 81 02  	lw	a6, 40(sp)
-     90c: 83 28 c1 02  	lw	a7, 44(sp)
-     910: 83 22 01 03  	lw	t0, 48(sp)
-     914: 03 23 41 03  	lw	t1, 52(sp)
-     918: 83 23 81 03  	lw	t2, 56(sp)
-     91c: 03 2e c1 03  	lw	t3, 60(sp)
-     920: 83 2e 01 04  	lw	t4, 64(sp)
-     924: 03 2f 41 04  	lw	t5, 68(sp)
-     928: 73 70 04 30  	csrci	mstatus, 8
-     92c: 83 2f 81 00  	lw	t6, 8(sp)
-     930: 73 90 7f 34  	csrw	839, t6
-     934: 83 2f 81 04  	lw	t6, 72(sp)
-     938: 13 01 c1 04  	addi	sp, sp, 76
-     93c: 73 00 20 30  	mret
+00000bb8 <handler_MTIME>:
+     bb8: 13 01 41 fb  	addi	sp, sp, -0x4c
+     bbc: 23 28 a1 00  	sw	a0, 0x10(sp)
+     bc0: 73 25 00 30  	csrr	a0, mstatus
+     bc4: 23 20 a1 00  	sw	a0, 0x0(sp)
+     bc8: 73 25 10 34  	csrr	a0, mepc
+     bcc: 23 22 a1 00  	sw	a0, 0x4(sp)
+     bd0: 73 25 70 34  	csrr	a0, 0x347
+     bd4: 23 24 a1 00  	sw	a0, 0x8(sp)
+     bd8: 37 15 00 00  	lui	a0, 0x1
+     bdc: 03 05 35 02  	lb	a0, 0x23(a0)
+     be0: 73 10 75 34  	csrw	0x347, a0
+     be4: 73 60 04 30  	csrsi	mstatus, 0x8
+     be8: 23 26 11 00  	sw	ra, 0xc(sp)
+     bec: 23 2a b1 00  	sw	a1, 0x14(sp)
+     bf0: 23 2c c1 00  	sw	a2, 0x18(sp)
+     bf4: 23 2e d1 00  	sw	a3, 0x1c(sp)
+     bf8: 23 20 e1 02  	sw	a4, 0x20(sp)
+     bfc: 23 22 f1 02  	sw	a5, 0x24(sp)
+     c00: 23 24 01 03  	sw	a6, 0x28(sp)
+     c04: 23 26 11 03  	sw	a7, 0x2c(sp)
+     c08: 23 28 51 02  	sw	t0, 0x30(sp)
+     c0c: 23 2a 61 02  	sw	t1, 0x34(sp)
+     c10: 23 2c 71 02  	sw	t2, 0x38(sp)
+     c14: 23 2e c1 03  	sw	t3, 0x3c(sp)
+     c18: 23 20 d1 05  	sw	t4, 0x40(sp)
+     c1c: 23 22 e1 05  	sw	t5, 0x44(sp)
+     c20: 23 24 f1 05  	sw	t6, 0x48(sp)
+     c24: ef 00 40 09  	jal	0xcb8 <.Lline_table_start0+0xd9>
+     c28: 03 25 01 00  	lw	a0, 0x0(sp)
+     c2c: 73 10 05 30  	csrw	mstatus, a0
+     c30: 03 25 41 00  	lw	a0, 0x4(sp)
+     c34: 73 10 15 34  	csrw	mepc, a0
+     c38: 83 20 c1 00  	lw	ra, 0xc(sp)
+     c3c: 03 25 01 01  	lw	a0, 0x10(sp)
+     c40: 83 25 41 01  	lw	a1, 0x14(sp)
+     c44: 03 26 81 01  	lw	a2, 0x18(sp)
+     c48: 83 26 c1 01  	lw	a3, 0x1c(sp)
+     c4c: 03 27 01 02  	lw	a4, 0x20(sp)
+     c50: 83 27 41 02  	lw	a5, 0x24(sp)
+     c54: 03 28 81 02  	lw	a6, 0x28(sp)
+     c58: 83 28 c1 02  	lw	a7, 0x2c(sp)
+     c5c: 83 22 01 03  	lw	t0, 0x30(sp)
+     c60: 03 23 41 03  	lw	t1, 0x34(sp)
+     c64: 83 23 81 03  	lw	t2, 0x38(sp)
+     c68: 03 2e c1 03  	lw	t3, 0x3c(sp)
+     c6c: 83 2e 01 04  	lw	t4, 0x40(sp)
+     c70: 03 2f 41 04  	lw	t5, 0x44(sp)
+     c74: 73 70 04 30  	csrci	mstatus, 0x8
+     c78: 83 2f 81 00  	lw	t6, 0x8(sp)
+     c7c: 73 90 7f 34  	csrw	0x347, t6
+     c80: 83 2f 81 04  	lw	t6, 0x48(sp)
+     c84: 13 01 c1 04  	addi	sp, sp, 0x4c
+     c88: 73 00 20 30  	mret
 
-00000940 <handler_6>:
-     940: 13 01 41 fb  	addi	sp, sp, -76
-     944: 23 28 a1 00  	sw	a0, 16(sp)
-     948: 73 25 00 30  	csrr	a0, mstatus
-     94c: 23 20 a1 00  	sw	a0, 0(sp)
-     950: 73 25 10 34  	csrr	a0, mepc
-     954: 23 22 a1 00  	sw	a0, 4(sp)
-     958: 73 25 70 34  	csrr	a0, 839
-     95c: 23 24 a1 00  	sw	a0, 8(sp)
-     960: 37 15 00 00  	lui	a0, 1
-     964: 03 05 b5 01  	lb	a0, 27(a0)
-     968: 73 10 75 34  	csrw	839, a0
-     96c: 73 60 04 30  	csrsi	mstatus, 8
-     970: 23 26 11 00  	sw	ra, 12(sp)
-     974: 23 2a b1 00  	sw	a1, 20(sp)
-     978: 23 2c c1 00  	sw	a2, 24(sp)
-     97c: 23 2e d1 00  	sw	a3, 28(sp)
-     980: 23 20 e1 02  	sw	a4, 32(sp)
-     984: 23 22 f1 02  	sw	a5, 36(sp)
-     988: 23 24 01 03  	sw	a6, 40(sp)
-     98c: 23 26 11 03  	sw	a7, 44(sp)
-     990: 23 28 51 02  	sw	t0, 48(sp)
-     994: 23 2a 61 02  	sw	t1, 52(sp)
-     998: 23 2c 71 02  	sw	t2, 56(sp)
-     99c: 23 2e c1 03  	sw	t3, 60(sp)
-     9a0: 23 20 d1 05  	sw	t4, 64(sp)
-     9a4: 23 22 e1 05  	sw	t5, 68(sp)
-     9a8: 23 24 f1 05  	sw	t6, 72(sp)
-     9ac: ef f0 df 95  	jal	0x308 <Interrupt6>
-     9b0: 03 25 01 00  	lw	a0, 0(sp)
-     9b4: 73 10 05 30  	csrw	mstatus, a0
-     9b8: 03 25 41 00  	lw	a0, 4(sp)
-     9bc: 73 10 15 34  	csrw	mepc, a0
-     9c0: 83 20 c1 00  	lw	ra, 12(sp)
-     9c4: 03 25 01 01  	lw	a0, 16(sp)
-     9c8: 83 25 41 01  	lw	a1, 20(sp)
-     9cc: 03 26 81 01  	lw	a2, 24(sp)
-     9d0: 83 26 c1 01  	lw	a3, 28(sp)
-     9d4: 03 27 01 02  	lw	a4, 32(sp)
-     9d8: 83 27 41 02  	lw	a5, 36(sp)
-     9dc: 03 28 81 02  	lw	a6, 40(sp)
-     9e0: 83 28 c1 02  	lw	a7, 44(sp)
-     9e4: 83 22 01 03  	lw	t0, 48(sp)
-     9e8: 03 23 41 03  	lw	t1, 52(sp)
-     9ec: 83 23 81 03  	lw	t2, 56(sp)
-     9f0: 03 2e c1 03  	lw	t3, 60(sp)
-     9f4: 83 2e 01 04  	lw	t4, 64(sp)
-     9f8: 03 2f 41 04  	lw	t5, 68(sp)
-     9fc: 73 70 04 30  	csrci	mstatus, 8
-     a00: 83 2f 81 00  	lw	t6, 8(sp)
-     a04: 73 90 7f 34  	csrw	839, t6
-     a08: 83 2f 81 04  	lw	t6, 72(sp)
-     a0c: 13 01 c1 04  	addi	sp, sp, 76
-     a10: 73 00 20 30  	mret
+00000c8c <_setup_interrupts>:
+     c8c: 37 05 00 50  	lui	a0, 0x50000
+     c90: 13 05 45 07  	addi	a0, a0, 0x74
+     c94: 13 05 15 00  	addi	a0, a0, 0x1
+     c98: 73 10 55 30  	csrw	mtvec, a0
+     c9c: 37 05 00 50  	lui	a0, 0x50000
+     ca0: 13 05 c5 09  	addi	a0, a0, 0x9c
+     ca4: 73 10 15 35  	csrw	mireg, a0
+     ca8: 13 05 20 00  	li	a0, 0x2
+     cac: 73 10 05 35  	csrw	miselect, a0
+     cb0: 67 80 00 00  	ret
 
-00000a14 <handler_7>:
-     a14: 13 01 41 fb  	addi	sp, sp, -76
-     a18: 23 28 a1 00  	sw	a0, 16(sp)
-     a1c: 73 25 00 30  	csrr	a0, mstatus
-     a20: 23 20 a1 00  	sw	a0, 0(sp)
-     a24: 73 25 10 34  	csrr	a0, mepc
-     a28: 23 22 a1 00  	sw	a0, 4(sp)
-     a2c: 73 25 70 34  	csrr	a0, 839
-     a30: 23 24 a1 00  	sw	a0, 8(sp)
-     a34: 37 15 00 00  	lui	a0, 1
-     a38: 03 05 f5 01  	lb	a0, 31(a0)
-     a3c: 73 10 75 34  	csrw	839, a0
-     a40: 73 60 04 30  	csrsi	mstatus, 8
-     a44: 23 26 11 00  	sw	ra, 12(sp)
-     a48: 23 2a b1 00  	sw	a1, 20(sp)
-     a4c: 23 2c c1 00  	sw	a2, 24(sp)
-     a50: 23 2e d1 00  	sw	a3, 28(sp)
-     a54: 23 20 e1 02  	sw	a4, 32(sp)
-     a58: 23 22 f1 02  	sw	a5, 36(sp)
-     a5c: 23 24 01 03  	sw	a6, 40(sp)
-     a60: 23 26 11 03  	sw	a7, 44(sp)
-     a64: 23 28 51 02  	sw	t0, 48(sp)
-     a68: 23 2a 61 02  	sw	t1, 52(sp)
-     a6c: 23 2c 71 02  	sw	t2, 56(sp)
-     a70: 23 2e c1 03  	sw	t3, 60(sp)
-     a74: 23 20 d1 05  	sw	t4, 64(sp)
-     a78: 23 22 e1 05  	sw	t5, 68(sp)
-     a7c: 23 24 f1 05  	sw	t6, 72(sp)
-     a80: ef f0 9f 85  	jal	0x2d8 <Interrupt7>
-     a84: 03 25 01 00  	lw	a0, 0(sp)
-     a88: 73 10 05 30  	csrw	mstatus, a0
-     a8c: 03 25 41 00  	lw	a0, 4(sp)
-     a90: 73 10 15 34  	csrw	mepc, a0
-     a94: 83 20 c1 00  	lw	ra, 12(sp)
-     a98: 03 25 01 01  	lw	a0, 16(sp)
-     a9c: 83 25 41 01  	lw	a1, 20(sp)
-     aa0: 03 26 81 01  	lw	a2, 24(sp)
-     aa4: 83 26 c1 01  	lw	a3, 28(sp)
-     aa8: 03 27 01 02  	lw	a4, 32(sp)
-     aac: 83 27 41 02  	lw	a5, 36(sp)
-     ab0: 03 28 81 02  	lw	a6, 40(sp)
-     ab4: 83 28 c1 02  	lw	a7, 44(sp)
-     ab8: 83 22 01 03  	lw	t0, 48(sp)
-     abc: 03 23 41 03  	lw	t1, 52(sp)
-     ac0: 83 23 81 03  	lw	t2, 56(sp)
-     ac4: 03 2e c1 03  	lw	t3, 60(sp)
-     ac8: 83 2e 01 04  	lw	t4, 64(sp)
-     acc: 03 2f 41 04  	lw	t5, 68(sp)
-     ad0: 73 70 04 30  	csrci	mstatus, 8
-     ad4: 83 2f 81 00  	lw	t6, 8(sp)
-     ad8: 73 90 7f 34  	csrw	839, t6
-     adc: 83 2f 81 04  	lw	t6, 72(sp)
-     ae0: 13 01 c1 04  	addi	sp, sp, 76
-     ae4: 73 00 20 30  	mret
+00000cb4 <UserEnvCall>:
+     cb4: 6f 00 00 00  	j	0xcb4 <.Lline_table_start0+0xd5>
 
-00000ae8 <handler_8>:
-     ae8: 13 01 41 fb  	addi	sp, sp, -76
-     aec: 23 28 a1 00  	sw	a0, 16(sp)
-     af0: 73 25 00 30  	csrr	a0, mstatus
-     af4: 23 20 a1 00  	sw	a0, 0(sp)
-     af8: 73 25 10 34  	csrr	a0, mepc
-     afc: 23 22 a1 00  	sw	a0, 4(sp)
-     b00: 73 25 70 34  	csrr	a0, 839
-     b04: 23 24 a1 00  	sw	a0, 8(sp)
-     b08: 37 15 00 00  	lui	a0, 1
-     b0c: 03 05 35 02  	lb	a0, 35(a0)
-     b10: 73 10 75 34  	csrw	839, a0
-     b14: 73 60 04 30  	csrsi	mstatus, 8
-     b18: 23 26 11 00  	sw	ra, 12(sp)
-     b1c: 23 2a b1 00  	sw	a1, 20(sp)
-     b20: 23 2c c1 00  	sw	a2, 24(sp)
-     b24: 23 2e d1 00  	sw	a3, 28(sp)
-     b28: 23 20 e1 02  	sw	a4, 32(sp)
-     b2c: 23 22 f1 02  	sw	a5, 36(sp)
-     b30: 23 24 01 03  	sw	a6, 40(sp)
-     b34: 23 26 11 03  	sw	a7, 44(sp)
-     b38: 23 28 51 02  	sw	t0, 48(sp)
-     b3c: 23 2a 61 02  	sw	t1, 52(sp)
-     b40: 23 2c 71 02  	sw	t2, 56(sp)
-     b44: 23 2e c1 03  	sw	t3, 60(sp)
-     b48: 23 20 d1 05  	sw	t4, 64(sp)
-     b4c: 23 22 e1 05  	sw	t5, 68(sp)
-     b50: 23 24 f1 05  	sw	t6, 72(sp)
-     b54: ef f0 0f fc  	jal	0x314 <Interrupt8>
-     b58: 03 25 01 00  	lw	a0, 0(sp)
-     b5c: 73 10 05 30  	csrw	mstatus, a0
-     b60: 03 25 41 00  	lw	a0, 4(sp)
-     b64: 73 10 15 34  	csrw	mepc, a0
-     b68: 83 20 c1 00  	lw	ra, 12(sp)
-     b6c: 03 25 01 01  	lw	a0, 16(sp)
-     b70: 83 25 41 01  	lw	a1, 20(sp)
-     b74: 03 26 81 01  	lw	a2, 24(sp)
-     b78: 83 26 c1 01  	lw	a3, 28(sp)
-     b7c: 03 27 01 02  	lw	a4, 32(sp)
-     b80: 83 27 41 02  	lw	a5, 36(sp)
-     b84: 03 28 81 02  	lw	a6, 40(sp)
-     b88: 83 28 c1 02  	lw	a7, 44(sp)
-     b8c: 83 22 01 03  	lw	t0, 48(sp)
-     b90: 03 23 41 03  	lw	t1, 52(sp)
-     b94: 83 23 81 03  	lw	t2, 56(sp)
-     b98: 03 2e c1 03  	lw	t3, 60(sp)
-     b9c: 83 2e 01 04  	lw	t4, 64(sp)
-     ba0: 03 2f 41 04  	lw	t5, 68(sp)
-     ba4: 73 70 04 30  	csrci	mstatus, 8
-     ba8: 83 2f 81 00  	lw	t6, 8(sp)
-     bac: 73 90 7f 34  	csrw	839, t6
-     bb0: 83 2f 81 04  	lw	t6, 72(sp)
-     bb4: 13 01 c1 04  	addi	sp, sp, 76
-     bb8: 73 00 20 30  	mret
+00000cb8 <SupervisorTimer>:
+     cb8: 6f 00 00 00  	j	0xcb8 <.Lline_table_start0+0xd9>
 
-00000bbc <handler_9>:
-     bbc: 13 01 41 fb  	addi	sp, sp, -76
-     bc0: 23 28 a1 00  	sw	a0, 16(sp)
-     bc4: 73 25 00 30  	csrr	a0, mstatus
-     bc8: 23 20 a1 00  	sw	a0, 0(sp)
-     bcc: 73 25 10 34  	csrr	a0, mepc
-     bd0: 23 22 a1 00  	sw	a0, 4(sp)
-     bd4: 73 25 70 34  	csrr	a0, 839
-     bd8: 23 24 a1 00  	sw	a0, 8(sp)
-     bdc: 37 15 00 00  	lui	a0, 1
-     be0: 03 05 35 02  	lb	a0, 35(a0)
-     be4: 73 10 75 34  	csrw	839, a0
-     be8: 73 60 04 30  	csrsi	mstatus, 8
-     bec: 23 26 11 00  	sw	ra, 12(sp)
-     bf0: 23 2a b1 00  	sw	a1, 20(sp)
-     bf4: 23 2c c1 00  	sw	a2, 24(sp)
-     bf8: 23 2e d1 00  	sw	a3, 28(sp)
-     bfc: 23 20 e1 02  	sw	a4, 32(sp)
-     c00: 23 22 f1 02  	sw	a5, 36(sp)
-     c04: 23 24 01 03  	sw	a6, 40(sp)
-     c08: 23 26 11 03  	sw	a7, 44(sp)
-     c0c: 23 28 51 02  	sw	t0, 48(sp)
-     c10: 23 2a 61 02  	sw	t1, 52(sp)
-     c14: 23 2c 71 02  	sw	t2, 56(sp)
-     c18: 23 2e c1 03  	sw	t3, 60(sp)
-     c1c: 23 20 d1 05  	sw	t4, 64(sp)
-     c20: 23 22 e1 05  	sw	t5, 68(sp)
-     c24: 23 24 f1 05  	sw	t6, 72(sp)
-     c28: ef f0 4f ff  	jal	0x41c <SupervisorTimer>
-     c2c: 03 25 01 00  	lw	a0, 0(sp)
-     c30: 73 10 05 30  	csrw	mstatus, a0
-     c34: 03 25 41 00  	lw	a0, 4(sp)
-     c38: 73 10 15 34  	csrw	mepc, a0
-     c3c: 83 20 c1 00  	lw	ra, 12(sp)
-     c40: 03 25 01 01  	lw	a0, 16(sp)
-     c44: 83 25 41 01  	lw	a1, 20(sp)
-     c48: 03 26 81 01  	lw	a2, 24(sp)
-     c4c: 83 26 c1 01  	lw	a3, 28(sp)
-     c50: 03 27 01 02  	lw	a4, 32(sp)
-     c54: 83 27 41 02  	lw	a5, 36(sp)
-     c58: 03 28 81 02  	lw	a6, 40(sp)
-     c5c: 83 28 c1 02  	lw	a7, 44(sp)
-     c60: 83 22 01 03  	lw	t0, 48(sp)
-     c64: 03 23 41 03  	lw	t1, 52(sp)
-     c68: 83 23 81 03  	lw	t2, 56(sp)
-     c6c: 03 2e c1 03  	lw	t3, 60(sp)
-     c70: 83 2e 01 04  	lw	t4, 64(sp)
-     c74: 03 2f 41 04  	lw	t5, 68(sp)
-     c78: 73 70 04 30  	csrci	mstatus, 8
-     c7c: 83 2f 81 00  	lw	t6, 8(sp)
-     c80: 73 90 7f 34  	csrw	839, t6
-     c84: 83 2f 81 04  	lw	t6, 72(sp)
-     c88: 13 01 c1 04  	addi	sp, sp, 76
-     c8c: 73 00 20 30  	mret
+00000cbc <default_pre_init>:
+     cbc: 67 80 00 00  	ret
 
-00000c90 <_setup_interrupts>:
-     c90: 37 05 00 50  	lui	a0, 327680
-     c94: 13 05 45 07  	addi	a0, a0, 116
-     c98: 13 05 15 00  	addi	a0, a0, 1
-     c9c: 73 10 55 30  	csrw	mtvec, a0
-     ca0: 37 05 00 50  	lui	a0, 327680
-     ca4: 13 05 c5 09  	addi	a0, a0, 156
-     ca8: 73 10 15 35  	csrw	mireg, a0
-     cac: 13 05 20 00  	li	a0, 2
-     cb0: 73 10 05 35  	csrw	miselect, a0
-     cb4: 67 80 00 00  	ret
+00000cc0 <default_mp_hook>:
+     cc0: 63 06 05 00  	beqz	a0, 0xccc <.Lline_table_start0+0xed>
+     cc4: 73 00 50 10  	wfi
+     cc8: 6f f0 df ff  	j	0xcc4 <.Lline_table_start0+0xe5>
+     ccc: 13 05 10 00  	li	a0, 0x1
+     cd0: 67 80 00 00  	ret
+
+00000cd4 <default_setup_interrupts>:
+     cd4: 37 05 00 00  	lui	a0, 0x0
+     cd8: 13 05 c5 18  	addi	a0, a0, 0x18c
+     cdc: 73 10 55 30  	csrw	mtvec, a0
+     ce0: 67 80 00 00  	ret

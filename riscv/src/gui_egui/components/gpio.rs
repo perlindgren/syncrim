@@ -69,31 +69,31 @@ impl EguiComponent for GPIO {
                                 ui.heading("Pin");
                             });
                             header.col(|ui| {
-                                ui.heading("0");
+                                ui.heading("7");
                             });
                             header.col(|ui| {
-                                ui.heading("1");
+                                ui.heading("6");
                             });
                             header.col(|ui| {
-                                ui.heading("2");
-                            });
-                            header.col(|ui| {
-                                ui.heading("3");
+                                ui.heading("5");
                             });
                             header.col(|ui| {
                                 ui.heading("4");
                             });
-
                             header.col(|ui| {
-                                ui.heading("5");
+                                ui.heading("3");
                             });
 
                             header.col(|ui| {
-                                ui.heading("6");
+                                ui.heading("2");
                             });
 
                             header.col(|ui| {
-                                ui.heading("7");
+                                ui.heading("1");
+                            });
+
+                            header.col(|ui| {
+                                ui.heading("0");
                             });
                         })
                         .body(|mut body| {
@@ -104,37 +104,7 @@ impl EguiComponent for GPIO {
                                 row.col(|ui| {
                                     ui.label(format!(
                                         "{}",
-                                        self.pins.0.borrow().get(0).unwrap().state as u32
-                                    ));
-                                });
-                                row.col(|ui| {
-                                    ui.label(format!(
-                                        "{}",
-                                        self.pins.0.borrow().get(1).unwrap().state as u32
-                                    ));
-                                });
-                                row.col(|ui| {
-                                    ui.label(format!(
-                                        "{}",
-                                        self.pins.0.borrow().get(2).unwrap().state as u32
-                                    ));
-                                });
-                                row.col(|ui| {
-                                    ui.label(format!(
-                                        "{}",
-                                        self.pins.0.borrow().get(3).unwrap().state as u32
-                                    ));
-                                });
-                                row.col(|ui| {
-                                    ui.label(format!(
-                                        "{}",
-                                        self.pins.0.borrow().get(4).unwrap().state as u32
-                                    ));
-                                });
-                                row.col(|ui| {
-                                    ui.label(format!(
-                                        "{}",
-                                        self.pins.0.borrow().get(5).unwrap().state as u32
+                                        self.pins.0.borrow().get(7).unwrap().state as u32
                                     ));
                                 });
                                 row.col(|ui| {
@@ -146,7 +116,37 @@ impl EguiComponent for GPIO {
                                 row.col(|ui| {
                                     ui.label(format!(
                                         "{}",
-                                        self.pins.0.borrow().get(7).unwrap().state as u32
+                                        self.pins.0.borrow().get(5).unwrap().state as u32
+                                    ));
+                                });
+                                row.col(|ui| {
+                                    ui.label(format!(
+                                        "{}",
+                                        self.pins.0.borrow().get(4).unwrap().state as u32
+                                    ));
+                                });
+                                row.col(|ui| {
+                                    ui.label(format!(
+                                        "{}",
+                                        self.pins.0.borrow().get(3).unwrap().state as u32
+                                    ));
+                                });
+                                row.col(|ui| {
+                                    ui.label(format!(
+                                        "{}",
+                                        self.pins.0.borrow().get(2).unwrap().state as u32
+                                    ));
+                                });
+                                row.col(|ui| {
+                                    ui.label(format!(
+                                        "{}",
+                                        self.pins.0.borrow().get(1).unwrap().state as u32
+                                    ));
+                                });
+                                row.col(|ui| {
+                                    ui.label(format!(
+                                        "{}",
+                                        self.pins.0.borrow().get(0).unwrap().state as u32
                                     ));
                                 });
                             })

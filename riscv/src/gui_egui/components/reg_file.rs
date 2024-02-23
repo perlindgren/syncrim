@@ -40,10 +40,17 @@ impl RegFile {
                                 } else {
                                     0_usize
                                 };
-                                ui.label(format!(
-                                    "0x{:08X}",
-                                    self.registers.0.borrow()[stack_depth][reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
-                                ));
+                                if Reg::try_from(reg).unwrap() == Reg::sp {
+                                    ui.label(format!(
+                                        "0x{:08X}",
+                                        self.registers.0.borrow()[0][reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
+                                    ));
+                                } else {
+                                    ui.label(format!(
+                                        "0x{:08X}",
+                                        self.registers.0.borrow()[stack_depth][reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
+                                    ));
+                                }
                             });
                         });
                     }

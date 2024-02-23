@@ -11,7 +11,7 @@ use syncrim::common::{
 use syncrim::signal::SignalValue;
 #[allow(non_camel_case_types)]
 #[rustfmt::skip]
-#[derive(Copy, Clone, Debug, TryFromPrimitive)]
+#[derive(Copy, Clone, Debug, TryFromPrimitive, PartialEq)]
 #[repr(u8)]
 pub enum Reg {
     zero    = 0,    // Hard-wired zero

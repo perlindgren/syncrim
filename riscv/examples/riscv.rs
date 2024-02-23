@@ -289,15 +289,7 @@ fn fern_setup_riscv() {
                 message
             ))
         })
-        // Add blanket level filter -
-        // .level(log::LevelFilter::Debug);
-        // .level_for(
-        //     "riscv::components::clic",
-        // "riscv::gui_vizia::components::instr_mem",
-        //     log::LevelFilter::Trace,
-        // )
-        //.level_for("riscv::components::gpio", log::LevelFilter::Trace)
-        //.level_for("riscv::components::clic", log::LevelFilter::Trace)
+        .level_for("riscv::components::clic", log::LevelFilter::Trace)
         .level(log::LevelFilter::Error);
 
     // - and per-module overrides
