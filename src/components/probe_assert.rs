@@ -4,6 +4,7 @@ use crate::{
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::rc::Rc;
 
 pub const PROBE_ASSERT_IN_ID: &str = "in";
@@ -58,6 +59,10 @@ impl Component for ProbeAssert {
     }
 
     // notice we don't implement `un_clock` since the state is already kept in history
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl ProbeAssert {

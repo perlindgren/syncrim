@@ -6,6 +6,7 @@ use crate::common::{
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::rc::Rc;
 pub const ADD_A_IN_ID: &str = "a_in";
 pub const ADD_B_IN_ID: &str = "b_in";
@@ -99,6 +100,10 @@ impl Component for Add {
             ADD_B_IN_ID => self.b_in = new_input,
             _ => (),
         }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

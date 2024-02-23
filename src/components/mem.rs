@@ -8,9 +8,11 @@ use log::*;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::ops::Deref;
 use std::ops::Range;
 use std::{cell::RefCell, collections::BTreeMap, convert::TryFrom, rc::Rc};
+
 pub const MEM_DATA_ID: &str = "data";
 pub const MEM_ADDR_ID: &str = "addr";
 pub const MEM_CTRL_ID: &str = "ctrl";
@@ -406,6 +408,10 @@ impl Component for Mem {
             MEM_SIZE_ID => self.size = new_input,
             _ => (),
         }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

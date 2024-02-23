@@ -1,21 +1,21 @@
-use crate::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
-use crate::components::Register;
-use crate::gui_egui::component_ui::{
+use crate::components::WBCtl;
+use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2};
+use syncrim::common::{EguiComponent, Ports, Simulator};
+use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
     rect_with_hover, visualize_ports,
 };
-use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
-use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::offset_helper;
-use egui::{Color32, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
+use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
+use syncrim::gui_egui::gui::EguiExtra;
+use syncrim::gui_egui::helper::offset_helper;
 
 #[typetag::serde]
-impl EguiComponent for Register {
+impl EguiComponent for WBCtl {
     fn render(
         &self,
         ui: &mut Ui,
         _context: &mut EguiExtra,
-        simulator: Option<&mut Simulator>,
+        _simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
@@ -32,51 +32,23 @@ impl EguiComponent for Register {
         let o = offset;
 
         // The shape
-        ui.painter().add(Shape::line(
-            vec![
-                oh((-10f32, -20f32), s, o),
-                oh((10f32, -20f32), s, o),
-                oh((0f32, -15f32), s, o),
-                oh((-10f32, -20f32), s, o),
-                oh((-10f32, 20f32), s, o),
-                oh((10f32, 20f32), s, o),
-                oh((10f32, -20f32), s, o),
-            ],
+        let rect = Rect {
+            min: oh((-self.width / 2f32, -self.height / 2f32), s, o),
+            max: oh((self.width / 2f32, self.height / 2f32), s, o),
+        };
+        ui.painter().add(Shape::rect_stroke(
+            rect,
+            Rounding::ZERO,
             Stroke {
                 width: scale,
-                color: Color32::BLACK,
+                color: Color32::RED,
             },
         ));
-        let rect = Rect {
-            min: oh((-10f32, -20f32), s, o),
-            max: oh((10f32, 20f32), s, o),
-        };
+
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
-            if let Some(s) = &simulator {
-                ui.label({
-                    let r: Result<SignalUnsigned, String> =
-                        s.get_input_value(&self.r_in).try_into();
-                    match r {
-                        Ok(data) => format!("In {:#x}", data),
-                        _ => format!("In {:?}", r),
-                    }
-                });
-                ui.label({
-                    let r: Result<SignalUnsigned, String> = s
-                        .get_input_value(&Input {
-                            id: self.id.clone(),
-                            field: "out".to_string(),
-                        })
-                        .try_into();
-                    match r {
-                        Ok(data) => format!("Out {:#x}", data),
-                        _ => format!("Out {:?}", r),
-                    }
-                });
-            }
+            ui.label("WB_CTL");
         });
-
         match editor_mode {
             EditorMode::Simulator => (),
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
@@ -92,11 +64,11 @@ impl EguiComponent for Register {
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
-        id_ports: &[(crate::common::Id, Ports)],
+        id_ports: &[(syncrim::common::Id, Ports)],
         grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let r_vec = Register::render(
+        let r_vec = WBCtl::render(
             self,
             ui,
             context,
@@ -129,8 +101,15 @@ impl EguiComponent for Register {
                 pos_drag_value(ui, &mut self.pos);
                 clicked_dropdown |= input_selector(
                     ui,
-                    &mut self.r_in,
-                    crate::components::REGISTER_R_IN_ID.to_string(),
+                    &mut self.dec_i,
+                    crate::components::WB_CTL_DEC_IN_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.clic_i,
+                    crate::components::WB_CTL_INTR_IN_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
@@ -144,22 +123,30 @@ impl EguiComponent for Register {
         }
     }
 
-    fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
+    fn ports_location(&self) -> Vec<(syncrim::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![
             (
-                crate::components::REGISTER_R_IN_ID.to_string(),
-                Pos2::new(-10f32, 0f32) + own_pos,
+                crate::components::WB_CTL_INTR_IN_ID.to_string(),
+                Pos2::new(-self.width / 2f32, -self.height / 2f32) + own_pos,
             ),
             (
-                crate::components::REGISTER_OUT_ID.to_string(),
-                Pos2::new(10f32, 0f32) + own_pos,
+                crate::components::WB_CTL_DEC_IN_ID.to_string(),
+                Pos2::new(-self.width / 2f32, self.height / 2f32) + own_pos,
+            ),
+            (
+                crate::components::WB_CTL_WE_OUT_ID.to_string(),
+                Pos2::new(self.width / 2f32, -self.height / 2f32) + own_pos,
+            ),
+            (
+                crate::components::WB_CTL_MUX_CTL_O_ID.to_string(),
+                Pos2::new(self.width / 2f32, self.height / 2f32) + own_pos,
             ),
         ]
     }
 
     fn top_padding(&self) -> f32 {
-        20f32
+        self.height / 4f32
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {

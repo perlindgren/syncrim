@@ -12,7 +12,7 @@ pub const BRANCH_LOGIC_RS1_ID: &str = "rs1";
 pub const BRANCH_LOGIC_RS2_ID: &str = "rs2";
 pub const BRANCH_LOGIC_CTRL_ID: &str = "ctrl";
 pub const BRANCH_LOGIC_ENABLE_ID: &str = "enable";
-pub const BRANCH_LOGIC_MRET_ID: &str = "mret";
+//pub const BRANCH_LOGIC_MRET_ID: &str = "mret";
 pub const BRANCH_LOGIC_OUT_ID: &str = "out";
 
 pub const BRANCH_LOGIC_HEIGHT: f32 = 60.0;
@@ -30,10 +30,8 @@ pub struct BranchLogic {
 
     pub ctrl: Input,
     pub enable: Input,
-
-    pub mret: Input,
-
-    pub int: Input,
+    // pub mret: Input,
+    // pub int: Input,
 }
 
 #[typetag::serde()]
@@ -41,6 +39,7 @@ impl Component for BranchLogic {
     fn to_(&self) {
         println!("BranchLogic");
     }
+
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy = Input::new("dummy", "out");
@@ -53,20 +52,22 @@ impl Component for BranchLogic {
             rs2: dummy.clone(),
             ctrl: dummy.clone(),
             enable: dummy.clone(),
-            mret: dummy.clone(),
-            int: dummy.clone(),
+            // mret: dummy.clone(),
+            // int: dummy.clone(),
         }))
     }
+
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
             BRANCH_LOGIC_RS1_ID => self.rs1 = new_input,
             BRANCH_LOGIC_RS2_ID => self.rs2 = new_input,
             BRANCH_LOGIC_CTRL_ID => self.ctrl = new_input,
             BRANCH_LOGIC_ENABLE_ID => self.enable = new_input,
-            BRANCH_LOGIC_MRET_ID => self.mret = new_input,
+            // BRANCH_LOGIC_MRET_ID => self.mret = new_input,
             _ => (),
         }
     }
+
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
@@ -88,38 +89,39 @@ impl Component for BranchLogic {
                         port_id: BRANCH_LOGIC_ENABLE_ID.to_string(),
                         input: self.enable.clone(),
                     },
-                    &InputPort {
-                        port_id: BRANCH_LOGIC_MRET_ID.to_string(),
-                        input: self.mret.clone(),
-                    },
+                    // &InputPort {
+                    //     port_id: BRANCH_LOGIC_MRET_ID.to_string(),
+                    //     input: self.mret.clone(),
+                    // },
                 ],
                 OutputType::Combinatorial,
                 vec![BRANCH_LOGIC_OUT_ID],
             ),
         )
     }
+
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let enable: u32 = simulator.get_input_value(&self.enable).try_into().unwrap();
         let out: SignalValue;
         let rs1: SignalValue = simulator.get_input_value(&self.rs1);
         let rs2: SignalValue = simulator.get_input_value(&self.rs2);
-        let int: SignalValue = simulator.get_input_value(&self.int);
-        let mret: SignalValue = simulator.get_input_value(&self.mret);
-        if let SignalValue::Data(sig) = int {
-            if sig == 1 {
-                trace!("int");
-                simulator.set_out_value(&self.id, "out", 3);
-                return Ok(()); //if interrupt just return here.
-            }
-        }
-        if let SignalValue::Data(sig) = mret {
-            if sig == 1 {
-                trace!("mret");
-                simulator.set_out_value(&self.id, "out", 4);
-                return Ok(()); //if mret just return here.
-            }
-        }
+        // let int: SignalValue = simulator.get_input_value(&self.int);
+        //let mret: SignalValue = simulator.get_input_value(&self.mret);
+        // if let SignalValue::Data(sig) = int {
+        //     if sig == 1 {
+        //         trace!("int");
+        //         simulator.set_out_value(&self.id, "out", 3);
+        //         return Ok(()); //if interrupt just return here.
+        //     }
+        // }
+        // if let SignalValue::Data(sig) = mret {
+        //     if sig == 1 {
+        //         trace!("mret");
+        //         simulator.set_out_value(&self.id, "out", 4);
+        //         return Ok(()); //if mret just return here.
+        //     }
+        // }
         if enable != 0 {
             match simulator.get_input_value(&self.ctrl) {
                 SignalValue::Unknown | SignalValue::DontCare | SignalValue::Uninitialized => {
@@ -215,6 +217,10 @@ impl Component for BranchLogic {
         simulator.set_out_value(&self.id, "out", out);
         Ok(())
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 #[cfg(test)]
 mod test {
@@ -245,8 +251,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
-                    int: Input::new("int", "out"),
-                    mret: Input::new("mret", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -306,8 +312,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
-                    int: Input::new("int", "out"),
-                    mret: Input::new("mret", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -366,8 +372,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
-                    int: Input::new("int", "out"),
-                    mret: Input::new("mret", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -434,8 +440,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
-                    int: Input::new("int", "out"),
-                    mret: Input::new("mret", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -502,8 +508,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
-                    int: Input::new("int", "out"),
-                    mret: Input::new("mret", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -570,8 +576,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
-                    int: Input::new("int", "out"),
-                    mret: Input::new("mret", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -645,8 +651,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
-                    int: Input::new("int", "out"),
-                    mret: Input::new("mret", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
@@ -690,8 +696,8 @@ mod test {
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
-                    int: Input::new("int", "out"),
-                    mret: Input::new("mret", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };

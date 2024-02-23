@@ -34,7 +34,7 @@ impl RVMem {
                 .body(|body| {
                     body.rows(
                         15.0,
-                    ((self.range.end - self.range.start)/4) as usize,
+                        ((self.range.end - self.range.start) / 4) as usize,
                         |index, mut row| {
                             //println!("{}", index);
                             let address = self.range.start as usize + index * 4;
@@ -43,7 +43,7 @@ impl RVMem {
                                 ui.label(format!("0x{:08x}", address));
                             });
                             let mut bytes = [0u8; 4];
-                            if !self.big_endian {
+                            if self.big_endian {
                                 bytes[0] = *(memory).get(&address).unwrap();
                                 bytes[1] = *(memory).get(&(address + 1)).unwrap();
                                 bytes[2] = *(memory).get(&(address + 2)).unwrap();

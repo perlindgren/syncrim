@@ -12,6 +12,7 @@ use syncrim::gui_egui::component_ui::{
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
+
 impl RegFile {
     fn side_panel(&self, ctx: &Context, _simulator: Option<&mut Simulator>) {
         Window::new("Register File").show(ctx, |ui| {
@@ -33,10 +34,23 @@ impl RegFile {
                                 ui.label(format!("{:?}", Reg::try_from(reg).unwrap()));
                             });
                             row.col(|ui| {
-                                ui.label(format!(
-                                    "0x{:08X}",
-                                    self.registers.0.borrow().get(reg as usize).unwrap()
-                                ));
+                                let stack_depth = *self.stack_depth_state.borrow() as i32;
+                                let stack_depth = if stack_depth >= 0 {
+                                    stack_depth as usize
+                                } else {
+                                    0_usize
+                                };
+                                if Reg::try_from(reg).unwrap() == Reg::sp {
+                                    ui.label(format!(
+                                        "0x{:08X}",
+                                        self.registers.0.borrow()[0][reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
+                                    ));
+                                } else {
+                                    ui.label(format!(
+                                        "0x{:08X}",
+                                        self.registers.0.borrow()[stack_depth][reg as usize] //self.registers.0.borrow()[*(self.stack_depth_state.borrow()) as usize].get(reg as usize).unwrap()
+                                    ));
+                                }
                             });
                         });
                     }
@@ -44,6 +58,7 @@ impl RegFile {
         });
     }
 }
+
 #[typetag::serde]
 impl EguiComponent for RegFile {
     fn render(
@@ -95,7 +110,13 @@ impl EguiComponent for RegFile {
                                 ui.label(RichText::new("Reg").size(20.0 * scale));
                             });
                             header.col(|ui| {
-                                ui.label(RichText::new("Value").size(20.0 * scale));
+                                ui.label(
+                                    RichText::new(format!(
+                                        "Value {}",
+                                        *self.stack_depth_state.borrow() as i32
+                                    ))
+                                    .size(20.0 * scale),
+                                );
                             });
                         })
                         .body(|body| {
@@ -114,10 +135,16 @@ impl EguiComponent for RegFile {
                                         ));
                                     });
                                     row.col(|ui| {
+                                        let stack_depth = *self.stack_depth_state.borrow() as i32;
+                                        let stack_depth = if stack_depth >= 0 {
+                                            stack_depth as usize
+                                        } else {
+                                            0_usize
+                                        };
                                         ui.add(Label::new(
                                             RichText::new(format!(
                                                 "0x{:08x}",
-                                                self.registers.0.borrow().get(index).unwrap()
+                                                self.registers.0.borrow()[stack_depth][index]
                                             ))
                                             .size(15.0 * scale),
                                         ));
@@ -176,6 +203,31 @@ impl EguiComponent for RegFile {
                 let mut clicked_dropdown = false;
                 input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
                 pos_drag_value(ui, &mut self.pos);
+
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.stack_depth,
+                    crate::components::REG_FILE_STACK_DEPTH_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.clic_mepc,
+                    crate::components::REG_FILE_CLIC_MEPC_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.clic_ra_we,
+                    crate::components::REG_FILE_CLIC_RA_WE_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.read_addr1,
@@ -183,6 +235,7 @@ impl EguiComponent for RegFile {
                     id_ports,
                     self.id.clone(),
                 );
+
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.read_addr2,
@@ -190,6 +243,7 @@ impl EguiComponent for RegFile {
                     id_ports,
                     self.id.clone(),
                 );
+
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.write_data,

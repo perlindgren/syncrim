@@ -1,19 +1,17 @@
 #![no_std]
 #![no_main]
-use riscv_rt::entry;
-use core::panic::PanicInfo;
 use clic::interrupt;
+use core::panic::PanicInfo;
+use riscv_rt::entry;
 #[entry]
-unsafe fn main()->!{
-    loop{}
+unsafe fn main() -> ! {
+    loop {}
 }
 
 #[interrupt]
-unsafe fn GPIOA(){
-
-}
+unsafe fn GPIOA() {}
 
 #[panic_handler]
-fn _panic(_:&PanicInfo)->!{
-    loop{}
+fn _panic(_: &PanicInfo) -> ! {
+    loop {}
 }

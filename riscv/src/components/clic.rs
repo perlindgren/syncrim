@@ -7,6 +7,7 @@ use syncrim::{
 };
 
 use priority_queue::PriorityQueue;
+
 use std::{cell::RefCell, collections::HashMap};
 pub const CLIC_CSR_ADDR_ID: &str = "csr_addr";
 pub const CLIC_CSR_CTL_ID: &str = "csr_ctl";
@@ -16,13 +17,21 @@ pub const CLIC_ADDR_ID: &str = "addr";
 pub const CLIC_DATA_WE_ID: &str = "data_we";
 pub const CLIC_MRET_ID: &str = "mret";
 pub const CLIC_PC_ID: &str = "pc";
+pub const CLIC_PC_NEXT_ID: &str = "pc_next";
 pub const CLIC_DATA_SIZE_ID: &str = "size";
 pub const CLIC_CSR_DATA_OUT_ID: &str = "csr_data_o";
 pub const CLIC_MMIO_DATA_OUT_ID: &str = "mmio_data_o";
 pub const CLIC_MEM_INT_ADDR_ID: &str = "mem_int_addr";
-pub const CLIC_BLU_INT_ID: &str = "blu_int";
-pub const CLIC_MRET_OUT_ID: &str = "mret_out";
+pub const CLIC_INTERRUPT_ID: &str = "interrupt";
+pub const CLIC_INTERRUPT_INV_ID: &str = "interrupt_inv";
+pub const CLIC_WRITE_RA_ENABLE_ID: &str = "write_ra_enable";
+pub const CLIC_PC_ADDR_OUT_ID: &str = "pc_addr_out";
 pub const CLIC_MEPC_OUT_ID: &str = "mepc_out";
+pub const CLIC_MEPC_ISR_MUX: &str = "isr_mepc_sel";
+pub const CLIC_RF_RA_WE: &str = "rf_ra_we";
+// pub const CLIC_REG_FILE_WRITE_ID: &str = "reg_file_write";
+pub const CLIC_STACK_DEPTH_OUT_ID: &str = "stack_depth_out";
+
 #[derive(Serialize, Deserialize)]
 struct CLICOp {
     pub mmio_op: Option<([u32; 2], u32)>,
@@ -58,14 +67,23 @@ pub struct CLIC {
 
     //PC input for MEPC update
     pub pc: Input,
-    //interurpt lines
-    // pub lines: Vec<Input>,
+    pub pc_next: Input,
 
     //internal state
+    #[serde(skip)]
     pub csrstore: RefCell<HashMap<usize, usize>>, //address, val
-    pub mmio: RefCell<HashMap<usize, u8>>,        //address, val
-    pub queue: RefCell<PriorityQueue<u32, u8>>,   //prio, id's
-
+    #[serde(skip)]
+    pub mmio: RefCell<HashMap<usize, u8>>, //address, val
+    #[serde(skip)]
+    pub queue: RefCell<PriorityQueue<u32, u8>>, //prio, id's
+    #[serde(skip)]
+    pub clic_stack: RefCell<Vec<(u32, u32)>>,
+    #[serde(skip)]
+    pub mtime: RefCell<u64>,
+    #[serde(skip)]
+    pub mtimecomp: RefCell<u64>,
+    // #[serde(skip)]
+    // pub stack_depth: RefCell<u32>, //current register stack depth
     history: RefCell<Vec<CLICOp>>,
 }
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
@@ -95,6 +113,14 @@ impl From<MMIOEntry> for u32 {
             | ((val.clicintctl as u32) << 24)
     }
 }
+impl From<MMIOEntry> for usize {
+    fn from(val: MMIOEntry) -> usize {
+        val.clicintip as usize
+            | ((val.clicintie as usize) << 8)
+            | ((val.clicintattr as usize) << 16)
+            | ((val.clicintctl as usize) << 24)
+    }
+}
 impl CLIC {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -112,6 +138,7 @@ impl CLIC {
         csr_ctl: Input,
         mret: Input,
         pc: Input,
+        pc_next: Input,
     ) -> Self {
         CLIC {
             id,
@@ -126,6 +153,7 @@ impl CLIC {
             csr_addr,
             mret,
             pc,
+            pc_next,
             csrstore: {
                 let mut csrstore = HashMap::new();
                 csrstore.insert(0x300, 0); //mstatus
@@ -141,11 +169,17 @@ impl CLIC {
                 csrstore.insert(0x348, 0); //mscratchcsw
                 csrstore.insert(0x349, 0); //mscratchcswl
                 csrstore.insert(0xF14, 0); //mhartid
+                csrstore.insert(0x350, 0); //stack_depth
+                for i in 0xB00..0xBC0 {
+                    csrstore.insert(i, 0); //set up individual interrupt config CSRs
+                }
                 RefCell::new(csrstore)
             },
             mmio: {
                 let mut mmio = HashMap::new();
-                for i in 0x1000..0x5000 {
+                for i in 0x1000..0x10C0 {
+                    //for now, we support 0xBF interrupts to give ourselves a
+                    //continuous CSR range
                     mmio.insert(i, 0);
                 }
                 RefCell::new(mmio)
@@ -153,7 +187,11 @@ impl CLIC {
             queue: RefCell::new(PriorityQueue::new()),
             // lines: lines,
             csr_ctl,
+            clic_stack: RefCell::new(Vec::new()),
             history: RefCell::new(vec![]),
+            mtime: 0.into(),
+            mtimecomp: 0.into(),
+            // stack_depth: 0.into(),
         }
     }
 }
@@ -176,21 +214,32 @@ impl Component for CLIC {
             csrstore.insert(0x348, 0); //mscratchcsw
             csrstore.insert(0x349, 0); //mscratchcswl
             csrstore.insert(0xF14, 0); //mhartid
+            csrstore.insert(0x350, 0); //stack_depth, vanilla clic config
+            csrstore.insert(0x351, 0); //super mtvec
+            for i in 0xB00..=0xBBF {
+                csrstore.insert(i, 0); //set up individual interrupt config CSRs
+            }
+            for i in 0xD00..=0xDBF {
+                csrstore.insert(i, 0); //set up timestamping CSRs
+            }
             &RefCell::new(csrstore)
         });
         self.mmio.swap({
             let mut mmio = HashMap::new();
-            for i in 0x1000..0x5000 {
+            for i in 0x1000..0x5010 {
                 mmio.insert(i, 0);
             }
             &RefCell::new(mmio)
         });
         self.queue.swap(&RefCell::new(PriorityQueue::new()));
         self.history.swap(&RefCell::new(vec![]));
+        self.clic_stack.swap(&RefCell::new(Vec::new()));
     }
+
     fn to_(&self) {
         println!("CLIC");
     }
+
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
             CLIC_CSR_ADDR_ID => self.csr_addr = new_input,
@@ -205,6 +254,7 @@ impl Component for CLIC {
             _ => (),
         }
     }
+
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
@@ -243,30 +293,34 @@ impl Component for CLIC {
                         input: self.pc.clone(),
                     },
                     &InputPort {
+                        port_id: CLIC_PC_NEXT_ID.to_string(),
+                        input: self.pc_next.clone(),
+                    },
+                    &InputPort {
                         port_id: CLIC_DATA_SIZE_ID.to_string(),
                         input: self.data_size.clone(),
                     },
                 ],
                 OutputType::Combinatorial,
                 vec![
+                    // CLIC_REG_FILE_WRITE_ID,
                     CLIC_CSR_DATA_OUT_ID,
                     CLIC_MMIO_DATA_OUT_ID,
                     CLIC_MEM_INT_ADDR_ID,
-                    CLIC_BLU_INT_ID,
-                    CLIC_MRET_OUT_ID,
+                    CLIC_PC_ADDR_OUT_ID,
+                    CLIC_INTERRUPT_ID,
+                    CLIC_INTERRUPT_INV_ID,
                     CLIC_MEPC_OUT_ID,
+                    CLIC_STACK_DEPTH_OUT_ID,
+                    CLIC_MEPC_ISR_MUX,
+                    CLIC_RF_RA_WE,
                 ],
             ),
         )
     }
 
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
-        let mut history_entry = CLICOp {
-            csr_op: None,
-            mmio_op: None,
-            queue_op: vec![],
-        };
-        //CSR IO Handling
+        //get inputs
         let csr_ctl: u32 = simulator
             .get_input_value(&self.csr_ctl)
             .try_into()
@@ -275,16 +329,15 @@ impl Component for CLIC {
             .get_input_value(&self.csr_addr)
             .try_into()
             .unwrap_or(0);
-        let mut csr_data: u32 = simulator
+        let csr_data: u32 = simulator
             .get_input_value(&self.csr_data)
             .try_into()
             .unwrap_or(0);
-        //MMIO handling
-        let addr: u32 = simulator
+        let mmio_addr: u32 = simulator
             .get_input_value(&self.addr)
             .try_into()
             .unwrap_or(0);
-        let data: u32 = simulator
+        let mmio_data: u32 = simulator
             .get_input_value(&self.data)
             .try_into()
             .unwrap_or(0);
@@ -292,221 +345,306 @@ impl Component for CLIC {
             .get_input_value(&self.mret)
             .try_into()
             .unwrap_or(0);
-        let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap_or(0);
+        let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
+        let pc_next: u32 = simulator.get_input_value(&self.pc_next).try_into().unwrap();
         let data_size: u32 = simulator
             .get_input_value(&self.data_size)
             .try_into()
             .unwrap_or(0);
-        let mut val = 0;
-        let mut blu_int = SignalValue::Uninitialized;
-        let mut mmio_data = SignalValue::Uninitialized;
+        let mmio_we: u32 = simulator.get_input_value(&self.data_we).try_into().unwrap();
+
+        // define outputs
+        let csr_out;
+        let mut blu_int = false; // default to pc
         let mut mem_int_addr = SignalValue::Uninitialized;
-        let mret_sig: SignalValue = mret.into();
-        let mut mepc = SignalValue::Uninitialized;
+        let mut rf_ra_we = SignalValue::Data(0);
+        let mut isr_mepc_select = SignalValue::Uninitialized;
+
+        // get state
+        //csr store
+        let mut csrstore = self.csrstore.borrow_mut();
+        // operation history for reversing
+        let mut history = self.history.borrow_mut();
+        // interrupt priority queue
+        let mut queue = self.queue.borrow_mut();
+        // super-clic threshold/return address stack
+        let mut clic_stack = self.clic_stack.borrow_mut();
+
+        // init a history entry for this cycle
+        let mut history_entry = CLICOp {
+            csr_op: None,
+            mmio_op: None,
+            queue_op: vec![],
+        };
+        //dispatched interrupt id, used to unpend in csr store
+        let mut dispatched_interrupt_id = None;
+
+        // handle CSR op if there was any
+        csr_out = self.csr_op(
+            &mut csrstore,
+            &mut history_entry,
+            &mut queue,
+            csr_ctl,
+            csr_data,
+            csr_addr,
+        );
+
+        // with CSR IO handled, get all of the neccessary CSR values
+        let mut stack_depth = *csrstore.get(&0x350).unwrap() as i32;
+        let mut mstatus = *csrstore.get(&0x300).unwrap();
+        let mut mintthresh = *csrstore.get(&0x347).unwrap();
+        let mtvec = *csrstore.get(&0x305).unwrap();
+        let super_mtvec = *csrstore.get(&0x351).unwrap();
+
+        let mut mepc = *csrstore.get(&0x341).unwrap();
+
+        // INTERRUPT RETURN
+        // super-clic
+        let mut return_from_interrupt = None;
+
+        if let Some((old_threshold, current_mepc)) = clic_stack.last() {
+            let (old_threshold, current_mepc) = (*old_threshold, *current_mepc);
+            // trace!("clic stack {:#x?}", clic_stack);
+            trace!(
+                "pc {:#X}, pc_next {:#X}, current_mepc {:#X}",
+                pc,
+                pc_next,
+                current_mepc
+            );
+            // check if we are about to return from interrupt in super-clic mode
+            if pc_next == current_mepc {
+                let _ = clic_stack.pop();
+                // set old threshold
+                mintthresh = old_threshold as usize;
+                stack_depth += 1;
+                return_from_interrupt = Some(current_mepc);
+            }
+        }
+        // vanilla clic (MRET)
         if mret == 1 {
-            let mut csrstore = self.csrstore.borrow_mut();
-            mepc = (*csrstore.get(&0x341).unwrap() as u32).into(); //infallible
-            let mut mstatus = *csrstore.get(&0x300).unwrap(); //infallible
+            //we are changing mstatus and stack_depth, push to history
             if mstatus >> 7 & 1 == 1 {
                 mstatus |= 0x8; //if mpie then set mie
             } else {
                 mstatus &= !0x8; //if not mpie, ensure not mie
             }
-            let old_val = mstatus;
             mstatus |= 0b1 << 7; //mpie is set on mret
-            csrstore.insert(0x300, mstatus);
-            history_entry.csr_op = Some(vec![(0x300, old_val as u32)]);
             trace!("mret");
-            simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
-            simulator.set_out_value(&self.id, "blu_int", blu_int);
-            simulator.set_out_value(&self.id, "csr_data_o", val as u32);
-            simulator.set_out_value(&self.id, "mmio_data_o", mmio_data);
-            simulator.set_out_value(&self.id, "mepc_out", mepc);
-            simulator.set_out_value(&self.id, "mret_out", mret_sig);
-            self.history.borrow_mut().push(history_entry);
-            return Ok(());
+            // select mepc on the mux since mret
+            isr_mepc_select = SignalValue::Data(0);
+            // select interrupt mux on the PC adder mux
+            blu_int = true;
+            stack_depth += 1;
         }
-        match csr_ctl {
-            0 => {}
-            //write
-            1 => {
-                let mut csrstore = self.csrstore.borrow_mut();
-                if csrstore.contains_key(&(csr_addr as usize)) {
-                    if csr_addr == 0x305 {
-                        //mtvec write
-                        csr_data |= 0b11; //hardwire to vectored mode
-                    }
-                    if csr_addr != 0xf14 {
-                        //mhartid RO
-                        val = *csrstore.get(&(csr_addr as usize)).unwrap();
-                        //println!("val:{}", val);
-                        csrstore.insert(csr_addr as usize, csr_data as usize);
-                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
-                        //println!("val:{}", val);
-                    }
-                }
-            }
-            //set
-            2 => {
-                let mut csrstore = self.csrstore.borrow_mut();
-                if csrstore.contains_key(&(csr_addr as usize)) {
-                    if csr_addr == 0x305 {
-                        //mtvec set
-                        csr_data |= 0b11; //hardwire to vectored mode
-                    }
-                    if csr_addr != 0xf14 {
-                        //mhartid RO
-                        val = *csrstore.get(&(csr_addr as usize)).unwrap();
-                        csrstore.insert(csr_addr as usize, (csr_data as usize) | val);
-                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
-                    }
-                }
-            }
-            //clear
-            3 => {
-                let mut csrstore = self.csrstore.borrow_mut();
-                if csrstore.contains_key(&(csr_addr as usize)) {
-                    if csr_addr == 0x305 {
-                        //mtvec clear
-                        csr_data |= !0b11; //hardwire to vectored mode
-                    }
-                    if csr_addr != 0xf14 {
-                        //mhartid RO
-                        val = *csrstore.get(&(csr_addr as usize)).unwrap();
-                        csrstore.insert(csr_addr as usize, (!(csr_data as usize)) & val);
-                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
-                    }
-                }
-            }
-            _ => {}
+        // END INTERRUPT RETURN
+        // handle mmio
+        let mmio_data = self.mmio_op(
+            mmio_addr,
+            mmio_we,
+            data_size,
+            mmio_data,
+            &mut history_entry,
+            &mut queue,
+            &mut csrstore,
+        );
+
+        let mut mtime = self.mtime.borrow_mut();
+        // update mtime
+        let mtime_lo: u32 = self.read(0x5000, 4, false, false).try_into().unwrap();
+        let mtime_hi: u32 = self.read(0x5004, 4, false, false).try_into().unwrap();
+        *mtime = mtime_lo as u64 | ((mtime_hi as u64) << 32);
+        *mtime += 1;
+        self.write(0x5000, 4, false, (*mtime as u32).into());
+        self.write(0x5004, 4, false, ((*mtime >> 32) as u32).into());
+        let mut mtimecomp = self.mtimecomp.borrow_mut();
+        let mtimecomp_lo: u32 = self.read(0x5008, 4, false, false).try_into().unwrap();
+        let mtimecomp_hi: u32 = self.read(0x500C, 4, false, false).try_into().unwrap();
+        *mtimecomp = mtimecomp_lo as u64 | ((mtimecomp_hi as u64) << 32);
+        trace!("MTIMECOMP{}", mtimecomp);
+        trace!("MTIME{}", mtime);
+        if *mtime > *mtimecomp {
+            // set pending bit of interrupt 9, call it the timer interrupt
+            //self.csr_op(&mut csrstore, &mut history_entry,&mut queue, 2, 1, 0xB09);
+            self.mmio_op(
+                0x1024,
+                2,
+                1,
+                1,
+                &mut history_entry,
+                &mut queue,
+                &mut csrstore,
+            );
+        } else {
+            self.mmio_op(
+                0x1024,
+                2,
+                1,
+                0,
+                &mut history_entry,
+                &mut queue,
+                &mut csrstore,
+            );
+            // clear pending bit if compare fails
+            //self.csr_op(&mut csrstore, &mut history_entry, &mut queue, 3, 1, 0xB09);
         }
-        let offset = addr % 4;
-        //let addr = addr - (addr % 4);
-        let mut queue = self.queue.borrow_mut();
-        let we: u32 = simulator.get_input_value(&self.data_we).try_into().unwrap();
-        if (0x1000..=0x5000).contains(&addr) {
-            //if within our mmio range
-            if we == 2 {
-                trace!("clic mmio write");
-                let old_entries: [u32; 2] = [
-                    self.read(addr as usize - offset as usize, 4_usize, false, false)
-                        .try_into()
-                        .unwrap(),
-                    self.read(addr as usize - offset as usize + 4, 4_usize, false, false)
-                        .try_into()
-                        .unwrap(),
-                ];
-                history_entry.mmio_op = Some((old_entries, addr - offset));
-                let mut mask: u64 = 0;
-                for i in 0..data_size {
-                    mask |= 0xFF << (i * 8);
-                }
-                mask <<= offset;
-                let mmio_entries: [MMIOEntry; 2] = [
-                    (old_entries[0] ^ (((data << (offset * 8)) ^ old_entries[0]) & mask as u32))
-                        .into(),
-                    (old_entries[1]
-                        ^ (((data.checked_shr((4 - offset) * 8)).unwrap_or(0) << (offset * 8))
-                            ^ old_entries[1])
-                            & mask.checked_shr(32).unwrap_or(0) as u32)
-                        .into(),
-                ];
-                for (i, mmio_entry) in mmio_entries.into_iter().enumerate() {
-                    if mmio_entry.clicintie == 1 && mmio_entry.clicintip == 1 {
-                        //enqueue self if pending status and enable status are 1, this changes prio dynamically with prio change also.
-                        history_entry.queue_op.push((
-                            (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
-                            mmio_entry.clicintctl,
-                            false,
-                        ));
-                        queue.push(
-                            (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
-                            mmio_entry.clicintctl,
-                        );
-                    }
-                    if mmio_entry.clicintie != 1 || mmio_entry.clicintip != 1 {
-                        //dequeue self if pending or enabled status is 0
-                        if queue
-                            .remove(&((addr - offset + 4u32 * i as u32 - 0x1000) / 4))
-                            .is_some()
-                        {
-                            history_entry.queue_op.push((
-                                (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
-                                mmio_entry.clicintctl,
-                                true,
-                            ));
-                        };
-                    }
-                }
-                self.write(
-                    addr as usize,
-                    data_size as usize,
-                    false,
-                    SignalValue::Data(data),
-                );
-                trace!("write: {:08x} addr: {:08x}", data, addr);
-            } else if we == 1 {
-                mmio_data = self.read(addr as usize, data_size as usize, false, false);
-            }
-        };
+
         //Interrupt dispatch
-        let mut csrstore = self.csrstore.borrow_mut();
-        let mstatus = *csrstore.get(&0x300).unwrap();
-        let mintthresh = *csrstore.get(&0x347).unwrap();
-        let mtvec = *csrstore.get(&0x305).unwrap();
+
         if mstatus & 8 == 8 {
             //if MIE is set
             if !queue.is_empty() {
-                let interrupt = queue.peek().unwrap(); //peek highest prio interrupt
-                if *interrupt.1 as usize > mintthresh {
-                    let interrupt = queue.pop().unwrap(); //if above threshold, pop it
-                                                          //now dispatch
-                                                          //make memory output contents of mtvec + id*4 to branch mux
-                                                          //set interrupt signal on branch control
+                let (interrupt_id, interrupt_priority) = queue.peek().unwrap(); // peek highest prio interrupt
+                let (interrupt_id, interrupt_priority) = (*interrupt_id, *interrupt_priority);
+                if interrupt_priority as usize > mintthresh {
+                    let _ = queue.pop().unwrap(); //if above threshold, pop it
+                                                  //now dispatch
+                                                  //make memory output contents of mtvec + id*4 to branch mux
+                                                  //set interrupt signal on branch control
                     history_entry
                         .queue_op
-                        .push((interrupt.0, interrupt.1, true));
-                    match history_entry.csr_op {
-                        Some(ref mut v) => {
-                            v.push((0x300, *csrstore.get(&0x300_usize).unwrap() as u32));
-                            v.push((0x341, *csrstore.get(&0x341_usize).unwrap() as u32));
-                        }
-                        None => {
-                            history_entry.csr_op = Some(vec![
-                                (0x300, *csrstore.get(&0x300_usize).unwrap() as u32),
-                                (0x341, *csrstore.get(&0x341_usize).unwrap() as u32),
-                            ])
-                        }
-                    }
-                    csrstore.insert(0x300, (mstatus & !0x8) | 0b1 << 7); //clear interrupt enable, set mpie
-                    csrstore.insert(0x341, pc as usize);
-                    mem_int_addr = SignalValue::Data((mtvec as u32 + (interrupt.0) * 4) & !0b11);
+                        .push((interrupt_id, interrupt_priority, true));
+                    // mepc
 
-                    blu_int = SignalValue::Data(1);
+                    let new_mepc = if mret == 1 {
+                        mepc
+                    } else if let Some(mepc_current) = return_from_interrupt {
+                        mepc_current as usize
+                    } else {
+                        pc as usize
+                    };
+                    //vanilla mode
+                    if (stack_depth) <= 0 {
+                        mstatus = (mstatus & !0x8) | 0b1 << 7; //clear interrupt enable, set mpie
+                        mem_int_addr =
+                            SignalValue::Data((mtvec as u32 + (interrupt_id) * 4) & !0b11);
+                    } else {
+                        // super clic
+                        clic_stack.push((mintthresh as u32, new_mepc as u32));
+                        mintthresh = interrupt_priority as usize;
+                        mem_int_addr =
+                            SignalValue::Data((super_mtvec as u32 + (interrupt_id) * 4) & !0b11);
+                    }
+                    // write to csr
+                    mepc = new_mepc;
+                    blu_int = true;
+                    rf_ra_we = SignalValue::Data(1);
+                    stack_depth -= 1;
+                    trace!("STACK DEPTH: {}", stack_depth);
+                    isr_mepc_select = SignalValue::Data(1);
                     trace!(
                         "interrupt dispatched id:{} prio:{}",
-                        interrupt.0,
-                        interrupt.1
+                        interrupt_id,
+                        interrupt_priority
                     );
+                    dispatched_interrupt_id = Some(interrupt_id);
                 }
             }
         }
+        // END INTERRUPT_DISPATCH
+        // tracing...
         for entry in csrstore.clone().into_iter() {
-            trace!("{:08x}:{:08x}", entry.0, entry.1);
+            if entry.0 >= 0xBFF || entry.0 <= 0xB00 {
+                // trace!("{:08x}:{:08x}", entry.0, entry.1);
+            }
         }
-        trace!("CSR OUT:{:08x}", val);
+        //   trace!("CSR OUT:{:08x}", csr_out);
         trace!("QUEUE:{:?}", queue);
-        self.history.borrow_mut().push(history_entry);
+        simulator.set_out_value(
+            &self.id,
+            CLIC_STACK_DEPTH_OUT_ID,
+            SignalValue::Data(stack_depth as u32),
+        );
+        trace!("clic_stack:{:x?}", clic_stack);
+        let blu_int_value: SignalValue = blu_int.into();
+        let blu_int_inv_value: SignalValue = (!blu_int).into();
+
+        // write the new CSR values back to the csr store
+        self.csr_op(
+            &mut csrstore,
+            &mut history_entry,
+            &mut queue,
+            1,
+            stack_depth as u32,
+            0x350,
+        );
+        self.csr_op(
+            &mut csrstore,
+            &mut history_entry,
+            &mut queue,
+            1,
+            mstatus as u32,
+            0x300,
+        );
+        self.csr_op(
+            &mut csrstore,
+            &mut history_entry,
+            &mut queue,
+            1,
+            mintthresh as u32,
+            0x347,
+        );
+        self.csr_op(
+            &mut csrstore,
+            &mut history_entry,
+            &mut queue,
+            1,
+            mtvec as u32,
+            0x305,
+        );
+        self.csr_op(
+            &mut csrstore,
+            &mut history_entry,
+            &mut queue,
+            1,
+            super_mtvec as u32,
+            0x351,
+        );
+        self.csr_op(
+            &mut csrstore,
+            &mut history_entry,
+            &mut queue,
+            1,
+            mepc as u32,
+            0x341,
+        );
+
+        if let Some(interrupt_id) = dispatched_interrupt_id {
+            // trace!("clear interrupt id: {}", interrupt_id);
+            self.csr_op(
+                &mut csrstore,
+                &mut history_entry,
+                &mut queue,
+                3,
+                0xFF,
+                0xB00 + interrupt_id,
+            );
+        }
+        history.push(history_entry);
         simulator.set_out_value(&self.id, "mem_int_addr", mem_int_addr);
-        simulator.set_out_value(&self.id, "blu_int", blu_int);
-        simulator.set_out_value(&self.id, "csr_data_o", val as u32);
-        simulator.set_out_value(&self.id, "mmio_data_o", mmio_data);
-        simulator.set_out_value(&self.id, "mepc_out", mepc);
-        simulator.set_out_value(&self.id, "mret_out", mret_sig);
+        simulator.set_out_value(&self.id, CLIC_INTERRUPT_ID, blu_int_value);
+        simulator.set_out_value(&self.id, CLIC_INTERRUPT_INV_ID, blu_int_inv_value);
+        // simulator.set_out_value(&self.id, CLIC_INTERRUPT_MUX, blu_int);
+        simulator.set_out_value(&self.id, "csr_data_o", csr_out as u32);
+        simulator.set_out_value(
+            &self.id,
+            "mmio_data_o",
+            if let Some(data) = mmio_data {
+                data
+            } else {
+                SignalValue::Data(0)
+            },
+        );
+        simulator.set_out_value(&self.id, "mepc_out", SignalValue::Data(mepc as u32));
+        simulator.set_out_value(&self.id, CLIC_MEPC_ISR_MUX, isr_mepc_select);
+        simulator.set_out_value(&self.id, CLIC_RF_RA_WE, rf_ra_we);
+        // simulator.set_out_value(&self.id, "mret_out", mret_sig);
+        trace!("MINTTHRESH {}", mintthresh);
+        trace!("CLIC_INTERRUPT_ID {:?}", blu_int);
         Ok(())
     }
 
     fn un_clock(&self) {
+        // TODO: Add super-clic stack ops
         let mut entry = self.history.borrow_mut().pop().unwrap();
         if let Some(mut ops) = entry.csr_op {
             while let Some(op) = ops.pop() {
@@ -542,14 +680,235 @@ impl Component for CLIC {
             }
         }
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 impl CLIC {
+    fn mmio_op(
+        &self,
+        addr: SignalUnsigned,
+        we: SignalUnsigned,
+        data_size: SignalUnsigned,
+        data: SignalUnsigned,
+        history_entry: &mut CLICOp,
+        queue: &mut PriorityQueue<u32, u8>,
+        csrstore: &mut HashMap<usize, usize>,
+    ) -> Option<SignalValue> {
+        let mut mmio_data = None;
+        let offset = addr % 4;
+        trace!("mmio_op {:x} {:x} {:x} {:x}", addr, we, data_size, data);
+        if (0x1000..=0x5000).contains(&addr) {
+            //if within our mmio range
+            if we == 2 {
+                //trace!("clic mmio write");
+                let old_entries: [u32; 2] = [
+                    self.read(addr as usize - offset as usize, 4_usize, false, false)
+                        .try_into()
+                        .unwrap(),
+                    self.read(addr as usize - offset as usize + 4, 4_usize, false, false)
+                        .try_into()
+                        .unwrap(),
+                ];
+                history_entry.mmio_op = Some((old_entries, addr - offset));
+                let mut mask: u64 = 0;
+                for i in 0..data_size {
+                    mask |= 0xFF << (i * 8);
+                }
+                mask <<= offset;
+                let mmio_entries: [MMIOEntry; 2] = [
+                    (old_entries[0] ^ (((data << (offset * 8)) ^ old_entries[0]) & mask as u32))
+                        .into(),
+                    (old_entries[1]
+                        ^ (((data.checked_shr((4 - offset) * 8)).unwrap_or(0) << (offset * 8))
+                            ^ old_entries[1])
+                            & mask.checked_shr(32).unwrap_or(0) as u32)
+                        .into(),
+                ];
+                /* trace!(
+                    "CSRSTORE INSERT {:?}, {:?}, addr: {:x}, {:x}",
+                    mmio_entries[0],
+                    mmio_entries[1],
+                    (addr as usize - offset as usize - 0x1000_usize) / 4 + 0xB00,
+                    (addr as usize - offset as usize + 4 - 0x1000_usize) / 4 + 0xB00,
+                );*/
+                csrstore.insert(
+                    (addr as usize - offset as usize - 0x1000_usize) / 4 + 0xB00,
+                    mmio_entries[0].into(),
+                );
+                csrstore.insert(
+                    (addr as usize - offset as usize + 4 - 0x1000_usize) / 4 + 0xB00,
+                    mmio_entries[1].into(),
+                );
+                for (i, mmio_entry) in mmio_entries.into_iter().enumerate() {
+                    if mmio_entry.clicintie == 1 && mmio_entry.clicintip == 1 {
+                        //enqueue self if pending status and enable status are 1, this changes prio dynamically with prio change also.
+                        history_entry.queue_op.push((
+                            (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
+                            mmio_entry.clicintctl,
+                            false,
+                        ));
+                        /* trace!(
+                            "MMIO QUEUE INTERRUPT {:x}",
+                            ((addr - offset + 4u32 * i as u32 - 0x1000) / 4)
+                        );*/
+                        queue.push(
+                            (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
+                            mmio_entry.clicintctl,
+                        );
+                    }
+                    if mmio_entry.clicintie != 1 || mmio_entry.clicintip != 1 {
+                        //dequeue self if pending or enabled status is 0
+                        if queue
+                            .remove(&((addr - offset + 4u32 * i as u32 - 0x1000) / 4))
+                            .is_some()
+                        {
+                            history_entry.queue_op.push((
+                                (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
+                                mmio_entry.clicintctl,
+                                true,
+                            ));
+                        };
+                    }
+                }
+                self.write(
+                    addr as usize,
+                    data_size as usize,
+                    false,
+                    SignalValue::Data(data),
+                );
+                trace!("write: {:08x} addr: {:08x}", data, addr);
+            } else if we == 1 {
+                mmio_data = Some(self.read(addr as usize, data_size as usize, false, false));
+            }
+        } else if (0x5000..=0x500F).contains(&addr) {
+            if we == 1 {
+                mmio_data = Some(self.read(addr as usize, data_size as usize, false, false));
+            } else if we == 2 {
+                self.write(
+                    addr as usize,
+                    data_size as usize,
+                    false,
+                    SignalValue::Data(data),
+                );
+            }
+        }
+        mmio_data
+    }
+
+    fn csr_op(
+        &self,
+        csrstore: &mut HashMap<usize, usize>,
+        history_entry: &mut CLICOp,
+        queue: &mut PriorityQueue<u32, u8>,
+        csr_ctl: SignalUnsigned,
+        csr_data: SignalUnsigned,
+        csr_addr: SignalUnsigned,
+    ) -> u32 {
+        // handle CSR operations
+        // trace!("CSR OP");
+        let mut val = 0;
+        let mut csr_data = csr_data.clone();
+        match csr_ctl {
+            0 => {}
+            //write
+            1 => {
+                if csrstore.contains_key(&(csr_addr as usize)) {
+                    //mtvec write
+                    if csr_addr == 0x305 {
+                        csr_data |= 0b11; //hardwire to vectored mode
+                    }
+                    // if not mhartid, mhartid is RO
+                    if csr_addr != 0xf14 {
+                        val = *csrstore.get(&(csr_addr as usize)).unwrap();
+                        csrstore.insert(csr_addr as usize, csr_data as usize);
+                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
+                    }
+                    // interrupt config write, mirror in mmio
+                    // trace!("CSR_ADDR_NEW:{:x}", csr_addr);
+                    if 0xB00 <= csr_addr && csr_addr <= 0xBBF {
+                        // trace!("ok do thing");
+                        self.mmio_op(
+                            0x1000 + (csr_addr - 0xb00) * 4,
+                            2,
+                            4,
+                            csr_data,
+                            history_entry,
+                            queue,
+                            csrstore,
+                        );
+                    }
+                }
+            }
+            //set
+            2 => {
+                if csrstore.contains_key(&(csr_addr as usize)) {
+                    if csr_addr == 0x305 {
+                        //mtvec set
+                        csr_data |= 0b11; //hardwire to vectored mode
+                    }
+                    if csr_addr != 0xf14 {
+                        //mhartid RO
+                        val = *csrstore.get(&(csr_addr as usize)).unwrap();
+                        csrstore.insert(csr_addr as usize, (csr_data as usize) | val);
+                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
+                        //interrupt config CSR
+                        // trace!("SET CSR: {:x}, curr val: {:x}", csr_addr, val);
+                        if 0xB00 <= csr_addr && csr_addr <= 0xBBF {
+                            self.mmio_op(
+                                0x1000 + (csr_addr - 0xb00) * 4,
+                                2,
+                                4,
+                                (csr_data) | val as u32,
+                                history_entry,
+                                queue,
+                                csrstore,
+                            );
+                        }
+                    }
+                }
+            }
+            //clear
+            3 => {
+                // trace!("csr clear");
+                if csrstore.contains_key(&(csr_addr as usize)) {
+                    //  trace!("ADDR:{:x}", csr_addr);
+                    if csr_addr == 0x305 {
+                        //mtvec clear
+                        csr_data |= !0b11; //hardwire to vectored mode
+                    }
+                    if csr_addr != 0xf14 {
+                        //mhartid RO
+                        val = *csrstore.get(&(csr_addr as usize)).unwrap();
+                        //trace!("val:{:x}, csr_data:{:x}", val, csr_data);
+                        // trace!("{:x}", (val as u32 & !csr_data));
+                        csrstore.insert(csr_addr as usize, val & !(csr_data as usize));
+                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
+                        if 0xB00 <= csr_addr && csr_addr <= 0xBBF {
+                            self.mmio_op(
+                                0x1000 + (csr_addr - 0xb00) * 4,
+                                2,
+                                4,
+                                (val as u32) & !csr_data,
+                                history_entry,
+                                queue,
+                                csrstore,
+                            );
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+        val as u32
+    }
+
     fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> SignalValue {
         let data: Vec<u8> = (0..size)
             .map(|i| *self.mmio.borrow().get(&(addr + i)).unwrap_or(&0))
             .collect();
-
         let data = data.as_slice();
 
         match size {
@@ -610,6 +969,7 @@ impl CLIC {
         }
         .into()
     }
+
     fn write(&self, addr: usize, size: usize, big_endian: bool, data: SignalValue) {
         let data: SignalUnsigned = data.try_into().unwrap();
         match size {

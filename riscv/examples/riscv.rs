@@ -62,7 +62,7 @@ fn main() {
     };
     let instr_range = Range {
         start: 0x0000_0000usize,
-        end: 0x0000_0500usize,
+        end: 0x0000_1000usize,
     };
     for address in range.clone() {
         data_mem.insert(address as usize, 0);
@@ -70,7 +70,7 @@ fn main() {
     for address in instr_range.clone() {
         instr_mem.insert(address as usize, 0);
     }
-    for element in memory.bytes {
+    for element in memory.bytes.clone() {
         if element.0 < 0x5000_0000 {
             instr_mem.insert(element.0, element.1);
         } else {
@@ -82,67 +82,104 @@ fn main() {
     let mut i = 0;
     let mut store = cs.store.clone();
     for component in store.clone() {
+        // if the component is a data memory
         if component.get_id_ports().0 == "data_memory" {
-            store.remove(i);
+            // pull the trait object from the Component vector
+            let comp = store.remove(i);
+            // and downcast it to an InstrMem, own by cloning
+            let mut data_mem_comp: RVMem = comp
+                .as_any()
+                .downcast_ref::<RVMem>()
+                .expect(&format!("Downcast failed for {:?}", comp.to_()))
+                .clone();
+            // replace the memory contents with ELF contents
+            data_mem_comp.memory = Memory::new(data_mem.clone());
+            // also, set the initial state for reset
+            data_mem_comp.init_state = data_mem;
+            // repush the mutated RVMem to the Component vector
+            store.push(Rc::new(data_mem_comp));
+            //satisfy borrow checker
+            break;
         }
         i += 1
     }
     let mut i = 0;
     for component in store.clone() {
+        // if the component is an instr mem
         if component.get_id_ports().0 == "instr_mem" {
-            store.remove(i);
+            // pull the trait object from the Component vector
+            let comp = store.remove(i);
+            // and downcast it to an InstrMem, own by cloning
+            let mut instr_mem_comp: InstrMem = comp
+                .as_any()
+                .downcast_ref::<InstrMem>()
+                .expect(&format!("Downcast failed for {:?}", comp.to_()))
+                .clone();
+            // replace the memory contents with ELF contents
+            instr_mem_comp.bytes = instr_mem;
+            // replace the symbols with ELF symbols
+            instr_mem_comp.symbols = memory.symbols;
+            // repush the mutated InstrMem to the Component vector
+            store.push(Rc::new(instr_mem_comp));
+            //satisfy borrow checker
+            break;
         }
         i += 1
     }
-    let mut i = 0;
-    for component in store.clone() {
-        if component.get_id_ports().0 == "clic" {
-            store.remove(i);
-        }
-        i += 1
-    }
-    store.push(RVMem::rc_new_from_bytes(
-        "data_memory",
-        (1540.0, 900.0),
-        100.0,
-        100.0,
-        false,
-        Input::new("reg_file", "reg_b"),
-        Input::new("alu", "result_o"),
-        Input::new("decoder", "data_mem_ctrl"),
-        Input::new("decoder", "data_se"),
-        Input::new("decoder", "data_mem_size"),
-        Input::new("clic", "mem_int_addr"),
-        data_mem,
-        range,
-    ));
-    store.push(Rc::new(InstrMem {
-        width: 200.0,
-        height: 100.0,
-        id: "instr_mem".to_string(),
-        pos: (650.0, 900.0),
-        bytes: instr_mem,
-        breakpoints: Rc::new(RefCell::new(HashSet::new())),
-        le: true,
-        pc: Input::new("reg", "out"),
-        range: instr_range,
-        symbols: memory.symbols,
-    }));
-    store.push(Rc::new(CLIC::new(
-        "clic".to_string(),
-        (1660.0, 900.0),
-        100.0,
-        100.0,
-        Input::new("reg_file", "reg_b"),
-        Input::new("alu", "result_o"),
-        Input::new("decoder", "data_mem_ctrl"),
-        Input::new("decoder", "data_mem_size"),
-        Input::new("csr_mux", "out"),
-        Input::new("decoder", "csr_addr"),
-        Input::new("decoder", "csr_ctl"),
-        Input::new("decoder", "mret"),
-        Input::new("pc_adder", "out"),
-    )));
+    // let mut i = 0;
+    // for component in store.clone() {
+    //     if component.get_id_ports().0 == "clic" {
+    //         store.remove(i);
+    //     }
+    //     i += 1
+    // }
+    // store.push(RVMem::rc_new_from_bytes(
+    //     "data_memory",
+    //     (1540.0, 900.0),
+    //     100.0,
+    //     100.0,
+    //     false,
+    //     Input::new("reg_file", "reg_b"),
+    //     Input::new("alu", "result_o"),
+    //     Input::new("decoder", "data_mem_ctrl"),
+    //     Input::new("decoder", "data_se"),
+    //     Input::new("decoder", "data_mem_size"),
+    //     Input::new("clic", "mem_int_addr"),
+    //     data_mem,
+    //     range,
+    // ));
+    // store.push(Rc::new(InstrMem {
+    //     width: 200.0,
+    //     height: 100.0,
+    //     id: "instr_mem".to_string(),
+    //     pos: (650.0, 900.0),
+    //     bytes: instr_mem,
+    //     breakpoints: Rc::new(RefCell::new(HashSet::new())),
+    //     le: true,
+    //     pc: Input::new("reg", "out"),
+    //     range: Range {
+    //         start: 0,
+    //         end: 0x2000,
+    //     },
+    //     symbols: memory.symbols,
+    // }));
+    // store.push(Rc::new(CLIC::new(
+    //     "clic".to_string(),
+    //     (1660.0, 900.0),
+    //     100.0,
+    //     100.0,
+    //     Input::new("reg_file", "reg_b"),
+    //     Input::new("alu", "result_o"),
+    //     Input::new("decoder", "data_mem_ctrl"),
+    //     Input::new("decoder", "data_mem_size"),
+    //     Input::new("csr_mux", "out"),
+    //     Input::new("decoder", "csr_addr"),
+    //     Input::new("decoder", "csr_ctl"),
+    //     Input::new("decoder", "mret"),
+    //     Input::new("pc_adder", "out"),
+    //     Input::new("pc_adder", "out"),
+    //     //Input::new("pc_adder_mux", "out"),
+    // )));
     cs.store = store;
     #[cfg(feature = "gui-egui")]
     {
@@ -181,8 +218,8 @@ fn main() {
                     rs2: dummy.clone(),
                     ctrl: dummy.clone(),
                     enable: dummy.clone(),
-                    int: dummy.clone(),
-                    mret: dummy.clone(),
+                    // int: dummy.clone(),
+                    // mret: dummy.clone(),
                 }),
                 Rc::new(Decoder {
                     width: DECODER_WIDTH,
@@ -198,19 +235,7 @@ fn main() {
                     pos: (0.0, 0.0),
                     data_i: dummy.clone(),
                 }),
-                Rc::new(RegFile {
-                    id: "dummy_reg_file".into(),
-                    pos: (0.0, 0.0),
-                    width: REG_FILE_WIDTH,
-                    height: REG_FILE_HEIGHT,
-                    read_addr1: dummy.clone(),
-                    read_addr2: dummy.clone(),
-                    write_data: dummy.clone(),
-                    write_addr: dummy.clone(),
-                    write_enable: dummy.clone(),
-                    registers: RegStore::new(Rc::new(RefCell::new([0; 32]))),
-                    history: RegHistory::new(),
-                }),
+                Rc::new(RegFile::dummy()),
                 Rc::new(SZExt {
                     height: SIGN_ZERO_EXT_HEIGHT,
                     width: SIGN_ZERO_EXT_WIDTH,
@@ -218,6 +243,27 @@ fn main() {
                     pos: (0.0, 0.0),
                     data_i: dummy.clone(),
                     sel_i: dummy.clone(),
+                }),
+                Rc::new(WBCtl {
+                    height: WB_CTL_HEIGHT,
+                    width: WB_CTL_WIDTH,
+                    id: "dummy_wbctl".to_string(),
+                    pos: (0.0, 0.0),
+                    clic_i: dummy.clone(),
+                    dec_i: dummy.clone(),
+                }),
+                Rc::new(GPIO {
+                    height: GPIO_HEIGHT,
+                    width: GPIO_WIDTH,
+                    id: "dummy_gpio".to_string(),
+                    pos: (0.0, 0.0),
+                    data_i: dummy.clone(),
+                    addr_i: dummy.clone(),
+                    size_i: dummy.clone(),
+                    we_i: dummy.clone(),
+                    se_i: dummy.clone(),
+                    pins: Pins::default(),
+                    memory: Memory::default(),
                 }),
             ],
         };
@@ -243,14 +289,7 @@ fn fern_setup_riscv() {
                 message
             ))
         })
-        // Add blanket level filter -
-        // .level(log::LevelFilter::Debug);
-        // .level_for(
-        //     "riscv::components::clic",
-        // "riscv::gui_vizia::components::instr_mem",
-        //     log::LevelFilter::Trace,
-        // )
-        //.level_for("riscv::components::branch_logic", log::LevelFilter::Trace)
+        .level_for("riscv::components::clic", log::LevelFilter::Trace)
         .level(log::LevelFilter::Error);
 
     // - and per-module overrides
@@ -415,52 +454,3 @@ fn compile_rust_crate() {
             .unwrap()
     };
 }
-
-// fn dump_file(object: &object::File, endian: gimli::RunTimeEndian) -> Result<(), gimli::Error> {
-//     // Load a section and return as `Cow<[u8]>`.
-//     let load_section = |id: gimli::SectionId| -> Result<borrow::Cow<[u8]>, gimli::Error> {
-//         match object.section_by_name(id.name()) {
-//             Some(ref section) => Ok(section
-//                 .uncompressed_data()
-//                 .unwrap_or(borrow::Cow::Borrowed(&[][..]))),
-//             None => Ok(borrow::Cow::Borrowed(&[][..])),
-//         }
-//     };
-
-//     // Load all of the sections.
-//     let dwarf_cow = gimli::Dwarf::load(&load_section)?;
-
-//     // Borrow a `Cow<[u8]>` to create an `EndianSlice`.
-//     let borrow_section: &dyn for<'a> Fn(
-//         &'a borrow::Cow<[u8]>,
-//     ) -> gimli::EndianSlice<'a, gimli::RunTimeEndian> =
-//         &|section| gimli::EndianSlice::new(&*section, endian);
-
-//     // Create `EndianSlice`s for all of the sections.
-//     let dwarf = dwarf_cow.borrow(&borrow_section);
-
-//     // Iterate over the compilation units.
-//     let mut iter = dwarf.units();
-//     while let Some(header) = iter.next()? {
-//         println!(
-//             "Unit at <.debug_info+0x{:x}>",
-//             header.offset().as_debug_info_offset().unwrap().0
-//         );
-//         let unit = dwarf.unit(header)?;
-
-//         // Iterate over the Debugging Information Entries (DIEs) in the unit.
-//         let mut depth = 0;
-//         let mut entries = unit.entries();
-//         while let Some((delta_depth, entry)) = entries.next_dfs()? {
-//             depth += delta_depth;
-//             println!("<{}><{:x}> {}", depth, entry.offset().0, entry.tag());
-
-//             // Iterate over the attributes in the DIE.
-//             let mut attrs = entry.attrs();
-//             while let Some(attr) = attrs.next()? {
-//                 println!("   {}: {:?}", attr.name(), attr.value());
-//             }
-//         }
-//     }
-//     Ok(())
-// }

@@ -22,6 +22,9 @@ pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 // ... but not currently implemented ...
 impl Simulator {
     pub fn new(component_store: ComponentStore) -> Result<Self, &'static str> {
+        for component in &component_store.store {
+            component.reset();
+        }
         let mut lens_values = vec![];
 
         let mut id_start_index = HashMap::new();
@@ -33,6 +36,7 @@ impl Simulator {
 
         trace!("-- allocate storage for lensed outputs");
         for c in &component_store.store {
+            trace!("{:?}", c.get_id_ports().0);
             let (id, ports) = c.get_id_ports();
 
             trace!("id {}, ports {:?}", id, ports);
@@ -93,7 +97,7 @@ impl Simulator {
                     let from_id = &in_port.input.id;
                     let from_node = id_node.get(from_id);
                     if from_node.is_none() {
-                        println!("id: {} port {} is not connected", to_id, from_id);
+                        println!("to id: {} from port {} is not connected", to_id, from_id);
                         return Err("A port left unconnected");
                     }
                     let from_node = from_node.unwrap();
@@ -167,7 +171,11 @@ impl Simulator {
 
     /// get input signal
     pub fn get_input_signal(&self, input: &Input) -> Signal {
-        let nr_out = *self.id_nr_outputs.get(&input.id).unwrap();
+        #[allow(unreachable_code)]
+        let nr_out = *self
+            .id_nr_outputs
+            .get(&input.id)
+            .unwrap_or_else(|| panic!("\n{:?} not found in \n{:?}", input, self.id_nr_outputs));
         let index = *self
             .id_field_index
             .get(&(input.id.clone(), input.field.clone()))

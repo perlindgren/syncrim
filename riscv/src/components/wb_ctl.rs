@@ -1,77 +1,92 @@
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "gui-egui")]
 use std::rc::Rc;
+
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
-use syncrim::{
-    common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
-    signal::SignalValue,
-};
+use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
+pub const WB_CTL_INTR_IN_ID: &str = "clic_i";
+pub const WB_CTL_DEC_IN_ID: &str = "dec_i";
 
-pub const LSB_ZERO_DATA_I_ID: &str = "data_i";
-pub const LSB_ZERO_OUT_ID: &str = "out";
+pub const WB_CTL_WE_OUT_ID: &str = "we_o";
+pub const WB_CTL_MUX_CTL_O_ID: &str = "mux_sel";
 
-pub const LSB_ZERO_HEIGHT: f32 = 10.0;
-pub const LSB_ZERO_WIDTH: f32 = 10.0;
+pub const WB_CTL_HEIGHT: f32 = 20.0;
+pub const WB_CTL_WIDTH: f32 = 20.0;
 
 #[derive(Serialize, Deserialize)]
-pub struct LSBZero {
+pub struct WBCtl {
     pub height: f32,
     pub width: f32,
     pub id: String,
     pub pos: (f32, f32),
 
-    pub data_i: Input,
+    pub clic_i: Input,
+    pub dec_i: Input,
 }
 
 #[typetag::serde()]
-impl Component for LSBZero {
+impl Component for WBCtl {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
 
     fn to_(&self) {
-        println!("LSBZero");
+        println!("WBCtl");
     }
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy = Input::new("dummy", "out");
-        Box::new(Rc::new(LSBZero {
-            height: LSB_ZERO_HEIGHT,
-            width: LSB_ZERO_WIDTH,
+        Box::new(Rc::new(WBCtl {
+            height: WB_CTL_HEIGHT,
+            width: WB_CTL_WIDTH,
             id: id.to_string(),
             pos: (pos.0, pos.1),
-            data_i: dummy.clone(),
+            clic_i: dummy.clone(),
+            dec_i: dummy.clone(),
         }))
     }
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
-        if target_port_id.as_str() == LSB_ZERO_DATA_I_ID {
-            self.data_i = new_input;
+        if target_port_id.as_str() == WB_CTL_DEC_IN_ID {
+            self.dec_i = new_input;
+        } else if target_port_id.as_str() == WB_CTL_INTR_IN_ID {
+            self.clic_i = new_input;
         }
     }
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
             Ports::new(
-                vec![&InputPort {
-                    port_id: LSB_ZERO_DATA_I_ID.to_string(),
-                    input: self.data_i.clone(),
-                }],
+                vec![
+                    &InputPort {
+                        port_id: WB_CTL_INTR_IN_ID.to_string(),
+                        input: self.clic_i.clone(),
+                    },
+                    &InputPort {
+                        port_id: WB_CTL_DEC_IN_ID.to_string(),
+                        input: self.dec_i.clone(),
+                    },
+                ],
                 OutputType::Combinatorial,
-                vec![LSB_ZERO_OUT_ID],
+                vec![WB_CTL_WE_OUT_ID, WB_CTL_MUX_CTL_O_ID],
             ),
         )
     }
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
-        match simulator.get_input_value(&self.data_i) {
-            SignalValue::Data(mut data) => {
-                let mask: u32 = !0b1;
-                data &= mask;
-                simulator.set_out_value(&self.id, "out", data);
-            }
-            _ => simulator.set_out_value(&self.id, "out", SignalValue::Unknown),
-        }
+        let dec_we: u32 = simulator
+            .get_input_value(&self.dec_i)
+            .try_into()
+            .unwrap_or(0);
+        let clic_we: u32 = simulator
+            .get_input_value(&self.clic_i)
+            .try_into()
+            .unwrap_or(0);
+        //assert_ne!(dec_we, clic_we);
+        let mux_ctl = if dec_we != 0 { 0 } else { 1 };
+        let we = if dec_we == 1 || clic_we == 1 { 1 } else { 0 };
+        simulator.set_out_value(&self.id, WB_CTL_MUX_CTL_O_ID, mux_ctl);
+        simulator.set_out_value(&self.id, WB_CTL_WE_OUT_ID, we);
         Ok(())
     }
 }
@@ -80,6 +95,7 @@ mod test {
     #![allow(unused_imports)]
     use super::*;
 
+    use crate::components::LSBZero;
     use std::rc::Rc;
     use syncrim::{
         common::{ComponentStore, Input, Simulator},

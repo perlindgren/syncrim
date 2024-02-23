@@ -1,16 +1,18 @@
-use crate::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
-use crate::components::Register;
-use crate::gui_egui::component_ui::{
+use crate::components::LED;
+use egui::epaint::RectShape;
+use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2};
+use syncrim::common::{EguiComponent, Ports, Simulator};
+use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
     rect_with_hover, visualize_ports,
 };
-use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
-use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::offset_helper;
-use egui::{Color32, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
+use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
+use syncrim::gui_egui::gui::EguiExtra;
+use syncrim::gui_egui::helper::offset_helper;
+use syncrim::signal::SignalValue;
 
 #[typetag::serde]
-impl EguiComponent for Register {
+impl EguiComponent for LED {
     fn render(
         &self,
         ui: &mut Ui,
@@ -30,53 +32,41 @@ impl EguiComponent for Register {
         offset.y += self.pos.1 * scale;
         let s = scale;
         let o = offset;
-
+        let bg_color = match simulator {
+            Some(s) => {
+                let input = s.get_input_value(&self.input);
+                match input {
+                    SignalValue::Data(d) => {
+                        if d == 1 {
+                            Color32::RED
+                        } else {
+                            Color32::GRAY
+                        }
+                    }
+                    _ => Color32::GRAY,
+                }
+            }
+            None => Color32::GRAY,
+        };
         // The shape
-        ui.painter().add(Shape::line(
-            vec![
-                oh((-10f32, -20f32), s, o),
-                oh((10f32, -20f32), s, o),
-                oh((0f32, -15f32), s, o),
-                oh((-10f32, -20f32), s, o),
-                oh((-10f32, 20f32), s, o),
-                oh((10f32, 20f32), s, o),
-                oh((10f32, -20f32), s, o),
-            ],
+        let rect = Rect {
+            min: oh((-self.width / 2f32, -self.height / 2f32), s, o),
+            max: oh((self.width / 2f32, self.height / 2f32), s, o),
+        };
+        ui.painter().add(Shape::Rect(RectShape::new(
+            rect,
+            Rounding::ZERO,
+            bg_color,
             Stroke {
                 width: scale,
                 color: Color32::BLACK,
             },
-        ));
-        let rect = Rect {
-            min: oh((-10f32, -20f32), s, o),
-            max: oh((10f32, 20f32), s, o),
-        };
+        )));
+
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
-            if let Some(s) = &simulator {
-                ui.label({
-                    let r: Result<SignalUnsigned, String> =
-                        s.get_input_value(&self.r_in).try_into();
-                    match r {
-                        Ok(data) => format!("In {:#x}", data),
-                        _ => format!("In {:?}", r),
-                    }
-                });
-                ui.label({
-                    let r: Result<SignalUnsigned, String> = s
-                        .get_input_value(&Input {
-                            id: self.id.clone(),
-                            field: "out".to_string(),
-                        })
-                        .try_into();
-                    match r {
-                        Ok(data) => format!("Out {:#x}", data),
-                        _ => format!("Out {:?}", r),
-                    }
-                });
-            }
+            ui.label("LED");
         });
-
         match editor_mode {
             EditorMode::Simulator => (),
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
@@ -92,11 +82,11 @@ impl EguiComponent for Register {
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
-        id_ports: &[(crate::common::Id, Ports)],
+        id_ports: &[(syncrim::common::Id, Ports)],
         grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let r_vec = Register::render(
+        let r_vec = LED::render(
             self,
             ui,
             context,
@@ -129,8 +119,8 @@ impl EguiComponent for Register {
                 pos_drag_value(ui, &mut self.pos);
                 clicked_dropdown |= input_selector(
                     ui,
-                    &mut self.r_in,
-                    crate::components::REGISTER_R_IN_ID.to_string(),
+                    &mut self.input,
+                    crate::components::LED_I_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
@@ -144,22 +134,16 @@ impl EguiComponent for Register {
         }
     }
 
-    fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
+    fn ports_location(&self) -> Vec<(syncrim::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
-        vec![
-            (
-                crate::components::REGISTER_R_IN_ID.to_string(),
-                Pos2::new(-10f32, 0f32) + own_pos,
-            ),
-            (
-                crate::components::REGISTER_OUT_ID.to_string(),
-                Pos2::new(10f32, 0f32) + own_pos,
-            ),
-        ]
+        vec![(
+            crate::components::LED_I_ID.to_string(),
+            Pos2::new(-self.width / 2f32, 0.0) + own_pos,
+        )]
     }
 
     fn top_padding(&self) -> f32 {
-        20f32
+        self.height / 4f32
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {

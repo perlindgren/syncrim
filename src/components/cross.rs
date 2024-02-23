@@ -6,25 +6,25 @@ use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::rc::Rc;
 
-pub const PROBE_IN_ID: &str = "in";
+pub const CROSS_IN_ID: &str = "in";
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct Probe {
+pub struct Cross {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
     pub(crate) input: Input,
 }
 
 #[typetag::serde]
-impl Component for Probe {
+impl Component for Cross {
     fn to_(&self) {
-        trace!("Probe");
+        trace!("Cross");
     }
 
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy_input = Input::new("dummy", "out");
-        Box::new(Rc::new(Probe {
+        Box::new(Rc::new(Cross {
             id: id.to_string(),
             pos: (pos.0, pos.1),
             input: dummy_input.clone(),
@@ -37,7 +37,7 @@ impl Component for Probe {
             Ports::new(
                 // Probes take one input
                 vec![&InputPort {
-                    port_id: PROBE_IN_ID.to_string(),
+                    port_id: CROSS_IN_ID.to_string(),
                     input: self.input.clone(),
                 }],
                 OutputType::Combinatorial,
@@ -48,7 +48,7 @@ impl Component for Probe {
     }
 
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
-        if target_port_id.as_str() == PROBE_IN_ID {
+        if target_port_id.as_str() == CROSS_IN_ID {
             self.input = new_input
         }
     }
@@ -58,9 +58,9 @@ impl Component for Probe {
     }
 }
 
-impl Probe {
+impl Cross {
     pub fn new(id: &str, pos: (f32, f32), input: Input) -> Self {
-        Probe {
+        Cross {
             id: id.to_string(),
             pos,
             input,
@@ -68,6 +68,6 @@ impl Probe {
     }
 
     pub fn rc_new(id: &str, pos: (f32, f32), input: Input) -> Rc<Self> {
-        Rc::new(Probe::new(id, pos, input))
+        Rc::new(Cross::new(id, pos, input))
     }
 }

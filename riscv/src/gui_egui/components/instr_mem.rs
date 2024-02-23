@@ -5,7 +5,7 @@ use egui::{
 };
 use egui_extras::{Column, TableBuilder};
 use log::trace;
-use riscv_asm_strings::Stringify;
+use riscv_asm_strings;
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -56,11 +56,11 @@ impl InstrMem {
                                 0
                             }
                         };
-                        let bg_color = {
+                        let (bg_color, fg_color) = {
                             if pc as usize == address {
-                                Color32::YELLOW
+                                (Color32::DARK_GRAY, Color32::WHITE)
                             } else {
-                                Color32::TRANSPARENT
+                                (Color32::TRANSPARENT, Color32::LIGHT_GRAY)
                             }
                         };
                         let breakpoint_color = {
@@ -100,8 +100,9 @@ impl InstrMem {
                             | ((bytes[2] as u32) << 16)
                             | ((bytes[1] as u32) << 8)
                             | (bytes[0] as u32);
+
                         let instr_fmt = match asm_riscv::I::try_from(instr) {
-                            Ok(i) => i.to_string(),
+                            Ok(i) => riscv_asm_strings::StringifyUpperHex::to_string(&i),
                             Err(_) => "Unknown instruction".to_string(),
                         };
                         //hex instr
@@ -111,9 +112,13 @@ impl InstrMem {
                         row.col(|ui| {
                             if ui
                                 .add(
-                                    Label::new(RichText::new(instr_fmt).background_color(bg_color))
-                                        .truncate(true)
-                                        .sense(Sense::click()),
+                                    Label::new(
+                                        RichText::new(instr_fmt)
+                                            .color(fg_color)
+                                            .background_color(bg_color),
+                                    )
+                                    .truncate(true)
+                                    .sense(Sense::click()),
                                 )
                                 .clicked()
                             {

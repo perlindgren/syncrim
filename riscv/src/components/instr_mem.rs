@@ -7,7 +7,7 @@ use std::{
 };
 
 use log::trace;
-use riscv_asm_strings::Stringify;
+use riscv_asm_strings;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
@@ -17,7 +17,7 @@ pub const INSTR_MEM_PC_ID: &str = "pc";
 pub const INSTR_MEM_INSTRUCTION_ID: &str = "instruction";
 
 pub const INSTR_MEM_HEIGHT: f32 = 100.0;
-pub const INSTR_MEM_WIDTH: f32 = 200.0;
+pub const INSTR_MEM_WIDTH: f32 = 100.0;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct InstrMem {
@@ -25,18 +25,25 @@ pub struct InstrMem {
     pub height: f32,
     pub id: String,
     pub pos: (f32, f32),
+    #[serde(skip)]
     pub bytes: BTreeMap<usize, u8>,
     pub pc: Input,
     pub range: Range<usize>,
+    #[serde(skip)]
     pub breakpoints: Rc<RefCell<HashSet<usize>>>,
+    #[serde(skip)]
     pub symbols: HashMap<usize, String>,
     pub le: bool,
 }
 
 #[typetag::serde()]
 impl Component for InstrMem {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
     fn to_(&self) {
-        println!("InstrMem");
+        //println!("InstrMem");
     }
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
@@ -96,7 +103,7 @@ impl Component for InstrMem {
             format!(
                 "{:?}",
                 match asm_riscv::I::try_from(instr) {
-                    Ok(i) => i.to_string(),
+                    Ok(i) => riscv_asm_strings::StringifyUpperHex::to_string(&i),
                     Err(_) => "Unknown instruction".to_string(),
                 }
             )

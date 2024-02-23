@@ -1,5 +1,6 @@
 use petgraph::Graph;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::{collections::HashMap, rc::Rc};
 
 #[cfg(feature = "gui-egui")]
@@ -81,6 +82,8 @@ pub trait Component {
     fn un_clock(&self) {}
     /// reset component internal state to initial value
     fn reset(&self) {}
+    /// any
+    fn as_any(&self) -> &dyn Any;
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]

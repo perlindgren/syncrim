@@ -92,7 +92,7 @@ impl Default for Library {
                 pos: (0.0, 0.0),
                 value: 0.into(),
             }),
-            Rc::new(Probe {
+            Rc::new(Cross {
                 id: "p".to_string(),
                 pos: (0.0, 0.0),
                 input: dummy_input.clone(),
@@ -334,7 +334,7 @@ impl Editor {
                 EditorMode::Wire | EditorMode::Input => {
                     for c in &e.components {
                         let old_key = c.as_ref().get_id_ports().0;
-                        println!("{}, {:?}", old_key, e.contexts);
+                        //println!("{}, {:?}", old_key, e.contexts);
                         match e.contexts.remove(&old_key) {
                             Some(mut context) => {
                                 c.render(
