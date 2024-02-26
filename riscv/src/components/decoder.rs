@@ -11,33 +11,43 @@ use syncrim::components::MemCtrl;
 
 pub const DECODER_INSTRUCTION_ID: &str = "instruction";
 
-pub const DECODER_WB_MUX_ID: &str = "wb_mux";
-pub const DECODER_ALU_OPERAND_A_SEL_ID: &str = "alu_operand_a_sel";
-pub const DECODER_ALU_OPERAND_B_SEL_ID: &str = "alu_operand_b_sel";
-pub const DECODER_ALU_OPERATOR_ID: &str = "alu_operator";
-pub const DECODER_REGFILE_RD_ID: &str = "regfile_rd";
-pub const DECODER_REGFILE_RS1_ID: &str = "regfile_rs1";
-pub const DECODER_REGFILE_RS2_ID: &str = "regfile_rs2";
-pub const DECODER_REGFILE_WE_ID: &str = "regfile_we";
+pub const DECODER_WB_MUX_SEL_ID: &str = "decoder_wb_mux_sel";
+pub const DECODER_ALU_A_MUX_SEL_ID: &str = "decoder_alu_a_mux_sel";
+pub const DECODER_ALU_B_MUX_SEL_ID: &str = "decoder_alu_b_mux_sel";
+pub const DECODER_ALU_OP_ID: &str = "decoder_alu_op";
+// reg file signals
+pub const DECODER_RD_ID: &str = "decoder_rd";
+pub const DECODER_RS1_ID: &str = "decoder_rs1";
+pub const DECODER_RS2_ID: &str = "decoder_rs2";
+pub const DECODER_WB_WRITE_ENABLE_ID: &str = "decoder_wb_write_enable";
+//unsure here
 pub const DECODER_SIGN_ZERO_EXT_SEL_ID: &str = "sign_zero_ext_sel";
+
+//this is imm
+// consolidate these as immediate
+pub const DECODER_IMM_ID: &str = "decoder_imm";
+pub const DECODER_PC_IMM_SEL_ID: &str = "pc_imm_sel";
+/*
 pub const DECODER_SIGN_ZERO_EXT_DATA_ID: &str = "sign_zero_ext_data";
 pub const DECODER_IMM_A_MUX_DATA_ID: &str = "imm_a_mux_data";
+pub const DECODER_BIG_IMM_ID: &str = "big_imm";
+pub const DECODER_BRANCH_IMM_ID: &str = "branch_imm";
+pub const DECODER_JALR_IMM_ID: &str = "jalr_imm";*/
 //"pc_se_data".into(),
 //"pc_mux_sel".into(),
 pub const DECODER_DATA_MEM_SIZE_ID: &str = "data_mem_size";
 pub const DECODER_DATA_SE_ID: &str = "data_se";
 pub const DECODER_DATA_MEM_CTRL_ID: &str = "data_mem_ctrl";
-pub const DECODER_PC_IMM_SEL_ID: &str = "pc_imm_sel";
-pub const DECODER_BIG_IMM_ID: &str = "big_imm";
-pub const DECODER_BRANCH_IMM_ID: &str = "branch_imm";
-pub const DECODER_BRANCH_LOGIC_CTL_ID: &str = "branch_logic_ctl";
-pub const DECODER_BRANCH_LOGIC_ENABLE_ID: &str = "branch_logic_enable";
-pub const DECODER_JALR_IMM_ID: &str = "jalr_imm";
+
+pub const DECODER_BRANCH_OP: &str = "decoder_branch_op";
+pub const DECODER_BRANCH_INSTR: &str = "decoder_branch_instr";
+pub const DECODER_BRANCH_ALWAYS: &str = "decoder_branch_always";
+
 pub const DECODER_MRET_ID: &str = "mret";
 pub const DECODER_MEPC_ID: &str = "mepc";
 pub const DECODER_CSR_CTL_ID: &str = "csr_ctl";
 pub const DECODER_CSR_DATA_MUX_ID: &str = "csr_data_mux";
-pub const DECODER_CSR_DATA_ID: &str = "csr_data";
+//pub const DECODER_CSR_DATA_ID: &str = "csr_data";
 pub const DECODER_CSR_ADDR_ID: &str = "csr_addr";
 
 pub const DECODER_HEIGHT: f32 = 600.0;
@@ -51,6 +61,22 @@ pub struct Decoder {
     pub pos: (f32, f32),
 
     pub instruction: Input,
+}
+
+fn sign_zero_extend(sign: bool, width: u8, val: u32) -> u32 {
+    assert!(width > 0);
+    if sign {
+        let sign_bit = val >> (width - 1);
+        let mask = !(2u32.pow(width as u32) - 1);
+        println!("MASK: {:08x}", mask);
+        if sign_bit == 1 {
+            val | mask
+        } else {
+            val
+        }
+    } else {
+        val
+    }
 }
 
 #[typetag::serde()]
@@ -88,32 +114,28 @@ impl Component for Decoder {
                 }],
                 OutputType::Combinatorial,
                 vec![
-                    DECODER_WB_MUX_ID,
-                    DECODER_ALU_OPERAND_A_SEL_ID,
-                    DECODER_ALU_OPERAND_B_SEL_ID,
-                    DECODER_ALU_OPERATOR_ID,
-                    DECODER_REGFILE_RD_ID,
-                    DECODER_REGFILE_RS1_ID,
-                    DECODER_REGFILE_RS2_ID,
-                    DECODER_REGFILE_WE_ID,
+                    DECODER_WB_MUX_SEL_ID,
+                    DECODER_ALU_A_MUX_SEL_ID,
+                    DECODER_ALU_B_MUX_SEL_ID,
+                    DECODER_ALU_OP_ID,
+                    DECODER_RD_ID,
+                    DECODER_RS1_ID,
+                    DECODER_RS2_ID,
+                    DECODER_WB_WRITE_ENABLE_ID,
                     DECODER_SIGN_ZERO_EXT_SEL_ID,
-                    DECODER_SIGN_ZERO_EXT_DATA_ID,
-                    DECODER_IMM_A_MUX_DATA_ID,
                     DECODER_DATA_MEM_SIZE_ID,
                     DECODER_DATA_SE_ID,
                     DECODER_DATA_MEM_CTRL_ID,
-                    DECODER_PC_IMM_SEL_ID,
-                    DECODER_BIG_IMM_ID,
-                    DECODER_BRANCH_IMM_ID,
-                    DECODER_BRANCH_LOGIC_CTL_ID,
-                    DECODER_BRANCH_LOGIC_ENABLE_ID,
-                    DECODER_JALR_IMM_ID,
+                    DECODER_BRANCH_OP,
+                    DECODER_BRANCH_INSTR,
                     DECODER_MEPC_ID,
                     DECODER_MRET_ID,
                     DECODER_CSR_CTL_ID,
                     DECODER_CSR_DATA_MUX_ID,
-                    DECODER_CSR_DATA_ID,
                     DECODER_CSR_ADDR_ID,
+                    DECODER_PC_IMM_SEL_ID,
+                    DECODER_BRANCH_ALWAYS,
+                    DECODER_IMM_ID,
                 ],
             ),
         )
@@ -124,6 +146,8 @@ impl Component for Decoder {
             .get_input_value(&self.instruction)
             .try_into()
             .unwrap();
+
+        //constant instruction field values
         let opcode = instruction & 0b1111111;
         let funct3 = (instruction & (0b111 << 12)) >> 12;
         let funct7 = (instruction & (0b1111111 << 25)) >> 25;
@@ -139,52 +163,50 @@ impl Component for Decoder {
         let imm_store =
             ((instruction & (0b11111 << 7)) >> 7) | ((instruction & (0b1111111 << 25)) >> 20);
 
-        let mut wb_mux = SignalValue::Uninitialized;
-        let mut alu_operand_a_sel = SignalValue::Uninitialized;
-        let mut alu_operand_b_sel = SignalValue::Uninitialized;
-        let mut regfile_rd = SignalValue::Uninitialized;
-        let mut regfile_rs1 = SignalValue::Uninitialized;
-        let mut regfile_rs2 = SignalValue::Uninitialized;
-        let mut regfile_we = SignalValue::from(0); //this must be 0
-        let mut alu_operator = SignalValue::Uninitialized;
-        let mut sign_zero_ext_sel = SignalValue::Uninitialized;
-        let mut sign_zero_ext_data = SignalValue::Uninitialized;
-        let mut imm_a_mux_data = SignalValue::Uninitialized;
-        let mut data_mem_size = SignalValue::Uninitialized;
-        let mut data_se = SignalValue::Uninitialized;
-        let mut data_mem_ctrl = SignalValue::from(MemCtrl::None as u32);
-        let mut big_imm = SignalValue::Uninitialized;
+        //outputs
+        let mut imm_sig = SignalValue::Uninitialized;
+
+        let mut wb_mux_sel = SignalValue::Uninitialized;
+        let mut alu_a_mux_sel = SignalValue::Uninitialized;
+        let mut alu_b_mux_sel = SignalValue::Uninitialized;
+        let mut rd = SignalValue::Uninitialized;
+        let mut rs1 = SignalValue::Uninitialized;
+        let mut rs2 = SignalValue::Uninitialized;
+        let mut wb_write_enable = SignalValue::from(0); //this must be 0
+        let mut alu_op = SignalValue::Uninitialized;
+        let mut sub_arith = SignalValue::Uninitialized;
+        let mut dmem_width = SignalValue::Uninitialized;
+        let mut dmem_sign_extend = SignalValue::Uninitialized;
+        let mut dmem_write_enable = SignalValue::from(MemCtrl::None as u32);
+        // ??
         let mut pc_imm_sel = SignalValue::Uninitialized;
-        let mut branch_imm = SignalValue::Uninitialized;
-        let mut branch_logic_ctl = SignalValue::Uninitialized;
+        let mut branch_instr = SignalValue::Uninitialized;
         let mut branch_logic_enable = SignalValue::from(0); //this must be 0
-        let mut jalr_imm = SignalValue::Uninitialized;
         let mut csr_ctl = SignalValue::Uninitialized;
         let mut csr_data_mux = SignalValue::Uninitialized;
-        let mut csr_data = SignalValue::Uninitialized;
         let mut csr_addr = SignalValue::Uninitialized;
         let mut mret = SignalValue::Uninitialized;
         match opcode {
             0b0110011 => {
                 //OP
-                alu_operand_a_sel = SignalValue::from(1); //rs1
-                alu_operand_b_sel = SignalValue::from(0); //rs2
-                                                          //rs1 [19:15] rs2 [24:20] rd [11:7]
-                regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
-                regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_rs2 = SignalValue::from((instruction & (0b11111 << 20)) >> 20);
-                regfile_we = SignalValue::from(1); //enable write
-                wb_mux = SignalValue::from(0); //ALU source
+                alu_a_mux_sel = SignalValue::from(1); //rs1
+                alu_b_mux_sel = SignalValue::from(0); //rs2
+                                                      //rs1 [19:15] rs2 [24:20] rd [11:7]
+                rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
+                rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                rs2 = SignalValue::from((instruction & (0b11111 << 20)) >> 20);
+                wb_write_enable = SignalValue::from(1); //enable write
+                wb_mux_sel = SignalValue::from(0); //ALU source
                 trace!("opcode=OP");
                 match funct3 {
                     0b000 => {
                         // add/sub
                         match funct7 {
                             0b0000000 => {
-                                alu_operator = SignalValue::from(1);
+                                alu_op = SignalValue::from(1);
                             } //add
                             0b0100000 => {
-                                alu_operator = SignalValue::from(2);
+                                alu_op = SignalValue::from(2);
                             } //sub
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -193,7 +215,7 @@ impl Component for Decoder {
                         match funct7 {
                             // sll
                             0b0000000 => {
-                                alu_operator = SignalValue::from(3);
+                                alu_op = SignalValue::from(3);
                             } //sll
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -202,7 +224,7 @@ impl Component for Decoder {
                         match funct7 {
                             // slt
                             0b0000000 => {
-                                alu_operator = SignalValue::from(10);
+                                alu_op = SignalValue::from(10);
                             } //slt
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -211,7 +233,7 @@ impl Component for Decoder {
                         match funct7 {
                             // sltu
                             0b0000000 => {
-                                alu_operator = SignalValue::from(9);
+                                alu_op = SignalValue::from(9);
                             } //sltu
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -220,7 +242,7 @@ impl Component for Decoder {
                         match funct7 {
                             // xor
                             0b0000000 => {
-                                alu_operator = SignalValue::from(6);
+                                alu_op = SignalValue::from(6);
                             } //xor
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -229,10 +251,10 @@ impl Component for Decoder {
                         match funct7 {
                             // srl
                             0b0000000 => {
-                                alu_operator = SignalValue::from(4);
+                                alu_op = SignalValue::from(4);
                             } //srl
                             0b0100000 => {
-                                alu_operator = SignalValue::from(5);
+                                alu_op = SignalValue::from(5);
                             } //sra
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -241,7 +263,7 @@ impl Component for Decoder {
                         match funct7 {
                             // or
                             0b0000000 => {
-                                alu_operator = SignalValue::from(7);
+                                alu_op = SignalValue::from(7);
                             } //or
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -250,7 +272,7 @@ impl Component for Decoder {
                         //and
                         match funct7 {
                             0b0000000 => {
-                                alu_operator = SignalValue::from(8);
+                                alu_op = SignalValue::from(8);
                             } //and
                             _ => panic!("Invalid funct7 {:b}", funct7),
                         }
@@ -262,68 +284,64 @@ impl Component for Decoder {
             }
             0b0010011 => {
                 //OP_IMM
-                alu_operand_a_sel = SignalValue::from(1); //rs1
-                alu_operand_b_sel = SignalValue::from(1); //imm
-                regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
-                regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_we = SignalValue::from(1); //enable write
-                wb_mux = SignalValue::from(0); //ALU source
+                alu_a_mux_sel = SignalValue::from(1); //rs1
+                alu_b_mux_sel = SignalValue::from(1); //imm
+                rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
+                rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                wb_write_enable = SignalValue::from(1); //enable write
+                wb_mux_sel = SignalValue::from(0); //ALU source
+                imm_sig = SignalValue::from(sign_zero_extend(true, 12, imm));
                 trace!("opcode=OP_IMM");
                 match funct3 {
                     0b000 => {
                         //ADDI
-                        alu_operator = SignalValue::from(1);
-                        sign_zero_ext_sel = SignalValue::from(0);
-                        sign_zero_ext_data = SignalValue::from(imm);
+                        alu_op = SignalValue::from(1);
+                        sub_arith = SignalValue::from(0);
                     }
                     0b010 => {
                         //SLTI
-                        alu_operator = SignalValue::from(10);
-                        sign_zero_ext_sel = SignalValue::from(0);
-                        sign_zero_ext_data = SignalValue::from(imm);
+                        alu_op = SignalValue::from(10);
+                        sub_arith = SignalValue::from(0);
                     }
                     0b011 => {
                         //SLTIU
-                        alu_operator = SignalValue::from(9);
-                        sign_zero_ext_sel = SignalValue::from(1);
-                        sign_zero_ext_data = SignalValue::from(imm);
+                        alu_op = SignalValue::from(9);
+                        sub_arith = SignalValue::from(1);
+                        imm_sig = SignalValue::from(sign_zero_extend(false, 12, imm));
                     }
                     0b100 => {
                         //XORI
-                        alu_operator = SignalValue::from(6);
-                        sign_zero_ext_sel = SignalValue::from(0);
-                        sign_zero_ext_data = SignalValue::from(imm);
+                        alu_op = SignalValue::from(6);
+                        sub_arith = SignalValue::from(0);
                     }
                     0b110 => {
                         //ORI
-                        alu_operator = SignalValue::from(7);
-                        sign_zero_ext_sel = SignalValue::from(0);
-                        sign_zero_ext_data = SignalValue::from(imm);
+                        alu_op = SignalValue::from(7);
+                        sub_arith = SignalValue::from(0);
                     }
                     0b111 => {
                         //ANDI
-                        alu_operator = SignalValue::from(8);
-                        sign_zero_ext_sel = SignalValue::from(0);
-                        sign_zero_ext_data = SignalValue::from(imm);
+                        alu_op = SignalValue::from(8);
+                        sub_arith = SignalValue::from(0);
                     }
                     0b001 => {
                         //SLLI
-                        alu_operator = SignalValue::from(3);
-                        sign_zero_ext_sel = SignalValue::from(1);
-                        sign_zero_ext_data = SignalValue::from(shamt);
+                        alu_op = SignalValue::from(3);
+                        sub_arith = SignalValue::from(1);
+                        imm_sig = SignalValue::from(shamt);
                     }
                     0b101 => {
                         //SRLI SRAI
                         match funct7 {
                             0b0000000 => {
-                                alu_operator = SignalValue::from(4);
-                                sign_zero_ext_sel = SignalValue::from(1);
-                                sign_zero_ext_data = SignalValue::from(shamt);
+                                alu_op = SignalValue::from(4);
+                                sub_arith = SignalValue::from(1);
+                                imm_sig = SignalValue::from(shamt);
                             } //SRLI
                             0b0100000 => {
-                                alu_operator = SignalValue::from(5);
-                                sign_zero_ext_sel = SignalValue::from(1);
-                                sign_zero_ext_data = SignalValue::from(shamt);
+                                alu_op = SignalValue::from(5);
+                                sub_arith = SignalValue::from(1);
+                                imm_sig = SignalValue::from(shamt);
                             } //SRAI
                             _ => panic!("Invalid funct7! {:b}", funct7),
                         }
@@ -336,123 +354,123 @@ impl Component for Decoder {
             0b0110111 => {
                 //LUI
                 trace!("opcode=LUI");
-                alu_operand_a_sel = SignalValue::from(0); //big-imm
-                alu_operand_b_sel = SignalValue::from(1); //imm
-                regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
+                alu_a_mux_sel = SignalValue::from(2); //0
+                alu_b_mux_sel = SignalValue::from(1); //imm
+                rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = 0; //x0 dont care
-                regfile_we = SignalValue::from(1); //enable write
-                wb_mux = SignalValue::from(0); //ALU source
-                alu_operator = SignalValue::from(1); //ADD
-                sign_zero_ext_data = SignalValue::from(0); //add 0
-                sign_zero_ext_sel = SignalValue::from(1); //zero-extend
-                imm_a_mux_data = SignalValue::from(imm_big);
+                wb_write_enable = SignalValue::from(1); //enable write
+                wb_mux_sel = SignalValue::from(0); //ALU source
+                alu_op = SignalValue::from(1); //ADD
+
+                //THIS NEEDS FIX
+                //sign_zero_ext_data = SignalValue::from(0); //add 0
+                sub_arith = SignalValue::from(1); //zero-extend
+                imm_sig = SignalValue::from(imm_big);
             }
             0b0010111 => {
                 //AUIPC
                 trace!("opcode=AUIPC");
-                alu_operand_a_sel = SignalValue::from(0); //big-imm
-                alu_operand_b_sel = SignalValue::from(3); //PC
-                regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
+                alu_a_mux_sel = SignalValue::from(0); //szext imm
+                alu_b_mux_sel = SignalValue::from(3); //PC
+                rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = SignalValue::from(0); //x0 dont care
-                regfile_we = SignalValue::from(1); //enable write
-                wb_mux = SignalValue::from(0); //ALU source
-                alu_operator = SignalValue::from(1); //ADD
-                                                     //sign_zero_ext_data = SignalValue::from(0); //don't care
-                                                     //sign_zero_ext_sel = SignalValue::from(1); //don't care
-                imm_a_mux_data = SignalValue::from(imm_big);
+                wb_write_enable = SignalValue::from(1); //enable write
+                wb_mux_sel = SignalValue::from(0); //ALU source
+                alu_op = SignalValue::from(1); //ADD
+                                               //sign_zero_ext_data = SignalValue::from(0); //don't care
+                                               //sign_zero_ext_sel = SignalValue::from(1); //don't care
+                imm_sig = SignalValue::from(imm_big);
             }
             0b1101111 => {
                 //JAL
                 trace!("opcode=JAL");
-                alu_operand_a_sel = SignalValue::from(2); //0
-                alu_operand_b_sel = SignalValue::from(2); //PC
-                regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
+                alu_a_mux_sel = SignalValue::from(0); //imm
+                alu_b_mux_sel = SignalValue::from(3); //PC
+                sub_arith = SignalValue::from(0); //sign extend
+                rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = SignalValue::from(0); //dont care
-                regfile_we = SignalValue::from(1); //enable write
-                wb_mux = SignalValue::from(0); //ALU source
-                alu_operator = SignalValue::from(1); //ADD
-                                                     //sign_zero_ext_data = 0; //don't care
-                                                     //sign_zero_ext_sel = 1; //don't care
-                big_imm = SignalValue::from(imm_big_shuffled);
-                pc_imm_sel = SignalValue::from(0);
-                branch_logic_ctl = SignalValue::from(0b010); //jal
+                wb_write_enable = SignalValue::from(1); //enable write
+                wb_mux_sel = SignalValue::from(3); //PC_p4
+                alu_op = SignalValue::from(1); //ADD
+                                               //sign_zero_ext_data = 0; //don't care
+                                               //sign_zero_ext_sel = 1; //don't care
+                imm_sig = SignalValue::from(sign_zero_extend(true, 21, imm_big_shuffled));
+                //pc_imm_sel = SignalValue::from(0);
+
+                branch_instr = SignalValue::from(0b010); //jal
                 branch_logic_enable = SignalValue::from(0b1);
             }
             0b1100111 => {
                 //JALR
                 trace!("opcode=JALR");
-                alu_operand_a_sel = SignalValue::from(2); //0
-                alu_operand_b_sel = SignalValue::from(2); //PC
-                regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
-                regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_we = SignalValue::from(1); //enable write
-                wb_mux = SignalValue::from(0); //ALU source
-                alu_operator = SignalValue::from(1); //ADD
-                                                     //sign_zero_ext_data = 0; //don't care
-                                                     //sign_zero_ext_sel = 1; //don't care
-                                                     //big_imm = imm_big_shuffled; //don't care
-                                                     //pc_imm_sel = 0; //don't care
-                branch_logic_ctl = SignalValue::from(0b011); //jalr
+                alu_a_mux_sel = SignalValue::from(1); //rs1
+                alu_b_mux_sel = SignalValue::from(1); //imm
+                sub_arith = SignalValue::from(0); //sign extend
+                rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
+                rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                wb_write_enable = SignalValue::from(1); //enable write
+                wb_mux_sel = SignalValue::from(3); //PC_p4
+                alu_op = SignalValue::from(1); //ADD
+                                               //sign_zero_ext_data = 0; //don't care
+                                               //sign_zero_ext_sel = 1; //don't care
+                                               //big_imm = imm_big_shuffled; //don't care
+                                               //pc_imm_sel = 0; //don't care
+                branch_instr = SignalValue::from(0b011); //jalr
                 branch_logic_enable = SignalValue::from(0b1);
-                jalr_imm = SignalValue::from(imm);
+                imm_sig = SignalValue::from(sign_zero_extend(true, 12, imm));
             }
             0b1100011 => {
                 //BRANCH
                 trace!("opcode=BRANCH");
-                regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_rs2 = SignalValue::from((instruction & (0b11111 << 20)) >> 20);
-                //pc_imm_sel = 1;
-                //branch_imm = imm;
-                //regfile_rd = 0; //don't care
-                //regfile_we = 0; //no link
-                //wb_mux = 0; //don't care
-                //alu_operator = 0; //don't care
-                //sign_zero_ext_data = 0; //don't care
-                //big_imm = 0; //don't care
-                pc_imm_sel = SignalValue::from(1); //branch imm
-                branch_logic_ctl = SignalValue::from(funct3); //use funct3
+                rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                rs2 = SignalValue::from((instruction & (0b11111 << 20)) >> 20);
+                alu_a_mux_sel = SignalValue::from(0); //imm
+                alu_b_mux_sel = SignalValue::from(3); //PC
+                alu_op = SignalValue::from(1); //add
+                sub_arith = SignalValue::from(0); //sign extend
+                branch_instr = SignalValue::from(funct3); //use funct3
                 branch_logic_enable = SignalValue::from(0b1); //enable branch logic
-                branch_imm = (((instruction & (0b1 << 31)) >> 19)
+                let imm_int = (((instruction & (0b1 << 31)) >> 19)
                     | ((instruction & (0b111111 << 25)) >> 20)
                     | ((instruction & (0b1111 << 8)) >> 7)
-                    | ((instruction & (0b1 << 7)) << 4))
-                    .into();
+                    | ((instruction & (0b1 << 7)) << 4));
+                imm_sig = sign_zero_extend(true, 13, imm_int).into();
             }
 
             0b0000011 => {
                 //LOAD
                 trace!("opcode=LOAD");
-                alu_operand_a_sel = SignalValue::from(1); //rs1
-                alu_operand_b_sel = SignalValue::from(1); //imm
-                regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
-                regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_we = SignalValue::from(1);
-                wb_mux = SignalValue::from(1); //data memory
-                alu_operator = SignalValue::from(1); //ADD
-                sign_zero_ext_data = SignalValue::from(imm); //immediate
-                sign_zero_ext_sel = SignalValue::from(0); //sign extend
+                alu_a_mux_sel = SignalValue::from(1); //rs1
+                alu_b_mux_sel = SignalValue::from(1); //imm
+                rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
+                rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                wb_write_enable = SignalValue::from(1);
+                wb_mux_sel = SignalValue::from(1); //data memory
+                alu_op = SignalValue::from(1); //ADD
+                imm_sig = SignalValue::from(imm); //immediate
+                sub_arith = SignalValue::from(0); //sign extend
 
-                data_mem_ctrl = SignalValue::from(MemCtrl::Read as u32);
+                dmem_write_enable = SignalValue::from(MemCtrl::Read as u32);
                 match funct3 {
                     0b000 => {
-                        data_mem_size = SignalValue::from(1);
-                        data_se = SignalValue::from(1)
+                        dmem_width = SignalValue::from(1);
+                        dmem_sign_extend = SignalValue::from(1)
                     } //lb
                     0b001 => {
-                        data_mem_size = SignalValue::from(2);
-                        data_se = SignalValue::from(1)
+                        dmem_width = SignalValue::from(2);
+                        dmem_sign_extend = SignalValue::from(1)
                     } //lh
                     0b010 => {
-                        data_mem_size = SignalValue::from(4);
-                        data_se = SignalValue::from(1)
+                        dmem_width = SignalValue::from(4);
+                        dmem_sign_extend = SignalValue::from(1)
                     } //lw
                     0b100 => {
-                        data_mem_size = SignalValue::from(1);
-                        data_se = SignalValue::from(0)
+                        dmem_width = SignalValue::from(1);
+                        dmem_sign_extend = SignalValue::from(0)
                     } //lbu
                     0b101 => {
-                        data_mem_size = SignalValue::from(2);
-                        data_se = SignalValue::from(0)
+                        dmem_width = SignalValue::from(2);
+                        dmem_sign_extend = SignalValue::from(0)
                     } //lhu
                     _ => {
                         panic!("Unsupported funct3 {:b}", funct3)
@@ -462,28 +480,28 @@ impl Component for Decoder {
             0b0100011 => {
                 //STORE
                 trace!("opcode=STORE");
-                alu_operand_a_sel = SignalValue::from(1); //rs1
-                alu_operand_b_sel = SignalValue::from(1); //imm
-                regfile_rd = SignalValue::Uninitialized;
-                regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
-                regfile_rs2 = SignalValue::from((instruction & (0b11111 << 20)) >> 20);
-                regfile_we = SignalValue::from(0);
+                alu_a_mux_sel = SignalValue::from(1); //rs1
+                alu_b_mux_sel = SignalValue::from(1); //imm
+                rd = SignalValue::Uninitialized;
+                rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                rs2 = SignalValue::from((instruction & (0b11111 << 20)) >> 20);
+                wb_write_enable = SignalValue::from(0);
                 //wb_mux = 0; //don't care
-                alu_operator = SignalValue::from(1); //ADD
-                sign_zero_ext_data = SignalValue::from(imm_store); //immediate store type
-                sign_zero_ext_sel = SignalValue::from(0); //sign extend
+                alu_op = SignalValue::from(1); //ADD
+                imm_sig = SignalValue::from(imm_store); //immediate store type
+                sub_arith = SignalValue::from(0); //sign extend
 
-                data_mem_ctrl = SignalValue::from(MemCtrl::Write as u32);
+                dmem_write_enable = SignalValue::from(MemCtrl::Write as u32);
                 match funct3 {
                     //size
                     0b000 => {
-                        data_mem_size = SignalValue::from(1);
+                        dmem_width = SignalValue::from(1);
                     }
                     0b001 => {
-                        data_mem_size = SignalValue::from(2);
+                        dmem_width = SignalValue::from(2);
                     }
                     0b010 => {
-                        data_mem_size = SignalValue::from(4);
+                        dmem_width = SignalValue::from(4);
                     }
                     _ => panic!("Unsupported funct3 {:b}", funct3),
                 }
@@ -491,9 +509,9 @@ impl Component for Decoder {
             0b1110011 => {
                 //SYSTEM
                 csr_addr = SignalValue::from(imm); //imm
-                regfile_we = SignalValue::from(1); //write enable
-                wb_mux = SignalValue::from(2); //csr data out
-                regfile_rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
+                wb_write_enable = SignalValue::from(1); //write enable
+                wb_mux_sel = SignalValue::from(2); //csr data out
+                rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 if instruction == 807403635
                 //mret, basically magic number
                 {
@@ -504,42 +522,42 @@ impl Component for Decoder {
                             //CSRRW
                             csr_ctl = SignalValue::from(1); //write
                             csr_data_mux = SignalValue::from(0); //register
-                            regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                             //rs1
                         }
                         0b010 => {
                             //CSRRS
                             csr_ctl = SignalValue::from(2); //set
                             csr_data_mux = SignalValue::from(0); //register
-                            regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                             //rs1
                         }
                         0b011 => {
                             //CSRRC
                             csr_ctl = SignalValue::from(3); //clear
                             csr_data_mux = SignalValue::from(0); //register
-                            regfile_rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                             //rs1
                         }
                         0b101 => {
                             //CSRRWI
                             csr_ctl = SignalValue::from(1); //write
                             csr_data_mux = SignalValue::from(1); //immediate
-                            csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            imm_sig = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                             //zimm
                         }
                         0b110 => {
                             //CSRRSI
                             csr_ctl = SignalValue::from(2); //set
                             csr_data_mux = SignalValue::from(1); //immediate
-                            csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            imm_sig = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                             //zimm
                         }
                         0b111 => {
                             //CSRRCI
                             csr_ctl = SignalValue::from(3); //clear
                             csr_data_mux = SignalValue::from(1); //immediate
-                            csr_data = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
+                            imm_sig = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                             //zimm
                         }
                         _ => panic!("Unsupported funct3 {:b}", funct3),
@@ -553,31 +571,31 @@ impl Component for Decoder {
             }
         };
 
-        simulator.set_out_value(&self.id, "wb_mux", wb_mux);
-        simulator.set_out_value(&self.id, "alu_operand_a_sel", alu_operand_a_sel);
-        simulator.set_out_value(&self.id, "alu_operand_b_sel", alu_operand_b_sel);
-        simulator.set_out_value(&self.id, "regfile_rs1", regfile_rs1);
-        simulator.set_out_value(&self.id, "regfile_rs2", regfile_rs2);
-        simulator.set_out_value(&self.id, DECODER_REGFILE_RD_ID, regfile_rd);
-        simulator.set_out_value(&self.id, "regfile_we", regfile_we);
-        simulator.set_out_value(&self.id, "alu_operator", alu_operator);
-        simulator.set_out_value(&self.id, "sign_zero_ext_sel", sign_zero_ext_sel);
-        simulator.set_out_value(&self.id, "sign_zero_ext_data", sign_zero_ext_data);
-        simulator.set_out_value(&self.id, "imm_a_mux_data", imm_a_mux_data);
-        simulator.set_out_value(&self.id, "data_mem_size", data_mem_size);
-        simulator.set_out_value(&self.id, "data_se", data_se);
-        simulator.set_out_value(&self.id, "data_mem_ctrl", data_mem_ctrl);
-        simulator.set_out_value(&self.id, "big_imm", big_imm);
-        simulator.set_out_value(&self.id, "pc_imm_sel", pc_imm_sel);
-        simulator.set_out_value(&self.id, "branch_imm", branch_imm);
-        simulator.set_out_value(&self.id, "branch_logic_ctl", branch_logic_ctl);
-        simulator.set_out_value(&self.id, "branch_logic_enable", branch_logic_enable);
-        simulator.set_out_value(&self.id, "jalr_imm", jalr_imm);
-        simulator.set_out_value(&self.id, "csr_ctl", csr_ctl);
-        simulator.set_out_value(&self.id, "csr_data_mux", csr_data_mux);
-        simulator.set_out_value(&self.id, "csr_data", csr_data);
-        simulator.set_out_value(&self.id, "csr_addr", csr_addr);
-        simulator.set_out_value(&self.id, "mret", mret);
+        simulator.set_out_value(&self.id, DECODER_WB_MUX_SEL_ID, wb_mux_sel);
+        simulator.set_out_value(&self.id, DECODER_ALU_A_MUX_SEL_ID, alu_a_mux_sel);
+        simulator.set_out_value(&self.id, DECODER_ALU_B_MUX_SEL_ID, alu_b_mux_sel);
+        simulator.set_out_value(&self.id, DECODER_RS1_ID, rs1);
+        simulator.set_out_value(&self.id, DECODER_RS2_ID, rs2);
+        simulator.set_out_value(&self.id, DECODER_RD_ID, rd);
+        simulator.set_out_value(&self.id, DECODER_WB_WRITE_ENABLE_ID, wb_write_enable);
+        simulator.set_out_value(&self.id, DECODER_ALU_OP_ID, alu_op);
+        simulator.set_out_value(&self.id, DECODER_SIGN_ZERO_EXT_SEL_ID, sub_arith);
+        simulator.set_out_value(&self.id, DECODER_IMM_ID, imm_sig);
+        //simulator.set_out_value(&self.id, DECODER_IMM_A_MUX_DATA_ID, imm_a_mux_data);
+        simulator.set_out_value(&self.id, DECODER_DATA_MEM_SIZE_ID, dmem_width);
+        simulator.set_out_value(&self.id, DECODER_DATA_SE_ID, dmem_sign_extend);
+        simulator.set_out_value(&self.id, DECODER_DATA_MEM_CTRL_ID, dmem_write_enable);
+        //simulator.set_out_value(&self.id, DECODER_BIG_IMM_ID, big_imm);
+        simulator.set_out_value(&self.id, DECODER_PC_IMM_SEL_ID, pc_imm_sel);
+        //simulator.set_out_value(&self.id, DECODER_BRANCH_IMM_ID, branch_imm);
+        simulator.set_out_value(&self.id, DECODER_BRANCH_OP, branch_instr);
+        simulator.set_out_value(&self.id, DECODER_BRANCH_INSTR, branch_logic_enable);
+        //simulator.set_out_value(&self.id, DECODER_JALR_IMM_ID, jalr_imm);
+        simulator.set_out_value(&self.id, DECODER_CSR_CTL_ID, csr_ctl);
+        simulator.set_out_value(&self.id, DECODER_CSR_DATA_MUX_ID, csr_data_mux);
+        // simulator.set_out_value(&self.id, DECODER_CSR_DATA_ID, csr_data);
+        simulator.set_out_value(&self.id, DECODER_CSR_ADDR_ID, csr_addr);
+        simulator.set_out_value(&self.id, DECODER_MRET_ID, mret);
         Ok(())
     }
 }

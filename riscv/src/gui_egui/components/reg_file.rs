@@ -141,13 +141,23 @@ impl EguiComponent for RegFile {
                                         } else {
                                             0_usize
                                         };
-                                        ui.add(Label::new(
-                                            RichText::new(format!(
-                                                "0x{:08x}",
-                                                self.registers.0.borrow()[stack_depth][index]
-                                            ))
-                                            .size(15.0 * scale),
-                                        ));
+                                        if Reg::try_from(index as u8).unwrap() == Reg::sp {
+                                            ui.add(Label::new(
+                                                RichText::new(format!(
+                                                    "0x{:08x}",
+                                                    self.registers.0.borrow()[0][index]
+                                                ))
+                                                .size(15.0 * scale),
+                                            ));
+                                        } else {
+                                            ui.add(Label::new(
+                                                RichText::new(format!(
+                                                    "0x{:08x}",
+                                                    self.registers.0.borrow()[stack_depth][index]
+                                                ))
+                                                .size(15.0 * scale),
+                                            ));
+                                        }
                                     });
                                 },
                             );

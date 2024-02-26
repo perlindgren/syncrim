@@ -290,6 +290,7 @@ fn fern_setup_riscv() {
             ))
         })
         .level_for("riscv::components::clic", log::LevelFilter::Trace)
+        .level_for("syncrim::components::mux", log::LevelFilter::Trace)
         .level(log::LevelFilter::Error);
 
     // - and per-module overrides

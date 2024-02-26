@@ -106,22 +106,6 @@ impl Component for BranchLogic {
         let out: SignalValue;
         let rs1: SignalValue = simulator.get_input_value(&self.rs1);
         let rs2: SignalValue = simulator.get_input_value(&self.rs2);
-        // let int: SignalValue = simulator.get_input_value(&self.int);
-        //let mret: SignalValue = simulator.get_input_value(&self.mret);
-        // if let SignalValue::Data(sig) = int {
-        //     if sig == 1 {
-        //         trace!("int");
-        //         simulator.set_out_value(&self.id, "out", 3);
-        //         return Ok(()); //if interrupt just return here.
-        //     }
-        // }
-        // if let SignalValue::Data(sig) = mret {
-        //     if sig == 1 {
-        //         trace!("mret");
-        //         simulator.set_out_value(&self.id, "out", 4);
-        //         return Ok(()); //if mret just return here.
-        //     }
-        // }
         if enable != 0 {
             match simulator.get_input_value(&self.ctrl) {
                 SignalValue::Unknown | SignalValue::DontCare | SignalValue::Uninitialized => {
@@ -133,7 +117,7 @@ impl Component for BranchLogic {
                             let rs1: u32 = rs1.try_into().unwrap();
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 == rs2 {
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                                 trace!("beq ok");
                             } else {
                                 out = SignalValue::from(0);
@@ -144,7 +128,7 @@ impl Component for BranchLogic {
                             let rs1: u32 = rs1.try_into().unwrap();
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 != rs2 {
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                                 trace!("bne ok");
                             } else {
                                 out = SignalValue::from(0);
@@ -155,7 +139,7 @@ impl Component for BranchLogic {
                             let rs1: u32 = rs1.try_into().unwrap();
                             let rs2: u32 = rs2.try_into().unwrap();
                             if (rs1 as i32) < (rs2 as i32) {
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                                 trace!("blt ok");
                             } else {
                                 out = SignalValue::from(0);
@@ -166,7 +150,7 @@ impl Component for BranchLogic {
                             let rs1: u32 = rs1.try_into().unwrap();
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 as i32 >= rs2 as i32 {
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                                 trace!("bge ok");
                             } else {
                                 out = SignalValue::from(0);
@@ -177,7 +161,7 @@ impl Component for BranchLogic {
                             let rs1: u32 = rs1.try_into().unwrap();
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 < rs2 {
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                                 trace!("bltu ok");
                             } else {
                                 out = SignalValue::from(0);
@@ -189,7 +173,7 @@ impl Component for BranchLogic {
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 >= rs2 {
                                 trace!("bgeu ok");
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                             } else {
                                 trace!("bgeu failed");
                                 out = SignalValue::from(0);
@@ -201,7 +185,7 @@ impl Component for BranchLogic {
                         } //jalr
                         0b010 => {
                             trace!("jal ok");
-                            out = SignalValue::from(2); //jal
+                            out = SignalValue::from(1); //jal
                         }
                         _ => {
                             trace!("no control transfer");

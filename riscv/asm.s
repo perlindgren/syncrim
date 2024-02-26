@@ -23,7 +23,7 @@ main:
     csrw 0xB06, t6
     csrw 0xB07, a1
     csrw 0xB08, a2
-    csrw 0xB09, a3
+  #  csrw 0xB09, a3
     la t1, 0x00005008
     la t2, 50
     #fire interrupt at 50

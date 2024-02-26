@@ -80,7 +80,10 @@ impl Component for SZExt {
         match simulator.get_input_value(&self.data_i) {
             //if there is data, sel should be defined, otherwise panic is good.
             SignalValue::Data(mut data) => {
-                let sel: u32 = simulator.get_input_value(&self.sel_i).try_into().unwrap();
+                let sel: u32 = simulator
+                    .get_input_value(&self.sel_i)
+                    .try_into()
+                    .unwrap_or(0);
                 //println!("SZEDATA:{:x}", data);
                 match sel {
                     0 => {

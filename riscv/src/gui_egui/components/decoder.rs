@@ -120,77 +120,10 @@ impl EguiComponent for Decoder {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![
             (
-                crate::components::DECODER_WB_MUX_ID.to_string(),
-                Pos2::new(self.width / 2f32, -self.height / 2f32 + self.height / 20f32) + own_pos,
-            ),
-            (
-                crate::components::DECODER_ALU_OPERAND_A_SEL_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 2f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
-                crate::components::DECODER_ALU_OPERAND_B_SEL_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 3f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
-                crate::components::DECODER_ALU_OPERATOR_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 4f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
-                crate::components::DECODER_REGFILE_RD_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 5f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
-                crate::components::DECODER_REGFILE_RS1_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 6f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
-                crate::components::DECODER_REGFILE_RS2_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 7f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
-                crate::components::DECODER_REGFILE_WE_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 8f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
                 crate::components::DECODER_SIGN_ZERO_EXT_SEL_ID.to_string(),
                 Pos2::new(
                     self.width / 2f32,
                     -self.height / 2f32 + 9f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
-                crate::components::DECODER_SIGN_ZERO_EXT_DATA_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 10f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
-                crate::components::DECODER_IMM_A_MUX_DATA_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 11f32 * self.height / 20f32,
                 ) + own_pos,
             ),
             (
@@ -222,38 +155,17 @@ impl EguiComponent for Decoder {
                 ) + own_pos,
             ),
             (
-                crate::components::DECODER_BIG_IMM_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 16f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
-                crate::components::DECODER_BRANCH_IMM_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 17f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
-                crate::components::DECODER_BRANCH_LOGIC_CTL_ID.to_string(),
+                crate::components::DECODER_BRANCH_OP.to_string(),
                 Pos2::new(
                     self.width / 2f32,
                     -self.height / 2f32 + 18f32 * self.height / 20f32,
                 ) + own_pos,
             ),
             (
-                crate::components::DECODER_BRANCH_LOGIC_ENABLE_ID.to_string(),
+                crate::components::DECODER_BRANCH_INSTR.to_string(),
                 Pos2::new(
                     self.width / 2f32,
                     -self.height / 2f32 + 19f32 * self.height / 20f32,
-                ) + own_pos,
-            ),
-            (
-                crate::components::DECODER_JALR_IMM_ID.to_string(),
-                Pos2::new(
-                    self.width / 2f32,
-                    -self.height / 2f32 + 20f32 * self.height / 20f32,
                 ) + own_pos,
             ),
             (

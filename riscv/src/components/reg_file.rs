@@ -419,7 +419,7 @@ impl Component for RegFile {
             simulator.get_input_value(&self.clic_ra_we) == (true as SignalUnsigned).into();
 
         if clic_ra_we && (stack_depth as i32 >= 0) {
-            trace!(
+            println!(
                 "update ra register {:?}",
                 simulator.get_input_value(&self.clic_mepc)
             );
