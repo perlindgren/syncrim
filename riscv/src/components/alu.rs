@@ -89,7 +89,7 @@ impl Component for ALU {
         let operator_i = match simulator.get_input_value(&self.operator_i) {
             SignalValue::Data(data) => data,
             _ => {
-                simulator.set_out_value(&self.id, "result_o", SignalValue::Unknown);
+                simulator.set_out_value(&self.id, ALU_RESULT_O_ID, SignalValue::Unknown);
                 return Ok(());
             }
         };
