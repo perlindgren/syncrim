@@ -38,11 +38,20 @@ impl EguiComponent for ProbeLabel {
             .pivot(Align2::CENTER_CENTER)
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);
-                let text = if let SignalValue::Data(v) = value {
-                    format!("{}:\n{:#010x}", self.input.field, v)
+                let text = if (self.input.field != "out") {
+                    if let SignalValue::Data(v) = value {
+                        format!("{}:\n{:#010x}", self.input.field, v)
+                    } else {
+                        format!("{}: \n{:?}", self.input.field, value)
+                    }
                 } else {
-                    format!("{:?}", value)
+                    if let SignalValue::Data(v) = value {
+                        format!("{} {}:\n{:#010x}", self.input.id, self.input.field, v)
+                    } else {
+                        format!("{} {}: \n{:?}", self.input.id, self.input.field, value)
+                    }
                 };
+
                 match editor_mode {
                     EditorMode::Simulator => ui.label(
                         RichText::new(text.clone())
