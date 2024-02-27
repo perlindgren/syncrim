@@ -265,6 +265,7 @@ fn main() {
                     pins: Pins::default(),
                     memory: Memory::default(),
                 }),
+                ProbeLabel::rc_new("dummy_labeled_probe", (0.0, 0.0), dummy.clone()),
             ],
         };
         let mut component_vec = lib.store.clone();

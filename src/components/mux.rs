@@ -63,7 +63,7 @@ impl Component for Mux {
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input value
         let select: SignalValue = simulator.get_input_value(&self.select);
-
+        trace!("-----------{}------------", self.id);
         let (value, res) = if let Ok(select) = TryInto::<SignalUnsigned>::try_into(select) {
             let select = select as usize;
             trace!("select {}", select);
@@ -81,7 +81,7 @@ impl Component for Mux {
                 Err(Condition::Warning("select unknown".to_string())),
             )
         };
-
+        trace!("-----------------value:{:?}, end---------------", value);
         // set output
         simulator.set_out_value(&self.id, "out", value);
         res

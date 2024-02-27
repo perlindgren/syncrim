@@ -15,7 +15,7 @@ pub const ALU_OPERATOR_I_ID: &str = "operator_i";
 pub const ALU_OPERAND_A_I_ID: &str = "operand_a_i";
 pub const ALU_OPERAND_B_I_ID: &str = "operand_b_i";
 
-pub const ALU_RESULT_O_ID: &str = "result_o";
+pub const ALU_RESULT_O_ID: &str = "alu_result_o";
 
 #[derive(Serialize, Deserialize)]
 pub struct ALU {
@@ -172,7 +172,7 @@ impl Component for ALU {
             _ => {}
         }
         trace!("ALU result_o:{:08x}", result_o);
-        simulator.set_out_value(&self.id, "result_o", result_o);
+        simulator.set_out_value(&self.id, ALU_RESULT_O_ID, result_o);
         Ok(())
     }
 
