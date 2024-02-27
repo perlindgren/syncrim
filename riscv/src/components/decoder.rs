@@ -34,7 +34,7 @@ pub const DECODER_IMM_ID: &str = "decoder_imm";
 pub const DECODER_STORE_OFFSET_IMM_ID: &str = "decoder_store_offset_imm";
 pub const DECODER_ZIMM_ID: &str = "decoder_zimm";
 pub const DECODER_JAL_IMM_ID: &str = "decoder_jal_imm";
-
+pub const DECODER_BRANCH_IMM_ID: &str = "decoder_branch_imm";
 pub const DECODER_IMM_SEL_ID: &str = "decoder_imm_sel";
 //"pc_se_data".into(),
 //"pc_mux_sel".into(),
@@ -159,6 +159,7 @@ impl Component for Decoder {
                     DECODER_ZIMM_ID,
                     DECODER_JAL_IMM_ID,
                     DECODER_IMM_SEL_ID,
+                    DECODER_BRANCH_IMM_ID,
                 ],
             ),
         )
@@ -182,12 +183,17 @@ impl Component for Decoder {
             | ((instruction & (0b1 << 20)) >> (20 - 11))
             | (instruction & (0b11111111 << 12)))
             & 0b1111_1111_1111_1111_1111_1111_1111_1110;
+        let branch_imm = (((instruction & (0b1 << 31)) >> 19)
+            | ((instruction & (0b111111 << 25)) >> 20)
+            | ((instruction & (0b1111 << 8)) >> 7)
+            | ((instruction & (0b1 << 7)) << 4));
         //no idea why this is encoded this way but the ISA is what it is
         let imm_store =
             ((instruction & (0b11111 << 7)) >> 7) | ((instruction & (0b1111111 << 25)) >> 20);
         let zimm = (instruction & (0b11111 << 15)) >> 15;
         //outputs
         //let mut imm_sig = SignalValue::Uninitialized;
+        let branch_imm_sig = SignalValue::Data(branch_imm);
         let lui_auipc_imm_sig = SignalValue::Data(imm_big);
         let shamt_sig = SignalValue::Data(shamt);
         let mut imm_sig = SignalValue::Data(imm);
@@ -218,7 +224,7 @@ impl Component for Decoder {
         match opcode {
             0b0110011 => {
                 //OP
-                alu_a_mux_sel = SignalValue::from(1); //rs1
+                alu_a_mux_sel = SignalValue::from(4); //rs1
                 alu_b_mux_sel = SignalValue::from(0); //rs2
                                                       //rs1 [19:15] rs2 [24:20] rd [11:7]
                 rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
@@ -313,8 +319,8 @@ impl Component for Decoder {
             }
             0b0010011 => {
                 //OP_IMM
-                alu_a_mux_sel = SignalValue::from(1); //rs1
-                alu_b_mux_sel = SignalValue::from(1); //imm
+                alu_a_mux_sel = SignalValue::from(4); //rs1
+                alu_b_mux_sel = SignalValue::from(2); //imm
                 rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                 wb_write_enable = SignalValue::from(1); //enable write
@@ -358,7 +364,8 @@ impl Component for Decoder {
                         //SLLI
                         alu_op = SignalValue::from(3);
                         sub_arith = SignalValue::from(1);
-                        imm_sel_sig = ImmSel::Shamt.into();
+                        //imm_sel_sig = ImmSel::Shamt.into();
+                        alu_b_mux_sel = SignalValue::from(3); //shamt
                     }
                     0b101 => {
                         //SRLI SRAI
@@ -366,12 +373,12 @@ impl Component for Decoder {
                             0b0000000 => {
                                 alu_op = SignalValue::from(4);
                                 sub_arith = SignalValue::from(1);
-                                imm_sel_sig = ImmSel::Shamt.into();
+                                alu_b_mux_sel = SignalValue::from(3); //shamt
                             } //SRLI
                             0b0100000 => {
                                 alu_op = SignalValue::from(5);
                                 sub_arith = SignalValue::from(1);
-                                imm_sel_sig = ImmSel::Shamt.into();
+                                alu_b_mux_sel = SignalValue::from(3); //shamt
                             } //SRAI
                             _ => panic!("Invalid funct7! {:b}", funct7),
                         }
@@ -384,8 +391,8 @@ impl Component for Decoder {
             0b0110111 => {
                 //LUI
                 trace!("opcode=LUI");
-                alu_a_mux_sel = SignalValue::from(2); //0
-                alu_b_mux_sel = SignalValue::from(1); //imm
+                alu_a_mux_sel = SignalValue::from(3); //0
+                alu_b_mux_sel = SignalValue::from(4); //lui imm
                 rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = 0; //x0 dont care
                 wb_write_enable = SignalValue::from(1); //enable write
@@ -401,8 +408,8 @@ impl Component for Decoder {
             0b0010111 => {
                 //AUIPC
                 trace!("opcode=AUIPC");
-                alu_a_mux_sel = SignalValue::from(0); //szext imm
-                alu_b_mux_sel = SignalValue::from(3); //PC
+                alu_a_mux_sel = SignalValue::from(0); //auipc imm
+                alu_b_mux_sel = SignalValue::from(6); //PC
                 rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = SignalValue::from(0); //x0 dont care
                 wb_write_enable = SignalValue::from(1); //enable write
@@ -416,8 +423,8 @@ impl Component for Decoder {
             0b1101111 => {
                 //JAL
                 trace!("opcode=JAL");
-                alu_a_mux_sel = SignalValue::from(0); //imm
-                alu_b_mux_sel = SignalValue::from(3); //PC
+                alu_a_mux_sel = SignalValue::from(1); //jal imm
+                alu_b_mux_sel = SignalValue::from(6); //PC
                 sub_arith = SignalValue::from(0); //sign extend
                 rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = SignalValue::from(0); //dont care
@@ -435,8 +442,8 @@ impl Component for Decoder {
             0b1100111 => {
                 //JALR
                 trace!("opcode=JALR");
-                alu_a_mux_sel = SignalValue::from(1); //rs1
-                alu_b_mux_sel = SignalValue::from(1); //imm
+                alu_a_mux_sel = SignalValue::from(4); //rs1
+                alu_b_mux_sel = SignalValue::from(2); //imm
                 sub_arith = SignalValue::from(0); //sign extend
                 rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
@@ -457,25 +464,21 @@ impl Component for Decoder {
                 trace!("opcode=BRANCH");
                 rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                 rs2 = SignalValue::from((instruction & (0b11111 << 20)) >> 20);
-                alu_a_mux_sel = SignalValue::from(0); //imm
-                alu_b_mux_sel = SignalValue::from(3); //PC
+                alu_a_mux_sel = SignalValue::from(2); //branch imm
+                alu_b_mux_sel = SignalValue::from(6); //PC
                 alu_op = SignalValue::from(1); //add
                 sub_arith = SignalValue::from(0); //sign extend
                 branch_instr = SignalValue::from(funct3); //use funct3
                 branch_logic_enable = SignalValue::from(0b1); //enable branch logic
-                let imm_int = (((instruction & (0b1 << 31)) >> 19)
-                    | ((instruction & (0b111111 << 25)) >> 20)
-                    | ((instruction & (0b1111 << 8)) >> 7)
-                    | ((instruction & (0b1 << 7)) << 4));
                 imm_sel_sig = ImmSel::Imm.into();
-                imm_sig = sign_zero_extend(true, 13, imm_int).into();
+                //imm_sig = sign_zero_extend(true, 13, imm_int).into();
             }
 
             0b0000011 => {
                 //LOAD
                 trace!("opcode=LOAD");
-                alu_a_mux_sel = SignalValue::from(1); //rs1
-                alu_b_mux_sel = SignalValue::from(1); //imm
+                alu_a_mux_sel = SignalValue::from(4); //rs1
+                alu_b_mux_sel = SignalValue::from(2); //imm
                 rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                 wb_write_enable = SignalValue::from(1);
@@ -515,8 +518,8 @@ impl Component for Decoder {
             0b0100011 => {
                 //STORE
                 trace!("opcode=STORE");
-                alu_a_mux_sel = SignalValue::from(1); //rs1
-                alu_b_mux_sel = SignalValue::from(1); //imm
+                alu_a_mux_sel = SignalValue::from(4); //rs1
+                alu_b_mux_sel = SignalValue::from(1); // store imm
                 rd = SignalValue::Uninitialized;
                 rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                 rs2 = SignalValue::from((instruction & (0b11111 << 20)) >> 20);
@@ -643,6 +646,7 @@ impl Component for Decoder {
         simulator.set_out_value(&self.id, DECODER_ZIMM_ID, zimm_sig);
         simulator.set_out_value(&self.id, DECODER_JAL_IMM_ID, jal_imm_sig);
         simulator.set_out_value(&self.id, DECODER_IMM_SEL_ID, imm_sel_sig);
+        simulator.set_out_value(&self.id, DECODER_BRANCH_IMM_ID, branch_imm_sig);
         Ok(())
     }
 }
