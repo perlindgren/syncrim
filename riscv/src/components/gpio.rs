@@ -93,7 +93,7 @@ pub struct GPIOCsrStore(Rc<RefCell<HashMap<usize, usize>>>);
 impl Default for GPIOCsrStore {
     fn default() -> GPIOCsrStore {
         let mut h = HashMap::new();
-        for i in ((0 + GPIO_CSR_BASE) as usize)..=((5 + GPIO_CSR_BASE) as usize) {
+        for i in ((0 + GPIO_CSR_BASE) as usize)..=((6 + GPIO_CSR_BASE) as usize) {
             h.insert(i, 0);
         }
         GPIOCsrStore(Rc::new(RefCell::new(h)))
@@ -317,18 +317,25 @@ impl GPIO {
                 .read(0x6000_000C, 4, false, false)
                 .try_into()
                 .unwrap();
+            let mut state: u32 = self
+                .memory
+                .read(0x6000_0018, 4, false, false)
+                .try_into()
+                .unwrap();
             for i in 0..PIN_AMOUNT {
                 let mut pin = *pins.get(i as usize).unwrap();
                 if data & 0b1 == 1 {
                     if pin.enabled && !pin.is_input {
                         pin.state = true;
                         trace!("PIN {} SET HIGH", i);
+                        state |= 1 << i;
                     }
                 }
                 data = data >> 1;
                 self.memory.write(0x6000_000C, 4, false, 0.into());
                 let _ = std::mem::replace(&mut pins[i as usize], pin);
             }
+            self.memory.write(0x6000_0018, 4, false, state.into());
         }
         // clear
         if touched_indices.contains(&4) {
@@ -337,18 +344,26 @@ impl GPIO {
                 .read(0x6000_0010, 4, false, false)
                 .try_into()
                 .unwrap();
+            let mut state: u32 = self
+                .memory
+                .read(0x6000_0018, 4, false, false)
+                .try_into()
+                .unwrap();
             for i in 0..PIN_AMOUNT {
                 let mut pin = *pins.get(i as usize).unwrap();
                 if data & 0b1 == 1 {
                     if !pin.is_input {
                         pin.state = false;
                         trace!("PIN {} CLEAR", i);
+                        state &= !(1 << i);
                     }
                 }
                 data = data >> 1;
                 self.memory.write(0x6000_0010, 4, false, 0.into());
                 let _ = std::mem::replace(&mut pins[i as usize], pin);
             }
+            trace!("CLEAR STATE: {}", state);
+            self.memory.write(0x6000_0018, 4, false, state.into());
         }
         // toggle
         if touched_indices.contains(&5) {
@@ -357,16 +372,48 @@ impl GPIO {
                 .read(0x6000_0014, 4, false, false)
                 .try_into()
                 .unwrap();
+            let mut state: u32 = self
+                .memory
+                .read(0x6000_0018, 4, false, false)
+                .try_into()
+                .unwrap();
             for i in 0..PIN_AMOUNT {
                 let mut pin = *pins.get(i as usize).unwrap();
                 if data & 0b1 == 1 {
                     if pin.enabled && !pin.is_input {
                         pin.state = !pin.state;
                         trace!("PIN {} TOGGLE", i);
+                        if pin.state {
+                            state |= 1 << i;
+                        } else {
+                            state &= !(1 << i);
+                        }
                     }
                 }
                 data = data >> 1;
                 self.memory.write(0x6000_0014, 4, false, 0.into());
+                let _ = std::mem::replace(&mut pins[i as usize], pin);
+            }
+            self.memory.write(0x6000_0018, 4, false, state.into());
+        }
+        if touched_indices.contains(&6) {
+            let mut data: u32 = self
+                .memory
+                .read(0x6000_0018, 4, false, false)
+                .try_into()
+                .unwrap();
+            for i in 0..PIN_AMOUNT {
+                let mut pin = *pins.get(i as usize).unwrap();
+                if data & 0b1 == 1 {
+                    if pin.enabled && !pin.is_input {
+                        pin.state = true;
+                        trace!("PIN {} state high", i);
+                    }
+                } else {
+                    pin.state = false;
+                    trace!("PIN {} state low", i);
+                }
+                data = data >> 1;
                 let _ = std::mem::replace(&mut pins[i as usize], pin);
             }
         }
@@ -403,6 +450,7 @@ impl GPIO {
             //set
             2 => {
                 if csrstore.contains_key(&(csr_addr as usize)) {
+                    trace!("csr set");
                     val = self.memory.read(
                         ((csr_addr - GPIO_CSR_BASE) * 4 + GPIO_MMIO_BASE) as usize,
                         4,
@@ -421,8 +469,8 @@ impl GPIO {
             }
             //clear
             3 => {
-                // trace!("csr clear");
                 if csrstore.contains_key(&(csr_addr as usize)) {
+                    trace!("csr clear");
                     val = self.memory.read(
                         ((csr_addr - GPIO_CSR_BASE) * 4 + GPIO_MMIO_BASE) as usize,
                         4,
