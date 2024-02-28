@@ -69,6 +69,18 @@ impl TryFrom<SignalValue> for bool {
     }
 }
 
+impl TryFrom<SignalValue> for usize {
+    type Error = String;
+
+    fn try_from(data: SignalValue) -> Result<Self, Self::Error> {
+        if let SignalValue::Data(data) = data {
+            Ok(data as usize)
+        } else {
+            Err(format!("Could not convert {:?} into usize", data))
+        }
+    }
+}
+
 impl TryFrom<Signal> for SignalUnsigned {
     type Error = String;
 

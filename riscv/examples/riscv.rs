@@ -262,6 +262,10 @@ fn main() {
                     size_i: dummy.clone(),
                     we_i: dummy.clone(),
                     se_i: dummy.clone(),
+                    csr_d: dummy.clone(),
+                    csr_a: dummy.clone(),
+                    csr_ctl: dummy.clone(),
+                    csrstore: GPIOCsrStore::default(),
                     pins: Pins::default(),
                     memory: Memory::default(),
                 }),
@@ -290,8 +294,8 @@ fn fern_setup_riscv() {
                 message
             ))
         })
-        .level_for("riscv::components::clic", log::LevelFilter::Trace)
-        .level_for("syncrim::components::mux", log::LevelFilter::Trace)
+        .level_for("riscv::components::gpio", log::LevelFilter::Trace)
+        //.level_for("syncrim::components::mux", log::LevelFilter::Trace)
         .level(log::LevelFilter::Error);
 
     // - and per-module overrides

@@ -8,14 +8,21 @@ use std::rc::Rc;
 use syncrim::common::EguiComponent;
 use syncrim::{
     common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
-    signal::SignalValue,
+    signal::{SignalUnsigned, SignalValue},
 };
 
+use std::collections::HashMap;
+pub const GPIO_CSR_BASE: u32 = 0x0;
+pub const GPIO_MMIO_BASE: u32 = 0x6000_0000;
 pub const GPIO_DATA_I_ID: &str = "data_i";
 pub const GPIO_SIZE_I_ID: &str = "size_i";
 pub const GPIO_WE_I_ID: &str = "we_i";
 pub const GPIO_ADDR_I_ID: &str = "addr_i";
 pub const GPIO_SE_I_ID: &str = "se_i";
+pub const GPIO_CSR_D_ID: &str = "csr_d";
+pub const GPIO_CSR_A_ID: &str = "csr_a";
+pub const GPIO_CSR_CTL_ID: &str = "csr_ctl";
+
 pub const GPIO_DATA_O_ID: &str = "data_o";
 pub const GPIO_PIN_O_ID: &str = "pin_o";
 //pub const GPIO_DATA_I_ID: &str = "";
@@ -37,12 +44,17 @@ pub struct GPIO {
     pub memory: Memory,
     #[serde(skip)]
     pub pins: Pins,
+    #[serde(skip)]
+    pub csrstore: GPIOCsrStore,
 
     pub data_i: Input,
     pub size_i: Input,
     pub we_i: Input,
     pub addr_i: Input,
     pub se_i: Input,
+    pub csr_d: Input,
+    pub csr_a: Input,
+    pub csr_ctl: Input,
 }
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub struct Pin {
@@ -75,6 +87,19 @@ impl Pins {
         Pins(Rc::new(RefCell::new(v)))
     }
 }
+
+pub struct GPIOCsrStore(Rc<RefCell<HashMap<usize, usize>>>);
+
+impl Default for GPIOCsrStore {
+    fn default() -> GPIOCsrStore {
+        let mut h = HashMap::new();
+        for i in ((0 + GPIO_CSR_BASE) as usize)..=((5 + GPIO_CSR_BASE) as usize) {
+            h.insert(i, 0);
+        }
+        GPIOCsrStore(Rc::new(RefCell::new(h)))
+    }
+}
+
 #[typetag::serde()]
 impl Component for GPIO {
     fn as_any(&self) -> &dyn std::any::Any {
@@ -92,12 +117,15 @@ impl Component for GPIO {
             width: GPIO_WIDTH,
             id: id.to_string(),
             pos: (pos.0, pos.1),
+            csr_d: dummy.clone(),
+            csr_a: dummy.clone(),
+            csr_ctl: dummy.clone(),
             data_i: dummy.clone(),
             size_i: dummy.clone(),
             we_i: dummy.clone(),
             addr_i: dummy.clone(),
             se_i: dummy.clone(),
-
+            csrstore: GPIOCsrStore::default(),
             pins: Pins::default(),
             memory: Memory::default(),
         }))
@@ -113,6 +141,12 @@ impl Component for GPIO {
             self.we_i = new_input;
         } else if target_port_id.as_str() == GPIO_SE_I_ID {
             self.se_i = new_input;
+        } else if target_port_id.as_str() == GPIO_CSR_D_ID {
+            self.csr_d = new_input;
+        } else if target_port_id.as_str() == GPIO_CSR_A_ID {
+            self.csr_a = new_input;
+        } else if target_port_id.as_str() == GPIO_CSR_CTL_ID {
+            self.csr_ctl = new_input;
         }
     }
     fn get_id_ports(&self) -> (String, Ports) {
@@ -162,6 +196,24 @@ impl Component for GPIO {
         let addr = simulator.get_input_value(&self.addr_i);
         let size = simulator.get_input_value(&self.size_i);
         let sign = simulator.get_input_value(&self.se_i);
+        let csr_data = simulator.get_input_value(&self.csr_d);
+        let csr_addr = simulator.get_input_value(&self.csr_a);
+        let csr_ctl = simulator.get_input_value(&self.csr_ctl);
+        match csr_ctl {
+            SignalValue::Data(ctl) => {
+                let csr_addr: u32 = csr_addr.try_into().unwrap();
+                let csr_data: u32 = csr_data.try_into().unwrap_or(0); // could be a read still
+                let mut csrstore = self.csrstore.0.borrow_mut();
+                let csr_ret = self.csr_op(&mut csrstore, ctl, csr_data, csr_addr);
+                trace!(
+                    "CSR TOUCH addr: {:x}",
+                    (csr_addr - GPIO_CSR_BASE) * 4 + GPIO_MMIO_BASE
+                );
+                trace!("CSR addr: {:x}", csr_addr);
+                self.handle_gpio_write((csr_addr - GPIO_CSR_BASE) * 4 + GPIO_MMIO_BASE);
+            }
+            _ => {}
+        }
         match simulator.get_input_value(&self.we_i) {
             SignalValue::Data(ctrl) => {
                 let addr: u32 = addr.try_into().unwrap_or(0);
@@ -318,5 +370,77 @@ impl GPIO {
                 let _ = std::mem::replace(&mut pins[i as usize], pin);
             }
         }
+    }
+    fn csr_op(
+        &self,
+        csrstore: &mut HashMap<usize, usize>,
+        csr_ctl: SignalUnsigned,
+        csr_data: SignalUnsigned,
+        csr_addr: SignalUnsigned,
+    ) -> SignalValue {
+        let mut val = SignalValue::Unknown;
+        let mut csr_data = csr_data.clone();
+        match csr_ctl {
+            0 => {}
+            //write
+            1 => {
+                if csrstore.contains_key(&(csr_addr as usize)) {
+                    val = self.memory.read(
+                        ((csr_addr - GPIO_CSR_BASE) * 4 + GPIO_MMIO_BASE) as usize,
+                        4,
+                        false,
+                        false,
+                    );
+                    csrstore.insert(csr_addr as usize, csr_data as usize);
+                    self.memory.write(
+                        ((csr_addr - GPIO_CSR_BASE) * 4 + GPIO_MMIO_BASE) as usize,
+                        4,
+                        false,
+                        SignalValue::Data(csr_data),
+                    );
+                }
+            }
+            //set
+            2 => {
+                if csrstore.contains_key(&(csr_addr as usize)) {
+                    val = self.memory.read(
+                        ((csr_addr - GPIO_CSR_BASE) * 4 + GPIO_MMIO_BASE) as usize,
+                        4,
+                        false,
+                        false,
+                    );
+                    let val_i: usize = val.try_into().unwrap();
+                    csrstore.insert(csr_addr as usize, (csr_data as usize) | val_i);
+                    self.memory.write(
+                        ((csr_addr - GPIO_CSR_BASE) * 4 + GPIO_MMIO_BASE) as usize,
+                        4,
+                        false,
+                        SignalValue::Data((csr_data) | val_i as u32),
+                    );
+                }
+            }
+            //clear
+            3 => {
+                // trace!("csr clear");
+                if csrstore.contains_key(&(csr_addr as usize)) {
+                    val = self.memory.read(
+                        ((csr_addr - GPIO_CSR_BASE) * 4 + GPIO_MMIO_BASE) as usize,
+                        4,
+                        false,
+                        false,
+                    );
+                    let val_i: usize = val.try_into().unwrap();
+                    csrstore.insert(csr_addr as usize, val_i & !(csr_data as usize));
+                    self.memory.write(
+                        ((csr_addr - GPIO_CSR_BASE) * 4 + GPIO_MMIO_BASE) as usize,
+                        4,
+                        false,
+                        SignalValue::Data((val_i as u32) & !csr_data),
+                    );
+                }
+            }
+            _ => {}
+        }
+        val
     }
 }

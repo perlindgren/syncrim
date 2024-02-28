@@ -3,6 +3,12 @@
 init:
     la       sp, _stack_start    # set stack pointer
     csrwi    0x350, 2            # set stack_depth
+    csrsi    0x0, 4              # enable GPIO 3
+    csrci    0x1, 4              # GPIO 3 to output
+    csrsi    0x5, 4              # GPIO 3 toggle
+    csrsi    0x5, 4              # GPIO 3 toggle
+    csrsi    0x3, 4              # GPIO 3 set
+    csrsi    0x4, 4              # GPIO 3 clear
 main:
     # setup for individual interrupts done using MMIO
     # we are already at priority 0
