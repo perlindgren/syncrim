@@ -37,8 +37,17 @@ main:
     csrwi   mstatus, 8          # enable global interrupts
     li      t1, 0x1             # 1 for pending
     csrrs   zero, 0xB02, t1     # pend interrupt 2, it should now be dispatched
+    #jal ra, helper               # enable interrupts via helper
 stop:
     j        stop               # finished loop
+
+helper:
+   nop
+   nop
+   csrwi   mstatus, 8          # mock an incoming interrupt in some helper.
+   nop
+   nop
+   jr ra
 
 isr_0:
     j isr_0                     # panic loop, we should never end up here
@@ -52,6 +61,11 @@ isr_2: #interrupt 2
     li a0, 1
     #csrrc zero, 0xB02, a0       # unpend self
     csrrs zero, 0xB01, a0       # pend interrupt 1
+    #nop
+    #nop
+    #jal ra, helper
+    #nop
+    #nop
     csrrs zero, 0xB04, a0       # pend interrupt 4
     nop                         # waste a cycle so we can see the return
     jr       ra                 # return

@@ -409,7 +409,7 @@ impl Component for Decoder {
                 //AUIPC
                 trace!("opcode=AUIPC");
                 alu_a_mux_sel = SignalValue::from(0); //auipc imm
-                alu_b_mux_sel = SignalValue::from(6); //PC
+                alu_b_mux_sel = SignalValue::from(5); //PC
                 rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = SignalValue::from(0); //x0 dont care
                 wb_write_enable = SignalValue::from(1); //enable write
@@ -424,7 +424,7 @@ impl Component for Decoder {
                 //JAL
                 trace!("opcode=JAL");
                 alu_a_mux_sel = SignalValue::from(1); //jal imm
-                alu_b_mux_sel = SignalValue::from(6); //PC
+                alu_b_mux_sel = SignalValue::from(5); //PC
                 sub_arith = SignalValue::from(0); //sign extend
                 rd = SignalValue::from((instruction & (0b11111 << 7)) >> 7);
                 //regfile_rs1 = SignalValue::from(0); //dont care
@@ -465,7 +465,7 @@ impl Component for Decoder {
                 rs1 = SignalValue::from((instruction & (0b11111 << 15)) >> 15);
                 rs2 = SignalValue::from((instruction & (0b11111 << 20)) >> 20);
                 alu_a_mux_sel = SignalValue::from(2); //branch imm
-                alu_b_mux_sel = SignalValue::from(6); //PC
+                alu_b_mux_sel = SignalValue::from(5); //PC
                 alu_op = SignalValue::from(1); //add
                 sub_arith = SignalValue::from(0); //sign extend
                 branch_instr = SignalValue::from(funct3); //use funct3
