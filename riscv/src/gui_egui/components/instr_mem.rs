@@ -1,7 +1,6 @@
 use crate::components::InstrMem;
 use egui::{
-    Color32, Context, Label, Pos2, Rect, Response, RichText, Rounding, Sense, Shape, Stroke, Ui,
-    Vec2, Window,
+    Color32, Context, FontFamily, Label, Pos2, Rect, Response, RichText, Rounding, Sense, Shape, Stroke, Ui, Vec2, Window
 };
 use egui_extras::{Column, TableBuilder};
 use log::trace;
@@ -14,11 +13,11 @@ use syncrim::gui_egui::component_ui::{
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
-
+use egui::FontId;
 impl InstrMem {
     fn side_panel(&self, ctx: &Context, simulator: Option<&mut Simulator>) {
         Window::new("Instruction Memory")
-            .resizable(false)
+            .resizable(true)
             .show(ctx, |ui| {
                 TableBuilder::new(ui)
                     .striped(true)
@@ -176,7 +175,7 @@ impl EguiComponent for InstrMem {
                 color: Color32::BLACK,
             },
         ));
-
+        ui.painter().text(o.to_pos2(), egui::Align2::CENTER_CENTER, "InstrMem", FontId::monospace(14.0), Color32::BLACK);
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
             ui.label("InstrMem");

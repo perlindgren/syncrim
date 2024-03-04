@@ -112,7 +112,7 @@ impl EguiComponent for RegFile {
                             header.col(|ui| {
                                 ui.label(
                                     RichText::new(format!(
-                                        "Value {}",
+                                        "Level {}",
                                         *self.stack_depth_state.borrow() as i32
                                     ))
                                     .size(20.0 * scale),
