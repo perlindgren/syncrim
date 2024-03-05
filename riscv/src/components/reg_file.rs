@@ -97,7 +97,7 @@ const REG_RA: u32 = Reg::ra as u32;
 pub const REG_FILE_MAX_DEPTH: usize = 4;
 
 pub const REG_FILE_STACK_DEPTH_ID: &str = "stack_depth";
-pub const REG_FILE_CLIC_MEPC_ID: &str = "clic_mepc";
+//pub const REG_FILE_CLIC_MEPC_ID: &str = "clic_mepc";
 pub const REG_FILE_CLIC_RA_WE_ID: &str = "clic_ra_we";
 
 pub const REG_FILE_READ_ADDR1_ID: &str = "read_addr1";
@@ -122,7 +122,7 @@ pub struct RegFile {
 
     // ports
     pub stack_depth: Input,
-    pub clic_mepc: Input,
+    //pub clic_mepc: Input,
     pub clic_ra_we: Input,
 
     pub read_addr1: Input,
@@ -289,7 +289,7 @@ impl RegFile {
             width: REG_FILE_WIDTH,
             height: REG_FILE_HEIGHT,
             stack_depth: dummy.clone(),
-            clic_mepc: dummy.clone(),
+            //clic_mepc: dummy.clone(),
             clic_ra_we: dummy.clone(),
             read_addr1: dummy.clone(),
             read_addr2: dummy.clone(),
@@ -329,10 +329,11 @@ impl Component for RegFile {
                         port_id: REG_FILE_STACK_DEPTH_ID.to_string(),
                         input: self.stack_depth.clone(),
                     },
-                    InputPort {
-                        port_id: REG_FILE_CLIC_MEPC_ID.to_string(),
-                        input: self.stack_depth.clone(),
-                    },
+                    // InputPort {
+                    //     port_id: REG_FILE_CLIC_MEPC_ID.to_string(),
+                    //     input: self.stack_depth.clone(),
+                    //
+                    //},
                     InputPort {
                         port_id: REG_FILE_CLIC_RA_WE_ID.to_string(),
                         input: self.stack_depth.clone(),
@@ -378,7 +379,7 @@ impl Component for RegFile {
             registers: RegStore::new(Rc::new(RefCell::new([[0; 32]; REG_FILE_MAX_DEPTH]))),
             history: RegHistory::new(),
             stack_depth: dummy_input.clone(),
-            clic_mepc: dummy_input.clone(),
+            //clic_mepc: dummy_input.clone(),
             clic_ra_we: dummy_input.clone(),
             read_addr1: dummy_input.clone(),
             read_addr2: dummy_input.clone(),
@@ -419,10 +420,10 @@ impl Component for RegFile {
             simulator.get_input_value(&self.clic_ra_we) == (true as SignalUnsigned).into();
 
         if clic_ra_we && (stack_depth as i32 >= 0) {
-            println!(
-                "update ra register {:?}",
-                simulator.get_input_value(&self.clic_mepc)
-            );
+            // println!(
+            //     "update ra register {:?}",
+            //     simulator.get_input_value(&self.clic_mepc)
+            // );
             let old_ra = self.read_reg(simulator, REG_RA);
             regop.old_ra = Some(old_ra.try_into().unwrap());
             // self.write_reg(
@@ -495,7 +496,7 @@ mod test {
         let cs = ComponentStore {
             store: vec![
                 Rc::new(ProbeOut::new("stack_depth")),
-                Rc::new(ProbeOut::new("clic_mepc")),
+                //Rc::new(ProbeOut::new("clic_mepc")),
                 Rc::new(ProbeOut::new("clic_ra_we")),
                 Rc::new(ProbeOut::new("read_reg_1")),
                 Rc::new(ProbeOut::new("read_reg_2")),
@@ -511,7 +512,7 @@ mod test {
 
                     // ports
                     stack_depth: Input::new("stack_depth", "out"),
-                    clic_mepc: Input::new("clic_mepc", "out"),
+                    //clic_mepc: Input::new("clic_mepc", "out"),
                     clic_ra_we: Input::new("clic_ra_we", "out"),
 
                     read_addr1: Input::new("read_reg_1", "out"),

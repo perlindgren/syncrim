@@ -222,13 +222,13 @@ impl EguiComponent for RegFile {
                     self.id.clone(),
                 );
 
-                clicked_dropdown |= input_selector(
-                    ui,
-                    &mut self.clic_mepc,
-                    crate::components::REG_FILE_CLIC_MEPC_ID.to_string(),
-                    id_ports,
-                    self.id.clone(),
-                );
+                // clicked_dropdown |= input_selector(
+                //     ui,
+                //     &mut self.clic_mepc,
+                //     crate::components::REG_FILE_CLIC_MEPC_ID.to_string(),
+                //     id_ports,
+                //     self.id.clone(),
+                // );
 
                 clicked_dropdown |= input_selector(
                     ui,
