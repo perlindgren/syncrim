@@ -34,7 +34,11 @@ isr_2: #interrupt 2
     csrrs zero, 0xB01, a0       # pend interrupt 1
     nop
     nop
+    addi sp, sp, -4
+    sw ra, 0(sp)
     jal ra, helper              # since interrupt occured at the CSRRW instruction in helper, hitting that instruction now will cause stack_depth to increase erroneously.
+    lw ra, 0(sp)
+    addi sp, sp, 4
     nop                         # make it obvious that helper call never returns here....
     nop
     jr       ra                 # return

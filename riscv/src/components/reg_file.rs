@@ -425,11 +425,13 @@ impl Component for RegFile {
             );
             let old_ra = self.read_reg(simulator, REG_RA);
             regop.old_ra = Some(old_ra.try_into().unwrap());
-            self.write_reg(
-                simulator,
-                REG_RA,
-                simulator.get_input_value(&self.clic_mepc),
-            );
+            // self.write_reg(
+            //     simulator,
+            //     REG_RA,
+            //     simulator.get_input_value(&self.clic_mepc),
+            // );
+            // write magic number to RA
+            self.write_reg(simulator, REG_RA, SignalValue::Data(0xFFFF_FFFF));
         }
 
         let stack_depth = stack_depth as usize;

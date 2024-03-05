@@ -85,7 +85,7 @@ fn sign_zero_extend(sign: bool, width: u8, val: u32) -> u32 {
     if sign {
         let sign_bit = val >> (width - 1);
         let mask = !(2u32.pow(width as u32) - 1);
-        println!("MASK: {:08x}", mask);
+        //println!("MASK: {:08x}", mask);
         if sign_bit == 1 {
             val | mask
         } else {

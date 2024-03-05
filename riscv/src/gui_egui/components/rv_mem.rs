@@ -1,4 +1,5 @@
 use crate::components::RVMem;
+use egui::FontId;
 use egui::{
     Color32, Context, Label, Pos2, Rect, Response, Rounding, Shape, Slider, Stroke, Ui, Vec2,
     Window,
@@ -12,7 +13,6 @@ use syncrim::gui_egui::component_ui::{
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
-use egui::FontId;
 impl RVMem {
     fn side_panel(&self, ctx: &Context, _simulator: Option<&mut Simulator>) {
         Window::new("Data Memory").show(ctx, |ui| {
@@ -115,7 +115,13 @@ impl EguiComponent for RVMem {
                 color: Color32::BLACK,
             },
         ));
- ui.painter().text(o.to_pos2(), egui::Align2::CENTER_CENTER, "Data Mem", FontId::monospace(14.0), Color32::BLACK);
+        ui.painter().text(
+            o.to_pos2(),
+            egui::Align2::CENTER_CENTER,
+            "Data Mem",
+            FontId::monospace(14.0),
+            Color32::BLACK,
+        );
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));

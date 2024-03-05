@@ -356,6 +356,7 @@ impl Component for CLIC {
         // define outputs
         let csr_out;
         let mut blu_int = false; // default to pc
+        let mut int_mux_ctl = 0; // default to pc
         let mut mem_int_addr = SignalValue::Uninitialized;
         let mut rf_ra_we = SignalValue::Data(0);
         let mut isr_mepc_select = SignalValue::Uninitialized;
@@ -412,12 +413,17 @@ impl Component for CLIC {
                 current_mepc
             );
             // check if we are about to return from interrupt in super-clic mode
-            if pc_next == current_mepc {
+            // by comparing against magic number
+            //if pc_next == current_mepc {
+            if pc_next == 0xFFFF_FFFF {
                 let _ = clic_stack.pop();
                 // set old threshold
                 mintthresh = old_threshold as usize;
                 stack_depth += 1;
+                println!("RETURN");
                 return_from_interrupt = Some(current_mepc);
+                isr_mepc_select = SignalValue::Data(0);
+                blu_int = true;
             }
         }
         // vanilla clic (MRET)
