@@ -4,48 +4,15 @@ init:
     la       sp, _stack_start    # set stack pointer
     csrwi    0x350, 2            # set stack_depth
 main:
-    # setup for individual interrupts done using MMIO
-    # we are already at priority 0
-    la      t2, 0x02000100      # priority 2, enabled, not pended, will store at interrupt 2
-    csrw 0xB02, t2              # configure interrupt 2 via CSR
-  #  csrw 0xB09, a3
-    # setup for vector tables and vector table pointers
     la t1, 0b1
+blink:
     csrs 0x0, t1
     nop
     csrc 0x0, t1
+    j blink
 
-    la      t0, .clic_vec       # load 0 latency vector table address
-    csrw    0x351, t0           # store 0 latency vector table address at super_mtvec
-    la      t0, .vector_table   # load vanilla vector table address
-    csrw    mtvec, t0           # store vanilla vector table address at mtvec
-    csrwi   0x347, 0            # set interrupt prio threshold to 0
-    csrrsi   zero, 0xB02, 0x1     # pend interrupt 2
-    jal ra, helper               # enable interrupts via helper
-stop:
-    j        stop               # finished loop
-
-helper:
-   nop
-   nop
-   csrwi   mstatus, 8          # mock an incoming interrupt in some helper.
-   nop
-   nop
-   jr ra
 
 isr_2: #interrupt 2
-    li a0, 1
-    csrrc zero, 0xB02, a0       # unpend self
-    csrrs zero, 0xB01, a0       # pend interrupt 1
-    nop
-    nop
-    addi sp, sp, -4
-    sw ra, 0(sp)
-    jal ra, helper              # since interrupt occured at the CSRRW instruction in helper, hitting that instruction now will cause stack_depth to increase erroneously.
-    lw ra, 0(sp)
-    addi sp, sp, 4
-    nop                         # make it obvious that helper call never returns here....
-    nop
     jr       ra                 # return
 
     .section .vector_table, "aw"
