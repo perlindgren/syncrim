@@ -834,10 +834,14 @@ impl CLIC {
                     }
                     // interrupt config write, mirror in mmio
                     // trace!("CSR_ADDR_NEW:{:x}", csr_addr);
-                    if 0xB00 <= csr_addr && csr_addr <= 0xBBF {
+                    if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
+                        csr_data = ((csr_data & (0b11100)) << 22)
+                            | ((csr_data & 0b10) << 7)
+                            | (csr_data & 0b1);
+                        println!("write: {:08x}", csr_data);
                         // trace!("ok do thing");
                         self.mmio_op(
-                            0x1000 + (csr_addr - 0xb00) * 4,
+                            0x1000 + (csr_addr - 0xb20) * 4,
                             2,
                             4,
                             csr_data,
@@ -862,9 +866,14 @@ impl CLIC {
                         history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
                         //interrupt config CSR
                         // trace!("SET CSR: {:x}, curr val: {:x}", csr_addr, val);
-                        if 0xB00 <= csr_addr && csr_addr <= 0xBBF {
+                        if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
+                            csr_data = ((csr_data & (0b11100)) << 22)
+                                | ((csr_data & 0b10) << 7)
+                                | (csr_data & 0b1);
+                            val = ((val & (0b11100)) << 22) | ((val & 0b10) << 7) | (val & 0b1);
+                            println!("set: {:08x}", (csr_data) | val as u32);
                             self.mmio_op(
-                                0x1000 + (csr_addr - 0xb00) * 4,
+                                0x1000 + (csr_addr - 0xb20) * 4,
                                 2,
                                 4,
                                 (csr_data) | val as u32,
@@ -892,9 +901,14 @@ impl CLIC {
                         // trace!("{:x}", (val as u32 & !csr_data));
                         csrstore.insert(csr_addr as usize, val & !(csr_data as usize));
                         history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
-                        if 0xB00 <= csr_addr && csr_addr <= 0xBBF {
+                        if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
+                            csr_data = ((csr_data & (0b11100)) << 22)
+                                | ((csr_data & 0b10) << 7)
+                                | (csr_data & 0b1);
+                            val = ((val & (0b11100)) << 22) | ((val & 0b10) << 7) | (val & 0b1);
+                            println!("clear: {:08x}", (val as u32) & !csr_data);
                             self.mmio_op(
-                                0x1000 + (csr_addr - 0xb00) * 4,
+                                0x1000 + (csr_addr - 0xb20) * 4,
                                 2,
                                 4,
                                 (val as u32) & !csr_data,

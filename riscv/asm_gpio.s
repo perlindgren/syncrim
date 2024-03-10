@@ -4,7 +4,13 @@ init:
     la       sp, _stack_start    # set stack pointer
     csrwi    0x350, 2            # set stack_depth
 main:
+    csrwi 0x300, 8 # enable global interrupts
+    la t1, .clic_vec
+    csrw 0x351, t1
+    la t1, 0b11110
+    csrw 0xB22, t1
     la t1, 0b1
+    csrs 0xB22, t1
 blink:
     csrs 0x0, t1
     nop

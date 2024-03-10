@@ -269,7 +269,7 @@ impl GPIO {
 
         trace!("touched indices {:?}", touched_indices);*/
         // enable
-       /* if touched_indices.contains(&0) {
+        /* if touched_indices.contains(&0) {
             let mut data: u32 = self
                 .memory
                 .read(0x6000_0000, 4, false, false)
@@ -309,10 +309,10 @@ impl GPIO {
                 data = data >> 1;
             }
         }*/
-       /* // enable interrupts
+        /* // enable interrupts
         if touched_indices.contains(&2) {}*/
         // set
- /*       if touched_indices.contains(&3) {
+        /*       if touched_indices.contains(&3) {
             let mut data: u32 = self
                 .memory
                 .read(0x6000_000C, 4, false, false)
@@ -397,24 +397,23 @@ impl GPIO {
             }
             self.memory.write(0x6000_0018, 4, false, state.into());
         }*/
-            let mut data: u32 = self
-                .memory
-                .read(0x6000_0000, 4, false, false)
-                .try_into()
-                .unwrap();
-            for i in 0..PIN_AMOUNT {
-                let mut pin = *pins.get(i as usize).unwrap();
-                if data & 0b1 == 1 {
-
-                        pin.state = true;
-                        trace!("PIN {} state high", i);
-                } else {
-                    pin.state = false;
-                    trace!("PIN {} state low", i);
-                }
-                data = data >> 1;
-                let _ = std::mem::replace(&mut pins[i as usize], pin);
+        let mut data: u32 = self
+            .memory
+            .read(0x6000_0000, 4, false, false)
+            .try_into()
+            .unwrap();
+        for i in 0..PIN_AMOUNT {
+            let mut pin = *pins.get(i as usize).unwrap();
+            if data & 0b1 == 1 {
+                pin.state = true;
+                trace!("PIN {} state high", i);
+            } else {
+                pin.state = false;
+                trace!("PIN {} state low", i);
             }
+            data = data >> 1;
+            let _ = std::mem::replace(&mut pins[i as usize], pin);
+        }
     }
     fn csr_op(
         &self,
