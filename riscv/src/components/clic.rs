@@ -86,6 +86,8 @@ pub struct CLIC {
     #[serde(skip)]
     pub mtime: RefCell<u64>,
     #[serde(skip)]
+    pub monotonic: RefCell<u64>,
+    #[serde(skip)]
     pub mtimecomp: RefCell<u64>,
     // #[serde(skip)]
     // pub stack_depth: RefCell<u32>, //current register stack depth
@@ -203,6 +205,7 @@ impl CLIC {
                 }
                 RefCell::new(csrstore)
             },
+            monotonic: RefCell::new(0),
             mmio: {
                 let mut mmio = HashMap::new();
                 for i in 0x1000..0x10C0 {
@@ -263,6 +266,7 @@ impl Component for CLIC {
         self.queue.swap(&RefCell::new(PriorityQueue::new()));
         self.history.swap(&RefCell::new(vec![]));
         self.clic_stack.swap(&RefCell::new(Vec::new()));
+        self.monotonic.swap(&RefCell::new(0));
     }
 
     fn to_(&self) {
@@ -409,7 +413,8 @@ impl Component for CLIC {
         };
         //dispatched interrupt id, used to unpend in csr store
         let mut dispatched_interrupt_id = None;
-
+        let mut monotonic = self.monotonic.borrow_mut();
+        *monotonic += 1;
         // handle CSR op if there was any
         csr_out = self.csr_op(
             &mut csrstore,
@@ -572,7 +577,7 @@ impl Component for CLIC {
                     );
                     csrstore.insert(
                         (CLIC_TIMESTAMP_BASE + interrupt_id) as usize,
-                        ((*mtime as u32) >> CLIC_TIMESTAMP_PRESCALER) as usize,
+                        ((*monotonic as u32) >> CLIC_TIMESTAMP_PRESCALER) as usize,
                     );
                     dispatched_interrupt_id = Some(interrupt_id);
                 }

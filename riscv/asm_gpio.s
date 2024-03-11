@@ -28,12 +28,12 @@ isr_0: #timer interrupt
 led_on:
     csrs 0x0, t1    # set bit 0 (t1 = 1) in GPIO CSR (LED on)
     sw t1, 0(t0)    # store 1 at toggled state var
-    csrr t3, 0xB42  # load timestamp
+    csrr t3, 0xB40  # load timestamp
     jr ra           # return (if is unrolled to save some cycles)
 led_off:
     csrc 0x0, t1    # clear bit 0 (t1 = 1) in GPIO CSR (LED off)
     sw zero, 0(t0)  # store 0 at toggled state var
-    csrr t3, 0xB42  # load timestamp
+    csrr t3, 0xB40  # load timestamp
     jr ra           # return (if is unrolled to save some cycles)
 
 isr_2: #interrupt 2
