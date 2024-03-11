@@ -8,7 +8,7 @@ use std::rc::Rc;
 use syncrim::common::EguiComponent;
 use syncrim::{
     common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
-    signal::{SignalUnsigned, SignalValue},
+    signal::SignalValue,
 };
 
 use std::collections::HashMap;
@@ -196,15 +196,15 @@ impl Component for GPIO {
         let addr = simulator.get_input_value(&self.addr_i);
         let size = simulator.get_input_value(&self.size_i);
         let sign = simulator.get_input_value(&self.se_i);
-        let csr_data = simulator.get_input_value(&self.csr_d);
+        //let csr_data = simulator.get_input_value(&self.csr_d);
         let csr_addr = simulator.get_input_value(&self.csr_a);
         let csr_ctl = simulator.get_input_value(&self.csr_ctl);
         match csr_ctl {
-            SignalValue::Data(ctl) => {
+            SignalValue::Data(_) => {
                 let csr_addr: u32 = csr_addr.try_into().unwrap();
-                let csr_data: u32 = csr_data.try_into().unwrap_or(0); // could be a read still
-                let mut csrstore = self.csrstore.0.borrow_mut();
-                let csr_ret = self.csr_op(&mut csrstore, ctl, csr_data, csr_addr);
+                //let csr_data: u32 = csr_data.try_into().unwrap_or(0); // could be a read still
+                //let mut csrstore = self.csrstore.0.borrow_mut();
+                //let csr_ret = self.csr_op(&mut csrstore, ctl, csr_data, csr_addr);
                 trace!(
                     "CSR TOUCH addr: {:x}",
                     (csr_addr - GPIO_CSR_BASE) * 4 + GPIO_MMIO_BASE
@@ -259,7 +259,7 @@ impl Component for GPIO {
 }
 
 impl GPIO {
-    fn handle_gpio_write(&self, addr: u32) {
+    fn handle_gpio_write(&self, _addr: u32) {
         let mut pins = self.pins.0.borrow_mut();
         /*let rel_addr = addr - 0x6000_0000;
         let touched_indices = [
@@ -415,7 +415,7 @@ impl GPIO {
             let _ = std::mem::replace(&mut pins[i as usize], pin);
         }
     }
-    fn csr_op(
+    /* fn csr_op(
         &self,
         csrstore: &mut HashMap<usize, usize>,
         csr_ctl: SignalUnsigned,
@@ -423,7 +423,7 @@ impl GPIO {
         csr_addr: SignalUnsigned,
     ) -> SignalValue {
         let mut val = SignalValue::Unknown;
-        let mut csr_data = csr_data.clone();
+        let csr_data = csr_data.clone();
         match csr_ctl {
             0 => {}
             //write
@@ -487,5 +487,5 @@ impl GPIO {
             _ => {}
         }
         val
-    }
+    }*/
 }

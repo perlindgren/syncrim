@@ -1,8 +1,8 @@
 use crate::components::InstrMem;
 use egui::FontId;
 use egui::{
-    Color32, Context, FontFamily, Label, Pos2, Rect, Response, RichText, Rounding, Sense, Shape,
-    Stroke, Ui, Vec2, Window,
+    Color32, Context, Label, Pos2, Rect, Response, RichText, Rounding, Sense, Shape, Stroke, Ui,
+    Vec2, Window,
 };
 use egui_extras::{Column, TableBuilder};
 use log::trace;

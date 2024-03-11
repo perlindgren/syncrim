@@ -38,7 +38,7 @@ impl EguiComponent for ProbeLabel {
             .pivot(Align2::CENTER_CENTER)
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);
-                let text = if (self.input.field != "out") {
+                let text = if self.input.field != "out" {
                     if let SignalValue::Data(v) = value {
                         format!("{}:\n{:#010x}", self.input.field, v)
                     } else {

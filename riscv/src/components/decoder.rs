@@ -183,10 +183,10 @@ impl Component for Decoder {
             | ((instruction & (0b1 << 20)) >> (20 - 11))
             | (instruction & (0b11111111 << 12)))
             & 0b1111_1111_1111_1111_1111_1111_1111_1110;
-        let branch_imm = (((instruction & (0b1 << 31)) >> 19)
+        let branch_imm = ((instruction & (0b1 << 31)) >> 19)
             | ((instruction & (0b111111 << 25)) >> 20)
             | ((instruction & (0b1111 << 8)) >> 7)
-            | ((instruction & (0b1 << 7)) << 4));
+            | ((instruction & (0b1 << 7)) << 4);
         //no idea why this is encoded this way but the ISA is what it is
         let imm_store =
             ((instruction & (0b11111 << 7)) >> 7) | ((instruction & (0b1111111 << 25)) >> 20);
@@ -214,7 +214,7 @@ impl Component for Decoder {
         let mut dmem_sign_extend = SignalValue::Uninitialized;
         let mut dmem_write_enable = SignalValue::from(MemCtrl::None as u32);
         // ??
-        let mut pc_imm_sel = SignalValue::Uninitialized;
+        let pc_imm_sel = SignalValue::Uninitialized;
         let mut branch_instr = SignalValue::Uninitialized;
         let mut branch_logic_enable = SignalValue::from(0); //this must be 0
         let mut csr_ctl = SignalValue::Uninitialized;

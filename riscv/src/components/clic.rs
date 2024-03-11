@@ -34,6 +34,9 @@ pub const CLIC_RF_RA_WE: &str = "rf_ra_we";
 // pub const CLIC_REG_FILE_WRITE_ID: &str = "reg_file_write";
 pub const CLIC_STACK_DEPTH_OUT_ID: &str = "stack_depth_out";
 
+pub const TIMER_WIDTH: u32 = 16;
+pub const TIMER_PRES_WIDTH: u32 = 4;
+pub const TIMER_ADDR: u32 = 0x400;
 #[derive(Serialize, Deserialize)]
 struct CLICOp {
     pub mmio_op: Option<([u32; 2], u32)>,
@@ -94,6 +97,29 @@ pub struct MMIOEntry {
     clicintie: u8,
     clicintattr: u8,
     clicintctl: u8,
+}
+
+//it would be nice to have a bitfield type instead of wildly using u32s and hoping for the best
+#[derive(Serialize, Deserialize, Copy, Clone, Debug)]
+pub struct TimerCSR {
+    pub counter_top: u32,
+    pub prescaler: u32,
+}
+
+impl Into<TimerCSR> for u32 {
+    fn into(self) -> TimerCSR {
+        TimerCSR {
+            counter_top: (self
+                & (((2 ^ TIMER_WIDTH + 1) - 1) << TIMER_PRES_WIDTH) >> TIMER_PRES_WIDTH),
+            prescaler: self & (2 ^ TIMER_PRES_WIDTH + 1) - 1,
+        }
+    }
+}
+
+impl Into<u32> for TimerCSR {
+    fn into(self) -> u32 {
+        self.counter_top << TIMER_PRES_WIDTH | self.prescaler
+    }
 }
 
 impl From<u32> for MMIOEntry {
@@ -218,6 +244,7 @@ impl Component for CLIC {
             csrstore.insert(0xF14, 0); //mhartid
             csrstore.insert(0x350, 0); //stack_depth, vanilla clic config
             csrstore.insert(0x351, 0); //super mtvec
+            csrstore.insert(0x400, 0); //timer
             for i in 0xB00..=0xBBF {
                 csrstore.insert(i, 0); //set up individual interrupt config CSRs
             }
@@ -358,7 +385,7 @@ impl Component for CLIC {
         // define outputs
         let csr_out;
         let mut blu_int = false; // default to pc
-        let mut int_mux_ctl = 0; // default to pc
+                                 //let mut int_mux_ctl = 0; // default to pc
         let mut mem_int_addr = SignalValue::Uninitialized;
         let mut rf_ra_we = SignalValue::Data(0);
         let mut isr_mepc_select = SignalValue::Uninitialized;
@@ -460,24 +487,14 @@ impl Component for CLIC {
         );
 
         let mut mtime = self.mtime.borrow_mut();
-        // update mtime
-        let mtime_lo: u32 = self.read(0x5000, 4, false, false).try_into().unwrap();
-        let mtime_hi: u32 = self.read(0x5004, 4, false, false).try_into().unwrap();
-        *mtime = mtime_lo as u64 | ((mtime_hi as u64) << 32);
-        *mtime += 1;
-        self.write(0x5000, 4, false, (*mtime as u32).into());
-        self.write(0x5004, 4, false, ((*mtime >> 32) as u32).into());
-        let mut mtimecomp = self.mtimecomp.borrow_mut();
-        let mtimecomp_lo: u32 = self.read(0x5008, 4, false, false).try_into().unwrap();
-        let mtimecomp_hi: u32 = self.read(0x500C, 4, false, false).try_into().unwrap();
-        *mtimecomp = mtimecomp_lo as u64 | ((mtimecomp_hi as u64) << 32);
-        trace!("MTIMECOMP{}", mtimecomp);
-        trace!("MTIME{}", mtime);
-        if *mtime > *mtimecomp {
+        let timer_t: TimerCSR = (*csrstore.get(&(TIMER_ADDR as usize)).unwrap_or(&0) as u32).into();
+        let mtimecomp = timer_t.counter_top;
+        if *mtime >> timer_t.prescaler >= mtimecomp as u64 {
             // set pending bit of interrupt 9, call it the timer interrupt
             //self.csr_op(&mut csrstore, &mut history_entry,&mut queue, 2, 1, 0xB09);
+
             self.mmio_op(
-                0x1024,
+                0x1000,
                 2,
                 1,
                 1,
@@ -485,20 +502,21 @@ impl Component for CLIC {
                 &mut queue,
                 &mut csrstore,
             );
+            *mtime = 0;
         } else {
-            self.mmio_op(
-                0x1024,
+            /*self.mmio_op(
+                0x1000,
                 2,
                 1,
                 0,
                 &mut history_entry,
                 &mut queue,
                 &mut csrstore,
-            );
-            // clear pending bit if compare fails
+            );*/
+            *mtime += 1;
+            // clear pending bit if compare fails we shouldn't do this...
             //self.csr_op(&mut csrstore, &mut history_entry, &mut queue, 3, 1, 0xB09);
         }
-
         //Interrupt dispatch
 
         if mstatus & 8 == 8 {
@@ -521,7 +539,8 @@ impl Component for CLIC {
                     } else if let Some(mepc_current) = return_from_interrupt {
                         mepc_current as usize
                     } else {
-                        pc as usize
+                        // take into account any jumps
+                        pc_next as usize
                     };
                     //vanilla mode
                     if (stack_depth) <= 0 {
@@ -553,7 +572,7 @@ impl Component for CLIC {
                     );
                     csrstore.insert(
                         (CLIC_TIMESTAMP_BASE + interrupt_id) as usize,
-                        (mtime_lo >> CLIC_TIMESTAMP_PRESCALER) as usize,
+                        ((*mtime as u32) >> CLIC_TIMESTAMP_PRESCALER) as usize,
                     );
                     dispatched_interrupt_id = Some(interrupt_id);
                 }
@@ -626,14 +645,13 @@ impl Component for CLIC {
         );
 
         if let Some(interrupt_id) = dispatched_interrupt_id {
-            // trace!("clear interrupt id: {}", interrupt_id);
             self.csr_op(
                 &mut csrstore,
                 &mut history_entry,
                 &mut queue,
                 3,
-                0xFF,
-                0xB00 + interrupt_id,
+                0x1,
+                0xB20 + interrupt_id,
             );
         }
         history.push(history_entry);
@@ -772,7 +790,7 @@ impl CLIC {
                             ((addr - offset + 4u32 * i as u32 - 0x1000) / 4)
                         );*/
                         queue.push(
-                            ((addr - offset + 4u32 * i as u32 - 0x1000) / 4),
+                            (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
                             mmio_entry.clicintctl,
                         );
                     }
