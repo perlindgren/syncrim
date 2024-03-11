@@ -19,6 +19,7 @@ blink:
 
 
 isr_2: #interrupt 2
+    csrr t3, 0xB42              # read time stamp
     jr       ra                 # return
 
     .section .vector_table, "aw"

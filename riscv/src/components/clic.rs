@@ -9,6 +9,8 @@ use syncrim::{
 use priority_queue::PriorityQueue;
 
 use std::{cell::RefCell, collections::HashMap};
+const CLIC_TIMESTAMP_BASE: u32 = 0xB40;
+const CLIC_TIMESTAMP_PRESCALER: usize = 0x0;
 pub const CLIC_CSR_ADDR_ID: &str = "csr_addr";
 pub const CLIC_CSR_CTL_ID: &str = "csr_ctl";
 pub const CLIC_CSR_DATA_ID: &str = "csr_data";
@@ -549,6 +551,10 @@ impl Component for CLIC {
                         interrupt_id,
                         interrupt_priority
                     );
+                    csrstore.insert(
+                        (CLIC_TIMESTAMP_BASE + interrupt_id) as usize,
+                        (mtime_lo >> CLIC_TIMESTAMP_PRESCALER) as usize,
+                    );
                     dispatched_interrupt_id = Some(interrupt_id);
                 }
             }
@@ -834,7 +840,7 @@ impl CLIC {
                     // if not mhartid, mhartid is RO
                     if csr_addr != 0xf14 {
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
-                        if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
+                        if 0xB20 <= csr_addr && csr_addr <= 0xB39 {
                             csr_data = ((csr_data & (0b11100)) << 22)
                                 | ((csr_data & 0b10) << 7)
                                 | (csr_data & 0b1);
@@ -846,7 +852,7 @@ impl CLIC {
                     }
                     // interrupt config write, mirror in mmio
                     // trace!("CSR_ADDR_NEW:{:x}", csr_addr);
-                    if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
+                    if 0xB20 <= csr_addr && csr_addr <= 0xB39 {
                         // trace!("ok do thing");
                         self.mmio_op(
                             0x1000 + ((csr_addr - 0xb20) * 4),
@@ -870,7 +876,7 @@ impl CLIC {
                     if csr_addr != 0xf14 {
                         //mhartid RO
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
-                        if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
+                        if 0xB20 <= csr_addr && csr_addr <= 0xB39 {
                             csr_data = ((csr_data & (0b11100)) << 22)
                                 | ((csr_data & 0b10) << 7)
                                 | (csr_data & 0b1);
@@ -881,7 +887,7 @@ impl CLIC {
 
                         //interrupt config CSR
                         // trace!("SET CSR: {:x}, curr val: {:x}", csr_addr, val);
-                        if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
+                        if 0xB20 <= csr_addr && csr_addr <= 0xB39 {
                             self.mmio_op(
                                 0x1000 + ((csr_addr - 0xb20) * 4),
                                 2,
@@ -909,7 +915,7 @@ impl CLIC {
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
                         //trace!("val:{:x}, csr_data:{:x}", val, csr_data);
                         // trace!("{:x}", (val as u32 & !csr_data));
-                        if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
+                        if 0xB20 <= csr_addr && csr_addr <= 0xB39 {
                             csr_data = ((csr_data & (0b11100)) << 22)
                                 | ((csr_data & 0b10) << 7)
                                 | (csr_data & 0b1);
@@ -917,7 +923,7 @@ impl CLIC {
                         }
                         csrstore.insert(csr_addr as usize, val & !(csr_data as usize));
                         history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
-                        if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
+                        if 0xB20 <= csr_addr && csr_addr <= 0xB39 {
                             self.mmio_op(
                                 0x1000 + ((csr_addr - 0xb20) * 4),
                                 2,
