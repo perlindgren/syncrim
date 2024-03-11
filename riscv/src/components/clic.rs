@@ -360,6 +360,7 @@ impl Component for CLIC {
         let mut mem_int_addr = SignalValue::Uninitialized;
         let mut rf_ra_we = SignalValue::Data(0);
         let mut isr_mepc_select = SignalValue::Uninitialized;
+        let mut pc_out_signal = SignalValue::Uninitialized;
 
         // get state
         //csr store
@@ -420,10 +421,11 @@ impl Component for CLIC {
                 // set old threshold
                 mintthresh = old_threshold as usize;
                 stack_depth += 1;
-                println!("RETURN");
+
                 return_from_interrupt = Some(current_mepc);
                 isr_mepc_select = SignalValue::Data(0);
                 blu_int = true;
+                pc_out_signal = SignalValue::Data(mepc as u32);
             }
         }
         // vanilla clic (MRET)
@@ -441,6 +443,7 @@ impl Component for CLIC {
             // select interrupt mux on the PC adder mux
             blu_int = true;
             stack_depth += 1;
+            pc_out_signal = SignalValue::Data(mepc as u32);
         }
         // END INTERRUPT RETURN
         // handle mmio
@@ -536,7 +539,11 @@ impl Component for CLIC {
                     rf_ra_we = SignalValue::Data(1);
                     stack_depth -= 1;
                     trace!("STACK DEPTH: {}", stack_depth);
-                    isr_mepc_select = SignalValue::Data(1);
+                    isr_mepc_select = SignalValue::Data(0);
+                    pc_out_signal = SignalValue::Data(
+                        *csrstore.get(&(0xB00 + interrupt_id as usize)).unwrap() as u32,
+                    );
+
                     trace!(
                         "interrupt dispatched id:{} prio:{}",
                         interrupt_id,
@@ -549,9 +556,7 @@ impl Component for CLIC {
         // END INTERRUPT_DISPATCH
         // tracing...
         for entry in csrstore.clone().into_iter() {
-            if entry.0 >= 0xBFF || entry.0 <= 0xB00 {
-                // trace!("{:08x}:{:08x}", entry.0, entry.1);
-            }
+            if entry.0 >= 0xB20 && entry.0 <= 0xB2A {}
         }
         //   trace!("CSR OUT:{:08x}", csr_out);
         trace!("QUEUE:{:?}", queue);
@@ -640,7 +645,7 @@ impl Component for CLIC {
                 SignalValue::Data(0)
             },
         );
-        simulator.set_out_value(&self.id, "mepc_out", SignalValue::Data(mepc as u32));
+        simulator.set_out_value(&self.id, "mepc_out", pc_out_signal);
         simulator.set_out_value(&self.id, CLIC_MEPC_ISR_MUX, isr_mepc_select);
         simulator.set_out_value(&self.id, CLIC_RF_RA_WE, rf_ra_we);
         // simulator.set_out_value(&self.id, "mret_out", mret_sig);
@@ -654,7 +659,6 @@ impl Component for CLIC {
         let mut entry = self.history.borrow_mut().pop().unwrap();
         if let Some(mut ops) = entry.csr_op {
             while let Some(op) = ops.pop() {
-                // println!("insert csr {:03x}, {:08x}", op.0, op.1);
                 self.csrstore.borrow_mut().insert(op.0, op.1 as usize);
             }
         }
@@ -672,16 +676,14 @@ impl Component for CLIC {
                 SignalValue::Data(op.0[1]),
             );
         }
-        // println!("queue_op:{:?}", entry.queue_op);
+
         while let Some(e) = entry.queue_op.pop() {
             //readd
             if e.2 {
-                //   println!("re add id:{} prio:{}", e.0, e.1);
                 self.queue.borrow_mut().push(e.0, e.1);
             }
             //remove
             else {
-                //  println!("remove id:{} prio:{}", e.0, e.1);
                 self.queue.borrow_mut().remove(&e.0);
             }
         }
@@ -710,6 +712,7 @@ impl CLIC {
             //if within our mmio range
             if we == 2 {
                 //trace!("clic mmio write");
+
                 let old_entries: [u32; 2] = [
                     self.read(addr as usize - offset as usize, 4_usize, false, false)
                         .try_into()
@@ -740,39 +743,41 @@ impl CLIC {
                     (addr as usize - offset as usize - 0x1000_usize) / 4 + 0xB00,
                     (addr as usize - offset as usize + 4 - 0x1000_usize) / 4 + 0xB00,
                 );*/
+
                 csrstore.insert(
-                    (addr as usize - offset as usize - 0x1000_usize) / 4 + 0xB00,
+                    (addr as usize - offset as usize - 0x1000_usize) / 4 + 0xB20,
                     mmio_entries[0].into(),
                 );
                 csrstore.insert(
-                    (addr as usize - offset as usize + 4 - 0x1000_usize) / 4 + 0xB00,
+                    (addr as usize - offset as usize + 4 - 0x1000_usize) / 4 + 0xB20,
                     mmio_entries[1].into(),
                 );
                 for (i, mmio_entry) in mmio_entries.into_iter().enumerate() {
                     if mmio_entry.clicintie == 1 && mmio_entry.clicintip == 1 {
                         //enqueue self if pending status and enable status are 1, this changes prio dynamically with prio change also.
                         history_entry.queue_op.push((
-                            (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
+                            ((addr - offset + 4u32 * i as u32 - 0x1000) / 4),
                             mmio_entry.clicintctl,
                             false,
                         ));
+
                         /* trace!(
                             "MMIO QUEUE INTERRUPT {:x}",
                             ((addr - offset + 4u32 * i as u32 - 0x1000) / 4)
                         );*/
                         queue.push(
-                            (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
+                            ((addr - offset + 4u32 * i as u32 - 0x1000) / 4),
                             mmio_entry.clicintctl,
                         );
                     }
                     if mmio_entry.clicintie != 1 || mmio_entry.clicintip != 1 {
                         //dequeue self if pending or enabled status is 0
                         if queue
-                            .remove(&((addr - offset + 4u32 * i as u32 - 0x1000) / 4))
+                            .remove(&(((addr - offset + 4u32 * i as u32 - 0x1000) / 4) - 0x20))
                             .is_some()
                         {
                             history_entry.queue_op.push((
-                                (addr - offset + 4u32 * i as u32 - 0x1000) / 4,
+                                ((addr - offset + 4u32 * i as u32 - 0x1000) / 4),
                                 mmio_entry.clicintctl,
                                 true,
                             ));
@@ -829,19 +834,22 @@ impl CLIC {
                     // if not mhartid, mhartid is RO
                     if csr_addr != 0xf14 {
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
+                        if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
+                            csr_data = ((csr_data & (0b11100)) << 22)
+                                | ((csr_data & 0b10) << 7)
+                                | (csr_data & 0b1);
+                            //val = ((val & (0b11100)) << 22) | ((val & 0b10) << 7) | (val & 0b1);
+                        }
+
                         csrstore.insert(csr_addr as usize, csr_data as usize);
                         history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
                     }
                     // interrupt config write, mirror in mmio
                     // trace!("CSR_ADDR_NEW:{:x}", csr_addr);
                     if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
-                        csr_data = ((csr_data & (0b11100)) << 22)
-                            | ((csr_data & 0b10) << 7)
-                            | (csr_data & 0b1);
-                        println!("write: {:08x}", csr_data);
                         // trace!("ok do thing");
                         self.mmio_op(
-                            0x1000 + (csr_addr - 0xb20) * 4,
+                            0x1000 + ((csr_addr - 0xb20) * 4),
                             2,
                             4,
                             csr_data,
@@ -862,18 +870,20 @@ impl CLIC {
                     if csr_addr != 0xf14 {
                         //mhartid RO
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
-                        csrstore.insert(csr_addr as usize, (csr_data as usize) | val);
-                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
-                        //interrupt config CSR
-                        // trace!("SET CSR: {:x}, curr val: {:x}", csr_addr, val);
                         if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
                             csr_data = ((csr_data & (0b11100)) << 22)
                                 | ((csr_data & 0b10) << 7)
                                 | (csr_data & 0b1);
-                            val = ((val & (0b11100)) << 22) | ((val & 0b10) << 7) | (val & 0b1);
-                            println!("set: {:08x}", (csr_data) | val as u32);
+                            //val = ((val & (0b11100)) << 22) | ((val & 0b10) << 7) | (val & 0b1);
+                        }
+                        csrstore.insert(csr_addr as usize, (csr_data as usize) | val);
+                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
+
+                        //interrupt config CSR
+                        // trace!("SET CSR: {:x}, curr val: {:x}", csr_addr, val);
+                        if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
                             self.mmio_op(
-                                0x1000 + (csr_addr - 0xb20) * 4,
+                                0x1000 + ((csr_addr - 0xb20) * 4),
                                 2,
                                 4,
                                 (csr_data) | val as u32,
@@ -899,16 +909,17 @@ impl CLIC {
                         val = *csrstore.get(&(csr_addr as usize)).unwrap();
                         //trace!("val:{:x}, csr_data:{:x}", val, csr_data);
                         // trace!("{:x}", (val as u32 & !csr_data));
-                        csrstore.insert(csr_addr as usize, val & !(csr_data as usize));
-                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
                         if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
                             csr_data = ((csr_data & (0b11100)) << 22)
                                 | ((csr_data & 0b10) << 7)
                                 | (csr_data & 0b1);
-                            val = ((val & (0b11100)) << 22) | ((val & 0b10) << 7) | (val & 0b1);
-                            println!("clear: {:08x}", (val as u32) & !csr_data);
+                            //  val = ((val & (0b11100)) << 22) | ((val & 0b10) << 7) | (val & 0b1);
+                        }
+                        csrstore.insert(csr_addr as usize, val & !(csr_data as usize));
+                        history_entry.csr_op = Some(vec![(csr_addr as usize, val as u32)]);
+                        if 0xB20 <= csr_addr && csr_addr <= 0xBBF {
                             self.mmio_op(
-                                0x1000 + (csr_addr - 0xb20) * 4,
+                                0x1000 + ((csr_addr - 0xb20) * 4),
                                 2,
                                 4,
                                 (val as u32) & !csr_data,

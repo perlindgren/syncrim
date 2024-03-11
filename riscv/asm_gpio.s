@@ -5,8 +5,8 @@ init:
     csrwi    0x350, 2            # set stack_depth
 main:
     csrwi 0x300, 8 # enable global interrupts
-    la t1, .clic_vec
-    csrw 0x351, t1
+    la t1, isr_2
+    csrw 0xB02, t1
     la t1, 0b11110
     csrw 0xB22, t1
     la t1, 0b1
