@@ -6,7 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-riscv-rt = "0.12.2"
-hippomenes-core = {path="../../../hippomenes-core/"}
-hippomenes-rt = {path="../../../hippomenes-core/hippomenes-rt/"}
+#riscv-rt = "0.12.2"
+#hippomenes-core = {path="../../../hippomenes-core/"}
+#hippomenes-rt = {path="../../../hippomenes-core/hippomenes-rt/"}
+hippomenes-core = {git="https://github.com/onsdagens/hippomenes-core/"}
+hippomenes-rt = {git="https://github.com/onsdagens/hippomenes-rt/"}
 [workspace]

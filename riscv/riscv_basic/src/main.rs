@@ -4,8 +4,7 @@ use core::panic::PanicInfo;
 use hippomenes_core::gpio::Pin0;
 use hippomenes_core::mstatus::*;
 use hippomenes_core::{interrupt1, interrupt2};
-use hippomenes_rt as _;
-use riscv_rt::entry;
+use hippomenes_rt::entry;
 #[entry]
 unsafe fn main() -> ! {
     MIE::set();
