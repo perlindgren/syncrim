@@ -94,7 +94,7 @@ impl std::convert::TryFrom<u32> for Reg {
 //const REG_ZERO: u32 = Reg::zero as u32;
 const REG_RA: u32 = Reg::ra as u32;
 
-pub const REG_FILE_MAX_DEPTH: usize = 4;
+pub const REG_FILE_MAX_DEPTH: usize = 8;
 
 pub const REG_FILE_STACK_DEPTH_ID: &str = "stack_depth";
 //pub const REG_FILE_CLIC_MEPC_ID: &str = "clic_mepc";

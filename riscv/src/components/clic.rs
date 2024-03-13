@@ -199,7 +199,7 @@ impl CLIC {
                 csrstore.insert(0x348, 0); //mscratchcsw
                 csrstore.insert(0x349, 0); //mscratchcswl
                 csrstore.insert(0xF14, 0); //mhartid
-                csrstore.insert(0x350, 0); //stack_depth
+                csrstore.insert(0x350, 7); //stack_depth
                 for i in 0xB00..0xBC0 {
                     csrstore.insert(i, 0); //set up individual interrupt config CSRs
                 }
@@ -245,7 +245,7 @@ impl Component for CLIC {
             csrstore.insert(0x348, 0); //mscratchcsw
             csrstore.insert(0x349, 0); //mscratchcswl
             csrstore.insert(0xF14, 0); //mhartid
-            csrstore.insert(0x350, 0); //stack_depth, vanilla clic config
+            csrstore.insert(0x350, 7); //stack_depth, vanilla clic config
             csrstore.insert(0x351, 0); //super mtvec
             csrstore.insert(0x400, 0); //timer
             for i in 0xB00..=0xBBF {
