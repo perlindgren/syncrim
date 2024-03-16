@@ -9,6 +9,7 @@ edition = "2021"
 #riscv-rt = "0.12.2"
 #hippomenes-core = {path="../../../hippomenes-core/"}
 #hippomenes-rt = {path="../../../hippomenes-core/hippomenes-rt/"}
+rtic = {git="https://github.com/onsdagens/rtic", branch="hippomenes", features=["riscv-clic-backend"]}
 hippomenes-core = {git="https://github.com/onsdagens/hippomenes-core/"}
-hippomenes-rt = {git="https://github.com/onsdagens/hippomenes-rt/"}
+hippomenes-rt = {git="https://github.com/onsdagens/hippomenes-core/"}
 [workspace]

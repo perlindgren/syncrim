@@ -3,7 +3,7 @@
 init:       la      sp, _stack_start        # set stack pointer
 main:       csrwi   0x300, 8                # enable global interrupts
             la      t1, isr_0
-            srl     t1, t1, 0
+            srl     t1, t1, 2
             csrw    0xB00, t1               # setup isr_0 address
 
             li      t2, 0b11110000          # interrupt every 15 cycles, cmp value 0b1111 = 15, prescaler 0b0000                                           

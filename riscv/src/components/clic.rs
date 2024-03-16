@@ -567,7 +567,7 @@ impl Component for CLIC {
                     trace!("STACK DEPTH: {}", stack_depth);
                     isr_mepc_select = SignalValue::Data(0);
                     pc_out_signal = SignalValue::Data(
-                        *csrstore.get(&(0xB00 + interrupt_id as usize)).unwrap() as u32,
+                        (*csrstore.get(&(0xB00 + interrupt_id as usize)).unwrap() as u32) << 2,
                     );
 
                     trace!(
