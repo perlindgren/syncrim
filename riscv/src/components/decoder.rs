@@ -193,7 +193,7 @@ impl Component for Decoder {
         let zimm = (instruction & (0b11111 << 15)) >> 15;
         //outputs
         //let mut imm_sig = SignalValue::Uninitialized;
-        let branch_imm_sig = SignalValue::Data(branch_imm);
+        let branch_imm_sig = SignalValue::Data(sign_zero_extend(true, 13, branch_imm));
         let lui_auipc_imm_sig = SignalValue::Data(imm_big);
         let shamt_sig = SignalValue::Data(shamt);
         let mut imm_sig = SignalValue::Data(imm);
