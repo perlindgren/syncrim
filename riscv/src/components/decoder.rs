@@ -456,7 +456,7 @@ impl Component for Decoder {
                                                //pc_imm_sel = 0; //don't care
                 branch_instr = SignalValue::from(0b011); //jalr
                 branch_logic_enable = SignalValue::from(0b1);
-                imm_sel_sig = ImmSel::Imm.into();
+                imm_sig = SignalValue::from(sign_zero_extend(true, 12, imm));
                 //imm_sig = SignalValue::from(sign_zero_extend(true, 12, imm));
             }
             0b1100011 => {

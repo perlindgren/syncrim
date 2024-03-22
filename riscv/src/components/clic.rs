@@ -110,9 +110,10 @@ pub struct TimerCSR {
 
 impl Into<TimerCSR> for u32 {
     fn into(self) -> TimerCSR {
+        trace!("TIMER CSR: {}", self);
         TimerCSR {
-            counter_top: (self
-                & (((2 ^ TIMER_WIDTH + 1) - 1) << TIMER_PRES_WIDTH) >> TIMER_PRES_WIDTH),
+            counter_top: ((self & (((2 ^ TIMER_WIDTH + 1) - 1) << TIMER_PRES_WIDTH))
+                >> TIMER_PRES_WIDTH),
             prescaler: self & (2 ^ TIMER_PRES_WIDTH + 1) - 1,
         }
     }
@@ -494,10 +495,10 @@ impl Component for CLIC {
         let mut mtime = self.mtime.borrow_mut();
         let timer_t: TimerCSR = (*csrstore.get(&(TIMER_ADDR as usize)).unwrap_or(&0) as u32).into();
         let mtimecomp = timer_t.counter_top;
-        if *mtime >> timer_t.prescaler >= mtimecomp as u64 {
-            // set pending bit of interrupt 9, call it the timer interrupt
+        if *mtime << timer_t.prescaler >= mtimecomp as u64 {
+            // set pending bit of interrupt 0, call it the timer interrupt
             //self.csr_op(&mut csrstore, &mut history_entry,&mut queue, 2, 1, 0xB09);
-
+            trace!("COUNTER_TOP:{}", mtimecomp);
             self.mmio_op(
                 0x1000,
                 2,
