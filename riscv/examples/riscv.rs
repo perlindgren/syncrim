@@ -294,7 +294,7 @@ fn fern_setup_riscv() {
                 message
             ))
         })
-        .level_for("riscv::components::gpio", log::LevelFilter::Trace)
+        .level_for("riscv::components::clic", log::LevelFilter::Trace)
         //.level_for("syncrim::components::mux", log::LevelFilter::Trace)
         .level(log::LevelFilter::Error);
 

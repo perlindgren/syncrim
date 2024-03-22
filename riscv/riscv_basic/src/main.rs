@@ -2,56 +2,37 @@
 #![no_main]
 use core::panic::PanicInfo;
 use hippomenes_rt as _;
-use hippomenes_rt::entry;
+
 #[rtic::app(device = hippomenes_core)]
 mod app {
-    use hippomenes_core::{interrupt1, interrupt2};
-    #[shared]
-    struct Shared {
-        r: u8,
-        l: u8,
-    }
+  use hippomenes_core::{I0Timestamp, Pin, Pin0};
+  use hippomenes_hal::UART;
+  #[shared]
+  struct Shared {
+    dummy: bool,
+  }
 
-    #[local]
-    struct Local {}
+  #[local]
+  struct Local {}
 
-    #[init]
-    fn init(cx: init::Context) -> (Shared, Local) {
-        rtic::export::pend(interrupt1::Interrupt1);
-        rtic::export::pend(interrupt2::Interrupt2);
-        let r = 9;
-        let l = 10;
-        (Shared { r, l }, Local {})
-    }
+  #[init]
+  fn init(cx: init::Context) -> (Shared, Local) {
+    let peripherals = cx.device;
+    let pin0 = peripherals.gpio.pins().pin0;
+    let timer = peripherals.timer;
+    let mut uart = UART::new(pin0, timer, 10_000);
+    let buffer = [48, 49, 50, 51, 52, 53, 54, 55];
+    uart.send(buffer);
+    (Shared { dummy: true }, Local {})
+  }
 
-    #[idle]
-    fn idle(_: idle::Context) -> ! {
-        loop {}
-    }
-
-    #[task(binds = Interrupt1, priority = 1, shared = [r,l])]
-    fn i1(mut cx: i1::Context) {
-        cx.shared.r.lock(|r| {
-            cx.shared.l.lock(|l| {
-                *l = *l + *r;
-            });
-        });
-    }
-    #[task(binds = Interrupt2, priority = 2, shared=[l])]
-    fn i2(mut cx: i2::Context) {
-        cx.shared.l.lock(|l| {
-            *l += 2;
-        });
-    }
-    #[task(binds = Interrupt3, priority = 3, shared = [r])]
-    fn i3(mut cx: i3::Context) {
-        cx.shared.r.lock(|r| {
-            *r += 1;
-        });
-    }
+  #[idle]
+  fn idle(_: idle::Context) -> ! {
+    loop {}
+  }
 }
 
 #[panic_handler]
-fn panic(_: &PanicInfo) -> ! {
-    loop {}
+fn p(_: &PanicInfo) -> ! {
+  loop {}
 }
