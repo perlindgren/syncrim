@@ -112,8 +112,9 @@ impl Into<TimerCSR> for u32 {
     fn into(self) -> TimerCSR {
         trace!("TIMER CSR: {}", self);
         TimerCSR {
-            counter_top: (self &((2_u32.pow(TIMER_WIDTH) - 1)<<TIMER_PRES_WIDTH))>>TIMER_PRES_WIDTH,
-            prescaler: self & (2_u32.pow(TIMER_PRES_WIDTH)-1),
+            counter_top: (self & ((2_u32.pow(TIMER_WIDTH) - 1) << TIMER_PRES_WIDTH))
+                >> TIMER_PRES_WIDTH,
+            prescaler: self & (2_u32.pow(TIMER_PRES_WIDTH) - 1),
         }
     }
 }
