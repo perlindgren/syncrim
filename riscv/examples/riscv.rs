@@ -245,8 +245,7 @@ fn fern_setup_riscv() {
 
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
-    let f = f
-        .level_for("riscv::gui_egui::components::instr_mem", LevelFilter::Trace);
+    let f = f.level_for("riscv::gui_egui::components::instr_mem", LevelFilter::Trace);
 
     f
         // Output to stdout, files, and other Dispatch configurations
