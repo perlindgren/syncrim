@@ -120,6 +120,8 @@ impl Simulator {
         trace!("--- topologically ordered graph \n{:?}", top);
         //two passes, first add all sequential roots
         let mut ordered_components = vec![];
+        //two passes ensure the sorted list of nodes always starts with ALL of the roots
+        //first push the sequential components, eg. graph roots
         for node in &top {
             #[allow(suspicious_double_ref_op)]
             let c = (**node_comp.get(node).unwrap()).clone();

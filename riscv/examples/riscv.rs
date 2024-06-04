@@ -126,60 +126,6 @@ fn main() {
         }
         i += 1
     }
-    // let mut i = 0;
-    // for component in store.clone() {
-    //     if component.get_id_ports().0 == "clic" {
-    //         store.remove(i);
-    //     }
-    //     i += 1
-    // }
-    // store.push(RVMem::rc_new_from_bytes(
-    //     "data_memory",
-    //     (1540.0, 900.0),
-    //     100.0,
-    //     100.0,
-    //     false,
-    //     Input::new("reg_file", "reg_b"),
-    //     Input::new("alu", "result_o"),
-    //     Input::new("decoder", "data_mem_ctrl"),
-    //     Input::new("decoder", "data_se"),
-    //     Input::new("decoder", "data_mem_size"),
-    //     Input::new("clic", "mem_int_addr"),
-    //     data_mem,
-    //     range,
-    // ));
-    // store.push(Rc::new(InstrMem {
-    //     width: 200.0,
-    //     height: 100.0,
-    //     id: "instr_mem".to_string(),
-    //     pos: (650.0, 900.0),
-    //     bytes: instr_mem,
-    //     breakpoints: Rc::new(RefCell::new(HashSet::new())),
-    //     le: true,
-    //     pc: Input::new("reg", "out"),
-    //     range: Range {
-    //         start: 0,
-    //         end: 0x2000,
-    //     },
-    //     symbols: memory.symbols,
-    // }));
-    // store.push(Rc::new(CLIC::new(
-    //     "clic".to_string(),
-    //     (1660.0, 900.0),
-    //     100.0,
-    //     100.0,
-    //     Input::new("reg_file", "reg_b"),
-    //     Input::new("alu", "result_o"),
-    //     Input::new("decoder", "data_mem_ctrl"),
-    //     Input::new("decoder", "data_mem_size"),
-    //     Input::new("csr_mux", "out"),
-    //     Input::new("decoder", "csr_addr"),
-    //     Input::new("decoder", "csr_ctl"),
-    //     Input::new("decoder", "mret"),
-    //     Input::new("pc_adder", "out"),
-    //     Input::new("pc_adder", "out"),
-    //     //Input::new("pc_adder_mux", "out"),
-    // )));
     cs.store = store;
     #[cfg(feature = "gui-egui")]
     {
@@ -295,16 +241,11 @@ fn fern_setup_riscv() {
             ))
         })
         .level_for("riscv::components::clic", log::LevelFilter::Trace)
-        //.level_for("syncrim::components::mux", log::LevelFilter::Trace)
         .level(log::LevelFilter::Error);
 
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
     let f = f
-        //.level_for("riscv::components::instr_mem", LevelFilter::Trace)
-        //.level_for("riscv::components::clic", LevelFilter::Trace)
-        //.level_for("riscv::components::mem", LevelFilter::Trace)
-        //.level_for("syncrim::simulator", LevelFilter::Trace)
         .level_for("riscv::gui_egui::components::instr_mem", LevelFilter::Trace);
 
     f
