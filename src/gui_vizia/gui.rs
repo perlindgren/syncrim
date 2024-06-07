@@ -152,7 +152,8 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
             let cycle = lens.get(cx);
             trace!("cycle changed {}", cycle);
 
-            let simulator = GuiData::simulator.get(cx);
+            //let simulator = GuiData::simulator.get(cx);
+            let simulator = GuiData::simulator.view(cx.data().unwrap()).unwrap();
             if simulator.running {
                 trace!("send clock event");
                 cx.emit(GuiEvent::Clock);
@@ -194,27 +195,24 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
                                     VStack::new(cx, |cx| {
                                         // left pane bar
                                         HStack::new(cx, move |cx| {
-                                            Button::new(
-                                                cx,
-                                                move |cx| {
-                                                    cx.emit(GuiEvent::ToggleExpandLeftPanel(i))
-                                                },
-                                                |cx| {
-                                                    Label::new(
-                                                        cx,
-                                                        GuiData::expanded.map(move |expanded| {
-                                                            if expanded.contains(&i) {
-                                                                // expanded
-                                                                icons::ICON_CHEVRON_DOWN
-                                                            } else {
-                                                                // folded
-                                                                icons::ICON_CHEVRON_RIGHT
-                                                            }
-                                                        }),
-                                                    )
-                                                    .class("icon")
-                                                },
-                                            )
+                                            Button::new(cx, |cx| {
+                                                Label::new(
+                                                    cx,
+                                                    if GuiData::expanded
+                                                        .view(cx.data().unwrap())
+                                                        .unwrap()
+                                                        .contains(&i)
+                                                    {
+                                                        // expanded
+                                                        icons::ICON_CHEVRON_DOWN
+                                                    } else {
+                                                        // folded
+                                                        icons::ICON_CHEVRON_RIGHT
+                                                    },
+                                                )
+                                                .class("icon")
+                                                .on_press(|_cx| {})
+                                            })
                                             .left(Pixels(5.0))
                                             .top(Stretch(1.0))
                                             .bottom(Stretch(1.0))
@@ -229,11 +227,11 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
                                                 .right(Stretch(1.0))
                                                 .size(Auto);
 
-                                            Button::new(
-                                                cx,
-                                                move |cx| cx.emit(GuiEvent::HideLeftPanel(i)),
-                                                |cx| Label::new(cx, icons::ICON_X).class("icon"),
-                                            )
+                                            Button::new(cx, |cx| {
+                                                Label::new(cx, icons::ICON_X)
+                                                    .class("icon")
+                                                    .on_press(|_cx| {})
+                                            })
                                             .right(Pixels(1.0))
                                             .top(Pixels(1.0))
                                             .bottom(Pixels(1.0));
@@ -331,16 +329,14 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
             //     .width(Pixels(140.0));
 
             // About
-            Popup::new(cx, GuiData::show_about, true, |cx| {
+            Popup::new(cx, |cx| {
                 Label::new(cx, "About").class("title");
                 Label::new(cx, "SyncRim 0.1.0");
                 Label::new(cx, "per.lindgren@ltu.se");
 
-                Button::new(
-                    cx,
-                    |cx| cx.emit(GuiEvent::HideAbout),
-                    |cx| Label::new(cx, "Ok"),
-                )
+                Button::new(cx, |cx| {
+                    Label::new(cx, "Ok").on_press(|cx| cx.emit(GuiEvent::HideAbout))
+                })
                 .class("accent");
             })
             .on_blur(|cx| cx.emit(GuiEvent::HideAbout))

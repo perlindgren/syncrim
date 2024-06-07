@@ -8,15 +8,14 @@ use log::*;
 
 use crate::gui_vizia::popup::popup_data_derived_lenses::is_open;
 
-pub fn build_popup(cx: &mut Context, id_ports: (Id, Ports)) -> Handle<'_, Popup<Wrapper<is_open>>> {
+pub fn build_popup(cx: &mut Context, id_ports: (Id, Ports)) -> Handle<'_, Popup> {
     trace!("build_popup");
     PopupData::default().build(cx);
 
-    Popup::new(cx, PopupData::is_open, true, move |cx| {
+    Popup::new(cx, move |cx| {
         VStack::new(cx, |cx| {
             let (id, ports) = id_ports.clone();
             Label::new(cx, &id);
-
             for input in ports.inputs {
                 let input = input.input;
                 HStack::new(cx, |cx| {
@@ -29,10 +28,12 @@ pub fn build_popup(cx: &mut Context, id_ports: (Id, Ports)) -> Handle<'_, Popup<
                                 cx,
                                 &format!(
                                     "{:?}",
-                                    GuiData::simulator.get(cx).get_input_value(&input)
+                                    GuiData::simulator
+                                        .view(cx.data().unwrap())
+                                        .unwrap()
+                                        .get_input_value(&input)
                                 ),
                             );
-                            //.class("tt_shortcut");
                         },
                     )
                 })
@@ -50,8 +51,11 @@ pub fn build_popup(cx: &mut Context, id_ports: (Id, Ports)) -> Handle<'_, Popup<
                                 cx,
                                 &format!(
                                     "{}",
-                                    GuiData::simulator.get(cx).get(
-                                        GuiData::simulator.get(cx).get_id_start_index(&id_clone)
+                                    GuiData::simulator.view(cx.data().unwrap()).unwrap().get(
+                                        GuiData::simulator
+                                            .view(cx.data().unwrap())
+                                            .unwrap()
+                                            .get_id_start_index(&id_clone)
                                             + output
                                     )
                                 ),

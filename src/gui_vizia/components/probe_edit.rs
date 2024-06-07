@@ -27,12 +27,16 @@ impl ViziaComponent for ProbeEdit {
                         trace!("bind: clock --- {}", cycle.get(cx));
                         let text = history_bind.read().unwrap().last().unwrap().text.clone();
                         trace!("last text: {:?}", text);
-                        cx.emit(ProbeEditViewSetter::EditableText(text));
+                        ProbeEditView {
+                            editable_text: text,
+                        }
+                        .build(cx);
+                        //cx.emit(ProbeEditViewSetter::EditableText(text));
                     },
                 )
                 .on_submit(move |ex, text, enter| {
                     trace!("submit: text {} enter {}", text, enter);
-                    ex.emit(ProbeEditViewSetter::EditableText(text));
+                    //ex.emit(ProbeEditViewSetter::EditableText(text));
                 })
                 .on_edit(move |_ex, text| {
                     trace!("edit: text {}", text);
@@ -53,10 +57,12 @@ impl ViziaComponent for ProbeEdit {
     }
 }
 
-#[derive(Lens, Setter, Model)]
+#[derive(Lens)]
 pub struct ProbeEditView {
     editable_text: String,
 }
+
+impl Model for ProbeEditView {}
 
 fn parse_signal(text: &str) -> SignalValue {
     let text = text.trim();

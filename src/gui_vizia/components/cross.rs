@@ -19,7 +19,7 @@ impl ViziaComponent for Cross {
                     crate::gui_vizia::GuiData::simulator.then(Simulator::cycle),
                     move |cx, _| {
                         Label::new(cx, {
-                            let simulator = GuiData::simulator.get(cx);
+                            let simulator = GuiData::simulator.view(cx.data().unwrap()).unwrap();
                             &format!("{}", simulator.get_input_signal(&input))
                         })
                         .hoverable(false);

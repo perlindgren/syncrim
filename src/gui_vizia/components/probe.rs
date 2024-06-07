@@ -19,7 +19,8 @@ impl ViziaComponent for Probe {
                     crate::gui_vizia::GuiData::simulator.then(Simulator::cycle),
                     move |cx, _| {
                         Label::new(cx, {
-                            let simulator = GuiData::simulator.get(cx);
+                            let simulator = GuiData::simulator.view(cx.data().unwrap()).unwrap();
+                            //let simulator = GuiData::simulator.get(cx);
                             &format!("{}", simulator.get_input_signal(&input))
                         })
                         .hoverable(false);

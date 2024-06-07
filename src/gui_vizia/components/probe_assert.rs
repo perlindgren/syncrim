@@ -27,7 +27,8 @@ impl ViziaComponent for ProbeAssert {
                         } else {
                             (SignalValue::Unknown).into()
                         };
-                        let simulator = GuiData::simulator.get(cx);
+                        let simulator = GuiData::simulator.view(cx.data().unwrap()).unwrap();
+                        //let simulator = GuiData::simulator.get(cx);
                         let signal = simulator.get_input_signal(&input);
                         if signal == assert {
                             Label::new(cx, &format!("{} == {}", signal, assert))
