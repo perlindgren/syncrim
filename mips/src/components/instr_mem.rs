@@ -58,6 +58,10 @@ impl Component for InstrMem {
         simulator.set_out_value(&self.id, INSTR_MEM_OUT_ID, instr);
         Ok(())
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 impl InstrMem {

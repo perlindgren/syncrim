@@ -263,6 +263,9 @@ impl Component for RegFile {
         simulator.set_out_value(&self.id, REG_FILE_REG_B_OUT, reg_value_b);
         Ok(())
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]
