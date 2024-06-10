@@ -1,14 +1,20 @@
 // use std::fmt::Alignment;
-use crate::{
-    common::{
-        Component, Condition, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, Simulator,
-    },
-    signal::SignalValue,
+#[cfg(feature = "gui-egui")]
+use crate::common::EguiComponent;
+use crate::common::{
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
+    SignalValue, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::rc::Rc;
-#[derive(Serialize, Deserialize)]
+
+pub const SEXT_IN_ID: &str = "sext_in";
+
+pub const SEXT_OUT_ID: &str = "out";
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Sext {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -22,11 +28,35 @@ impl Component for Sext {
     fn to_(&self) {
         trace!("Sign Extension");
     }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy_input = Input::new("dummy", "out");
+        Box::new(Rc::new(Sext {
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            sext_in: dummy_input.clone(),
+            in_size: 16,
+            out_size: 24,
+        }))
+    }
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
-            Ports::new(vec![&self.sext_in], OutputType::Combinatorial, vec!["out"]),
+            Ports::new(
+                vec![&InputPort {
+                    port_id: SEXT_IN_ID.to_string(),
+                    input: self.sext_in.clone(),
+                }],
+                OutputType::Combinatorial,
+                vec![SEXT_OUT_ID],
+            ),
         )
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        if target_port_id.as_str() == SEXT_IN_ID {
+            self.sext_in = new_input
+        }
     }
 
     // propagate sign extension to output
@@ -61,6 +91,10 @@ impl Component for Sext {
         }
         Ok(())
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl Sext {
@@ -84,7 +118,6 @@ impl Sext {
         Rc::new(Sext::new(id, pos, sext_in, in_size, out_size))
     }
 }
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -112,7 +145,7 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
 

@@ -1,26 +1,30 @@
 use clap::Parser;
 use std::path::PathBuf;
+#[cfg(feature = "gui-egui")]
+use syncrim::gui_egui::editor::Library;
 use syncrim::{common::ComponentStore, fern::fern_setup};
-
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Path to the model to load on startup
-    #[arg(short, long)]
+    #[arg(short, long, default_value = "empty.json")]
     model: String,
 }
 
 fn main() {
     fern_setup();
     let args = Args::parse();
-    let _path = PathBuf::from(args.model);
+    let path = PathBuf::from(args.model);
 
-    let _cs = ComponentStore::load_file(&_path);
+    let cs = ComponentStore::load_file(&path);
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::gui(&_cs, &_path).ok();
+    syncrim::gui_egui::gui(cs, &path, Library::default()).ok();
 
     #[cfg(feature = "gui-vizia")]
-    syncrim::gui_vizia::gui(&_cs, &_path);
+    syncrim::gui_vizia::gui(cs, &path);
+
+    #[cfg(not(any(feature = "gui-vizia", feature = "gui-egui")))]
+    syncrim::common::Simulator::new(cs).unwrap();
 }

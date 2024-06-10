@@ -91,7 +91,7 @@ pub struct DataMemView {
     data_slice: Vec<String>,
     slice_range: Range<usize>,
 }
-
+#[allow(clippy::enum_variant_names)]
 pub enum DataEvent {
     UpdateClock,
     UpdateScroll(Range<usize>),

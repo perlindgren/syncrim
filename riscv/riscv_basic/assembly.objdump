@@ -1,0 +1,97 @@
+
+riscv_basic:	file format elf32-littleriscv
+
+Disassembly of section .text:
+
+00000000 <_start>:
+       0:      	auipc	gp, 0x50001
+       4:      	addi	gp, gp, -0x7fc
+
+00000008 <.Lpcrel_hi1>:
+       8:      	auipc	t1, 0x50004
+       c:      	addi	t1, t1, -0x8
+      10:      	andi	sp, t1, -0x10
+
+00000014 <.Lpcrel_hi2>:
+      14:      	auipc	t0, 0x50000
+      18:      	addi	t0, t0, -0x10
+
+0000001c <.Lpcrel_hi3>:
+      1c:      	auipc	t2, 0x50000
+      20:      	addi	t2, t2, -0x18
+
+00000024 <.Lpcrel_hi4>:
+      24:      	auipc	t1, 0x50000
+      28:      	addi	t1, t1, -0x20
+      2c:      	bgeu	t0, t2, 0x44 <.Lline_table_start0+0x44>
+      30:      	lw	t3, 0x0(t1)
+      34:      	addi	t1, t1, 0x4
+      38:      	sw	t3, 0x0(t0)
+      3c:      	addi	t0, t0, 0x4
+      40:      	bltu	t0, t2, 0x30 <.Lline_table_start0+0x30>
+
+00000044 <.Lpcrel_hi5>:
+      44:      	auipc	t0, 0x50000
+      48:      	addi	t0, t0, -0x40
+
+0000004c <.Lpcrel_hi6>:
+      4c:      	auipc	t2, 0x50000
+      50:      	addi	t2, t2, -0x48
+      54:      	bgeu	t0, t2, 0x64 <.Lline_table_start0+0x64>
+      58:      	sw	zero, 0x0(t0)
+      5c:      	addi	t0, t0, 0x4
+      60:      	bltu	t0, t2, 0x58 <.Lline_table_start0+0x58>
+      64:      	auipc	ra, 0x0
+      68:      	jalr	0x70(ra) <.Lline_table_start0+0xd4>
+      6c:      	j	0x90 <.Lline_table_start0+0x90>
+
+00000070 <DefaultHandler>:
+      70:      	j	0x70 <.Lline_table_start0+0x70>
+
+00000074 <Interrupt0>:
+      74:      	lui	a0, 0x50000
+      78:      	lbu	a1, 0x0(a0)
+      7c:      	xori	a1, a1, 0x1
+      80:      	sb	a1, 0x0(a0)
+      84:      	csrrw	a0, 0x0, a1
+      88:      	csrr	a0, 0xb40
+      8c:      	ret
+
+00000090 <main>:
+      90:      	addi	sp, sp, -0x10
+      94:      	sw	ra, 0xc(sp)
+      98:      	li	a0, 0x8
+      9c:      	csrc	mstatus, a0
+      a0:      	li	a0, 0xc
+      a4:      	csrs	0xb20, a0
+      a8:      	csrsi	0xb20, 0x2
+      ac:      	auipc	ra, 0x0
+      b0:      	jalr	0xc(ra) <.Lline_table_start0+0xb8>
+      b4:      	j	0xb4 <.Lline_table_start0+0xb4>
+
+000000b8 <riscv_basic::app::main::__rtic_init_resources::hbc9161ff222e6f9c>:
+      b8:      	li	a0, 0xf0
+      bc:      	csrrw	a1, 0x400, a0
+      c0:      	lui	a0, 0x50000
+      c4:      	sb	zero, 0x0(a0)
+      c8:      	li	a0, 0x8
+      cc:      	csrs	mstatus, a0
+      d0:      	ret
+
+000000d4 <_setup_interrupts>:
+      d4:      	lui	a0, 0x0
+      d8:      	addi	a0, a0, 0x74
+      dc:      	srli	a0, a0, 0x2
+      e0:      	csrrw	a1, mcycle, a0
+      e4:      	lui	a0, 0x0
+      e8:      	addi	a0, a0, 0x108
+      ec:      	srli	a0, a0, 0x2
+      f0:      	csrrw	a1, 0xb01, a0
+      f4:      	lui	a0, 0x0
+      f8:      	addi	a0, a0, 0x108
+      fc:      	srli	a0, a0, 0x2
+     100:      	csrrw	a1, minstret, a0
+     104:      	ret
+
+00000108 <Interrupt2>:
+     108:      	j	0x108 <.Lline_table_start0+0x108>

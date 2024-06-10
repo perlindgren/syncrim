@@ -16,8 +16,8 @@ impl Model for RegTabs {}
 
 fn range_view(cx: &mut Context, range: Range<u8>) {
     for i in range {
-        let item =
-            RegFileView::registers.map(move |reg| reg.borrow().get(i as usize).copied().unwrap());
+        let item = RegFileView::registers
+            .map(move |reg| format!("0x{:08x}", reg.borrow().get(i as usize).copied().unwrap()));
 
         HStack::new(cx, |cx| {
             Label::new(cx, &format!("{:?}", Reg::try_from(i).unwrap()))
@@ -112,7 +112,7 @@ impl ViziaComponent for RegFile {
         .background_color(Color::lightgrey())
         .border_width(Pixels(1.0))
         .border_color(Color::black())
-        .width(Pixels(200.0))
+        .width(Pixels(250.0))
         .height(Pixels(500.0))
     }
 }

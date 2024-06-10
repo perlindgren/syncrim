@@ -72,7 +72,8 @@ impl View for MuxView {
         canvas.stroke_path(&path, &paint);
 
         // selector
-        let simulator = GuiData::simulator.get(cx);
+        let simulator = GuiData::simulator.view(cx.data().unwrap()).unwrap();
+        //let simulator = GuiData::simulator.get(cx);
 
         let select: Result<SignalUnsigned, String> =
             simulator.get_input_value(&self.select).try_into();

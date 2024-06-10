@@ -30,6 +30,11 @@ pub fn fern_setup() {
         .level_for("cosmic_text::font::fallback", LevelFilter::Warn)
         .level_for("async_io::driver", LevelFilter::Warn);
 
+    #[cfg(feature = "gui-egui")]
+    let f = f
+        .level_for("eframe::native::run", LevelFilter::Info)
+        .level_for("async_io::driver", LevelFilter::Warn);
+
     f
         // Output to stdout, files, and other Dispatch configurations
         .chain(std::io::stdout())

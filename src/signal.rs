@@ -10,6 +10,7 @@ pub type Id = String;
 
 pub type SignalUnsigned = u32;
 pub type SignalSigned = i32;
+pub type SignalBool = bool;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Signal {
@@ -42,6 +43,42 @@ pub enum SignalValue {
     Unknown,
     DontCare,
     Data(SignalUnsigned), // Maybe we should have something even more generic here
+}
+
+impl TryFrom<Signal> for bool {
+    type Error = String;
+
+    fn try_from(signal: Signal) -> Result<Self, Self::Error> {
+        if let SignalValue::Data(data) = signal.data {
+            Ok(data == 1)
+        } else {
+            Err(format!("Could not convert {:?} into bool", signal))
+        }
+    }
+}
+
+impl TryFrom<SignalValue> for bool {
+    type Error = String;
+
+    fn try_from(data: SignalValue) -> Result<Self, Self::Error> {
+        if let SignalValue::Data(data) = data {
+            Ok(data == 1)
+        } else {
+            Err(format!("Could not convert {:?} into bool", data))
+        }
+    }
+}
+
+impl TryFrom<SignalValue> for usize {
+    type Error = String;
+
+    fn try_from(data: SignalValue) -> Result<Self, Self::Error> {
+        if let SignalValue::Data(data) = data {
+            Ok(data as usize)
+        } else {
+            Err(format!("Could not convert {:?} into usize", data))
+        }
+    }
 }
 
 impl TryFrom<Signal> for SignalUnsigned {

@@ -1,9 +1,6 @@
 use crate::{
     common::{ComponentStore, Simulator},
-    gui_vizia::{
-        grid::Grid, keymap::init_keymap, menu::Menu, tooltip::new_component_tooltip,
-        transport::Transport,
-    },
+    gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::Transport},
 };
 use rfd::FileDialog;
 use std::collections::HashSet;
@@ -114,17 +111,20 @@ impl GuiData {
     fn open(&mut self) {
         // Re-Open model
         trace!("open path {:?}", self.path);
-        let cs = Box::new(ComponentStore::load_file(&self.path));
-        let simulator = Simulator::new(&cs);
-
-        self.simulator = simulator;
-
-        trace!("opened");
+        let cs = ComponentStore::load_file(&self.path);
+        let simulator = Simulator::new(cs);
+        match simulator {
+            Ok(s) => {
+                self.simulator = s;
+                trace!("opened");
+            }
+            Err(e) => trace!("File failed to open due to errors with simulator {}", e),
+        }
     }
 }
 
-pub fn gui(cs: &ComponentStore, path: &PathBuf) {
-    let simulator = Simulator::new(cs);
+pub fn gui(cs: ComponentStore, path: &PathBuf) {
+    let simulator = Simulator::new(cs).unwrap();
     let path = path.to_owned();
     simulator.save_dot(&path);
 
@@ -152,7 +152,8 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
             let cycle = lens.get(cx);
             trace!("cycle changed {}", cycle);
 
-            let simulator = GuiData::simulator.get(cx);
+            //let simulator = GuiData::simulator.get(cx);
+            let simulator = GuiData::simulator.view(cx.data().unwrap()).unwrap();
             if simulator.running {
                 trace!("send clock event");
                 cx.emit(GuiEvent::Clock);
@@ -194,27 +195,24 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                                     VStack::new(cx, |cx| {
                                         // left pane bar
                                         HStack::new(cx, move |cx| {
-                                            Button::new(
-                                                cx,
-                                                move |cx| {
-                                                    cx.emit(GuiEvent::ToggleExpandLeftPanel(i))
-                                                },
-                                                |cx| {
-                                                    Label::new(
-                                                        cx,
-                                                        GuiData::expanded.map(move |expanded| {
-                                                            if expanded.contains(&i) {
-                                                                // expanded
-                                                                icons::ICON_CHEVRON_DOWN
-                                                            } else {
-                                                                // folded
-                                                                icons::ICON_CHEVRON_RIGHT
-                                                            }
-                                                        }),
-                                                    )
-                                                    .class("icon")
-                                                },
-                                            )
+                                            Button::new(cx, |cx| {
+                                                Label::new(
+                                                    cx,
+                                                    if GuiData::expanded
+                                                        .view(cx.data().unwrap())
+                                                        .unwrap()
+                                                        .contains(&i)
+                                                    {
+                                                        // expanded
+                                                        icons::ICON_CHEVRON_DOWN
+                                                    } else {
+                                                        // folded
+                                                        icons::ICON_CHEVRON_RIGHT
+                                                    },
+                                                )
+                                                .class("icon")
+                                                .on_press(|_cx| {})
+                                            })
                                             .left(Pixels(5.0))
                                             .top(Stretch(1.0))
                                             .bottom(Stretch(1.0))
@@ -229,11 +227,11 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                                                 .right(Stretch(1.0))
                                                 .size(Auto);
 
-                                            Button::new(
-                                                cx,
-                                                move |cx| cx.emit(GuiEvent::HideLeftPanel(i)),
-                                                |cx| Label::new(cx, icons::ICON_X).class("icon"),
-                                            )
+                                            Button::new(cx, |cx| {
+                                                Label::new(cx, icons::ICON_X)
+                                                    .class("icon")
+                                                    .on_press(|_cx| {})
+                                            })
                                             .right(Pixels(1.0))
                                             .top(Pixels(1.0))
                                             .bottom(Pixels(1.0));
@@ -268,7 +266,8 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                             .border_width(Pixels(1.0));
                         },
                     );
-                });
+                })
+                .width(Pixels(400.0));
 
                 // Mid panel
                 ScrollView::new(cx, 0.0, 0.0, true, true, |cx| {
@@ -284,8 +283,8 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                                     for (i, c) in oc.into_iter().enumerate() {
                                         trace!("build view comp id {}", i);
                                         c.view(cx)
-                                            .tooltip(|cx| new_component_tooltip(cx, &*c))
-                                            .hoverable(true)
+                                            //.tooltip(|cx| new_component_tooltip(cx, &*c))
+                                            //.hoverable(true)
                                             .position_type(PositionType::SelfDirected)
                                             .on_mouse_down(move |ex, button| {
                                                 trace!("on_mouse_down");
@@ -302,7 +301,7 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
                                                         ex.emit(GuiEvent::ShowLeftPanel(i))
                                                     }
                                                     _ => {}
-                                                }
+                                                };
                                             });
                                     }
                                 })
@@ -330,16 +329,14 @@ pub fn gui(cs: &ComponentStore, path: &PathBuf) {
             //     .width(Pixels(140.0));
 
             // About
-            Popup::new(cx, GuiData::show_about, true, |cx| {
+            Popup::new(cx, |cx| {
                 Label::new(cx, "About").class("title");
                 Label::new(cx, "SyncRim 0.1.0");
                 Label::new(cx, "per.lindgren@ltu.se");
 
-                Button::new(
-                    cx,
-                    |cx| cx.emit(GuiEvent::HideAbout),
-                    |cx| Label::new(cx, "Ok"),
-                )
+                Button::new(cx, |cx| {
+                    Label::new(cx, "Ok").on_press(|cx| cx.emit(GuiEvent::HideAbout))
+                })
                 .class("accent");
             })
             .on_blur(|cx| cx.emit(GuiEvent::HideAbout))

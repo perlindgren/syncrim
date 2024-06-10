@@ -1,8 +1,9 @@
 use crate::common::{Component, Id, OutputType, Ports};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeOut {
     pub(crate) id: Id,
 }
@@ -12,6 +13,7 @@ impl Component for ProbeOut {
     fn to_(&self) {
         trace!("ProbeOut");
     }
+
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
@@ -23,6 +25,10 @@ impl Component for ProbeOut {
                 vec!["out"],
             ),
         )
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

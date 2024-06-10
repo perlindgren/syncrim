@@ -1,7 +1,13 @@
 use std::{cell::RefCell, collections::HashMap};
 
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Condition, Input, OutputType, Ports, Simulator};
+use syncrim::common::{Component, Condition, Input, InputPort, OutputType, Ports, Simulator};
+
+pub const CSR_ADDRESS_ID: &str = "address";
+pub const CSR_DATA_ID: &str = "data";
+pub const CSR_WE_ID: &str = "we";
+
+pub const CSR_OUTPUT_ID: &str = "output";
 
 #[derive(Serialize, Deserialize)]
 pub struct CSR {
@@ -64,11 +70,24 @@ impl Component for CSR {
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![self.address.clone(), self.data.clone(), self.we.clone()],
-                out_type: OutputType::Combinatorial,
-                outputs: vec!["output".into()],
-            },
+            Ports::new(
+                vec![
+                    &InputPort {
+                        port_id: CSR_ADDRESS_ID.to_string(),
+                        input: self.address.clone(),
+                    },
+                    &InputPort {
+                        port_id: CSR_DATA_ID.to_string(),
+                        input: self.data.clone(),
+                    },
+                    &InputPort {
+                        port_id: CSR_WE_ID.to_string(),
+                        input: self.we.clone(),
+                    },
+                ],
+                OutputType::Combinatorial,
+                vec![CSR_OUTPUT_ID],
+            ),
         )
     }
 
@@ -78,5 +97,9 @@ impl Component for CSR {
         Ok(())
 
         //simulator.set_out_val(&self.id, "instruction", we);
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }

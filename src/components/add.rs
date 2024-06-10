@@ -1,12 +1,20 @@
+#[cfg(feature = "gui-egui")]
+use crate::common::EguiComponent;
 use crate::common::{
-    Component, Condition, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, SignalValue,
-    Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
+    SignalValue, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::rc::Rc;
+pub const ADD_A_IN_ID: &str = "a_in";
+pub const ADD_B_IN_ID: &str = "b_in";
 
-#[derive(Serialize, Deserialize)]
+pub const ADD_OUT_ID: &str = "out";
+pub const ADD_OVERFLOW_ID: &str = "overflow";
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Add {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -19,14 +27,32 @@ impl Component for Add {
     fn to_(&self) {
         trace!("Add");
     }
-
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy_input = Input::new("dummy", "out");
+        Box::new(Rc::new(Add {
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            a_in: dummy_input.clone(),
+            b_in: dummy_input.clone(),
+        }))
+    }
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
             Ports::new(
-                vec![&self.a_in, &self.b_in],
+                vec![
+                    &InputPort {
+                        port_id: ADD_A_IN_ID.to_string(),
+                        input: self.a_in.clone(),
+                    },
+                    &InputPort {
+                        port_id: ADD_B_IN_ID.to_string(),
+                        input: self.b_in.clone(),
+                    },
+                ],
                 OutputType::Combinatorial,
-                vec!["out", "overflow"],
+                vec![ADD_OUT_ID, ADD_OVERFLOW_ID],
             ),
         )
     }
@@ -66,6 +92,18 @@ impl Component for Add {
         simulator.set_out_value(&self.id, "out", value);
         simulator.set_out_value(&self.id, "overflow", overflow);
         res
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            ADD_A_IN_ID => self.a_in = new_input,
+            ADD_B_IN_ID => self.b_in = new_input,
+            _ => (),
+        }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -108,7 +146,7 @@ mod test {
                 }),
             ],
         };
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
 

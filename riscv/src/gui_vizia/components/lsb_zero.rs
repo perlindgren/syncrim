@@ -15,16 +15,16 @@ impl ViziaComponent for LSBZero {
         V::new(cx, self, move |cx| {
             trace!("---- Create LSBZero View");
             View::build(LSBZeroView {}, cx, |cx| {
-                Label::new(cx, "LSBZero")
+                Label::new(cx, "")
                     .left(Percentage(0.0))
                     .top(Percentage(0.0));
             })
         })
         .position_type(PositionType::SelfDirected)
-        .left(Pixels(self.pos.0 - 50.0))
-        .top(Pixels(self.pos.1 - 100.0))
-        .width(Pixels(50.0))
-        .height(Pixels(20.0))
+        .left(Pixels(self.pos.0 - self.width / 2f32))
+        .top(Pixels(self.pos.1 - self.height / 2f32))
+        .width(Pixels(self.width))
+        .height(Pixels(self.height))
         .tooltip(|cx| new_component_tooltip(cx, self))
     }
 }

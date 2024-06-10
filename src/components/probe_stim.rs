@@ -1,9 +1,10 @@
 use crate::common::{Component, Condition, Id, OutputType, Ports, Signal, SignalValue, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::rc::Rc;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeStim {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -46,6 +47,9 @@ impl Component for ProbeStim {
     }
 
     // notice we don't implement `un_clock` since the state is already kept in history
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl ProbeStim {
@@ -73,7 +77,7 @@ mod test {
             store: vec![ProbeStim::rc_new("stim", (0.0, 0.0), vec![0, 1, 2, 3])],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         // output
         let out = &Input::new("stim", "out");
 

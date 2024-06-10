@@ -1,6 +1,10 @@
 use petgraph::Graph;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::{collections::HashMap, rc::Rc};
+
+#[cfg(feature = "gui-egui")]
+use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapPriority};
 
 #[cfg(feature = "gui-vizia")]
 use vizia::prelude::*;
@@ -17,7 +21,7 @@ type Components = Vec<Rc<dyn Component>>;
 type Components = Vec<Rc<dyn ViziaComponent>>;
 
 #[cfg(feature = "gui-egui")]
-type Components = Vec<Rc<dyn EguiComponent>>;
+pub type Components = Vec<Rc<dyn EguiComponent>>;
 
 #[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
@@ -63,13 +67,23 @@ pub trait Component {
     /// returns the (id, Ports) of the component
     fn get_id_ports(&self) -> (Id, Ports);
 
+    fn set_id_port(&mut self, _target_port_id: Id, _new_input: Input) {
+        todo!("Set set_id_port for this Component");
+    }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, _id: &str, _pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        todo!("implement dummy component factory for this component")
+    }
     /// evaluate component based on current internal state
     fn clock(&self, _simulator: &mut Simulator) -> Result<(), Condition> {
         Ok(())
     }
-
     /// update component internal state
     fn un_clock(&self) {}
+    /// reset component internal state to initial value
+    fn reset(&self) {}
+    /// any
+    fn as_any(&self) -> &dyn Any;
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -80,30 +94,81 @@ pub enum Condition {
     Halt(String),
 }
 
+#[cfg(feature = "gui-egui")]
+use crate::gui_egui::gui::EguiExtra;
+
 // Specific functionality for EGui frontend
 #[cfg(feature = "gui-egui")]
 #[typetag::serde(tag = "type")]
 pub trait EguiComponent: Component {
+    #[allow(clippy::too_many_arguments)]
     fn render(
         &self,
         _ui: &mut egui::Ui,
-        _simulator: Simulator,
-        _start: egui::Vec2,
+        _context: &mut EguiExtra,
+        _simulator: Option<&mut Simulator>,
+        _offset: egui::Vec2,
         _scale: f32,
         _clip_rect: egui::Rect,
-    ) {
+        _editor_mode: EditorMode,
+    ) -> Option<Vec<egui::Response>> {
+        None
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn render_editor(
+        &mut self,
+        _ui: &mut egui::Ui,
+        _context: &mut EguiExtra,
+        _simulator: Option<&mut Simulator>,
+        _offset: egui::Vec2,
+        _scale: f32,
+        _clip_rect: egui::Rect,
+        _id_ports: &[(Id, Ports)],
+        _grid: &GridOptions,
+        _editor_mode: EditorMode,
+    ) -> EditorRenderReturn {
+        EditorRenderReturn {
+            delete: false,
+            resp: None,
+        }
+    }
+
+    fn top_padding(&self) -> f32 {
+        todo!("Create top_padding for this EguiComponent");
+    }
+
+    /// Get ports location relative to self, (inputs, outputs)
+    fn ports_location(&self) -> Vec<(Id, egui::Pos2)> {
+        todo!("Create ports_location for this EguiComponent");
+    }
+
+    fn snap_priority(&self) -> SnapPriority {
+        SnapPriority::Default
+    }
+
+    fn set_pos(&mut self, _pos: (f32, f32)) {
+        todo!("Create set_pos for this EguiComponent");
+    }
+
+    fn get_pos(&self) -> (f32, f32) {
+        todo!("Create get_pos for this EguiComponent");
+    }
+
+    fn set_id_tmp(&self, context: &mut EguiExtra) {
+        context.id_tmp = self.get_id_ports().0.clone();
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Ports {
-    pub inputs: Vec<Input>,
+    pub inputs: Vec<InputPort>,
     pub out_type: OutputType,
     pub outputs: Vec<Id>,
 }
 
 impl Ports {
-    pub fn new(inputs: Vec<&Input>, out_type: OutputType, outputs: Vec<&str>) -> Self {
+    pub fn new(inputs: Vec<&InputPort>, out_type: OutputType, outputs: Vec<&str>) -> Self {
         Ports {
             inputs: inputs.into_iter().cloned().collect(),
             out_type,
@@ -123,6 +188,21 @@ impl Input {
         Input {
             id: id.into(),
             field: field.into(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct InputPort {
+    pub port_id: Id,
+    pub input: Input,
+}
+
+impl InputPort {
+    pub fn new(id_self: &str, id: &str, field: &str) -> Self {
+        InputPort {
+            port_id: id_self.into(),
+            input: Input::new(id, field),
         }
     }
 }

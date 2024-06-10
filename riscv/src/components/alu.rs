@@ -1,9 +1,21 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "gui-egui")]
+use std::rc::Rc;
+#[cfg(feature = "gui-egui")]
+use syncrim::common::EguiComponent;
 use syncrim::{
-    common::{Component, Condition, Input, OutputType, Ports, SignalValue, Simulator},
+    common::{
+        Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
+    },
     signal::SignalSigned,
 };
+
+pub const ALU_OPERATOR_I_ID: &str = "operator_i";
+pub const ALU_OPERAND_A_I_ID: &str = "operand_a_i";
+pub const ALU_OPERAND_B_I_ID: &str = "operand_b_i";
+
+pub const ALU_RESULT_O_ID: &str = "alu_result_o";
 
 #[derive(Serialize, Deserialize)]
 pub struct ALU {
@@ -21,31 +33,63 @@ impl Component for ALU {
     fn to_(&self) {
         println!("ALU");
     }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy = Input::new("dummy", "out");
+        Box::new(Rc::new(ALU {
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            operator_i: dummy.clone(),
+            operand_a_i: dummy.clone(),
+            operand_b_i: dummy.clone(),
+        }))
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            ALU_OPERAND_A_I_ID => self.operand_a_i = new_input,
+            ALU_OPERAND_B_I_ID => self.operand_b_i = new_input,
+            ALU_OPERATOR_I_ID => self.operator_i = new_input,
+            _ => (),
+        }
+    }
+
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![
-                    self.operator_i.clone(),
-                    self.operand_a_i.clone(),
-                    self.operand_b_i.clone(),
+            Ports::new(
+                vec![
+                    &InputPort {
+                        port_id: ALU_OPERATOR_I_ID.to_string(),
+                        input: self.operator_i.clone(),
+                    },
+                    &InputPort {
+                        port_id: ALU_OPERAND_A_I_ID.to_string(),
+                        input: self.operand_a_i.clone(),
+                    },
+                    &InputPort {
+                        port_id: ALU_OPERAND_B_I_ID.to_string(),
+                        input: self.operand_b_i.clone(),
+                    },
                     //self.operand_c_i.clone(),
                 ],
-                out_type: OutputType::Combinatorial,
-                outputs: vec![
-                    "result_o".into(),
+                OutputType::Combinatorial,
+                vec![
+                    ALU_RESULT_O_ID,
+                    //"result_o".into(),
                     //"comparison_result_o".into(),
                     //"ready_o".into(),
                 ],
-            },
+            ),
         )
     }
+
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let operator_i = match simulator.get_input_value(&self.operator_i) {
             SignalValue::Data(data) => data,
             _ => {
-                simulator.set_out_value(&self.id, "result_o", SignalValue::Unknown);
+                simulator.set_out_value(&self.id, ALU_RESULT_O_ID, SignalValue::Unknown);
                 return Ok(());
             }
         };
@@ -128,10 +172,15 @@ impl Component for ALU {
             _ => {}
         }
         trace!("ALU result_o:{:08x}", result_o);
-        simulator.set_out_value(&self.id, "result_o", result_o);
+        simulator.set_out_value(&self.id, ALU_RESULT_O_ID, result_o);
         Ok(())
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -159,11 +208,11 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
-        let alu_out = &Input::new("alu", "result_o");
+        let alu_out = &Input::new("alu", "alu_result_o");
 
         simulator.set_out_value("operator_i", "out", 1); //add
         simulator.set_out_value("operand_a_i", "out", -41i32 as u32);

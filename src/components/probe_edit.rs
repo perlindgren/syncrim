@@ -1,10 +1,15 @@
+#[cfg(feature = "gui-egui")]
+use crate::common::EguiComponent;
 use crate::common::{Component, Condition, Id, OutputType, Ports, Signal, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::{
     rc::Rc,
     sync::{Arc, RwLock},
 };
+
+pub const PROBE_EDIT_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ProbeEdit {
@@ -24,7 +29,10 @@ impl Component for ProbeEdit {
     fn to_(&self) {
         trace!("ProbeEdit");
     }
-
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        Box::new(Rc::new(ProbeEdit::new(id, (pos.0, pos.1))))
+    }
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
@@ -33,7 +41,7 @@ impl Component for ProbeEdit {
                 vec![],
                 OutputType::Combinatorial,
                 // Single output value
-                vec!["out"],
+                vec![PROBE_EDIT_OUT_ID],
             ),
         )
     }
@@ -62,6 +70,10 @@ impl Component for ProbeEdit {
         trace!("prev {:?}", prev);
         edit_history.push(prev.clone()); // push as current
         edit_history.push(prev); // push as next (to be edited)
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

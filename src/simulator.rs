@@ -2,13 +2,12 @@ use crate::common::{
     Component, ComponentStore, Condition, Id, Input, OutputType, Signal, SignalFmt, SignalValue,
     Simulator,
 };
+use log::*;
 use petgraph::{
     algo::toposort,
     dot::{Config, Dot},
     Graph,
 };
-
-use log::*;
 use std::collections::HashMap;
 use std::{fs::File, io::prelude::*, path::PathBuf};
 
@@ -22,7 +21,10 @@ pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 // A solution is to evaluate register updates separately from other components
 // ... but not currently implemented ...
 impl Simulator {
-    pub fn new(component_store: &ComponentStore) -> Self {
+    pub fn new(component_store: ComponentStore) -> Result<Self, &'static str> {
+        for component in &component_store.store {
+            component.reset();
+        }
         let mut lens_values = vec![];
 
         let mut id_start_index = HashMap::new();
@@ -34,6 +36,7 @@ impl Simulator {
 
         trace!("-- allocate storage for lensed outputs");
         for c in &component_store.store {
+            trace!("{:?}", c.get_id_ports().0);
             let (id, ports) = c.get_id_ports();
 
             trace!("id {}, ports {:?}", id, ports);
@@ -87,11 +90,18 @@ impl Simulator {
             trace!("to_id :{}, ports: {:?}", to_id, ports);
 
             if ports.out_type == OutputType::Combinatorial {
+                trace!("combinatorial, id:{}", to_component.get_id_ports().0);
                 let to_node = id_node.get(to_id).unwrap();
                 let (_, ports) = c.get_id_ports();
                 for in_port in &ports.inputs {
-                    let from_id = &in_port.id;
-                    let from_node = id_node.get(from_id).unwrap();
+                    let from_id = &in_port.input.id;
+                    let from_node = id_node.get(from_id);
+                    if from_node.is_none() {
+                        println!("to id: {} from port {} is not connected", to_id, from_id);
+                        return Err("A port left unconnected");
+                    }
+                    let from_node = from_node.unwrap();
+
                     graph.add_edge(*from_node, *to_node, ());
                     trace!(
                         "add_edge {}:{:?} -> {}:{:?}",
@@ -108,7 +118,7 @@ impl Simulator {
         let top =
             toposort(&graph, None).expect("Topological sort failed, your model contains loops.");
         trace!("--- topologically ordered graph \n{:?}", top);
-
+        //two passes, first add all sequential roots
         let mut ordered_components = vec![];
         //two passes ensure the sorted list of nodes always starts with ALL of the roots
         //first push the sequential components, eg. graph roots
@@ -119,7 +129,7 @@ impl Simulator {
                 ordered_components.push(c);
             }
         }
-        //now push all of the other components
+        //then the rest...
         for node in &top {
             #[allow(suspicious_double_ref_op)]
             let c = (**node_comp.get(node).unwrap()).clone();
@@ -152,9 +162,8 @@ impl Simulator {
         };
 
         trace!("sim_state {:?}", simulator.sim_state);
-
         simulator.clock();
-        simulator
+        Ok(simulator)
     }
 
     /// get input by index
@@ -164,7 +173,11 @@ impl Simulator {
 
     /// get input signal
     pub fn get_input_signal(&self, input: &Input) -> Signal {
-        let nr_out = *self.id_nr_outputs.get(&input.id).unwrap();
+        #[allow(unreachable_code)]
+        let nr_out = *self
+            .id_nr_outputs
+            .get(&input.id)
+            .unwrap_or_else(|| panic!("\n{:?} not found in \n{:?}", input, self.id_nr_outputs));
         let index = *self
             .id_field_index
             .get(&(input.id.clone(), input.field.clone()))
@@ -217,7 +230,9 @@ impl Simulator {
             .get(&(id.into(), field.into()))
             .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
         let start_index = self.get_id_start_index(id);
-        self.set_value(start_index + index, value.into());
+        let val: SignalValue = value.try_into().unwrap();
+        //trace!("id:{}, field:{}, value:{:?}", id,field, SignalValue::try_from(val).unwrap());
+        self.set_value(start_index + index, val);
     }
 
     /// set fmt by Id (instance) and Id (field)
@@ -234,12 +249,15 @@ impl Simulator {
     pub fn clock(&mut self) {
         // push current state
         self.history.push(self.sim_state.clone());
-
+        trace!("cycle:{}", self.cycle);
         for component in self.ordered_components.clone() {
+            //trace!("evaling component:{}", component.get_id_ports().0);
             match component.clock(self) {
                 Ok(_) => {}
                 Err(cond) => match cond {
-                    Condition::Warning(warn) => trace!("warning {}", warn),
+                    Condition::Warning(warn) => {
+                        trace!("warning {}", warn)
+                    }
                     Condition::Error(err) => panic!("err {}", err),
                     Condition::Assert(assert) => {
                         error!("assertion failed {}", assert);
@@ -257,11 +275,17 @@ impl Simulator {
 
     /// free running mode until Halt condition
     pub fn run(&mut self) {
-        self.running = true;
-        while self.running {
-            self.clock()
+        use std::time::Instant;
+        let now = Instant::now();
+        while now.elapsed().as_millis() < 1000 / 30 {
+            //60Hz
+            if self.running {
+                self.clock()
+            }
         }
     }
+
+    pub fn run_threaded(&mut self) {}
 
     /// stop the simulator from gui or other external reason
     pub fn stop(&mut self) {
@@ -290,6 +314,10 @@ impl Simulator {
         self.sim_state.iter_mut().for_each(|val| *val = 0.into());
         self.stop();
         self.clock();
+
+        for component in self.ordered_components.clone() {
+            component.reset();
+        }
     }
 
     pub fn get_state(&self) -> bool {
@@ -321,7 +349,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(&cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
     }
@@ -333,7 +361,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1")), Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(&cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
     }
@@ -344,7 +372,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(&cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_value(&Input::new("po1", "out"));
@@ -357,7 +385,7 @@ mod test {
             store: vec![Rc::new(ProbeOut::new("po1"))],
         };
 
-        let simulator = Simulator::new(&cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_value(&Input::new("po1", "missing"));
@@ -369,7 +397,7 @@ mod test {
             store: vec![Rc::new(Constant::new("c", (0.0, 0.0), 0))],
         };
 
-        let simulator = Simulator::new(&cs);
+        let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
         let _ = simulator.get_input_fmt(&Input::new("c", "out"));

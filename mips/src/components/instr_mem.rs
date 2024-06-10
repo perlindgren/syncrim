@@ -1,8 +1,13 @@
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use syncrim::common::{
-    Component, Condition, Input, OutputType, Ports, SignalUnsigned, SignalValue, Simulator,
+    Component, Condition, Input, InputPort, OutputType, Ports, SignalUnsigned, SignalValue,
+    Simulator,
 };
+
+pub const INSTR_MEM_PC_ID: &str = "pc";
+
+pub const INSTR_MEM_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize)]
 pub struct InstrMem {
@@ -24,9 +29,12 @@ impl Component for InstrMem {
         (
             self.id.clone(),
             Ports {
-                inputs: vec![self.pc.clone()],
+                inputs: vec![InputPort {
+                    port_id: INSTR_MEM_PC_ID.to_string(),
+                    input: self.pc.clone(),
+                }],
                 out_type: OutputType::Combinatorial,
-                outputs: vec!["out".into()],
+                outputs: vec![INSTR_MEM_OUT_ID.to_string()],
             },
         )
     }
@@ -47,8 +55,12 @@ impl Component for InstrMem {
 
         // set output
         trace!("--- output {:?}", instr);
-        simulator.set_out_value(&self.id, "out", instr);
+        simulator.set_out_value(&self.id, INSTR_MEM_OUT_ID, instr);
         Ok(())
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }
 

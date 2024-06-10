@@ -1,9 +1,27 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
-use syncrim::common::{Component, Condition, Input, OutputType, Ports, SignalValue, Simulator};
+#[cfg(feature = "gui-egui")]
+use std::rc::Rc;
+#[cfg(feature = "gui-egui")]
+use syncrim::common::EguiComponent;
+use syncrim::common::{
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
+};
+
+pub const BRANCH_LOGIC_RS1_ID: &str = "rs1";
+pub const BRANCH_LOGIC_RS2_ID: &str = "rs2";
+pub const BRANCH_LOGIC_CTRL_ID: &str = "ctrl";
+pub const BRANCH_LOGIC_ENABLE_ID: &str = "enable";
+//pub const BRANCH_LOGIC_MRET_ID: &str = "mret";
+pub const BRANCH_LOGIC_OUT_ID: &str = "out";
+
+pub const BRANCH_LOGIC_HEIGHT: f32 = 60.0;
+pub const BRANCH_LOGIC_WIDTH: f32 = 60.0;
 
 #[derive(Serialize, Deserialize)]
 pub struct BranchLogic {
+    pub width: f32,
+    pub height: f32,
     pub id: String,
     pub pos: (f32, f32),
 
@@ -12,6 +30,8 @@ pub struct BranchLogic {
 
     pub ctrl: Input,
     pub enable: Input,
+    // pub mret: Input,
+    // pub int: Input,
 }
 
 #[typetag::serde()]
@@ -19,21 +39,67 @@ impl Component for BranchLogic {
     fn to_(&self) {
         println!("BranchLogic");
     }
+
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy = Input::new("dummy", "out");
+        Box::new(Rc::new(BranchLogic {
+            width: 60.0,
+            height: 60.0,
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            rs1: dummy.clone(),
+            rs2: dummy.clone(),
+            ctrl: dummy.clone(),
+            enable: dummy.clone(),
+            // mret: dummy.clone(),
+            // int: dummy.clone(),
+        }))
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            BRANCH_LOGIC_RS1_ID => self.rs1 = new_input,
+            BRANCH_LOGIC_RS2_ID => self.rs2 = new_input,
+            BRANCH_LOGIC_CTRL_ID => self.ctrl = new_input,
+            BRANCH_LOGIC_ENABLE_ID => self.enable = new_input,
+            // BRANCH_LOGIC_MRET_ID => self.mret = new_input,
+            _ => (),
+        }
+    }
+
     fn get_id_ports(&self) -> (String, Ports) {
         (
             self.id.clone(),
-            Ports {
-                inputs: vec![
-                    self.rs1.clone(),
-                    self.rs2.clone(),
-                    self.ctrl.clone(),
-                    self.enable.clone(),
+            Ports::new(
+                vec![
+                    &InputPort {
+                        port_id: BRANCH_LOGIC_RS1_ID.to_string(),
+                        input: self.rs1.clone(),
+                    },
+                    &InputPort {
+                        port_id: BRANCH_LOGIC_RS2_ID.to_string(),
+                        input: self.rs2.clone(),
+                    },
+                    &InputPort {
+                        port_id: BRANCH_LOGIC_CTRL_ID.to_string(),
+                        input: self.ctrl.clone(),
+                    },
+                    &InputPort {
+                        port_id: BRANCH_LOGIC_ENABLE_ID.to_string(),
+                        input: self.enable.clone(),
+                    },
+                    // &InputPort {
+                    //     port_id: BRANCH_LOGIC_MRET_ID.to_string(),
+                    //     input: self.mret.clone(),
+                    // },
                 ],
-                out_type: OutputType::Combinatorial,
-                outputs: vec!["out".into()],
-            },
+                OutputType::Combinatorial,
+                vec![BRANCH_LOGIC_OUT_ID],
+            ),
         )
     }
+
     #[allow(non_snake_case)]
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let enable: u32 = simulator.get_input_value(&self.enable).try_into().unwrap();
@@ -51,7 +117,7 @@ impl Component for BranchLogic {
                             let rs1: u32 = rs1.try_into().unwrap();
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 == rs2 {
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                                 trace!("beq ok");
                             } else {
                                 out = SignalValue::from(0);
@@ -62,7 +128,7 @@ impl Component for BranchLogic {
                             let rs1: u32 = rs1.try_into().unwrap();
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 != rs2 {
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                                 trace!("bne ok");
                             } else {
                                 out = SignalValue::from(0);
@@ -73,7 +139,7 @@ impl Component for BranchLogic {
                             let rs1: u32 = rs1.try_into().unwrap();
                             let rs2: u32 = rs2.try_into().unwrap();
                             if (rs1 as i32) < (rs2 as i32) {
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                                 trace!("blt ok");
                             } else {
                                 out = SignalValue::from(0);
@@ -84,7 +150,7 @@ impl Component for BranchLogic {
                             let rs1: u32 = rs1.try_into().unwrap();
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 as i32 >= rs2 as i32 {
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                                 trace!("bge ok");
                             } else {
                                 out = SignalValue::from(0);
@@ -95,7 +161,7 @@ impl Component for BranchLogic {
                             let rs1: u32 = rs1.try_into().unwrap();
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 < rs2 {
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                                 trace!("bltu ok");
                             } else {
                                 out = SignalValue::from(0);
@@ -107,7 +173,7 @@ impl Component for BranchLogic {
                             let rs2: u32 = rs2.try_into().unwrap();
                             if rs1 >= rs2 {
                                 trace!("bgeu ok");
-                                out = SignalValue::from(2);
+                                out = SignalValue::from(1);
                             } else {
                                 trace!("bgeu failed");
                                 out = SignalValue::from(0);
@@ -119,7 +185,7 @@ impl Component for BranchLogic {
                         } //jalr
                         0b010 => {
                             trace!("jal ok");
-                            out = SignalValue::from(2); //jal
+                            out = SignalValue::from(1); //jal
                         }
                         _ => {
                             trace!("no control transfer");
@@ -134,6 +200,10 @@ impl Component for BranchLogic {
         trace!("BranchLogic Out:{:?}", out);
         simulator.set_out_value(&self.id, "out", out);
         Ok(())
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }
 #[cfg(test)]
@@ -154,18 +224,24 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -191,7 +267,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 42);
         simulator.set_out_value("rs2", "out", 1337);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
 
         println!("<setup for clock 4>");
         simulator.set_out_value("ctrl", "out", 0b001);
@@ -209,18 +285,23 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
-
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -246,7 +327,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 42);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
 
         println!("<setup for clock 4>");
         simulator.set_out_value("ctrl", "out", 0b000); //beq
@@ -264,18 +345,24 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -301,7 +388,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 41);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
 
         println!("<setup for clock 4>");
         simulator.set_out_value("ctrl", "out", 0b100);
@@ -326,18 +413,24 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -363,7 +456,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 42);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
 
         println!("<setup for clock 4>");
         simulator.set_out_value("ctrl", "out", 0b101);
@@ -371,7 +464,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 43);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
         println!("<setup for clock 5>");
         simulator.set_out_value("ctrl", "out", 0b101);
         simulator.set_out_value("enable", "out", 1); //enabled
@@ -388,18 +481,24 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -425,7 +524,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 1);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
 
         println!("<setup for clock 4>");
         simulator.set_out_value("ctrl", "out", 0b110);
@@ -450,18 +549,24 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -495,21 +600,21 @@ mod test {
         simulator.set_out_value("rs1", "out", -1i32 as u32);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
         println!("<setup for clock 5>");
         simulator.set_out_value("ctrl", "out", 0b111);
         simulator.set_out_value("enable", "out", 1); //enabled
         simulator.set_out_value("rs1", "out", 43);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
         println!("<setup for clock 5>");
         simulator.set_out_value("ctrl", "out", 0b111);
         simulator.set_out_value("enable", "out", 1); //enabled
         simulator.set_out_value("rs1", "out", 42);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
     }
     #[test]
     fn test_jalr() {
@@ -519,18 +624,24 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -558,18 +669,24 @@ mod test {
                 Rc::new(ProbeOut::new("rs2")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("enable")),
+                Rc::new(ProbeOut::new("int")),
+                Rc::new(ProbeOut::new("mret")),
                 Rc::new(BranchLogic {
+                    width: 0.0,
+                    height: 0.0,
                     id: "blu".to_string(),
                     pos: (0.0, 0.0),
                     rs1: Input::new("rs1", "out"),
                     rs2: Input::new("rs2", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     enable: Input::new("enable", "out"),
+                    // int: Input::new("int", "out"),
+                    // mret: Input::new("mret", "out"),
                 }),
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
         assert_eq!(simulator.cycle, 1);
 
         // outputs
@@ -587,6 +704,6 @@ mod test {
         simulator.set_out_value("rs1", "out", SignalValue::Unknown);
         simulator.set_out_value("rs2", "out", SignalValue::Unknown);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
     }
 }

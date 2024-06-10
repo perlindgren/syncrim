@@ -1,16 +1,28 @@
+#[cfg(feature = "gui-egui")]
+use crate::common::EguiComponent;
 use crate::common::{
-    Component, Condition, Id, Input, OutputType, Ports, SignalSigned, SignalUnsigned, SignalValue,
-    Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
+    SignalValue, Simulator,
 };
 use log::*;
 use num_enum::IntoPrimitive;
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
+use std::any::Any;
 use std::ops::Deref;
 use std::ops::Range;
 use std::{cell::RefCell, collections::BTreeMap, convert::TryFrom, rc::Rc};
 
-#[derive(Serialize, Deserialize)]
+pub const MEM_DATA_ID: &str = "data";
+pub const MEM_ADDR_ID: &str = "addr";
+pub const MEM_CTRL_ID: &str = "ctrl";
+pub const MEM_SEXT_ID: &str = "sext";
+pub const MEM_SIZE_ID: &str = "size";
+
+pub const MEM_DATA_OUT_ID: &str = "data_o";
+pub const MEM_ERR_OUT_ID: &str = "err";
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Mem {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -270,13 +282,55 @@ impl Component for Mem {
     fn to_(&self) {
         trace!("Mem");
     }
+    #[cfg(feature = "gui-egui")]
+    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+        let dummy_input = Input::new("dummy", "out");
+        Box::new(Rc::new(Mem {
+            id: id.to_string(),
+            pos: (pos.0, pos.1),
+            width: 100.0,
+            height: 50.0,
+            big_endian: true,
+            data: dummy_input.clone(),
+            addr: dummy_input.clone(),
+            ctrl: dummy_input.clone(),
+            size: dummy_input.clone(),
+            sext: dummy_input.clone(),
+            range: Range {
+                start: 0,
+                end: 0x20,
+            },
+            memory: Memory::new(BTreeMap::new()),
+        }))
+    }
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
             Ports::new(
-                vec![&self.data, &self.addr, &self.ctrl, &self.sext, &self.size],
+                vec![
+                    &InputPort {
+                        port_id: MEM_DATA_ID.to_string(),
+                        input: self.data.clone(),
+                    },
+                    &InputPort {
+                        port_id: MEM_ADDR_ID.to_string(),
+                        input: self.addr.clone(),
+                    },
+                    &InputPort {
+                        port_id: MEM_CTRL_ID.to_string(),
+                        input: self.ctrl.clone(),
+                    },
+                    &InputPort {
+                        port_id: MEM_SEXT_ID.to_string(),
+                        input: self.sext.clone(),
+                    },
+                    &InputPort {
+                        port_id: MEM_SIZE_ID.to_string(),
+                        input: self.size.clone(),
+                    },
+                ],
                 OutputType::Combinatorial,
-                vec!["data", "err"],
+                vec![MEM_DATA_OUT_ID, MEM_ERR_OUT_ID],
             ),
         )
     }
@@ -302,7 +356,7 @@ impl Component for Mem {
                             sign != 0,
                             self.big_endian,
                         );
-                        simulator.set_out_value(&self.id, "data", value);
+                        simulator.set_out_value(&self.id, "data_o", value);
                         let value = self.memory.align(addr as usize, size as usize);
                         trace!("align {:?}", value);
                         simulator.set_out_value(&self.id, "err", value); // align
@@ -323,7 +377,7 @@ impl Component for Mem {
                 }
             }
             _ => {
-                simulator.set_out_value(&self.id, "data", SignalValue::Unknown);
+                simulator.set_out_value(&self.id, "data_o", SignalValue::Unknown);
                 simulator.set_out_value(&self.id, "err", SignalValue::Unknown); // align
             }
         }
@@ -343,6 +397,21 @@ impl Component for Mem {
         }
 
         Ok(())
+    }
+
+    fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        match target_port_id.as_str() {
+            MEM_DATA_ID => self.data = new_input,
+            MEM_ADDR_ID => self.addr = new_input,
+            MEM_CTRL_ID => self.ctrl = new_input,
+            MEM_SEXT_ID => self.sext = new_input,
+            MEM_SIZE_ID => self.size = new_input,
+            _ => (),
+        }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -365,7 +434,7 @@ mod test {
     fn test_mem_be() {
         let cs = ComponentStore {
             store: vec![
-                Rc::new(ProbeOut::new("data")),
+                Rc::new(ProbeOut::new("data_o")),
                 Rc::new(ProbeOut::new("addr")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("size")),
@@ -380,7 +449,7 @@ mod test {
                     big_endian: true, // i.e., big endian
 
                     // ports
-                    data: Input::new("data", "out"),
+                    data: Input::new("data_o", "out"),
                     addr: Input::new("addr", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     size: Input::new("size", "out"),
@@ -396,12 +465,12 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
 
         // outputs
-        let out = &Input::new("mem", "data");
+        let out = &Input::new("mem", "data_o");
         let err = &Input::new("mem", "err");
 
         // reset
@@ -413,7 +482,7 @@ mod test {
 
         println!("<setup for write 42 to addr 4>");
 
-        simulator.set_out_value("data", "out", 0xf0);
+        simulator.set_out_value("data_o", "out", 0xf0);
         simulator.set_out_value("addr", "out", 4);
         simulator.set_out_value("ctrl", "out", MemCtrl::Write as SignalUnsigned);
         simulator.set_out_value("size", "out", 1);
@@ -521,7 +590,7 @@ mod test {
 
         println!("<setup for write half-word at add 10>");
         simulator.set_out_value("addr", "out", 10);
-        simulator.set_out_value("data", "out", 0x1234);
+        simulator.set_out_value("data_o", "out", 0x1234);
         simulator.set_out_value("ctrl", "out", MemCtrl::Write as SignalUnsigned);
         simulator.clock();
         assert_eq!(simulator.cycle, 13);
@@ -547,7 +616,7 @@ mod test {
     fn test_mem_le() {
         let cs = ComponentStore {
             store: vec![
-                Rc::new(ProbeOut::new("data")),
+                Rc::new(ProbeOut::new("data_o")),
                 Rc::new(ProbeOut::new("addr")),
                 Rc::new(ProbeOut::new("ctrl")),
                 Rc::new(ProbeOut::new("size")),
@@ -562,7 +631,7 @@ mod test {
                     big_endian: false, // i.e., little endian
 
                     // ports
-                    data: Input::new("data", "out"),
+                    data: Input::new("data_o", "out"),
                     addr: Input::new("addr", "out"),
                     ctrl: Input::new("ctrl", "out"),
                     size: Input::new("size", "out"),
@@ -579,12 +648,12 @@ mod test {
             ],
         };
 
-        let mut simulator = Simulator::new(&cs);
+        let mut simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
 
         // outputs
-        let out = &Input::new("mem", "data");
+        let out = &Input::new("mem", "data_o");
         let err = &Input::new("mem", "err");
 
         // reset
@@ -593,7 +662,7 @@ mod test {
 
         // println!("<setup for write 42 to addr 4>");
 
-        simulator.set_out_value("data", "out", 0xf0);
+        simulator.set_out_value("data_o", "out", 0xf0);
         simulator.set_out_value("addr", "out", 4);
         simulator.set_out_value("ctrl", "out", MemCtrl::Write as SignalUnsigned);
         simulator.set_out_value("size", "out", 1); // byte
@@ -647,7 +716,7 @@ mod test {
 
         println!("<setup for write half-word at add 10>");
         simulator.set_out_value("addr", "out", 10); // b
-        simulator.set_out_value("data", "out", 0x1234);
+        simulator.set_out_value("data_o", "out", 0x1234);
         simulator.set_out_value("ctrl", "out", MemCtrl::Write as SignalUnsigned);
         simulator.set_out_value("size", "out", 2);
 

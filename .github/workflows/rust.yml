@@ -2,7 +2,7 @@ name: Rust
 
 on:
   push:
-    branches: ["master"]
+    branches: ["master", "egui_generic"]
   pull_request:
     branches: ["master"]
 
