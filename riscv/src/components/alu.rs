@@ -212,7 +212,7 @@ mod test {
         assert_eq!(simulator.cycle, 1);
 
         // outputs
-        let alu_out = &Input::new("alu", "result_o");
+        let alu_out = &Input::new("alu", "alu_result_o");
 
         simulator.set_out_value("operator_i", "out", 1); //add
         simulator.set_out_value("operand_a_i", "out", -41i32 as u32);

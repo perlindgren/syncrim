@@ -267,7 +267,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 42);
         simulator.set_out_value("rs2", "out", 1337);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
 
         println!("<setup for clock 4>");
         simulator.set_out_value("ctrl", "out", 0b001);
@@ -327,7 +327,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 42);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
 
         println!("<setup for clock 4>");
         simulator.set_out_value("ctrl", "out", 0b000); //beq
@@ -388,7 +388,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 41);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
 
         println!("<setup for clock 4>");
         simulator.set_out_value("ctrl", "out", 0b100);
@@ -456,7 +456,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 42);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
 
         println!("<setup for clock 4>");
         simulator.set_out_value("ctrl", "out", 0b101);
@@ -464,7 +464,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 43);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
         println!("<setup for clock 5>");
         simulator.set_out_value("ctrl", "out", 0b101);
         simulator.set_out_value("enable", "out", 1); //enabled
@@ -524,7 +524,7 @@ mod test {
         simulator.set_out_value("rs1", "out", 1);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
 
         println!("<setup for clock 4>");
         simulator.set_out_value("ctrl", "out", 0b110);
@@ -600,21 +600,21 @@ mod test {
         simulator.set_out_value("rs1", "out", -1i32 as u32);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
         println!("<setup for clock 5>");
         simulator.set_out_value("ctrl", "out", 0b111);
         simulator.set_out_value("enable", "out", 1); //enabled
         simulator.set_out_value("rs1", "out", 43);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
         println!("<setup for clock 5>");
         simulator.set_out_value("ctrl", "out", 0b111);
         simulator.set_out_value("enable", "out", 1); //enabled
         simulator.set_out_value("rs1", "out", 42);
         simulator.set_out_value("rs2", "out", 42);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
     }
     #[test]
     fn test_jalr() {
@@ -704,6 +704,6 @@ mod test {
         simulator.set_out_value("rs1", "out", SignalValue::Unknown);
         simulator.set_out_value("rs2", "out", SignalValue::Unknown);
         simulator.clock();
-        assert_eq!(simulator.get_input_value(blu_out), 2.into());
+        assert_eq!(simulator.get_input_value(blu_out), 1.into());
     }
 }

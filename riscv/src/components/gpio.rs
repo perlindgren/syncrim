@@ -2,7 +2,6 @@ use crate::components::mem::{MemCtrl, Memory};
 use log::trace;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
-#[cfg(feature = "gui-egui")]
 use std::rc::Rc;
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
