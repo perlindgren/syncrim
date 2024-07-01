@@ -2,7 +2,7 @@ name: Rust
 
 on:
   push:
-    branches: ["master", "egui_generic"]
+    branches: ["master", "ci"]
   pull_request:
     branches: ["master"]
 
@@ -12,6 +12,10 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [x86_64-pc-windows-gnu, x86_64-unknown-linux-musl, x86_64-apple-darwin]
     steps:
       - uses: actions/checkout@v3
       - name: Update runner
