@@ -23,9 +23,7 @@ typetag = "0.2.10"
 
 
 [dependencies.vizia]
-#git = "https://github.com/vizia/vizia.git"
-git = "https://github.com/onsdagens/vizia.git"
-#rev = "2e0e55ba3d67b7d4a8a7e8dd2324a8eda549c578"
+git = "https://github.com/vizia/vizia.git"
 #path = "../vizia"
 optional = true
 
