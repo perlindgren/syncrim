@@ -230,7 +230,7 @@ impl Simulator {
             .get(&(id.into(), field.into()))
             .unwrap_or_else(|| panic!("Component {}, field {} not found.", id, field));
         let start_index = self.get_id_start_index(id);
-        let val: SignalValue = value.try_into().unwrap();
+        let val: SignalValue = value.into();
         //trace!("id:{}, field:{}, value:{:?}", id,field, SignalValue::try_from(val).unwrap());
         self.set_value(start_index + index, val);
     }

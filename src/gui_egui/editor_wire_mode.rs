@@ -98,7 +98,7 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
             pos_v.append(&mut v);
 
             // Now actually set the input of the wired component
-            #[allow(clippy::vtable_address_comparisons)]
+            #[allow(ambiguous_wide_pointer_comparisons)]
             if !Rc::ptr_eq(&in_c.comp, &out_c.comp) {
                 let comp = if is_input_in_comp_start { out_c } else { in_c };
                 e.components.push(Rc::new(Wire {
