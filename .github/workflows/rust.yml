@@ -17,7 +17,7 @@ jobs:
       matrix:
         target: [x86_64-pc-windows-gnu, x86_64-unknown-linux-musl, x86_64-apple-darwin]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Update runner
         run: sudo apt-get update
       - name: Install dependencies
@@ -28,11 +28,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --verbose
-      - uses: actions-rs/clippy-check@v1
+      - uses: clechasseur/rs-clippy-check@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --no-default-features --features gui-vizia
-      - uses: actions-rs/clippy-check@v1
+      - uses: clechasseur/rs-clippy-check@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --no-default-features --features gui-egui
@@ -41,7 +41,7 @@ jobs:
   rustfmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: Swatinem/rust-cache@v2
 
