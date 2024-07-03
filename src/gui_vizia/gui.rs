@@ -128,7 +128,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
     let path = path.to_owned();
     simulator.save_dot(&path);
 
-    Application::new(move |cx| {
+    let _ = Application::new(move |cx| {
         cx.add_stylesheet(include_style!("src/gui_vizia/style.css"))
             .expect("Failed to add stylesheet");
 

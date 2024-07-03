@@ -156,7 +156,7 @@ pub trait EguiComponent: Component {
     }
 
     fn set_id_tmp(&self, context: &mut EguiExtra) {
-        context.id_tmp = self.get_id_ports().0.clone();
+        context.id_tmp.clone_from(&self.get_id_ports().0);
     }
 }
 

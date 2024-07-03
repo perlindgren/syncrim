@@ -34,7 +34,7 @@ impl ViziaComponent for ProbeEdit {
                         //cx.emit(ProbeEditViewSetter::EditableText(text));
                     },
                 )
-                .on_submit(move |ex, text, enter| {
+                .on_submit(move |_, text, enter| {
                     trace!("submit: text {} enter {}", text, enter);
                     //ex.emit(ProbeEditViewSetter::EditableText(text));
                 })
