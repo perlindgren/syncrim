@@ -1,6 +1,7 @@
 mod add;
 mod constant;
 mod cross;
+mod full_adder;
 mod mem;
 mod mux;
 mod probe;
@@ -15,6 +16,7 @@ mod wire;
 pub use add::*;
 pub use constant::*;
 pub use cross::*;
+pub use full_adder::*;
 pub use mem::*;
 pub use mux::*;
 pub use probe::*;

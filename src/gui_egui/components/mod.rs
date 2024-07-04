@@ -1,6 +1,7 @@
 mod add;
 mod constant;
 mod cross;
+mod full_adder;
 mod mem;
 mod mux;
 mod probe;
