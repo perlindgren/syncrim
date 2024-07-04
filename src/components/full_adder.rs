@@ -10,8 +10,8 @@ use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::rc::Rc;
 
-pub const FULL_ADD_A_IN_ID: &str = "add_a_in";
-pub const FULL_ADD_B_IN_ID: &str = "add_b_in";
+pub const FULL_ADD_A_IN_ID: &str = "full_add_a_in";
+pub const FULL_ADD_B_IN_ID: &str = "full_add_b_in";
 
 pub const FULL_ADD_OUT_ID: &str = "out";
 
@@ -26,7 +26,7 @@ pub struct FullAdd {
 #[typetag::serde]
 impl Component for FullAdd {
     fn to_(&self) {
-        trace!("Full_Adder");
+        trace!("full_adder");
     }
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {

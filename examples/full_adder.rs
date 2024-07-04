@@ -32,9 +32,13 @@ fn main() {
             Wire::rc_new(
                 "w3",
                 vec![(220.0, 120.0), (260.0, 120.0)],
-                Input::new("sub", FULL_ADD_OUT_ID),
+                Input::new("full_adder", FULL_ADD_OUT_ID),
             ),
-            Probe::rc_new("p1", (270.0, 120.0), Input::new("sub", FULL_ADD_OUT_ID)),
+            Probe::rc_new(
+                "p1",
+                (270.0, 120.0),
+                Input::new("full_adder", FULL_ADD_OUT_ID),
+            ),
         ],
     };
 

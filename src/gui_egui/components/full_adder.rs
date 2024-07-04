@@ -68,7 +68,7 @@ impl EguiComponent for FullAdd {
                     }
                     format!("{}", s)
                 });
-                ui.label("Full Adder");
+                ui.label("full_adder");
             }
         });
         match editor_mode {
