@@ -10,4 +10,5 @@ mod probe_out;
 mod probe_stim;
 mod register;
 mod sext;
+mod sub;
 mod wire;
