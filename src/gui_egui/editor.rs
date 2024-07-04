@@ -133,6 +133,14 @@ impl Default for Library {
                 pos: (0.0, 0.0),
                 r_in: dummy_input.clone(),
             }),
+            Rc::new(
+                (Sub {
+                    id: "dummy".to_string(),
+                    pos: (0.0, 0.0),
+                    a_in: dummy_input.clone(),
+                    b_in: dummy_input.clone(),
+                }),
+            ),
         ];
         Library(library)
     }
