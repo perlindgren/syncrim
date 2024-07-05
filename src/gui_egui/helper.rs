@@ -1,6 +1,7 @@
 use crate::common::{Components, Ports};
 use crate::gui_egui::editor::{EditorMode, SnapPriority};
-use egui::{Pos2, Rect, Sense, Vec2};
+use egui::{Color32, Pos2, Rect, Sense, Vec2};
+use epaint::Shadow;
 
 pub fn offset_reverse_helper_pos2(xy: Pos2, scale: f32, offset: Vec2) -> Pos2 {
     egui::Pos2 {
@@ -104,5 +105,14 @@ pub fn editor_mode_to_sense(editor_mode: EditorMode) -> Sense {
             drag: true,
             focusable: true,
         },
+    }
+}
+
+pub fn shadow_small_dark() -> Shadow {
+    Shadow {
+        offset: Vec2 { x: 5.0, y: 5.0 },
+        blur: 5.0,
+        spread: 0.0,
+        color: Color32::BLACK,
     }
 }

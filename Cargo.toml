@@ -21,7 +21,6 @@ serde_derive = "1.0.171"
 serde_json = "1.0.103"
 typetag = "0.2.10"
 
-
 [dependencies.vizia]
 git = "https://github.com/vizia/vizia.git"
 #path = "../vizia"
@@ -29,7 +28,7 @@ optional = true
 
 [dependencies.egui]
 optional = true
-version = "0.23.0"
+version = "0.28.0"
 
 [dependencies.winapi]
 optional = true
@@ -38,11 +37,11 @@ features = ["winuser"]
 
 [dependencies.eframe]
 optional = true
-version = "0.23.0"
+version = "0.28.0"
 
 [dependencies.epaint]
 optional = true
-version = "0.23.0"
+version = "0.28.0"
 
 [features]
 default = ["gui-egui"]

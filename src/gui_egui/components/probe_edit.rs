@@ -6,7 +6,7 @@ use crate::gui_egui::component_ui::{
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
-use egui::{Align2, Area, DragValue, Order, Pos2, Rect, Response, Ui, Vec2};
+use egui::{Align2, Area, DragValue, Order, Pos2, Rect, Response, TextStyle, Ui, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for ProbeEdit {
@@ -25,13 +25,14 @@ impl EguiComponent for ProbeEdit {
         offset.x += self.pos.0 * scale;
         offset.y += self.pos.1 * scale;
         let interact = matches!(editor_mode, EditorMode::Simulator);
-        let area = Area::new(self.id.to_string())
+        let area = Area::new(egui::Id::from(self.id.to_string()))
             .order(Order::Middle)
             .current_pos(offset.to_pos2())
             .movable(false)
             .enabled(true)
             .interactable(interact)
             .pivot(Align2::CENTER_CENTER)
+            .constrain(false)
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);
                 let hst = self.edit_history.clone();
@@ -41,6 +42,11 @@ impl EguiComponent for ProbeEdit {
                     SignalValue::Data(d) => {
                         let mut val = d;
                         // todo: Somehow make this scale...
+                        ui.style_mut() // manage to change the font size but not the background
+                            .text_styles
+                            .get_mut(&TextStyle::Button)
+                            .unwrap()
+                            .size = scale * 12f32;
                         let r = ui.add(DragValue::new(&mut val));
                         *self.edit_history.write().unwrap().last_mut().unwrap() = TextSignal {
                             text: format!("{}", val),

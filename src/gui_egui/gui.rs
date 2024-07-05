@@ -6,7 +6,7 @@ use crate::gui_egui::{
     keymap::Shortcuts,
     menu::Menu,
 };
-use eframe::{egui, Frame};
+use eframe::egui;
 use egui::{
     containers, CentralPanel, Color32, Context, PointerButton, Pos2, Rect, Sense, TopBottomPanel,
     Vec2,
@@ -63,7 +63,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<(), e
         library,
     };
 
-    eframe::run_native("SyncRim", options, Box::new(|_cc| Box::new(gui)))
+    eframe::run_native("SyncRim", options, Box::new(|_cc| Ok(Box::new(gui))))
 }
 
 impl eframe::App for Gui {
@@ -103,23 +103,14 @@ impl eframe::App for Gui {
             self.top_bar(ctx);
             if self.simulator.is_some() {
                 // self.side_panel(ctx);
-                self.draw_area(ctx, frame);
                 if self.simulator.as_ref().unwrap().running {
-                    self.simulator.as_mut().unwrap().clock();
+                    self.simulator.as_mut().unwrap().run();
+
+                    // This makes the ui run agin as to not stop the simulation
+                    // when no ui events are happening
                     ctx.request_repaint();
                 }
-            }
-        }
-    }
-    fn post_rendering(&mut self, _window_size_px: [u32; 2], _frame: &Frame) {
-        if !self.pause {
-            match &mut self.simulator {
-                Some(s) => {
-                    if s.running {
-                        s.run();
-                    }
-                }
-                None => {}
+                self.draw_area(ctx, frame);
             }
         }
     }
@@ -161,16 +152,12 @@ impl Gui {
         }
         if central_panel.response.hovered() {
             ctx.input_mut(|i| {
-                if i.scroll_delta.y > 0f32 {
+                if i.raw_scroll_delta.y > 0f32 {
                     keymap::view_zoom_in_fn(self);
-                } else if i.scroll_delta.y < 0f32 {
+                } else if i.raw_scroll_delta.y < 0f32 {
                     keymap::view_zoom_out_fn(self);
                 }
             });
-        }
-        if self.simulator.as_ref().unwrap().running {
-            self.simulator.as_mut().unwrap().clock();
-            ctx.request_repaint();
         }
     }
 
