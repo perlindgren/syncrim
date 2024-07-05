@@ -57,6 +57,8 @@ impl EguiComponent for FullAdd {
                         s.get_input_value(&self.a_in).try_into();
                     let b_r: Result<SignalUnsigned, String> =
                         s.get_input_value(&self.b_in).try_into();
+                    let sub_r: Result<SignalUnsigned, String> =
+                        s.get_input_value(&self.sub_in).try_into();
                     let mut s: String = "".to_string();
                     match a_r {
                         Ok(data) => s += &format!("{:#x}", data),
@@ -65,6 +67,10 @@ impl EguiComponent for FullAdd {
                     match b_r {
                         Ok(data) => s += &format!("{:#x}", data),
                         _ => s += &format!("{:?}", b_r),
+                    }
+                    match sub_r {
+                        Ok(data) => s += &format!("{:#x}", data),
+                        _ => s += &format!("{:?}", sub_r),
                     }
                     format!("{}", s)
                 });
@@ -132,6 +138,13 @@ impl EguiComponent for FullAdd {
                     ui,
                     &mut self.b_in,
                     crate::components::FULL_ADD_B_IN_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.sub_in,
+                    crate::components::FULL_ADD_SUB_IN_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
