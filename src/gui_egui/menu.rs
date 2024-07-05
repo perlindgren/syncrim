@@ -66,13 +66,13 @@ impl Menu {
                 });
                 ui.horizontal(|ui| {
                     ui.label("Grid Size:");
-                    ui.add(DragValue::new(&mut grid_size).clamp_range(5f32..=10000f32));
+                    ui.add(DragValue::new(&mut grid_size).range(5f32..=10000f32));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Grid Opacity:");
                     ui.add(
                         DragValue::new(&mut grid_opacity)
-                            .clamp_range(0f32..=1f32)
+                            .range(0f32..=1f32)
                             .speed(0.02f32),
                     );
                 });
@@ -82,7 +82,7 @@ impl Menu {
                 });
                 ui.horizontal(|ui| {
                     ui.label("Grid Snap Distance:");
-                    ui.add(DragValue::new(&mut grid_snap_distance).clamp_range(0f32..=100f32));
+                    ui.add(DragValue::new(&mut grid_snap_distance).range(0f32..=100f32));
                 });
             });
             editor(gui).scale = scale;

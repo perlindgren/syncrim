@@ -8,7 +8,9 @@ use egui::{
     containers, Color32, ComboBox, Context, DragValue, Frame, Key, KeyboardShortcut, Margin,
     Modifiers, PointerButton, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2, Window,
 };
-use epaint::{CircleShape, Shadow};
+use epaint::CircleShape;
+
+use super::helper;
 
 pub fn rect_with_hover<P>(
     rect: Rect,
@@ -25,9 +27,15 @@ where
     let r = ui.allocate_rect(rect, editor_mode_to_sense(editor_mode));
 
     if r.hovered() && !r.dragged() {
-        containers::popup::show_tooltip_for(ui.ctx(), egui::Id::new(id), &rect, |ui| {
-            f(ui);
-        });
+        containers::popup::show_tooltip_for(
+            ui.ctx(),
+            ui.layer_id(),
+            egui::Id::new(id),
+            &rect,
+            |ui| {
+                f(ui);
+            },
+        );
     }
     r
 }
@@ -48,7 +56,7 @@ pub fn properties_window<P>(
                 inner_margin: Margin::same(10f32),
                 outer_margin: Margin::same(0f32),
                 rounding: Rounding::same(10f32),
-                shadow: Shadow::small_dark(),
+                shadow: helper::shadow_small_dark(),
                 fill: ui.visuals().panel_fill,
                 stroke: ui.visuals().window_stroke,
             })
@@ -69,6 +77,8 @@ pub fn properties_window<P>(
     }
 }
 
+/// This function add a horizontal ui section which displays
+/// the given pos and allows for modification
 pub fn pos_drag_value(ui: &mut Ui, pos: &mut (f32, f32)) {
     ui.horizontal(|ui| {
         ui.label("pos x");
@@ -213,12 +223,12 @@ pub fn drag_logic(
         if ctx.input_mut(|i| {
             i.consume_shortcut(&KeyboardShortcut {
                 modifiers: mod_none,
-                key: Key::Delete,
+                logical_key: Key::Delete,
             })
         }) || ctx.input_mut(|i| {
             i.consume_shortcut(&KeyboardShortcut {
                 modifiers: mod_none,
-                key: Key::X,
+                logical_key: Key::X,
             })
         }) {
             delete = true;
@@ -234,7 +244,7 @@ pub fn drag_logic(
             *pos = (pos.0 + delta.x, pos.1 + delta.y);
         }
     }
-    if resp.drag_released_by(PointerButton::Primary)
+    if resp.drag_stopped_by(PointerButton::Primary)
         && resp.interact_pointer_pos().unwrap().x < offset.x
     {
         delete = true;
