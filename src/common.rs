@@ -23,7 +23,7 @@ type Components = Vec<Rc<dyn ViziaComponent>>;
 #[cfg(feature = "gui-egui")]
 pub type Components = Vec<Rc<dyn EguiComponent>>;
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum RunningState {
     Running,
     StepTo(usize),

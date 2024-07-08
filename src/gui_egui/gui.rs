@@ -103,7 +103,7 @@ impl eframe::App for Gui {
             self.top_bar(ctx);
             if self.simulator.is_some() {
                 // self.side_panel(ctx);
-                if self.simulator.as_ref().unwrap().running {
+                if self.simulator.as_ref().unwrap().is_running() {
                     self.simulator.as_mut().unwrap().run();
 
                     // This makes the ui run agin as to not stop the simulation
