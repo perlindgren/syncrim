@@ -32,6 +32,7 @@ pub fn fern_setup() {
 
     #[cfg(feature = "gui-egui")]
     let f = f
+        .level_for("eframe::native::glow_integration", LevelFilter::Info)
         .level_for("eframe::native::run", LevelFilter::Info)
         .level_for("async_io::driver", LevelFilter::Warn);
 
