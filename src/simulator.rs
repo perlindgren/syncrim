@@ -293,20 +293,21 @@ impl Simulator {
     pub fn run(&mut self) {
         use std::time::Instant;
         let now = Instant::now();
+        let mut i = 0;
         while now.elapsed().as_millis() < 1000 / 30 {
             //30Hz
+            i += 1;
             match self.running_state {
                 RunningState::Running => self.clock(),
                 RunningState::StepTo(target_cycle) => {
                     if self.cycle < target_cycle {
                         self.clock();
-                    } else {
-                        break;
                     }
                 }
-                _ => break,
+                _ => {}
             }
         }
+        debug!("clock per sec {}", i * 30)
     }
 
     pub fn run_threaded(&mut self) {}
@@ -351,6 +352,16 @@ impl Simulator {
         &self.running_state
     }
 
+    pub fn is_running(&self) -> bool {
+        match self.running_state {
+            RunningState::Running => true,
+            RunningState::StepTo(_) => true,
+            RunningState::Halt => false,
+            RunningState::Err => false,
+            RunningState::Stopped => false,
+        }
+    }
+
     // TODO return error if simulator running state is Err
     pub fn set_running(&mut self) -> Result<(), ()> {
         if self.running_state != RunningState::Err {
@@ -360,9 +371,14 @@ impl Simulator {
             Err(())
         }
     }
-
-    pub fn get_component_condition(&self) -> Vec<(Id, Condition)> {
-        self.component_condition.clone()
+    // This function returns Some() if there are any components
+    // in the current cycle that reported any Condition
+    pub fn get_component_condition(&self) -> Option<Vec<(Id, Condition)>> {
+        if self.component_condition.is_empty() {
+            None
+        } else {
+            Some(self.component_condition.clone())
+        }
     }
 
     /// save as `dot` file with `.gv` extension

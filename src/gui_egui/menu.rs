@@ -37,7 +37,23 @@ impl Menu {
                 keymap::control_pause_fn(gui);
             }
             if let Some(s) = gui.simulator.as_ref() {
-                ui.label(format!("Cycle #{}", s.cycle));
+                ui.label(format!("Cycle: {}", s.cycle));
+
+                // This displays the current state of the simulation,
+                // if hovered displays the component condition vector
+                let r = ui.label(format!("State: {:?}", s.get_state()));
+
+                // if there are some components  that reported a condition show it when
+                // state is hovered over
+                if let Some(cond_vec) = s.get_component_condition() {
+                    r.on_hover_text(
+                        cond_vec // format all id condition pairs and sum them to a string
+                            .iter()
+                            .fold(String::from("Reported conditions"), |acc, id_cond| {
+                                acc + &format!("\nID: {}, {:?}", id_cond.0, id_cond.1)
+                            }),
+                    );
+                }
             }
         });
     }
