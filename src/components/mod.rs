@@ -1,4 +1,5 @@
 mod add;
+mod clk;
 mod constant;
 mod cross;
 mod full_adder;
@@ -14,6 +15,7 @@ mod sext;
 mod wire;
 
 pub use add::*;
+pub use clk::*;
 pub use constant::*;
 pub use cross::*;
 pub use full_adder::*;

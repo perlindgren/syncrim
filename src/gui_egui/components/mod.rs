@@ -1,4 +1,5 @@
 mod add;
+mod clk;
 mod constant;
 mod cross;
 mod full_adder;
