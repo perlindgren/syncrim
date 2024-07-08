@@ -82,8 +82,8 @@ impl Component for FullAdd {
         let b: u32 = simulator.get_input_value(&self.b_in).try_into().unwrap();
         let op: u32 = simulator.get_input_value(&self.op_in).try_into().unwrap();
 
-        const OPADDU: u32 = 1;
         const OPADD: u32 = 0;
+        const OPADDU: u32 = 1;
         const OPSUB: u32 = 2;
         const OPSUBU: u32 = 3;
         const OPAND: u32 = 4;
@@ -98,18 +98,51 @@ impl Component for FullAdd {
         const OPSRA: u32 = 14;
         const OPLUI: u32 = 15;
 
+        let output: u32;
+
+        //pub const HEAT: &str = "heat".to_uppercase().as_str();
+
         // if op == 1 {
         //     op = 0xFFFFFFFF;
         // } else {
         //     op = 0x00000000;
         // }
 
-        let j: u32 = a.wrapping_add(b ^ op).wrapping_add(1 & op);
+        if op == OPADD {
+            output = a.wrapping_add(b);
+        } else if op == OPSUB {
+            output = a.wrapping_add(b ^ 0xffffffff).wrapping_add(1);
+        } else if op == OPAND {
+            output = (a & b);
+        } else if op == OPOR {
+            output = (a | b);
+        } else if op == OPXOR {
+            output = (a ^ b);
+        } else if op == OPNOR {
+            output = !(a | b);
+        } else if op == OPDONOTHING {
+            // output =
+            todo!("something sll r0 r0 0");
+        } else if op == OPSLT {
+            output = (0 == a.wrapping_add(b ^ op).wrapping_add(1)) as u32;
+        } else if op == OPSLL {
+            output = (a << b);
+        } else if op == OPSRL {
+            output = (a >> b);
+        } else if op == OPSRA {
+            output = ((a as i32) >> b) as u32;
+        } else if op == OPLUI {
+            output = (b << 16);
+        } else {
+            output = 0xffffffff;
+        }
+
+        //let j: u32 = a.wrapping_add(b ^ op).wrapping_add(1 & op);
 
         simulator.set_out_value(
             &self.id,
             FULL_ADD_OUT_ID,
-            SignalValue::Data(j),
+            SignalValue::Data(output),
             //SignalValue::Data(((a as i32) + (b as i32)) as u32),
         );
         Ok(())

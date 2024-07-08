@@ -139,7 +139,7 @@ impl Default for Library {
                     pos: (0.0, 0.0),
                     a_in: dummy_input.clone(),
                     b_in: dummy_input.clone(),
-                    sub_in: dummy_input.clone(),
+                    op_in: dummy_input.clone(),
                 }),
             ),
         ];
