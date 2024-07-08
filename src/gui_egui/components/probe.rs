@@ -53,7 +53,13 @@ impl EguiComponent for Probe {
                     ),
                     _ => ui.label(RichText::new(text.clone()).size(scale * 12f32).underline()),
                 }
-                .on_hover_text(text);
+                .on_hover_text({
+                    if let SignalValue::Data(v) = value {
+                        format!("{:#010x}\nAs unsigned: {}\nAs signed: {}", v, v, v as i32)
+                    } else {
+                        text
+                    }
+                });
             });
         let rect = area.response.rect;
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
