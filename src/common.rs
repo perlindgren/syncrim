@@ -23,6 +23,15 @@ type Components = Vec<Rc<dyn ViziaComponent>>;
 #[cfg(feature = "gui-egui")]
 pub type Components = Vec<Rc<dyn EguiComponent>>;
 
+#[derive(PartialEq, Clone)]
+pub enum RunningState {
+    Running,
+    StepTo(usize),
+    Halt,
+    Err,
+    Stopped,
+}
+
 #[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
 pub struct Simulator {
@@ -37,8 +46,15 @@ pub struct Simulator {
     pub history: Vec<Vec<Signal>>,
     pub component_ids: Vec<Id>,
     pub graph: Graph<Id, ()>,
-    // Running state, (do we need it accessible from other crates?)
-    pub(crate) running: bool,
+
+    // if set to true, running state is set to Halt when a component returns Warning
+    // pub(crate) might not be needed but easier than implementing setters and getters
+    pub(crate) halt_on_warning: bool,
+    // says if simulation is running, halted, stopped or stepping to a specific cycle
+    pub running_state: RunningState,
+    // stores if components return a condition
+    // TODO add component condition history
+    pub component_condition: Vec<(Id, Condition)>,
 }
 
 #[derive(Serialize, Deserialize)]
