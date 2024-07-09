@@ -293,7 +293,7 @@ impl Simulator {
     pub fn run(&mut self) {
         use std::time::Instant;
         let now = Instant::now();
-        let mut i = 0;
+        let mut i: u32 = 0; // used to quickly and inaccurately test performance
         while now.elapsed().as_millis() < 1000 / 30 {
             //30Hz
             i += 1;
@@ -302,12 +302,17 @@ impl Simulator {
                 RunningState::StepTo(target_cycle) => {
                     if self.cycle < target_cycle {
                         self.clock();
+                    } else {
+                        self.running_state = RunningState::Stopped;
+                        break;
                     }
                 }
-                _ => {}
+                _ => {
+                    break;
+                }
             }
         }
-        debug!("clock per sec {}", i * 30)
+        trace!("clock per run {}", i)
     }
 
     pub fn run_threaded(&mut self) {}
@@ -366,6 +371,16 @@ impl Simulator {
     pub fn set_running(&mut self) -> Result<(), ()> {
         if self.running_state != RunningState::Err {
             self.running_state = RunningState::Running;
+            Ok(())
+        } else {
+            Err(())
+        }
+    }
+
+    // TODO return error if simulator running state is Err
+    pub fn set_step_to(&mut self, target_cycle: usize) -> Result<(), ()> {
+        if self.running_state != RunningState::Err {
+            self.running_state = RunningState::StepTo(target_cycle);
             Ok(())
         } else {
             Err(())
