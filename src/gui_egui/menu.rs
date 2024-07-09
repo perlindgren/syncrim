@@ -36,6 +36,18 @@ impl Menu {
             if ui.button("⏸").clicked() {
                 keymap::control_pause_fn(gui);
             }
+            ui.separator();
+
+            ui.add(DragValue::new(&mut gui.step_amount).prefix("Step: "));
+            if ui.button("⟳").clicked() {
+                // TODO dont have simulator here add keymap
+                if let Some(s) = gui.simulator.as_mut() {
+                    s.set_step_to(s.cycle + gui.step_amount);
+                }
+            }
+
+            ui.separator();
+
             if let Some(s) = gui.simulator.as_ref() {
                 ui.label(format!("Cycle: {}", s.cycle));
 

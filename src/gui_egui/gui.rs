@@ -26,6 +26,7 @@ pub struct Gui {
     pub clip_rect: Rect,
     pub shortcuts: Shortcuts,
     pub pause: bool,
+    pub step_amount: usize, //TODO change this to be a menu struct, and maybe move pause and other here
     pub editor: Option<Editor>,
     pub editor_use: bool,
     pub contexts: HashMap<crate::common::Id, EguiExtra>,
@@ -57,6 +58,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<(), e
         clip_rect: Rect::NOTHING,
         shortcuts: Shortcuts::new(),
         pause: true,
+        step_amount: 10,
         editor: None,
         editor_use: false,
         contexts,
