@@ -23,6 +23,9 @@ type Components = Vec<Rc<dyn ViziaComponent>>;
 #[cfg(feature = "gui-egui")]
 pub type Components = Vec<Rc<dyn EguiComponent>>;
 
+pub enum SimulatorError {
+    RunningStateIsErr(),
+}
 #[derive(PartialEq, Clone, Debug)]
 pub enum RunningState {
     Running,
