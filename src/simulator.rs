@@ -1,6 +1,6 @@
 use crate::common::{
     Component, ComponentStore, Condition, Id, Input, OutputType, RunningState, Signal, SignalFmt,
-    SignalValue, Simulator,
+    SignalValue, Simulator, SimulatorError,
 };
 use log::*;
 use petgraph::{
@@ -318,8 +318,13 @@ impl Simulator {
     pub fn run_threaded(&mut self) {}
 
     /// stop the simulator from gui or other external reason
-    pub fn stop(&mut self) {
-        self.running_state = RunningState::Stopped;
+    pub fn stop(&mut self) -> Result<(), SimulatorError> {
+        if self.running_state != RunningState::Err {
+            self.running_state = RunningState::Stopped;
+            Ok(())
+        } else {
+            Err(SimulatorError::RunningStateIsErr())
+        }
     }
 
     /// reverse simulation using history if clock > 1
@@ -343,7 +348,7 @@ impl Simulator {
         self.history = vec![];
         self.cycle = 0;
         self.sim_state.iter_mut().for_each(|val| *val = 0.into());
-        self.stop();
+        self.running_state = RunningState::Stopped;
         self.clock();
         // TODO probably needed to reset component_condition, maybe is handeld correctly by clock who knows?
         for component in self.ordered_components.clone() {
@@ -368,22 +373,22 @@ impl Simulator {
     }
 
     // TODO return error if simulator running state is Err
-    pub fn set_running(&mut self) -> Result<(), ()> {
+    pub fn set_running(&mut self) -> Result<(), SimulatorError> {
         if self.running_state != RunningState::Err {
             self.running_state = RunningState::Running;
             Ok(())
         } else {
-            Err(())
+            Err(SimulatorError::RunningStateIsErr())
         }
     }
 
     // TODO return error if simulator running state is Err
-    pub fn set_step_to(&mut self, target_cycle: usize) -> Result<(), ()> {
+    pub fn set_step_to(&mut self, target_cycle: usize) -> Result<(), SimulatorError> {
         if self.running_state != RunningState::Err {
             self.running_state = RunningState::StepTo(target_cycle);
             Ok(())
         } else {
-            Err(())
+            Err(SimulatorError::RunningStateIsErr())
         }
     }
     // This function returns Some() if there are any components
