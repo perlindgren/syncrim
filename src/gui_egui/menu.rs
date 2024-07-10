@@ -1,10 +1,10 @@
+use crate::common::RunningState;
 use crate::gui_egui::{
     editor::{Editor, GridOptions},
     gui::Gui,
     keymap,
 };
-use egui::{menu, Button, DragValue, KeyboardShortcut, Response, Ui};
-
+use egui::{menu, Button, Color32, DragValue, KeyboardShortcut, Response, RichText, Ui};
 pub(crate) struct Menu {}
 
 impl Menu {

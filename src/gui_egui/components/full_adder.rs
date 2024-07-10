@@ -7,7 +7,10 @@ use crate::gui_egui::component_ui::{
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
-use egui::{Color32, Pos2, Rect, Response, Shape, Slider, Stroke, Ui, Vec2};
+use egui::{
+    Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Shape, Slider, Stroke,
+    TextWrapMode, Ui, Vec2,
+};
 
 #[typetag::serde]
 impl EguiComponent for FullAdd {
@@ -21,8 +24,8 @@ impl EguiComponent for FullAdd {
         clip_rect: Rect,
         editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
-        // 81x41
-        // middle: 41x 21y (0 0)
+        // 41x81
+        // middle: 21x 41y (0 0)
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
         let offset_old = offset;
         let mut offset = offset;
@@ -33,14 +36,19 @@ impl EguiComponent for FullAdd {
         // The shape
         ui.painter().add(Shape::closed_line(
             vec![
-                oh((-40f32, 0f32), s, o),
-                oh((40f32, 0f32), s, o),
-                oh((40f32, 20f32), s, o),
-                oh((-40f32, 20f32), s, o),
+                oh((-20f32, -40f32), s, o),
+                oh((0f32, -40f32), s, o),
+                oh((20f32, -20f32), s, o),
+                oh((20f32, 20f32), s, o),
+                oh((0f32, 40f32), s, o),
+                oh((-20f32, 40f32), s, o),
+                oh((-20f32, 20f32), s, o),
+                oh((-10f32, 0f32), s, o),
+                oh((-20f32, -20f32), s, o),
             ],
             Stroke {
                 width: scale,
-                color: Color32::RED,
+                color: Color32::BLACK,
             },
         ));
 
@@ -86,32 +94,7 @@ impl EguiComponent for FullAdd {
             });
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
-            // todo: is this actually correct?
-            if let Some(s) = &simulator {
-                ui.label({
-                    let a_r: Result<SignalUnsigned, String> =
-                        s.get_input_value(&self.a_in).try_into();
-                    let b_r: Result<SignalUnsigned, String> =
-                        s.get_input_value(&self.b_in).try_into();
-                    let op_r: Result<SignalUnsigned, String> =
-                        s.get_input_value(&self.op_in).try_into();
-                    let mut s: String = "".to_string();
-                    match a_r {
-                        Ok(data) => s += &format!("{:#x}", data),
-                        _ => s += &format!("{:?}", a_r),
-                    }
-                    match b_r {
-                        Ok(data) => s += &format!("{:#x}", data),
-                        _ => s += &format!("{:?}", b_r),
-                    }
-                    match op_r {
-                        Ok(data) => s += &format!("{:#x}", data),
-                        _ => s += &format!("{:?}", op_r),
-                    }
-                    format!("{}", s)
-                });
-                ui.label("full_adder");
-            }
+            ui.label("Adder");
         });
         match editor_mode {
             EditorMode::Simulator => (),
