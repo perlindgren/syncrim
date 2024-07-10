@@ -1,10 +1,10 @@
+use crate::common::RunningState;
 use crate::gui_egui::{
     editor::{Editor, GridOptions},
     gui::Gui,
     keymap,
 };
-use egui::{menu, Button, DragValue, KeyboardShortcut, Response, Ui};
-
+use egui::{menu, Button, Color32, DragValue, KeyboardShortcut, Response, RichText, Ui};
 pub(crate) struct Menu {}
 
 impl Menu {
@@ -53,7 +53,13 @@ impl Menu {
 
                 // This displays the current state of the simulation,
                 // if hovered displays the component condition vector
-                let r = ui.label(format!("State: {:?}", s.get_state()));
+                let r = ui.label(RichText::new(format!("State: {:?}", s.get_state())).color(
+                    match s.get_state() {
+                        RunningState::Halt => Color32::YELLOW,
+                        RunningState::Err => Color32::RED,
+                        _ => Color32::PLACEHOLDER,
+                    },
+                ));
 
                 // if there are some components  that reported a condition show it when
                 // state is hovered over
