@@ -14,7 +14,7 @@ fn main() {
             MIPSCLK::rc_new("clk", (200.0, 120.0), Input::new("reg", "out")),
             //Constant::rc_new("c1", (60.0, 100.0), 10),
             // ProbeEdit::rc_new("c1", (60.0, 100.0)),
-            Register::rc_new("reg", (100.0, 140.0), Input::new("clk", "out")),
+            Register::rc_new("reg", (200.0, 250.0), Input::new("clk", CLK_OUT_ID)),
             Probe::rc_new("p1", (270.0, 120.0), Input::new("clk", CLK_OUT_ID)),
             // Wire::rc_new(
             //     "w1",

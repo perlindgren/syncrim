@@ -16,7 +16,8 @@ pub fn fern_setup() {
         })
         // Add blanket level filter -
         // .level(log::LevelFilter::Debug);
-        .level(log::LevelFilter::Trace);
+        // .level(log::LevelFilter::Trace);
+        .level(log::LevelFilter::Off);
 
     // - and per-module overrides
     #[cfg(feature = "gui-vizia")]
