@@ -1,7 +1,9 @@
+use std::rc::Rc;
 use std::{
     any::{Any, TypeId},
     path::PathBuf,
 };
+use syncrim::common::EguiComponent;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
 use syncrim::{
@@ -18,43 +20,41 @@ fn main() {
             FullAdd::rc_new(
                 "full_adder",
                 (200.0, 120.0),
+                Input::new("c0", "out"),
                 Input::new("c1", "out"),
                 Input::new("c2", "out"),
-                Input::new("c3", "out"),
             ),
-            // Constant::rc_new("c1", (60.0, 100.0), 10),
-            // Constant::rc_new("c2", (60.0, 140.0), 5),
-            // Constant::rc_new("c3", (60.0, 180.0), 1),
-
-            // ProbeEdit::rc_new("c1", (60.0, 100.0)),
-            // ProbeEdit::rc_new("c2", (60.0, 140.0)),
-            // ProbeEdit::rc_new("c3", (60.0, 180.0)),
-
+            // Constant::rc_new("c0", (60.0, 100.0), 10),
+            // Constant::rc_new("c1", (60.0, 140.0), 5),
+            // Constant::rc_new("c2", (60.0, 180.0), 1),
+            ProbeEdit::rc_new("c0", (60.0, 100.0)),
+            ProbeEdit::rc_new("c1", (60.0, 140.0)),
+            ProbeEdit::rc_new("c2", (60.0, 180.0)),
             // Wire::rc_new(
             //     "w1",
             //     vec![(110.0, 100.0), (180.0, 100.0)],
-            //     Input::new("c1", "out"),
+            //     Input::new("c0", "out"),
             // ),
             // Wire::rc_new(
             //     "w2",
             //     vec![(110.0, 140.0), (180.0, 140.0)],
-            //     Input::new("c2", "out"),
+            //     Input::new("c1", "out"),
             // ),
             // Wire::rc_new(
             //     "w3",
             //     vec![(110.0, 180.0), (180.0, 180.0)],
-            //     Input::new("c3", "out"),
+            //     Input::new("c2", "out"),
             // ),
             // Wire::rc_new(
             //     "w4",
             //     vec![(220.0, 120.0), (260.0, 120.0)],
             //     Input::new("full_adder", FULL_ADD_OUT_ID),
             // ),
-            // Probe::rc_new(
-            //     "p1",
-            //     (270.0, 120.0),
-            //     Input::new("full_adder", FULL_ADD_OUT_ID),
-            // ),
+            Probe::rc_new(
+                "p1",
+                (270.0, 120.0),
+                Input::new("full_adder", FULL_ADD_OUT_ID),
+            ),
         ],
     };
 
@@ -70,73 +70,43 @@ fn main() {
     syncrim::gui_vizia::gui(cs, &path);
 }
 
-fn autowire(cs: ComponentStore) -> ComponentStore {
-    let mut x = 1;
-    // for component in cs {
-    //     println!("{}", x);
-    //     x = x + 1;
-    // }
-    // while x < 10 {
+fn autowire(mut cs: ComponentStore) -> ComponentStore {
+    let mut tmp_vec: Vec<Rc<dyn EguiComponent>> = vec![];
 
-    // }
-
-    //let cs_copy = cs.clone();
-
+    // look through the list of components
     for c in &cs.store {
         let (id, ports) = c.get_id_ports();
         println!("{}", id);
 
-        //println!("{:?}", c.get_id_ports().1.inputs);
-
         let number_of_inputs = ports.inputs.len();
 
         for n in 0..number_of_inputs {
-            println!("{:?}", ports.inputs[n]);
+            // println!("{:?}", ports.inputs[n].input.id);
+            // println!("{:?}", ports.inputs[n]);
 
-            let id_tmp = format!("w{n}");
-            //let pos_temp = vec![];
+            let id_tmp = format!("{id}_w{n}");
             let input = ports.inputs[n].input.clone();
-            //println!("{}", id_tmp);
-            //let w = Wire::rc_new("w{}", pos, input)
+            let starting_pos = c.get_pos();
+
+            // creates temporary vales to use when constatnt inputs are there for testing
+            let mut destination_pos = (starting_pos.0 - 50.0, starting_pos.1);
+            let default_input = Input::new(&ports.inputs[n].input.id, "out");
+
+            // look through the list again and act when you find a matching id
+            for d in &cs.store {
+                let (id2, ports2) = d.get_id_ports();
+                // look if the id matches the one you are looking for
+                if id2 == ports.inputs[n].input.id {
+                    // collect the components destination and use it to make a complete wire
+                    destination_pos = d.get_pos();
+                    let w =
+                        Wire::rc_new(&id_tmp, vec![starting_pos, destination_pos], input.clone());
+                    tmp_vec.push(w);
+                }
+            }
         }
-
-        //cs_copy.store.push("wow");
-
-        // Wire::rc_new(
-        //     "w4",
-        //     vec![(220.0, 120.0), (260.0, 120.0)],
-        //     Input::new("full_adder", FULL_ADD_OUT_ID),
-        // ),
-
-        // Ports {
-        //     inputs: [
-        //         InputPort {
-        //             port_id: "full_add_a_in",
-        //             input: Input {
-        //                 id: "c1",
-        //                 field: "out",
-        //             },
-        //         },
-        //         InputPort {
-        //             port_id: "full_add_b_in",
-        //             input: Input {
-        //                 id: "c2",
-        //                 field: "out",
-        //             },
-        //         },
-        //         InputPort {
-        //             port_id: "full_add_op_in",
-        //             input: Input {
-        //                 id: "c3",
-        //                 field: "out",
-        //             },
-        //         },
-        //     ],
-
-        //     out_type: Combinatorial,
-        //     outputs: ["out"],
-        // }
     }
+    cs.store.append(&mut tmp_vec);
 
     return cs;
 }

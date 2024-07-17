@@ -135,6 +135,7 @@ impl Component for FullAdd {
             output = (b << 16);
         } else {
             output = 0xffffffff;
+            return Err(Condition::Error("undef opcode".to_string()));
         }
 
         //let j: u32 = a.wrapping_add(b ^ op).wrapping_add(1 & op);
