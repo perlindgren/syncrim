@@ -138,6 +138,11 @@ impl Default for Library {
                 pos: (0.0, 0.0),
                 clk_in: dummy_input.clone(),
             }),
+            Rc::new(ControlUnit {
+                id: "a_in".to_string(),
+                pos: (0.0, 0.0),
+                a_in: dummy_input.clone(),
+            }),
             Rc::new(
                 (FullAdd {
                     id: "dummy".to_string(),

@@ -4,6 +4,7 @@ mod constant;
 mod cross;
 mod full_adder;
 mod mem;
+mod mips_controll_unit;
 mod mux;
 mod probe;
 mod probe_assert;
