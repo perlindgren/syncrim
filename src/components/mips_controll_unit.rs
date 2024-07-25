@@ -78,10 +78,12 @@ impl Component for ControlUnit {
         // get input values
         let a: u32 = simulator.get_input_value(&self.a_in).try_into().unwrap();
 
-        // let a_OpCode: u32 = (a >> 26) & 0x0000_003f;
-        // let a_func: u32 = a & 0x0000_001f;
-        let a_OpCode: u32 = a;
-        let a_func: u32 = 0;
+        let a_OpCode: u32 = (&a >> 26) & 0x0000_003f;
+        let a_func: u32 = &a & 0x0000_001f;
+        debug!("opcode: {:#010x}", a_OpCode);
+        debug!("  func: {:#010x}", a_func);
+        // let a_OpCode: u32 = a;
+        // let a_func: u32 = 0;
 
         let MemToReg;
         let MemWrite;
