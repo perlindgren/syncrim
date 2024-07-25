@@ -143,6 +143,21 @@ impl Default for Library {
                 pos: (0.0, 0.0),
                 a_in: dummy_input.clone(),
             }),
+            Rc::new(InstrMem {
+                width: INSTR_MEM_WIDTH,
+                height: INSTR_MEM_HEIGHT,
+                id: "instruction".to_string(),
+                pos: (0.0, 0.0),
+                bytes: BTreeMap::new(),
+                pc: dummy_input,
+                range: Range {
+                    start: 0,
+                    end: 0x1000,
+                },
+                breakpoints: Rc::new(RefCell::new(HashSet::new())),
+                symbols: HashMap::new(),
+                le: true,
+            }),
             Rc::new(
                 (FullAdd {
                     id: "dummy".to_string(),
