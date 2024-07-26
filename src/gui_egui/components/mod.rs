@@ -6,6 +6,7 @@ mod full_adder;
 mod mem;
 mod mips_controll_unit;
 mod mips_im;
+mod mips_reg_file;
 mod mux;
 mod probe;
 mod probe_assert;
