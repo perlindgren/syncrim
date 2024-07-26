@@ -1,5 +1,5 @@
 use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
-use crate::components::FullAdd;
+use crate::components::{alu_op, FullAdd};
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
     rect_with_hover, visualize_ports,
@@ -45,9 +45,45 @@ impl EguiComponent for FullAdd {
         ));
 
         let rect = Rect {
-            min: oh((-40f32, -20f32), s, o),
-            max: oh((40f32, 20f32), s, o),
+            min: oh((-20f32, -40f32), s, o),
+            max: oh((20f32, 40f32), s, o),
         };
+        let op: String = if let Some(s) = simulator {
+            match TryInto::<u32>::try_into(s.get_input_value(&self.op_in)).unwrap() {
+                alu_op::ADD => "ADD",
+                alu_op::ADDU => "ADDU",
+                alu_op::SUB => "SUB",
+                alu_op::SUBU => "SUBU",
+                alu_op::AND => "AND",
+                alu_op::OR => "OR",
+                alu_op::XOR => "XOR",
+                alu_op::NOR => "NOR",
+                alu_op::SLT => "SLT",
+                alu_op::SLTU => "SLTU",
+                alu_op::SLL => "SLL",
+                alu_op::SRL => "SRL",
+                alu_op::SRA => "SRA",
+                alu_op::LUI => "LUI",
+                _ => "UNDEF",
+            }
+            .to_string()
+        } else {
+            "no sim".to_string()
+        };
+
+        let area = Area::new(egui::Id::from(self.id.to_string()))
+            .order(Order::Middle)
+            .current_pos(offset.to_pos2() + Vec2::new(5.0, 0.0) * scale)
+            .movable(false)
+            .enabled(true)
+            .interactable(false)
+            .pivot(Align2::CENTER_CENTER)
+            .constrain(false)
+            .show(ui.ctx(), |ui| {
+                ui.set_clip_rect(clip_rect);
+                ui.style_mut().wrap_mode = Some(TextWrapMode::Extend);
+                ui.label(RichText::new(format!("ALU\n{}", op)).size(scale * 12f32))
+            });
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
             // todo: is this actually correct?

@@ -13,8 +13,24 @@ use std::rc::Rc;
 pub const FULL_ADD_A_IN_ID: &str = "full_add_a_in";
 pub const FULL_ADD_B_IN_ID: &str = "full_add_b_in";
 pub const FULL_ADD_OP_IN_ID: &str = "full_add_op_in";
-
 pub const FULL_ADD_OUT_ID: &str = "out";
+
+pub mod alu_op {
+    pub const ADD: u32 = 0;
+    pub const ADDU: u32 = 1;
+    pub const SUB: u32 = 2;
+    pub const SUBU: u32 = 3;
+    pub const AND: u32 = 4;
+    pub const OR: u32 = 5;
+    pub const XOR: u32 = 6;
+    pub const NOR: u32 = 7;
+    pub const SLT: u32 = 8;
+    pub const SLTU: u32 = 9;
+    pub const SLL: u32 = 10;
+    pub const SRL: u32 = 11;
+    pub const SRA: u32 = 12;
+    pub const LUI: u32 = 13;
+}
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct FullAdd {
@@ -74,78 +90,64 @@ impl Component for FullAdd {
         }
     }
 
-    // propagate sign extension to output
-    // TODO: always extend to Signal size? (it should not matter and should be slightly cheaper)
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input values
         let a: u32 = simulator.get_input_value(&self.a_in).try_into().unwrap();
         let b: u32 = simulator.get_input_value(&self.b_in).try_into().unwrap();
         let op: u32 = simulator.get_input_value(&self.op_in).try_into().unwrap();
 
-        const OPADD: u32 = 0;
-        const OPADDU: u32 = 1;
-        const OPSUB: u32 = 2;
-        const OPSUBU: u32 = 3;
-        const OPAND: u32 = 4;
-        const OPOR: u32 = 5;
-        const OPXOR: u32 = 6;
-        const OPNOR: u32 = 7;
-        const OPDONOTHING: u32 = 8;
-        const OPSLT: u32 = 10;
-        const OPSLTU: u32 = 11;
-        const OPSLL: u32 = 12;
-        const OPSRL: u32 = 13;
-        const OPSRA: u32 = 14;
-        const OPLUI: u32 = 15;
-
         let output: u32;
 
-        //pub const HEAT: &str = "heat".to_uppercase().as_str();
-
-        // if op == 1 {
-        //     op = 0xFFFFFFFF;
-        // } else {
-        //     op = 0x00000000;
-        // }
-
-        if op == OPADD {
-            output = a.wrapping_add(b);
-        } else if op == OPSUB {
-            output = a.wrapping_add(b ^ 0xffffffff).wrapping_add(1);
-        } else if op == OPAND {
-            output = (a & b);
-        } else if op == OPOR {
-            output = (a | b);
-        } else if op == OPXOR {
-            output = (a ^ b);
-        } else if op == OPNOR {
-            output = !(a | b);
-        } else if op == OPDONOTHING {
-            // output =
-            todo!("something sll r0 r0 0");
-        } else if op == OPSLT {
-            output = (0 == a.wrapping_add(b ^ op).wrapping_add(1)) as u32;
-        } else if op == OPSLL {
-            output = (a << b);
-        } else if op == OPSRL {
-            output = (a >> b);
-        } else if op == OPSRA {
-            output = ((a as i32) >> b) as u32;
-        } else if op == OPLUI {
-            output = (b << 16);
-        } else {
-            output = 0xffffffff;
-            return Err(Condition::Error("undef opcode".to_string()));
+        match op {
+            alu_op::ADD => {
+                output = a.wrapping_add(b);
+            }
+            alu_op::ADDU => {
+                return Err(Condition::Error("ADDU not implemented".to_string()));
+            }
+            alu_op::SUB => {
+                output = a.wrapping_add(b ^ 0xffffffff).wrapping_add(1);
+            }
+            alu_op::SUBU => {
+                return Err(Condition::Error("SUBU not implemented".to_string()));
+            }
+            alu_op::AND => {
+                output = (a & b);
+            }
+            alu_op::OR => {
+                output = (a | b);
+            }
+            alu_op::XOR => {
+                output = (a ^ b);
+            }
+            alu_op::NOR => {
+                output = !(a | b);
+            }
+            alu_op::SLT => {
+                output = ((a as i32) < (b as i32)) as u32;
+            }
+            alu_op::SLTU => {
+                output = (a < b) as u32;
+            }
+            alu_op::SLL => {
+                output = a << b;
+            }
+            alu_op::SRL => {
+                output = a >> b;
+            }
+            alu_op::SRA => {
+                output = ((a as i32) >> b) as u32;
+            }
+            alu_op::LUI => {
+                output = (a & 0x0000_ffff) | (b << 16);
+            }
+            _ => {
+                return Err(Condition::Error(
+                    "undef alu operation or unimplemented instruction".to_string(),
+                ));
+            }
         }
-
-        //let j: u32 = a.wrapping_add(b ^ op).wrapping_add(1 & op);
-
-        simulator.set_out_value(
-            &self.id,
-            FULL_ADD_OUT_ID,
-            SignalValue::Data(output),
-            //SignalValue::Data(((a as i32) + (b as i32)) as u32),
-        );
+        simulator.set_out_value(&self.id, FULL_ADD_OUT_ID, SignalValue::Data(output));
         Ok(())
     }
 
@@ -167,5 +169,113 @@ impl FullAdd {
 
     pub fn rc_new(id: &str, pos: (f32, f32), a_in: Input, b_in: Input, op_in: Input) -> Rc<Self> {
         Rc::new(FullAdd::new(id, pos, a_in, b_in, op_in))
+    }
+}
+
+mod test {
+    use super::*;
+
+    use crate::{
+        common::{ComponentStore, Input, SignalUnsigned, Simulator},
+        components::ProbeOut,
+    };
+    use std::rc::Rc;
+
+    #[test]
+    fn test_some_alu_op() {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("op")),
+                Rc::new(ProbeOut::new("a")),
+                Rc::new(ProbeOut::new("b")),
+                FullAdd::rc_new(
+                    "ALU",
+                    (0.0, 0.0),
+                    Input::new("a", "out"),
+                    Input::new("b", "out"),
+                    Input::new("op", "out"),
+                ),
+            ],
+        };
+        let mut simulator = Simulator::new(cs).unwrap();
+
+        assert_eq!(simulator.cycle, 1);
+
+        // outputs
+        let alu_val = &Input::new("ALU", "out");
+
+        // reset
+        assert_eq!(simulator.get_input_value(alu_val), (0 + 0).into());
+
+        println!("<setup for clock 2>");
+        simulator.set_out_value("a", "out", 42);
+        simulator.set_out_value("b", "out", 1337);
+        simulator.set_out_value("op", "out", OPADD);
+        println!("sim_state {:?}", simulator.sim_state);
+        println!("<clock>");
+        simulator.clock();
+        println!("sim_state {:?}", simulator.sim_state);
+        assert_eq!(simulator.cycle, 2);
+        assert_eq!(
+            simulator.get_input_value(alu_val),
+            (42 + 1337).into(),
+            "testing add (1)"
+        );
+
+        println!("<setup for clock 3>");
+        simulator.set_out_value("a", "out", (-100i32 as u32));
+        simulator.set_out_value("b", "out", 1337);
+        simulator.set_out_value("op", "out", OPADD);
+        println!("sim_state {:?}", simulator.sim_state);
+        println!("<clock>");
+        simulator.clock();
+        println!("sim_state {:?}", simulator.sim_state);
+        assert_eq!(
+            simulator.get_input_value(alu_val),
+            (1337 - 100).into(),
+            "testing add (2)"
+        );
+
+        println!("<setup for clock 4>");
+        simulator.set_out_value("a", "out", (-100i32 as u32));
+        simulator.set_out_value("b", "out", 1337);
+        simulator.set_out_value("op", "out", OPSUB);
+        println!("sim_state {:?}", simulator.sim_state);
+        println!("<clock>");
+        simulator.clock();
+        println!("sim_state {:?}", simulator.sim_state);
+        assert_eq!(
+            simulator.get_input_value(alu_val),
+            ((-100i32 - 1337) as u32).into(),
+            "testing sub"
+        );
+
+        println!("<setup for clock 5>");
+        simulator.set_out_value("a", "out", (-100i32 as u32));
+        simulator.set_out_value("b", "out", 1337);
+        simulator.set_out_value("op", "out", OPSLT);
+        println!("sim_state {:?}", simulator.sim_state);
+        println!("<clock>");
+        simulator.clock();
+        println!("sim_state {:?}", simulator.sim_state);
+        assert_eq!(
+            simulator.get_input_value(alu_val),
+            true.into(),
+            "testing SLT"
+        );
+
+        println!("<setup for clock 5>");
+        simulator.set_out_value("a", "out", (-100i32 as u32));
+        simulator.set_out_value("b", "out", 1337);
+        simulator.set_out_value("op", "out", OPSLTU);
+        println!("sim_state {:?}", simulator.sim_state);
+        println!("<clock>");
+        simulator.clock();
+        println!("sim_state {:?}", simulator.sim_state);
+        assert_eq!(
+            simulator.get_input_value(alu_val),
+            false.into(),
+            "testing SLT"
+        );
     }
 }
