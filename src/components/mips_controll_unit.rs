@@ -21,6 +21,39 @@ pub const CONTROL_UNIT_REGDST_ID: &str = "RegDst";
 pub const CONTROL_UNIT_WRITEENABLE_ID: &str = "WriteEnable";
 pub const CONTROL_UNIT_JUMP_ID: &str = "Jump";
 
+const NOP: u32 = 0;
+const OP_0: u32 = 0;
+const OP_1: u32 = 1;
+const OP_J: u32 = 0b000_010;
+const OP_JAL: u32 = 0b000_011;
+const OP_BEQ: u32 = 0b000_100;
+const OP_BNE: u32 = 0b000_101;
+const OP_BLEZ: u32 = 0b000_110;
+const OP_BGTZ: u32 = 0b000_111;
+const OP_ADDI: u32 = 0b001_000;
+const OP_ADDIU: u32 = 0b001_001;
+const OP_SLTI: u32 = 0b001_010;
+const OP_SLTIU: u32 = 0b001_011;
+const OP_ANDI: u32 = 0b001_100;
+const OP_ORI: u32 = 0b001_101;
+const OP_XORI: u32 = 0b001_110;
+const OP_LUI: u32 = 0b001_111;
+const CP0: u32 = 0b010_000;
+
+const OP_LB: u32 = 0b100_000;
+const OP_LH: u32 = 0b100_001;
+const OP_LWL: u32 = 0b100_010;
+const OP_LW: u32 = 0b100_011;
+const OP_LBU: u32 = 0b100_100;
+const OP_LHU: u32 = 0b100_101;
+const OP_LWR: u32 = 0b100_110;
+
+const OP_SB: u32 = 0b101_000;
+const OP_SH: u32 = 0b101_001;
+const OP_SWL: u32 = 0b101_010;
+const OP_SW: u32 = 0b101_011;
+const OP_SWR: u32 = 0b101_110;
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ControlUnit {
     pub(crate) id: Id,
@@ -80,10 +113,6 @@ impl Component for ControlUnit {
 
         let a_OpCode: u32 = (&a >> 26) & 0x0000_003f;
         let a_func: u32 = &a & 0x0000_001f;
-        debug!("opcode: {:#010x}", a_OpCode);
-        debug!("  func: {:#010x}", a_func);
-        // let a_OpCode: u32 = a;
-        // let a_func: u32 = 0;
 
         let MemToReg;
         let MemWrite;
