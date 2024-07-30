@@ -182,6 +182,10 @@ impl Simulator {
             .id_field_index
             .get(&(input.id.clone(), input.field.clone()))
             .unwrap_or_else(|| {
+                error!(
+                    "Component {:?}, field {:?} not found.",
+                    input.id, input.field
+                );
                 panic!(
                     "Component {:?}, field {:?} not found.",
                     input.id, input.field
