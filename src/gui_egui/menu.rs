@@ -1,4 +1,3 @@
-use crate::common::RunningState;
 use crate::gui_egui::{
     editor::{Editor, GridOptions},
     gui::Gui,

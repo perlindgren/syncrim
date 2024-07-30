@@ -7,10 +7,7 @@ use crate::gui_egui::component_ui::{
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
-use egui::{
-    Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Shape, Slider, Stroke,
-    TextWrapMode, Ui, Vec2,
-};
+use egui::{Color32, Pos2, Rect, Response, Shape, Slider, Stroke, Ui, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for RegFile {
@@ -24,8 +21,8 @@ impl EguiComponent for RegFile {
         clip_rect: Rect,
         editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
-        // 41x81
-        // middle: 21x 41y (0 0)
+        // 81x41
+        // middle: 41x 21y (0 0)
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
         let offset_old = offset;
         let mut offset = offset;
@@ -36,66 +33,63 @@ impl EguiComponent for RegFile {
         // The shape
         ui.painter().add(Shape::closed_line(
             vec![
-                oh((-20f32, -40f32), s, o),
-                oh((0f32, -40f32), s, o),
-                oh((20f32, -20f32), s, o),
-                oh((20f32, 20f32), s, o),
-                oh((0f32, 40f32), s, o),
-                oh((-20f32, 40f32), s, o),
-                oh((-20f32, 20f32), s, o),
-                oh((-10f32, 0f32), s, o),
-                oh((-20f32, -20f32), s, o),
+                oh((-40f32, 0f32), s, o),
+                oh((40f32, 0f32), s, o),
+                oh((40f32, 20f32), s, o),
+                oh((-40f32, 20f32), s, o),
             ],
             Stroke {
                 width: scale,
-                color: Color32::BLACK,
+                color: Color32::RED,
             },
         ));
 
         let rect = Rect {
-            min: oh((-20f32, -40f32), s, o),
-            max: oh((20f32, 40f32), s, o),
+            min: oh((-40f32, -20f32), s, o),
+            max: oh((40f32, 20f32), s, o),
         };
-        let op: String = if let Some(s) = simulator {
-            match TryInto::<u32>::try_into(s.get_input_value(&self.op_in)).unwrap() {
-                0 => "ADD",
-                1 => "ADDU",
-                2 => "SUB",
-                3 => "SUBU",
-                4 => "AND",
-                5 => "OR",
-                6 => "XOR",
-                7 => "NOR",
-                8 => "DONOTHING",
-                10 => "SLT",
-                11 => "SLTU",
-                12 => "SLL",
-                13 => "SRL",
-                14 => "SRA",
-                15 => "LUI",
-                _ => "UNDEF",
-            }
-            .to_string()
-        } else {
-            "no sim".to_string()
-        };
-
-        let area = Area::new(egui::Id::from(self.id.to_string()))
-            .order(Order::Middle)
-            .current_pos(offset.to_pos2() + Vec2::new(5.0, 0.0) * scale)
-            .movable(false)
-            .enabled(true)
-            .interactable(false)
-            .pivot(Align2::CENTER_CENTER)
-            .constrain(false)
-            .show(ui.ctx(), |ui| {
-                ui.set_clip_rect(clip_rect);
-                ui.style_mut().wrap_mode = Some(TextWrapMode::Extend);
-                ui.label(RichText::new(format!("ALU\n{}", op)).size(scale * 12f32))
-            });
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
-            ui.label("Adder");
+            // todo: is this actually correct?
+            if let Some(s) = &simulator {
+                ui.label({
+                    let a1_r: Result<SignalUnsigned, String> =
+                        s.get_input_value(&self.a1_in).try_into();
+                    let a2_r: Result<SignalUnsigned, String> =
+                        s.get_input_value(&self.a2_in).try_into();
+                    let a3_r: Result<SignalUnsigned, String> =
+                        s.get_input_value(&self.a3_in).try_into();
+                    let wd3_r: Result<SignalUnsigned, String> =
+                        s.get_input_value(&self.wd3_in).try_into();
+                    let we3_r: Result<SignalUnsigned, String> =
+                        s.get_input_value(&self.we3_in).try_into();
+
+                    let mut s: String = "".to_string();
+
+                    match a1_r {
+                        Ok(data) => s += &format!("{:#x}", data),
+                        _ => s += &format!("{:?}", a1_r),
+                    }
+                    match a2_r {
+                        Ok(data) => s += &format!("{:#x}", data),
+                        _ => s += &format!("{:?}", a2_r),
+                    }
+                    match a3_r {
+                        Ok(data) => s += &format!("{:#x}", data),
+                        _ => s += &format!("{:?}", a3_r),
+                    }
+                    match wd3_r {
+                        Ok(data) => s += &format!("{:#x}", data),
+                        _ => s += &format!("{:?}", wd3_r),
+                    }
+                    match we3_r {
+                        Ok(data) => s += &format!("{:#x}", data),
+                        _ => s += &format!("{:?}", we3_r),
+                    }
+                    format!("{}", s)
+                });
+                ui.label("reg_file");
+            }
         });
         match editor_mode {
             EditorMode::Simulator => (),
@@ -149,22 +143,36 @@ impl EguiComponent for RegFile {
                 pos_drag_value(ui, &mut self.pos);
                 clicked_dropdown |= input_selector(
                     ui,
-                    &mut self.a_in,
-                    crate::components::FULL_ADD_A_IN_ID.to_string(),
+                    &mut self.a1_in,
+                    crate::components::REG_FILE_A1_IN_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
                 clicked_dropdown |= input_selector(
                     ui,
-                    &mut self.b_in,
-                    crate::components::FULL_ADD_B_IN_ID.to_string(),
+                    &mut self.a2_in,
+                    crate::components::REG_FILE_A2_IN_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
                 clicked_dropdown |= input_selector(
                     ui,
-                    &mut self.op_in,
-                    crate::components::FULL_ADD_OP_IN_ID.to_string(),
+                    &mut self.a3_in,
+                    crate::components::REG_FILE_A3_IN_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.wd3_in,
+                    crate::components::REG_FILE_WD3_IN_ID.to_string(),
+                    id_ports,
+                    self.id.clone(),
+                );
+                clicked_dropdown |= input_selector(
+                    ui,
+                    &mut self.we3_in,
+                    crate::components::REG_FILE_WE3_IN_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
