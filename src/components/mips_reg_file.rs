@@ -271,11 +271,9 @@ impl Component for RegFile {
         let size = 4;
         let sign: bool = false; // in the mips, always read as unsigned
 
-        // let a1_addr = a1 >> 21;
-        // let a2_addr = a2 >> 16;
-        let a1_addr = a1;
-        let a2_addr = a2;
-        let a3_addr = a3; // the shifting is handled in the mux
+        let a1_addr = a1; // rs
+        let a2_addr = a2; // rt
+        let a3_addr = a3; // rt or rd depending on mux output, operation type
 
         // since the addr is only 5 bits, it cant be out of bounds, 2^5 = 32
 
