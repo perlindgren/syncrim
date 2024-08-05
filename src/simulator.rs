@@ -309,15 +309,19 @@ impl Simulator {
 
     /// reset simulator
     pub fn reset(&mut self) {
+        // The order of the following is not important
+        // with the exception that self.clock() needs to be last
         self.history = vec![];
         self.cycle = 0;
-        self.sim_state.iter_mut().for_each(|val| *val = 0.into());
         self.stop();
-        self.clock();
+
+        self.sim_state.iter_mut().for_each(|val| *val = 0.into());
 
         for component in self.ordered_components.clone() {
             component.reset();
         }
+
+        self.clock();
     }
 
     pub fn get_state(&self) -> bool {
