@@ -71,7 +71,7 @@ impl EguiComponent for JumpMerge {
                     }
                     format!("{}", s)
                 });
-                ui.label("Merge");
+                ui.label("jump_merge");
             }
         });
         match editor_mode {

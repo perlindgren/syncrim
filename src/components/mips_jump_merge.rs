@@ -25,7 +25,7 @@ pub struct JumpMerge {
 #[typetag::serde]
 impl Component for JumpMerge {
     fn to_(&self) {
-        trace!("merge");
+        trace!("jump_merge");
     }
     // #[cfg(feature = "gui-egui")]
     // fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
