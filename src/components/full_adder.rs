@@ -171,7 +171,7 @@ impl FullAdd {
         Rc::new(FullAdd::new(id, pos, a_in, b_in, op_in))
     }
 }
-
+#[cfg(test)]
 mod test {
     use super::*;
 
@@ -210,7 +210,7 @@ mod test {
         println!("<setup for clock 2>");
         simulator.set_out_value("a", "out", 42);
         simulator.set_out_value("b", "out", 1337);
-        simulator.set_out_value("op", "out", OPADD);
+        simulator.set_out_value("op", "out", alu_op::ADD);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock();
@@ -225,7 +225,7 @@ mod test {
         println!("<setup for clock 3>");
         simulator.set_out_value("a", "out", (-100i32 as u32));
         simulator.set_out_value("b", "out", 1337);
-        simulator.set_out_value("op", "out", OPADD);
+        simulator.set_out_value("op", "out", alu_op::ADD);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock();
@@ -239,7 +239,7 @@ mod test {
         println!("<setup for clock 4>");
         simulator.set_out_value("a", "out", (-100i32 as u32));
         simulator.set_out_value("b", "out", 1337);
-        simulator.set_out_value("op", "out", OPSUB);
+        simulator.set_out_value("op", "out", alu_op::SUB);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock();
@@ -253,7 +253,7 @@ mod test {
         println!("<setup for clock 5>");
         simulator.set_out_value("a", "out", (-100i32 as u32));
         simulator.set_out_value("b", "out", 1337);
-        simulator.set_out_value("op", "out", OPSLT);
+        simulator.set_out_value("op", "out", alu_op::SLT);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock();
@@ -267,7 +267,7 @@ mod test {
         println!("<setup for clock 5>");
         simulator.set_out_value("a", "out", (-100i32 as u32));
         simulator.set_out_value("b", "out", 1337);
-        simulator.set_out_value("op", "out", OPSLTU);
+        simulator.set_out_value("op", "out", alu_op::SLTU);
         println!("sim_state {:?}", simulator.sim_state);
         println!("<clock>");
         simulator.clock();
