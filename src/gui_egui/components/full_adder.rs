@@ -1,4 +1,4 @@
-use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
+use crate::common::{EguiComponent, Ports, Simulator};
 use crate::components::{alu_op, FullAdd};
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -8,8 +8,8 @@ use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
 use egui::{
-    Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Shape, Slider, Stroke,
-    TextWrapMode, Ui, Vec2,
+    Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Shape, Stroke, TextWrapMode, Ui,
+    Vec2,
 };
 
 #[typetag::serde]
@@ -79,7 +79,7 @@ impl EguiComponent for FullAdd {
             "no sim".to_string()
         };
 
-        let area = Area::new(egui::Id::from(self.id.to_string()))
+        let _area = Area::new(egui::Id::from(self.id.to_string()))
             .order(Order::Middle)
             .current_pos(offset.to_pos2() + Vec2::new(5.0, 0.0) * scale)
             .movable(false)

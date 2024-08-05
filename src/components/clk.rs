@@ -2,8 +2,7 @@
 #[cfg(feature = "gui-egui")]
 use crate::common::EguiComponent;
 use crate::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
-    SignalValue, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -27,7 +26,7 @@ impl Component for MIPSCLK {
         trace!("pc+4");
     }
     #[cfg(feature = "gui-egui")]
-    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+    fn dummy(&self, _id: &str, _pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy_input = Input::new("dummy", "out");
         Box::new(Rc::new(MIPSCLK {
             id: "dummy".to_string(),
