@@ -18,6 +18,7 @@ mod probe_out;
 mod probe_stim;
 mod register;
 mod sext;
+mod sz_extend;
 mod wire;
 
 pub use add::*;
@@ -40,4 +41,5 @@ pub use probe_out::*;
 pub use probe_stim::*;
 pub use register::*;
 pub use sext::*;
+pub use sz_extend::*;
 pub use wire::*;
