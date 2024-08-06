@@ -1,5 +1,5 @@
 use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
-use crate::components::{InstrSplit, SignZeroExtend};
+use crate::components::SignZeroExtend;
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
     rect_with_hover, visualize_ports,
@@ -55,7 +55,6 @@ impl EguiComponent for SignZeroExtend {
                 ui.label({
                     let a_r: Result<SignalUnsigned, String> =
                         s.get_input_value(&self.signzero_ctrl_in).try_into();
-                    let mut s: String = "".to_string();
                     let b_r: Result<SignalUnsigned, String> =
                         s.get_input_value(&self.signzero_signal_in).try_into();
                     let mut s: String = "".to_string();
@@ -92,7 +91,7 @@ impl EguiComponent for SignZeroExtend {
         grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let r_vec = InstrSplit::render(
+        let r_vec = SignZeroExtend::render(
             self,
             ui,
             context,
