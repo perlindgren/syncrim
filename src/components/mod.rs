@@ -22,6 +22,7 @@ mod sext;
 mod shift_left_const;
 mod sz_extend;
 mod wire;
+mod zero_extend;
 
 pub use add::*;
 pub use and::*;
@@ -47,3 +48,4 @@ pub use sext::*;
 pub use shift_left_const::*;
 pub use sz_extend::*;
 pub use wire::*;
+pub use zero_extend::*;

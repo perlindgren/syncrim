@@ -21,3 +21,4 @@ mod sext;
 mod shift_left_const;
 mod sz_extend;
 mod wire;
+mod zero_extend;
