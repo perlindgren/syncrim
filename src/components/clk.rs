@@ -50,7 +50,7 @@ impl Component for MIPSCLK {
 
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
-            CLK_A_IN_ID => self.clk_in = new_input,
+            CLK_IN_ID => self.clk_in = new_input,
             _ => {}
         }
     }
