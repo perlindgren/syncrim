@@ -1,3 +1,4 @@
+// use crate::src::components::cntr_unit_signals;
 use std::path::PathBuf;
 use std::rc::Rc;
 use syncrim::common::EguiComponent;
@@ -14,43 +15,183 @@ fn main() {
     fern_setup();
     let cs = ComponentStore {
         store: vec![
-            ProbeEdit::rc_new("c0", (50.0, 100.0)),
             // register that holds instr addr
-            Register::rc_new("reg", (150.0, 100.0), Input::new("c0", "out")),
+            Register::rc_new("pc", (2000.0, 5000.0), Input::new("mux_jump_merge", "out")),
             // step addr from reg by 4
-            Constant::rc_new("+4", (200.0, 150.0), 4),
+            Constant::rc_new("+4", (2000.0, 5100.0), 4),
             Add::rc_new(
                 "pc+4",
-                (250.0, 100.0),
-                Input::new("reg", "out"),
+                (2200.0, 5000.0),
+                Input::new("pc", "out"),
                 Input::new("+4", "out"),
             ),
             //
             //
-            ProbeEdit::rc_new("ctrl", (200.0, 250.0)),
             // MUX to choose what intruction addr to choose from, branch jump, reg, pc+4
             Mux::rc_new(
-                "mux",
-                (200.0, 200.0),
-                Input::new("ctrl", "out"),
+                "mux_jump_merge",
+                (1800.0, 5000.0),
+                Input::new("branch", BRANCH_OUT_ID),
                 vec![
-                    // Input::new("clk", CLK_OUT_ID),
-                    //Input::new("c2", "out"),
-                    Input::new("jump_merge", MERGE_OUT_ID),
+                    Input::new("pc_add_branch", FULL_ADD_OUT_ID), //TODO: describe origin
+                    Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID), // goes to addr, RD2
+                    Input::new("jump_merge", MERGE_OUT_ID),       //
                     Input::new("pc+4", CLK_OUT_ID),
                 ],
-            ), //
+            ),
             //
             // merges to find out jump location
-            Constant::rc_new("c1", (100.0, 350.0), 0),
             JumpMerge::rc_new(
                 "jump_merge",
-                (100.0, 300.0),
-                Input::new("reg", "out"), //input from reg before pc+4
-                Input::new("c1", "out"),  //input from instruction mem
+                (1700.0, 5300.0),
+                Input::new("pc", REGISTER_OUT_ID), //input from reg before pc+4
+                Input::new("dummy", "out"),        //input from instruction mem
+            ),
+            //
+            // splits intructions from ir to fields
+            InstrSplit::rc_new(
+                "instruction_split",
+                (2400.0, 4000.0),
+                Input::new("dummy", "out"),
+            ), //TODO: take im input
+            //
+            //
+            ControlUnit::rc_new("control_unit", (5000.0, 500.0), Input::new("dummy", "out")), //TODO: take im input
+            //
+            //
+            Register::rc_new(
+                "reg_we",
+                (4400.0, 500.0),
+                Input::new("control_unit", cntr_field::REG_WRITE_ENABLE_OUT),
+            ),
+            //
+            // extends immediate field
+            SignZeroExtend::rc_new(
+                "signzero_extend",
+                (2600.0, 5000.0),
+                Input::new("instruction_split", INSTRUCTION_SPLITTER_IMMEDIATE_ID),
+                Input::new("control_unit", cntr_field::EXTEND_SELECT_OUT), // cu tells it to either sing- or zero- extend
             ),
             //
             //
+            RegFile::rc_new(
+                "reg_file",
+                (3100.0, 2000.0),
+                Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
+                Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
+                Input::new("mux_write_addr", REGISTER_OUT_ID), //write address
+                Input::new("result_reg", REGISTER_OUT_ID),     //write data
+                Input::new("reg_we", REGISTER_OUT_ID),
+            ),
+            //
+            //
+            BranchLogic::rc_new(
+                "branch",
+                (3300.0, 2000.0),
+                Input::new("instruction_split", INSTRUCTION_SPLITTER_OP_ID),
+                Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
+                Input::new("instruction_split", INSTRUCTION_SPLITTER_FUNCT_ID),
+                Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID),
+                Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
+            ),
+            //
+            //
+            ZeroExtend::rc_new(
+                "zero_extend_for_chamt",
+                (3700.0, 1600.0),
+                Input::new("instruction_split", INSTRUCTION_SPLITTER_SHAMT_ID),
+            ),
+            //
+            //
+            Constant::rc_new("0_a_inp", (3800.0, 1700.0), 0),
+            Mux::rc_new(
+                "mux_source_a",
+                (3800.0, 1800.0),
+                Input::new("control_unit", cntr_field::ALU_SRC_A_OUT),
+                vec![
+                    Input::new("zero_extend_for_chamt", SIGNZEROEXTEND_OUT_ID),
+                    Input::new("0_a_inp", "out"),
+                    Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
+                ],
+            ),
+            //
+            //
+            Mux::rc_new(
+                "mux_source_b",
+                (3800.0, 2200.0),
+                Input::new("control_unit", cntr_field::ALU_SRC_B_OUT),
+                vec![
+                    Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID),
+                    Input::new("pc+4", ADD_OUT_ID),
+                    Input::new("signzero_extend", SIGNZEROEXTEND_OUT_ID),
+                ],
+            ),
+            //
+            //
+            FullAdd::rc_new(
+                "alu",
+                (4100.0, 2000.0),
+                Input::new("mux_source_a", MUX_OUT_ID),
+                Input::new("mux_source_b", MUX_OUT_ID),
+                Input::new("control_unit", cntr_field::ALU_OP_OUT),
+            ),
+            //
+            //
+            Mux::rc_new(
+                "mux_write_back",
+                (4300.0, 2200.0),
+                Input::new("control_unit", cntr_field::REG_WRITE_SRC_OUT),
+                vec![
+                    Input::new("alu", FULL_ADD_OUT_ID),
+                    Input::new("dummy", "out"), //TODO: data meme output
+                ],
+            ),
+            //
+            //
+            Register::rc_new(
+                "result_reg",
+                (4400.0, 2200.0),
+                Input::new("mux_write_back", MUX_OUT_ID),
+            ),
+            //
+            //
+            ShiftConst::rc_new(
+                "branch_shift",
+                (2900.0, 5250.0),
+                Input::new("signzero_extend", SIGNZEROEXTEND_OUT_ID),
+                2,
+            ),
+            //
+            //
+            Add::rc_new(
+                "pc_add_branch",
+                (3000.0, 5200.0),
+                Input::new("pc+4", ADD_OUT_ID),
+                Input::new("branch_shift", SHIFT_OUT_ID),
+            ),
+            //
+            //
+            Constant::rc_new("0x_1F", (3750.0, 5500.0), 0),
+            Mux::rc_new(
+                "mux_write_addr",
+                (3800.0, 5500.0),
+                Input::new("control_unit", cntr_field::REG_DEST_OUT),
+                vec![
+                    Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
+                    Input::new("0x_1F", "out"),
+                    Input::new("instruction_split", INSTRUCTION_SPLITTER_RD_ID),
+                ],
+            ),
+            //
+            //
+            Register::rc_new(
+                "reg_write_addr",
+                (4400.0, 5500.0),
+                Input::new("mux_write_addr", MUX_OUT_ID),
+            ),
+            //
+            //
+            Constant::rc_new("dummy", (6000.0, 3000.0), 0),
         ],
     };
 
