@@ -1,4 +1,5 @@
 mod add;
+mod and;
 mod clk;
 mod constant;
 mod cross;
@@ -22,6 +23,7 @@ mod sz_extend;
 mod wire;
 
 pub use add::*;
+pub use and::*;
 pub use clk::*;
 pub use constant::*;
 pub use cross::*;
