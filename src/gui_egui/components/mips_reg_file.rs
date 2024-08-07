@@ -1,13 +1,19 @@
 use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
-use crate::components::RegFile;
-use crate::gui_egui::component_ui::{
-    drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
-    rect_with_hover, visualize_ports,
-};
+use crate::components::{RegFile, RegFormat};
+use crate::gui_egui::component_ui::{rect_with_hover, visualize_ports};
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::offset_helper;
-use egui::{Color32, Pos2, Rect, Response, Shape, Slider, Stroke, Ui, Vec2};
+use crate::gui_egui::helper::{component_area, offset_helper};
+use egui::{
+    scroll_area, Color32, ComboBox, Pos2, Rect, Response, RichText, ScrollArea, Shape, Slider,
+    Stroke, Ui, Vec2,
+};
+
+const REG_NAMES: [&str; 32] = [
+    "zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6",
+    "s7", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "t8", "t9", "k0", "k1", "gp", "sp", "fp",
+    "ra",
+];
 
 #[typetag::serde]
 impl EguiComponent for RegFile {
@@ -21,8 +27,6 @@ impl EguiComponent for RegFile {
         clip_rect: Rect,
         editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
-        // 81x41
-        // middle: 41x 21y (0 0)
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
         let offset_old = offset;
         let mut offset = offset;
@@ -30,159 +34,97 @@ impl EguiComponent for RegFile {
         offset.y += self.pos.1 * scale;
         let s = scale;
         let o = offset;
+
+        let rs: u32;
+        let rt: u32;
+        if let Some(sim) = simulator {
+            rs = sim.get_input_value(&self.rs_address_in).try_into().unwrap();
+            rt = sim.get_input_value(&self.rt_address_in).try_into().unwrap();
+        } else {
+            rs = 32; // register that dont exist
+            rt = 32; //
+        }
         // The shape
-        ui.painter().add(Shape::closed_line(
-            vec![
-                oh((-40f32, 0f32), s, o),
-                oh((40f32, 0f32), s, o),
-                oh((40f32, 20f32), s, o),
-                oh((-40f32, 20f32), s, o),
-            ],
-            Stroke {
-                width: scale,
-                color: Color32::RED,
-            },
-        ));
-
         let rect = Rect {
-            min: oh((-40f32, -20f32), s, o),
-            max: oh((40f32, 20f32), s, o),
+            min: oh((-60f32, -90f32), s, o),
+            max: oh((60f32, 90f32), s, o),
         };
-        let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
-            ui.label(format!("Id: {}", self.id.clone()));
-            // todo: is this actually correct?
-            if let Some(s) = &simulator {
-                ui.label({
-                    let a1_r: Result<SignalUnsigned, String> =
-                        s.get_input_value(&self.a1_in).try_into();
-                    let a2_r: Result<SignalUnsigned, String> =
-                        s.get_input_value(&self.a2_in).try_into();
-                    let a3_r: Result<SignalUnsigned, String> =
-                        s.get_input_value(&self.a3_in).try_into();
-                    let wd3_r: Result<SignalUnsigned, String> =
-                        s.get_input_value(&self.wd3_in).try_into();
-                    let we3_r: Result<SignalUnsigned, String> =
-                        s.get_input_value(&self.we3_in).try_into();
 
-                    let mut s: String = "".to_string();
+        component_area(self.id.to_string(), ui.ctx(), offset.to_pos2(), |ui| {
+            ui.style_mut().visuals.panel_fill = Color32::LIGHT_BLUE;
+            ui.set_height(rect.height());
+            ui.set_width(rect.width());
+            ui.group(|ui| {
+                let mut tmp: RegFormat = self.reg_format.borrow().clone();
+                ui.label(RichText::new("Register File").size(12f32 * scale));
+                ui.toggle_value(
+                    &mut *self.show_reg_names.borrow_mut(),
+                    RichText::new("Show names").size(12f32 * scale),
+                );
+                ComboBox::from_id_source(&self.id)
+                    .selected_text(RichText::new(format!("{:?}", tmp)).size(12f32 * scale))
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut tmp, RegFormat::Hex, "Hex");
+                        ui.selectable_value(&mut tmp, RegFormat::DecUnsigned, "Decimal");
+                        ui.selectable_value(&mut tmp, RegFormat::DecSigned, "Decimal signed");
+                        ui.selectable_value(&mut tmp, RegFormat::Bin, "Binary");
+                        ui.selectable_value(&mut tmp, RegFormat::UTF8BE, "UTF-8 big endian");
+                        ui.selectable_value(&mut tmp, RegFormat::UTF8LE, "UTF-8 little endian");
+                    });
+                *self.reg_format.borrow_mut() = tmp;
 
-                    match a1_r {
-                        Ok(data) => s += &format!("{:#x}", data),
-                        _ => s += &format!("{:?}", a1_r),
-                    }
-                    match a2_r {
-                        Ok(data) => s += &format!("{:#x}", data),
-                        _ => s += &format!("{:?}", a2_r),
-                    }
-                    match a3_r {
-                        Ok(data) => s += &format!("{:#x}", data),
-                        _ => s += &format!("{:?}", a3_r),
-                    }
-                    match wd3_r {
-                        Ok(data) => s += &format!("{:#x}", data),
-                        _ => s += &format!("{:?}", wd3_r),
-                    }
-                    match we3_r {
-                        Ok(data) => s += &format!("{:#x}", data),
-                        _ => s += &format!("{:?}", we3_r),
-                    }
-                    format!("{}", s)
-                });
-                ui.label("reg_file");
-            }
+                ui.separator();
+                ScrollArea::vertical()
+                    .max_height(rect.height())
+                    .max_width(rect.width())
+                    .show(ui, |ui| {
+                        ui.set_width(ui.available_width());
+                        let mut str: String = "".into();
+                        for (i, val) in self.registers.borrow().iter().enumerate() {
+                            str.push_str(
+                                match *self.show_reg_names.borrow() {
+                                    true => format!("{:<4}", REG_NAMES[i]),
+                                    false => format!("r{:<3}", i),
+                                }
+                                .as_str(),
+                            );
+                            str.push_str(
+                                match *self.reg_format.borrow() {
+                                    RegFormat::Hex => format!("{:#010x}", val),
+                                    RegFormat::DecSigned => format!("{}", (*val) as i32),
+                                    RegFormat::DecUnsigned => format!("{}", val),
+                                    RegFormat::Bin => format!("{:#034b}", val),
+                                    RegFormat::UTF8BE => {
+                                        String::from_utf8_lossy(&val.to_be_bytes())
+                                            .escape_debug()
+                                            .to_string()
+                                    }
+                                    RegFormat::UTF8LE => {
+                                        String::from_utf8_lossy(&val.to_le_bytes())
+                                            .escape_debug()
+                                            .to_string()
+                                    }
+                                }
+                                .as_str(),
+                            );
+                            str.push_str("\n")
+                        }
+                        ui.label(RichText::new(str).size(12f32 * scale).monospace())
+                    })
+            });
         });
+        // r1.union(r2.)
+        // .inner
+        // .response
+        // .on_hover_ui(|ui| {
+        //     ui.label("on_hover");
+        // });
+
         match editor_mode {
             EditorMode::Simulator => (),
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
         }
-        Some(vec![r])
-    }
-
-    fn render_editor(
-        &mut self,
-        ui: &mut Ui,
-        context: &mut EguiExtra,
-        simulator: Option<&mut Simulator>,
-        offset: Vec2,
-        scale: f32,
-        clip_rect: Rect,
-        id_ports: &[(crate::common::Id, Ports)],
-        grid: &GridOptions,
-        editor_mode: EditorMode,
-    ) -> EditorRenderReturn {
-        let r_vec = RegFile::render(
-            self,
-            ui,
-            context,
-            simulator,
-            offset,
-            scale,
-            clip_rect,
-            editor_mode,
-        )
-        .unwrap();
-        let resp = &r_vec[0];
-        let delete = drag_logic(
-            ui.ctx(),
-            resp,
-            &mut self.pos,
-            &mut context.pos_tmp,
-            scale,
-            offset,
-            grid,
-        );
-
-        properties_window(
-            ui,
-            self.id.clone(),
-            resp,
-            &mut context.properties_window,
-            |ui| {
-                let mut clicked_dropdown = false;
-                input_change_id(ui, &mut context.id_tmp, &mut self.id, id_ports);
-                pos_drag_value(ui, &mut self.pos);
-                clicked_dropdown |= input_selector(
-                    ui,
-                    &mut self.a1_in,
-                    crate::components::REG_FILE_A1_IN_ID.to_string(),
-                    id_ports,
-                    self.id.clone(),
-                );
-                clicked_dropdown |= input_selector(
-                    ui,
-                    &mut self.a2_in,
-                    crate::components::REG_FILE_A2_IN_ID.to_string(),
-                    id_ports,
-                    self.id.clone(),
-                );
-                clicked_dropdown |= input_selector(
-                    ui,
-                    &mut self.a3_in,
-                    crate::components::REG_FILE_A3_IN_ID.to_string(),
-                    id_ports,
-                    self.id.clone(),
-                );
-                clicked_dropdown |= input_selector(
-                    ui,
-                    &mut self.wd3_in,
-                    crate::components::REG_FILE_WD3_IN_ID.to_string(),
-                    id_ports,
-                    self.id.clone(),
-                );
-                clicked_dropdown |= input_selector(
-                    ui,
-                    &mut self.we3_in,
-                    crate::components::REG_FILE_WE3_IN_ID.to_string(),
-                    id_ports,
-                    self.id.clone(),
-                );
-                clicked_dropdown
-            },
-        );
-        EditorRenderReturn {
-            delete,
-            resp: Some(r_vec),
-        }
+        None
     }
 
     fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {

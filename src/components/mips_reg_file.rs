@@ -13,182 +13,54 @@ use std::collections::BTreeMap;
 use std::ops::Deref;
 use std::rc::Rc;
 
-pub const REG_FILE_A1_IN_ID: &str = "reg_file_a1_in";
-pub const REG_FILE_A2_IN_ID: &str = "reg_file_a2_in";
-pub const REG_FILE_A3_IN_ID: &str = "reg_file_a3_in";
-pub const REG_FILE_WD3_IN_ID: &str = "reg_file_wd3_in";
-pub const REG_FILE_WE3_IN_ID: &str = "reg_file_we3_in";
+pub mod reg_file_fields {
+    pub const RS_ADDRESS_IN_ID: &str = "rs_address_in";
+    pub const RT_ADDRESS_IN_ID: &str = "rt_address_in";
+    pub const WRITE_ADDRESS_IN_ID: &str = "write_address_in";
+    pub const WRITE_DATA_IN_ID: &str = "write_data_in";
+    pub const WRITE_ENABLE_IN_ID: &str = "write_enable_in";
 
-pub const REG_FILE_RD1_OUT_ID: &str = "rd1_out";
-pub const REG_FILE_RD2_OUT_ID: &str = "rd2_out";
+    pub const RT_VALUE_OUT_ID: &str = "rt_value_out";
+    pub const RS_VALUE_OUT_ID: &str = "rs_value_out";
+}
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct RegFile {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
-    pub(crate) a1_in: Input,
-    pub(crate) a2_in: Input,
-    pub(crate) a3_in: Input,
-    pub(crate) wd3_in: Input,
-    pub(crate) we3_in: Input,
-
-    pub big_endian: bool,
+    pub(crate) rs_address_in: Input,
+    pub(crate) rt_address_in: Input,
+    pub(crate) write_address_in: Input,
+    pub(crate) write_data_in: Input,
+    pub(crate) write_enable_in: Input,
 
     #[serde(skip)]
-    pub memory: Memory,
-    history: RefCell<Vec<MemOp>>,
+    pub registers: RefCell<[u32; 32]>, // all 32 registers, in future, we might save the whole signal
     #[serde(skip)]
-    pub init_state: BTreeMap<usize, u8>,
+    history: RefCell<Vec<RegOp>>, // contains the value before it was modified used for unclock.
+
+    //used for gui
+    #[serde(skip)]
+    pub show_reg_names: RefCell<bool>,
+
+    #[serde(skip)]
+    pub reg_format: RefCell<RegFormat>,
+}
+#[derive(Clone, Default, PartialEq, PartialOrd, Debug)]
+pub enum RegFormat {
+    #[default]
+    Hex,
+    Bin,
+    DecSigned,
+    DecUnsigned,
+    UTF8BE,
+    UTF8LE,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-struct MemOp {
-    pub data: Option<usize>,
-    pub addr: usize,
-    pub size: u8,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Memory(pub Rc<RefCell<BTreeMap<usize, u8>>>);
-
-impl Default for Memory {
-    fn default() -> Self {
-        Self::new(BTreeMap::new())
-    }
-}
-
-impl Memory {
-    pub fn new(data: BTreeMap<usize, u8>) -> Self {
-        Memory(Rc::new(RefCell::new(data)))
-    }
-
-    fn align(&self, addr: usize, size: usize) -> SignalValue {
-        ((addr % size != 0) as SignalUnsigned).into()
-    }
-
-    pub fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> SignalValue {
-        let data: Vec<u8> = (0..size)
-            .map(|i| *self.0.borrow().get(&(addr + i)).unwrap_or(&0))
-            .collect();
-
-        let data = data.as_slice();
-
-        //trace!("{:x?}", data);
-
-        match size {
-            1 => {
-                if sign {
-                    data[0] as i8 as SignalSigned as SignalUnsigned
-                } else {
-                    data[0] as SignalUnsigned
-                }
-            }
-            2 => {
-                if sign {
-                    if big_endian {
-                        trace!("read signed half word be");
-                        let i_16 = i16::from_be_bytes(data.try_into().unwrap());
-                        trace!("i_16 {:x?}", i_16);
-                        let i_32 = i_16 as i32;
-                        trace!("i_32 {:x?}", i_32);
-                        i_32 as SignalUnsigned
-                    } else {
-                        trace!("read signed half word le");
-                        let i_16 = i16::from_le_bytes(data.try_into().unwrap());
-                        trace!("i_16 {:x?}", i_16);
-                        let i_32 = i_16 as i32;
-                        trace!("i_32 {:x?}", i_32);
-                        i_32 as SignalUnsigned
-                    }
-                } else if big_endian {
-                    trace!("read unsigned half word be");
-                    let u_16 = u16::from_be_bytes(data.try_into().unwrap());
-                    trace!("u_16 {:x?}", u_16);
-                    let u_32 = u_16 as u32;
-                    trace!("u_32 {:x?}", u_32);
-                    u_32 as SignalUnsigned
-                } else {
-                    trace!("read unsigned half word le");
-                    let u_16 = u16::from_le_bytes(data.try_into().unwrap());
-                    trace!("u_16 {:x?}", u_16);
-                    let u_32 = u_16 as u32;
-                    trace!("u_32 {:x?}", u_32);
-                    u_32 as SignalUnsigned
-                }
-            }
-            4 => {
-                if sign {
-                    if big_endian {
-                        i32::from_be_bytes(data.try_into().unwrap()) as SignalUnsigned
-                    } else {
-                        i32::from_le_bytes(data.try_into().unwrap()) as SignalUnsigned
-                    }
-                } else if big_endian {
-                    u32::from_be_bytes(data.try_into().unwrap()) as SignalUnsigned
-                } else {
-                    u32::from_le_bytes(data.try_into().unwrap()) as SignalUnsigned
-                }
-            }
-            _ => panic!("illegal sized memory operation"),
-        }
-        .into()
-    }
-
-    pub fn write(&self, addr: usize, size: usize, big_endian: bool, data: SignalValue) {
-        let data: SignalUnsigned = data.try_into().unwrap();
-        trace!("we = 1, now writing {:?} at addr {:?}", data, addr);
-
-        match size {
-            1 => {
-                trace!("write byte");
-                self.0.borrow_mut().insert(addr, data as u8);
-            }
-            2 => {
-                if big_endian {
-                    trace!("write half word be");
-                    (data as u16)
-                        .to_be_bytes()
-                        .iter()
-                        .enumerate()
-                        .for_each(|(i, bytes)| {
-                            self.0.borrow_mut().insert(addr + i, *bytes);
-                        })
-                } else {
-                    trace!("write half word le");
-                    (data as u16)
-                        .to_le_bytes()
-                        .iter()
-                        .enumerate()
-                        .for_each(|(i, bytes)| {
-                            self.0.borrow_mut().insert(addr + i, *bytes);
-                        })
-                }
-            }
-
-            4 => {
-                if big_endian {
-                    trace!("write word be");
-                    data.to_be_bytes()
-                        .iter()
-                        .enumerate()
-                        .for_each(|(i, bytes)| {
-                            self.0.borrow_mut().insert(addr + i, *bytes);
-                        })
-                } else {
-                    trace!("write word le");
-                    data.to_le_bytes()
-                        .iter()
-                        .enumerate()
-                        .for_each(|(i, bytes)| {
-                            self.0.borrow_mut().insert(addr + i, *bytes);
-                        })
-                }
-            }
-            _ => {
-                panic!("illegal sized memory operation, size = {}", size)
-            }
-        };
-    }
+struct RegOp {
+    pub addr: u8,
+    pub data: u32, // might save whole signal in future
 }
 
 #[typetag::serde]
@@ -215,118 +87,106 @@ impl Component for RegFile {
             Ports::new(
                 vec![
                     &InputPort {
-                        port_id: REG_FILE_A1_IN_ID.to_string(),
-                        input: self.a1_in.clone(),
+                        port_id: reg_file_fields::RS_ADDRESS_IN_ID.to_string(),
+                        input: self.rs_address_in.clone(),
                     },
                     &InputPort {
-                        port_id: REG_FILE_A2_IN_ID.to_string(),
-                        input: self.a2_in.clone(),
+                        port_id: reg_file_fields::RT_ADDRESS_IN_ID.to_string(),
+                        input: self.rt_address_in.clone(),
                     },
                     &InputPort {
-                        port_id: REG_FILE_A3_IN_ID.to_string(),
-                        input: self.a3_in.clone(),
+                        port_id: reg_file_fields::WRITE_ADDRESS_IN_ID.to_string(),
+                        input: self.write_address_in.clone(),
                     },
                     &InputPort {
-                        port_id: REG_FILE_WD3_IN_ID.to_string(),
-                        input: self.wd3_in.clone(),
+                        port_id: reg_file_fields::WRITE_DATA_IN_ID.to_string(),
+                        input: self.write_data_in.clone(),
                     },
                     &InputPort {
-                        port_id: REG_FILE_WE3_IN_ID.to_string(),
-                        input: self.we3_in.clone(),
+                        port_id: reg_file_fields::WRITE_ENABLE_IN_ID.to_string(),
+                        input: self.write_enable_in.clone(),
                     },
                 ],
                 OutputType::Combinatorial,
-                vec![REG_FILE_RD1_OUT_ID, REG_FILE_RD2_OUT_ID],
+                vec![
+                    reg_file_fields::RS_VALUE_OUT_ID,
+                    reg_file_fields::RT_VALUE_OUT_ID,
+                ],
             ),
         )
     }
 
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
-            REG_FILE_A1_IN_ID => self.a1_in = new_input,
-            REG_FILE_A2_IN_ID => self.a2_in = new_input,
-            REG_FILE_A3_IN_ID => self.a3_in = new_input,
-            REG_FILE_WD3_IN_ID => self.wd3_in = new_input,
-            REG_FILE_WE3_IN_ID => self.we3_in = new_input,
+            reg_file_fields::RS_ADDRESS_IN_ID => self.rs_address_in = new_input,
+            reg_file_fields::RT_ADDRESS_IN_ID => self.rt_address_in = new_input,
+            reg_file_fields::WRITE_ADDRESS_IN_ID => self.write_address_in = new_input,
+            reg_file_fields::WRITE_DATA_IN_ID => self.write_data_in = new_input,
+            reg_file_fields::WRITE_ENABLE_IN_ID => self.write_enable_in = new_input,
             _ => {}
         }
     }
 
-    // propagate sign extension to output
-    // TODO: always extend to Signal size? (it should not matter and should be slightly cheaper)
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
-        // get input values
-        let mut history_entry = MemOp {
-            data: None,
-            addr: 0,
-            size: 0,
+        //TODO check if inputs are invalid and return error
+        // type of signal
+        // address within bounds etc
+
+        let rs_addr: usize = simulator
+            .get_input_value(&self.rs_address_in)
+            .try_into()
+            .unwrap();
+        let rt_addr: usize = simulator
+            .get_input_value(&self.rt_address_in)
+            .try_into()
+            .unwrap();
+        let w_addr: usize = simulator
+            .get_input_value(&self.write_address_in)
+            .try_into()
+            .unwrap();
+        let w_data: u32 = simulator
+            .get_input_value(&self.write_data_in)
+            .try_into()
+            .unwrap();
+        let w_enable: u32 = simulator
+            .get_input_value(&self.write_enable_in)
+            .try_into()
+            .unwrap();
+
+        //save value to history before write, no need for {} as borrows is dropped after operation?
+        self.history.borrow_mut().push(RegOp {
+            addr: w_addr as u8,
+            data: self
+                .registers
+                .borrow()
+                .get(w_addr as usize)
+                .unwrap()
+                .clone(),
+        });
+
+        // write data
+        if w_enable == 1 && w_addr != 0 {
+            self.registers.borrow_mut()[w_addr] = w_data;
         };
 
-        let a1: u32 = simulator.get_input_value(&self.a1_in).try_into().unwrap();
-        let a2: u32 = simulator.get_input_value(&self.a2_in).try_into().unwrap();
-        let a3: u32 = simulator.get_input_value(&self.a3_in).try_into().unwrap();
-        let wd3: SignalValue = simulator.get_input_value(&self.wd3_in);
-        let we3: u32 = simulator.get_input_value(&self.we3_in).try_into().unwrap();
+        // update out signals, no {} since self.registers are dropped at end of function
+        let regs = self.registers.borrow();
+        simulator.set_out_value(&self.id, reg_file_fields::RS_VALUE_OUT_ID, regs[rs_addr]);
+        simulator.set_out_value(&self.id, reg_file_fields::RT_VALUE_OUT_ID, regs[rt_addr]);
 
-        let size = 4;
-        let sign: bool = false; // in the mips, always read as unsigned
-
-        let a1_addr = a1; // rs
-        let a2_addr = a2; // rt
-        let a3_addr = a3; // rt or rd depending on mux output, operation type
-
-        // since the addr is only 5 bits, it cant be out of bounds, 2^5 = 32
-
-        // read RD1 and RD2
-        trace!("read addr {:?} size {:?}", a1_addr, size);
-        let value1 = self
-            .memory
-            .read(a1_addr as usize, size as usize, sign, self.big_endian)
-            .try_into()
-            .unwrap();
-
-        trace!("read addr {:?} size {:?}", a2_addr, size);
-        let value2 = self
-            .memory
-            .read(a2_addr as usize, size as usize, sign, self.big_endian)
-            .try_into()
-            .unwrap();
-
-        // if we, write to reg
-        if we3 == 1 {
-            let size = 4;
-            history_entry = MemOp {
-                data: match self.memory.read(
-                    a3_addr as usize,
-                    size as usize,
-                    false,
-                    self.big_endian,
-                ) {
-                    SignalValue::Data(d) => Some(d as usize),
-                    _ => None,
-                },
-
-                addr: a3_addr as usize,
-                size: size as u8,
-            };
-            trace!("write addr {:?} size {:?}", a3_addr, size);
-
-            if a3_addr != 0 {
-                self.memory
-                    .write(a3_addr as usize, size as usize, self.big_endian, wd3);
-            } else {
-                // does nothing and reg remains 0
-            }
-
-            let value = self.memory.align(a3_addr as usize, size as usize);
-            trace!("align {:?}", value);
-        }
-
-        simulator.set_out_value(&self.id, REG_FILE_RD1_OUT_ID, SignalValue::Data(value1));
-        simulator.set_out_value(&self.id, REG_FILE_RD2_OUT_ID, SignalValue::Data(value2));
-
-        self.history.borrow_mut().push(history_entry);
         Ok(())
+    }
+
+    fn un_clock(&self) {
+        if let Some(last_op) = self.history.borrow_mut().pop() {
+            let mut regs = self.registers.borrow_mut();
+            regs[last_op.addr as usize] = last_op.data;
+        }
+    }
+
+    fn reset(&self) {
+        *self.registers.borrow_mut() = [0; 32];
+        *self.history.borrow_mut() = vec![];
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -334,58 +194,48 @@ impl Component for RegFile {
     }
 }
 
-impl Deref for Memory {
-    type Target = RefCell<BTreeMap<usize, u8>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
 impl RegFile {
     pub fn new(
         id: &str,
         pos: (f32, f32),
-        a1_in: Input,
-        a2_in: Input,
-        a3_in: Input,
-        wd3_in: Input,
-        we3_in: Input,
-        big_endian: bool,
-        memory: BTreeMap<usize, u8>,
+        rs_address_in: Input,
+        rt_address_in: Input,
+        write_address_in: Input,
+        write_data_in: Input,
+        write_enable_in: Input,
     ) -> Self {
         RegFile {
             id: id.to_string(),
             pos,
-            a1_in,
-            a2_in,
-            a3_in,
-            wd3_in,
-            we3_in,
-            big_endian,
-            memory: Memory::new(memory.clone()),
+            rs_address_in,
+            rt_address_in,
+            write_address_in,
+            write_data_in,
+            write_enable_in,
+            registers: RefCell::new([0; 32]), // create 32 zeros
             history: RefCell::new(vec![]),
-            init_state: memory.clone(),
+            show_reg_names: RefCell::default(),
+            reg_format: RefCell::default(),
         }
     }
 
     pub fn rc_new(
         id: &str,
         pos: (f32, f32),
-        a1_in: Input,
-        a2_in: Input,
-        a3_in: Input,
-        wd3_in: Input,
-        we3_in: Input,
-        big_endian: bool,
+        rs_address_in: Input,
+        rt_address_in: Input,
+        write_address_in: Input,
+        write_data_in: Input,
+        write_enable_in: Input,
     ) -> Rc<Self> {
-        let mut mem = BTreeMap::new();
-        //fill the defined memory range with zeroes
-        for i in 0..32.clone() {
-            mem.insert(i as usize, 0u8);
-        }
         Rc::new(RegFile::new(
-            id, pos, a1_in, a2_in, a3_in, wd3_in, we3_in, big_endian, mem,
+            id,
+            pos,
+            rs_address_in,
+            rt_address_in,
+            write_address_in,
+            write_data_in,
+            write_enable_in,
         ))
     }
 }

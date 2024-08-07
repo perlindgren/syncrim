@@ -1,6 +1,8 @@
 use crate::common::{Components, Ports};
 use crate::gui_egui::editor::{EditorMode, SnapPriority};
-use egui::{Color32, Pos2, Rect, Sense, Vec2};
+use egui::{
+    Align2, Area, Color32, Context, InnerResponse, Order, Pos2, Rect, RichText, Sense, Ui, Vec2,
+};
 use epaint::Shadow;
 
 pub fn offset_reverse_helper_pos2(xy: Pos2, scale: f32, offset: Vec2) -> Pos2 {
@@ -115,4 +117,21 @@ pub fn shadow_small_dark() -> Shadow {
         spread: 0.0,
         color: Color32::BLACK,
     }
+}
+
+pub fn component_area<R>(
+    id: String,
+    ctx: &Context,
+    pos: impl Into<Pos2>,
+    content: impl FnOnce(&mut Ui) -> R,
+) -> InnerResponse<R> {
+    Area::new(egui::Id::from(id))
+        .order(Order::Middle)
+        .current_pos(pos)
+        .movable(false)
+        .enabled(true)
+        .interactable(false)
+        .pivot(Align2::CENTER_CENTER)
+        .constrain(false)
+        .show(ctx, content)
 }

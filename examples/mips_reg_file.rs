@@ -13,35 +13,34 @@ fn main() {
     fern_setup();
     let cs = ComponentStore {
         store: vec![
+            ProbeEdit::rc_new("rs_addr", (60.0, 100.0)),
+            ProbeEdit::rc_new("rt_addr", (60.0, 140.0)),
+            ProbeEdit::rc_new("write_addr", (60.0, 180.0)),
+            ProbeEdit::rc_new("write_data", (60.0, 220.0)),
+            ProbeEdit::rc_new("write_enable", (60.0, 260.0)),
             RegFile::rc_new(
                 "reg_file",
                 (200.0, 200.0),
-                Input::new("c0", "out"),
-                Input::new("c1", "out"),
-                Input::new("c2", "out"),
-                Input::new("c3", "out"),
-                Input::new("c4", "out"),
-                true,
-            ),
-            ProbeEdit::rc_new("c0", (60.0, 100.0)),
-            ProbeEdit::rc_new("c1", (60.0, 140.0)),
-            ProbeEdit::rc_new("c2", (60.0, 160.0)),
-            ProbeEdit::rc_new("c3", (60.0, 200.0)),
-            ProbeEdit::rc_new("c4", (60.0, 240.0)),
-            Probe::rc_new(
-                "p1",
-                (270.0, 120.0),
-                Input::new("reg_file", REG_FILE_RD1_OUT_ID),
+                Input::new("rs_addr", "out"),
+                Input::new("rt_addr", "out"),
+                Input::new("write_addr", "out"),
+                Input::new("write_data", "out"),
+                Input::new("write_enable", "out"),
             ),
             Probe::rc_new(
-                "p2",
-                (270.0, 160.0),
-                Input::new("reg_file", REG_FILE_RD2_OUT_ID),
+                "rs",
+                (300.0, 120.0),
+                Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID),
+            ),
+            Probe::rc_new(
+                "rt",
+                (300.0, 160.0),
+                Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
             ),
         ],
     };
 
-    let cs = autowire(cs);
+    // let cs = autowire(cs);
 
     let path = PathBuf::from("add.json");
     cs.save_file(&path);
@@ -54,84 +53,36 @@ fn main() {
 }
 
 fn autowire(mut cs: ComponentStore) -> ComponentStore {
-    let mut x = 1;
-    let mut tmp_vec: Vec<Rc<dyn EguiComponent>> = vec![];
+    let mut wires: Vec<Rc<dyn EguiComponent>> = vec![];
 
-    for c in &cs.store {
-        let (id, ports) = c.get_id_ports();
-        println!("{}", id);
+    // for each component
+    for destination_component in &cs.store {
+        let dest_comp_id = destination_component.get_id_ports().0;
+        // for each port in destination component
+        for input_port in destination_component.get_id_ports().1.inputs.iter() {
+            let source_port = &input_port.input;
+            let dest_port_id = &input_port.port_id;
 
-        let number_of_inputs = ports.inputs.len();
+            // find component with correct source id
+            let source_component = cs
+                .store
+                .iter()
+                .filter(|comp| comp.get_id_ports().0 == source_port.id) // compare id
+                .next()
+                .unwrap();
 
-        for n in 0..number_of_inputs {
-            println!("{:?}", ports.inputs[n].input.id);
-            println!("{:?}", ports);
-
-            let id_tmp = format!("{id}_w{n}");
-            //let pos_temp = vec![];
-            let input = ports.inputs[n].input.clone();
-
-            let starting_pos = c.get_pos();
-
-            let mut destination_pos = (starting_pos.0 - 50.0, starting_pos.1);
-
-            let default_input = Input::new(&format!("c{n}"), "out");
-            let mut w = Wire::rc_new(&id_tmp, vec![starting_pos, destination_pos], default_input);
-
-            for d in &cs.store {
-                let (id2, ports2) = d.get_id_ports();
-                let input = Input::new(&id2, "out");
-                if id2 == ports.inputs[n].input.id {
-                    destination_pos = d.get_pos();
-                    w = Wire::rc_new(&id_tmp, vec![starting_pos, destination_pos], input.clone());
-                }
-            }
-            tmp_vec.push(w);
-
-            //TODO: get pos and set to destination, look through list of components a second time, then add that as starting pos.
-
-            //println!("{}", id_tmp);
-            //let w = Wire::rc_new("w{}", pos, input)
+            // create wire with correct source destination and positions
+            let s_id = &source_port.id;
+            let s_field = &source_port.field;
+            let d_id = &dest_comp_id;
+            let d_field = &dest_port_id;
+            wires.push(Wire::rc_new(
+                &format!("from_{}:{}_to_{}:{}", s_id, s_field, d_id, d_field),
+                vec![source_component.get_pos(), destination_component.get_pos()],
+                source_port.clone(),
+            ))
         }
-
-        //cs_copy.store.push("wow");
-
-        // Wire::rc_new(
-        //     "w4",
-        //     vec![(220.0, 120.0), (260.0, 120.0)],
-        //     Input::new("full_adder", FULL_ADD_OUT_ID),
-        // ),
-
-        // Ports {
-        //     inputs: [
-        //         InputPort {
-        //             port_id: "full_add_a_in",
-        //             input: Input {
-        //                 id: "c1",
-        //                 field: "out",
-        //             },
-        //         },
-        //         InputPort {
-        //             port_id: "full_add_b_in",
-        //             input: Input {
-        //                 id: "c2",
-        //                 field: "out",
-        //             },
-        //         },
-        //         InputPort {
-        //             port_id: "full_add_op_in",
-        //             input: Input {
-        //                 id: "c3",
-        //                 field: "out",
-        //             },
-        //         },
-        //     ],
-
-        //     out_type: Combinatorial,
-        //     outputs: ["out"],
-        // }
     }
-    cs.store.append(&mut tmp_vec);
-
+    cs.store.append(&mut wires);
     return cs;
 }
