@@ -18,5 +18,6 @@ mod probe_out;
 mod probe_stim;
 mod register;
 mod sext;
+mod shift_left_const;
 mod sz_extend;
 mod wire;

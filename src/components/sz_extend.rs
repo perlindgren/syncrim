@@ -46,7 +46,8 @@ impl Component for SignZeroExtend {
                     &InputPort {
                         port_id: SIGNZEROEXTEND_SIGNAL_IN_ID.to_string(),
                         input: self.signzero_signal_in.clone(),
-                    } & InputPort {
+                    },
+                    &InputPort {
                         port_id: SIGNZEROEXTEND_CTRL_IN_ID.to_string(),
                         input: self.signzero_ctrl_in.clone(),
                     },
