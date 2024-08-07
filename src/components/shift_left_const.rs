@@ -4,34 +4,37 @@ use crate::common::EguiComponent;
 use crate::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
+use crate::signal;
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::rc::Rc;
 
-pub const CLK_IN_ID: &str = "clk_in";
+pub const SHIFT_SIGNAL_IN_ID: &str = "shift_in";
 
-pub const CLK_OUT_ID: &str = "out";
+pub const SHIFT_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct MIPSCLK {
+pub struct ShiftConst {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
-    pub(crate) clk_in: Input,
+    pub(crate) signal_in: Input,
+    shift_by: u32,
 }
 
 #[typetag::serde]
-impl Component for MIPSCLK {
+impl Component for ShiftConst {
     fn to_(&self) {
-        trace!("pc+4");
+        trace!("shift");
     }
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, _id: &str, _pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy_input = Input::new("dummy", "out");
-        Box::new(Rc::new(MIPSCLK {
+        Box::new(Rc::new(ShiftConst {
             id: "dummy".to_string(),
             pos: (0.0, 0.0),
-            clk_in: dummy_input.clone(),
+            signal_in: dummy_input.clone(),
+            shift_by: 0,
         }))
     }
     fn get_id_ports(&self) -> (Id, Ports) {
@@ -39,18 +42,18 @@ impl Component for MIPSCLK {
             self.id.clone(),
             Ports::new(
                 vec![&InputPort {
-                    port_id: CLK_IN_ID.to_string(),
-                    input: self.clk_in.clone(),
+                    port_id: SHIFT_SIGNAL_IN_ID.to_string(),
+                    input: self.signal_in.clone(),
                 }],
                 OutputType::Combinatorial,
-                vec![CLK_OUT_ID],
+                vec![SHIFT_OUT_ID],
             ),
         )
     }
 
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
-            CLK_IN_ID => self.clk_in = new_input,
+            SHIFT_SIGNAL_IN_ID => self.signal_in = new_input,
             _ => {}
         }
     }
@@ -59,13 +62,13 @@ impl Component for MIPSCLK {
     // TODO: always extend to Signal size? (it should not matter and should be slightly cheaper)
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input values
-        let start_time: u32 = simulator.get_input_value(&self.clk_in).try_into().unwrap();
+        let signal_in: u32 = simulator
+            .get_input_value(&self.signal_in)
+            .try_into()
+            .unwrap();
 
-        simulator.set_out_value(
-            &self.id,
-            CLK_OUT_ID,
-            SignalValue::Data(start_time.wrapping_add(4)),
-        );
+        let output: u32 = signal_in << self.shift_by;
+        simulator.set_out_value(&self.id, SHIFT_OUT_ID, SignalValue::Data(output));
         Ok(())
     }
 
@@ -74,16 +77,17 @@ impl Component for MIPSCLK {
     }
 }
 
-impl MIPSCLK {
-    pub fn new(id: &str, pos: (f32, f32), clk_in: Input) -> Self {
-        MIPSCLK {
+impl ShiftConst {
+    pub fn new(id: &str, pos: (f32, f32), signal_in: Input, shift_by: u32) -> Self {
+        ShiftConst {
             id: id.to_string(),
             pos,
-            clk_in,
+            signal_in,
+            shift_by,
         }
     }
 
-    pub fn rc_new(id: &str, pos: (f32, f32), clk_in: Input) -> Rc<Self> {
-        Rc::new(MIPSCLK::new(id, pos, clk_in))
+    pub fn rc_new(id: &str, pos: (f32, f32), signal_in: Input, shift_by: u32) -> Rc<Self> {
+        Rc::new(ShiftConst::new(id, pos, signal_in, shift_by))
     }
 }

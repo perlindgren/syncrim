@@ -7,7 +7,7 @@ use crate::gui_egui::component_ui::{
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
-use egui::{Color32, Pos2, Rect, Response, Shape, Slider, Stroke, Ui, Vec2};
+use egui::{Color32, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for JumpMerge {
@@ -71,7 +71,7 @@ impl EguiComponent for JumpMerge {
                     }
                     format!("{}", s)
                 });
-                ui.label("Merge");
+                ui.label("jump_merge");
             }
         });
         match editor_mode {

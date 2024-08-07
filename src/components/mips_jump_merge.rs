@@ -2,8 +2,7 @@
 #[cfg(feature = "gui-egui")]
 use crate::common::EguiComponent;
 use crate::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
-    SignalValue, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -26,7 +25,7 @@ pub struct JumpMerge {
 #[typetag::serde]
 impl Component for JumpMerge {
     fn to_(&self) {
-        trace!("merge");
+        trace!("jump_merge");
     }
     // #[cfg(feature = "gui-egui")]
     // fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {

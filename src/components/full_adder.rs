@@ -2,8 +2,7 @@
 #[cfg(feature = "gui-egui")]
 use crate::common::EguiComponent;
 use crate::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
-    SignalValue, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -47,7 +46,7 @@ impl Component for FullAdd {
         trace!("full_adder");
     }
     #[cfg(feature = "gui-egui")]
-    fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
+    fn dummy(&self, _id: &str, _pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy_input = Input::new("dummy", "out");
         Box::new(Rc::new(FullAdd {
             id: "dummy".to_string(),
@@ -112,13 +111,13 @@ impl Component for FullAdd {
                 return Err(Condition::Error("SUBU not implemented".to_string()));
             }
             alu_op::AND => {
-                output = (a & b);
+                output = a & b;
             }
             alu_op::OR => {
-                output = (a | b);
+                output = a | b;
             }
             alu_op::XOR => {
-                output = (a ^ b);
+                output = a ^ b;
             }
             alu_op::NOR => {
                 output = !(a | b);
@@ -176,7 +175,7 @@ mod test {
     use super::*;
 
     use crate::{
-        common::{ComponentStore, Input, SignalUnsigned, Simulator},
+        common::{ComponentStore, Input, Simulator},
         components::ProbeOut,
     };
     use std::rc::Rc;
@@ -223,7 +222,7 @@ mod test {
         );
 
         println!("<setup for clock 3>");
-        simulator.set_out_value("a", "out", (-100i32 as u32));
+        simulator.set_out_value("a", "out", -100i32 as u32);
         simulator.set_out_value("b", "out", 1337);
         simulator.set_out_value("op", "out", alu_op::ADD);
         println!("sim_state {:?}", simulator.sim_state);
@@ -237,7 +236,7 @@ mod test {
         );
 
         println!("<setup for clock 4>");
-        simulator.set_out_value("a", "out", (-100i32 as u32));
+        simulator.set_out_value("a", "out", -100i32 as u32);
         simulator.set_out_value("b", "out", 1337);
         simulator.set_out_value("op", "out", alu_op::SUB);
         println!("sim_state {:?}", simulator.sim_state);
@@ -251,7 +250,7 @@ mod test {
         );
 
         println!("<setup for clock 5>");
-        simulator.set_out_value("a", "out", (-100i32 as u32));
+        simulator.set_out_value("a", "out", -100i32 as u32);
         simulator.set_out_value("b", "out", 1337);
         simulator.set_out_value("op", "out", alu_op::SLT);
         println!("sim_state {:?}", simulator.sim_state);
@@ -265,7 +264,7 @@ mod test {
         );
 
         println!("<setup for clock 5>");
-        simulator.set_out_value("a", "out", (-100i32 as u32));
+        simulator.set_out_value("a", "out", -100i32 as u32);
         simulator.set_out_value("b", "out", 1337);
         simulator.set_out_value("op", "out", alu_op::SLTU);
         println!("sim_state {:?}", simulator.sim_state);
