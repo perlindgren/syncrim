@@ -12,7 +12,8 @@ use std::rc::Rc;
 pub const FULL_ADD_A_IN_ID: &str = "full_add_a_in";
 pub const FULL_ADD_B_IN_ID: &str = "full_add_b_in";
 pub const FULL_ADD_OP_IN_ID: &str = "full_add_op_in";
-pub const FULL_ADD_OUT_ID: &str = "out";
+pub const FULL_ADD_OUT_ID: &str = "alu_out";
+pub const FULL_ADD_OVERFLOW_OUT_ID: &str = "alu_overflow_out";
 
 pub mod alu_op {
     pub const ADD: u32 = 0;
@@ -75,7 +76,7 @@ impl Component for FullAdd {
                     },
                 ],
                 OutputType::Combinatorial,
-                vec![FULL_ADD_OUT_ID],
+                vec![FULL_ADD_OUT_ID, FULL_ADD_OVERFLOW_OUT_ID],
             ),
         )
     }
@@ -96,19 +97,42 @@ impl Component for FullAdd {
         let op: u32 = simulator.get_input_value(&self.op_in).try_into().unwrap();
 
         let output: u32;
+        let overflow: u32;
 
         match op {
             alu_op::ADD => {
-                output = a.wrapping_add(b);
+                // output = a.wrapping_add(b);
+
+                let tmp = (a as i32).checked_add(b as i32);
+                overflow = match tmp {
+                    Some(val) => {
+                        output = val as u32;
+                        0
+                    }
+                    None => {
+                        output = a.wrapping_add(b);
+                        1
+                    }
+                };
             }
             alu_op::ADDU => {
-                return Err(Condition::Error("ADDU not implemented".to_string()));
+                output = a.wrapping_add(b);
             }
             alu_op::SUB => {
-                output = a.wrapping_add(b ^ 0xffffffff).wrapping_add(1);
+                let tmp = (a as i32).checked_sub(b);
+                overflow = match tmp {
+                    Some(val) => {
+                        output = val as u32;
+                        0
+                    }
+                    None => {
+                        output = a.wrapping_sub(b);
+                        1
+                    }
+                }
             }
             alu_op::SUBU => {
-                return Err(Condition::Error("SUBU not implemented".to_string()));
+                output = a.wrapping_sub(b);
             }
             alu_op::AND => {
                 output = a & b;
@@ -147,6 +171,11 @@ impl Component for FullAdd {
             }
         }
         simulator.set_out_value(&self.id, FULL_ADD_OUT_ID, SignalValue::Data(output));
+        simulator.set_out_value(
+            &self.id,
+            FULL_ADD_OVERFLOW_OUT_ID,
+            SignalValue::Data(overflow),
+        );
         Ok(())
     }
 
