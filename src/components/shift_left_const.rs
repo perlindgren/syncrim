@@ -19,7 +19,7 @@ pub struct ShiftConst {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
     pub(crate) signal_in: Input,
-    shift_by: u32,
+    pub shift_by: u32,
 }
 
 #[typetag::serde]

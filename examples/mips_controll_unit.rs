@@ -6,6 +6,7 @@ use std::{
 use syncrim::common::EguiComponent;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
+use syncrim::mips_helper_functions::autowire;
 use syncrim::{
     common::{ComponentStore, Input},
     component_store,

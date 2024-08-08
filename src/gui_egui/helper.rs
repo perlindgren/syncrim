@@ -1,7 +1,8 @@
-use crate::common::{Components, Ports};
+use crate::common::{Components, EguiComponent, Input, Ports, SignalValue, Simulator};
 use crate::gui_egui::editor::{EditorMode, SnapPriority};
 use egui::{
-    Align2, Area, Color32, Context, InnerResponse, Order, Pos2, Rect, RichText, Sense, Ui, Vec2,
+    Align2, Area, Color32, Context, InnerResponse, Order, Pos2, Rect, Response, RichText, Sense,
+    Ui, Vec2,
 };
 use epaint::Shadow;
 
@@ -134,4 +135,131 @@ pub fn component_area<R>(
         .pivot(Align2::CENTER_CENTER)
         .constrain(false)
         .show(ctx, content)
+}
+
+/// This renders a basic component
+/// Use Content to add label or other graphical info
+/// and if desired implement a custom on hover function.
+/// The default hover function displays component id and  in/out signals formatet as hex
+///
+/// # Arguments
+/// - content: Note the function don't size the components,
+/// that is the responsibility of the content closure
+/// - on_hover: if this is some this overides the on hover function and displays that instead
+///
+/// # Example
+/// This renders a box with the size of 100 by 20, this is scaled with the passed scaled.
+/// It is also moved according to the offset argument.
+///
+/// In the box the label "Jump Merge" is displayed.
+///
+/// And an possible default on hover label might be
+///
+/// id: jump_merge
+///
+/// merge_instr_addr_in <- reg:out (0x00000000)
+///
+/// merge_jump_addr_in <- c1:out (0x00000000)
+///
+/// out-> 0x00000000
+///  
+/// ```
+/// impl EguiComponent for JumpMerge {
+///     fn render(
+///         &self,
+///         ui: &mut Ui,
+///         _context: &mut EguiExtra,
+///         simulator: Option<&mut Simulator>,
+///         offset: Vec2,
+///         scale: f32,
+///         _clip_rect: Rect,
+///         _editor_mode: EditorMode,
+///     ) -> Option<Vec<Response>> {
+///         // size of the component
+///         let width = 100f32;
+///         let height: f32 = 20f32;
+///         basic_component_gui(
+///             self,
+///             &simulator,
+///             ui.ctx(),
+///             (width, height),
+///             offset,
+///             scale,
+///             |ui| {
+///                 ui.label(RichText::new("Jump Merge").size(12f32 * scale));
+///             },
+///             // This is a hack to stop the compiler from complaining
+///             // will hopefully be optimized away
+///             None::<Box<dyn FnOnce(&mut Ui)>>,
+///         )
+///     }
+/// }
+/// ```
+pub fn basic_component_gui(
+    component: &dyn EguiComponent,
+    simulator: &Option<&mut Simulator>,
+    ctx: &Context,
+    size: impl Into<Vec2>,
+    offset: impl Into<Vec2>,
+    scale: f32,
+    content: impl FnOnce(&mut Ui),
+    on_hover: Option<impl FnOnce(&mut Ui)>,
+) -> Option<Vec<Response>> {
+    let size: Vec2 = size.into();
+    let offset: Vec2 = offset.into();
+
+    let r = component_area(
+        component.get_id_ports().0,
+        ctx,
+        Pos2::from(component.get_pos()) * scale + offset,
+        |ui| {
+            ui.group(|ui| {
+                ui.set_height(size.y * scale);
+                ui.set_width(size.x * scale);
+                ui.centered_and_justified(content);
+            })
+            .response
+        },
+    )
+    .inner;
+
+    r.clone().on_hover_ui(|ui| match on_hover {
+        Some(hover_content) => hover_content(ui),
+        None => {
+            ui.label(format!("id: {}", component.get_id_ports().0));
+            if let Some(sim) = simulator {
+                ui.separator();
+                for port in component.get_id_ports().1.inputs {
+                    ui.label(format!(
+                        "{} <- {}:{} ({})",
+                        port.port_id,
+                        port.input.id,
+                        port.input.field,
+                        match sim.get_input_value(&port.input) {
+                            SignalValue::Uninitialized => "Uninitialized".to_string(),
+                            SignalValue::Unknown => "Unknown".to_string(),
+                            SignalValue::DontCare => "don't care".to_string(),
+                            SignalValue::Data(v) => format!("{:#010x}", v),
+                        },
+                    ));
+                }
+                ui.separator();
+                for port_id in component.get_id_ports().1.outputs {
+                    ui.label(format!(
+                        "{} -> {}",
+                        port_id,
+                        match sim
+                            .get_input_value(&Input::new(&component.get_id_ports().0, &port_id))
+                        {
+                            SignalValue::Uninitialized => "Uninitialized".to_string(),
+                            SignalValue::Unknown => "Unknown".to_string(),
+                            SignalValue::DontCare => "Don't care".to_string(),
+                            SignalValue::Data(v) => format!("{:#010x}", v),
+                        },
+                    ));
+                }
+            };
+        }
+    });
+    Some(vec![r])
 }
