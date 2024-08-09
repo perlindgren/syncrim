@@ -3,7 +3,6 @@ use crate::components::SignZeroExtend;
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::basic_component_gui;
-use crate::simulator;
 use egui::{Rect, Response, RichText, Ui, Vec2};
 
 #[typetag::serde]
@@ -15,12 +14,12 @@ impl EguiComponent for SignZeroExtend {
         simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
-        _clip_rect: Rect,
+        clip_rect: Rect,
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
         // size of the component
         let width = 100f32;
-        let height: f32 = 0f32;
+        let height: f32 = 12f32;
         basic_component_gui(
             self,
             &simulator,
@@ -28,6 +27,7 @@ impl EguiComponent for SignZeroExtend {
             (width, height),
             offset,
             scale,
+            clip_rect,
             |ui| {
                 match &simulator {
                     Some(sim) => {

@@ -14,7 +14,7 @@ impl EguiComponent for And {
         simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
-        _clip_rect: Rect,
+        clip_rect: Rect,
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
         // size of the component
@@ -27,8 +27,11 @@ impl EguiComponent for And {
             (width, height),
             offset,
             scale,
+            clip_rect,
             |ui| {
-                ui.label(RichText::new("And").size(12f32 * scale));
+                ui.centered_and_justified(|ui| {
+                    ui.label(RichText::new("And").size(12f32 * scale));
+                });
             },
             // This is a hack to stop the compiler from complaining
             // will hopefully be optimized away

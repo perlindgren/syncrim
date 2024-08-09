@@ -14,12 +14,12 @@ impl EguiComponent for ShiftConst {
         simulator: Option<&mut Simulator>,
         offset: Vec2,
         scale: f32,
-        _clip_rect: Rect,
+        clip_rect: Rect,
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
         // size of the component
         let width = 100f32;
-        let height: f32 = 0f32;
+        let height: f32 = 12f32;
         basic_component_gui(
             self,
             &simulator,
@@ -27,8 +27,13 @@ impl EguiComponent for ShiftConst {
             (width, height),
             offset,
             scale,
+            clip_rect,
             |ui| {
-                ui.label(RichText::new(format!("Shift << {}", self.shift_by)).size(12f32 * scale));
+                ui.centered_and_justified(|ui| {
+                    ui.label(
+                        RichText::new(format!("Shift << {}", self.shift_by)).size(12f32 * scale),
+                    );
+                });
             },
             // This is a hack to stop the compiler from complaining
             // will hopefully be optimized away
