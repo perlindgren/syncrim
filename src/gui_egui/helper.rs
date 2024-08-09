@@ -202,23 +202,36 @@ pub fn basic_component_gui(
     size: impl Into<Vec2>,
     offset: impl Into<Vec2>,
     scale: f32,
+    clip_rect: Rect,
     content: impl FnOnce(&mut Ui),
     on_hover: Option<impl FnOnce(&mut Ui)>,
 ) -> Option<Vec<Response>> {
     let size: Vec2 = size.into();
     let offset: Vec2 = offset.into();
 
+    let component_rect = Rect::from_center_size(
+        Pos2::from(component.get_pos()) * scale + offset,
+        size * scale,
+    );
+
     let r = component_area(
         component.get_id_ports().0,
         ctx,
-        Pos2::from(component.get_pos()) * scale + offset,
+        component_rect.center(),
         |ui| {
-            ui.group(|ui| {
-                ui.set_height(size.y * scale);
-                ui.set_width(size.x * scale);
-                ui.centered_and_justified(content);
-            })
-            .response
+            ui.set_clip_rect(clip_rect);
+            let mut group = egui::containers::Frame::group(ui.style());
+            group.inner_margin *= scale;
+            group.rounding *= scale;
+            // group.fill = Color32::LIGHT_RED; // Use this ween component background is implemented, probably when we implement dark mode
+            group
+                .show(ui, |ui| {
+                    ui.set_height(component_rect.height());
+                    ui.set_width(component_rect.width());
+                    ui.set_clip_rect(component_rect.intersect(clip_rect));
+                    content(ui);
+                })
+                .response
         },
     )
     .inner;
