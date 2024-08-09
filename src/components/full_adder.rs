@@ -97,7 +97,7 @@ impl Component for FullAdd {
         let op: u32 = simulator.get_input_value(&self.op_in).try_into().unwrap();
 
         let output: u32;
-        let overflow: u32;
+        let mut overflow: u32 = 0;
 
         match op {
             alu_op::ADD => {
@@ -119,7 +119,7 @@ impl Component for FullAdd {
                 output = a.wrapping_add(b);
             }
             alu_op::SUB => {
-                let tmp = (a as i32).checked_sub(b);
+                let tmp = (a as i32).checked_sub(b as i32);
                 overflow = match tmp {
                     Some(val) => {
                         output = val as u32;
