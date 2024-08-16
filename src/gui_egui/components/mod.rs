@@ -3,6 +3,7 @@ mod and;
 mod clk;
 mod constant;
 mod cross;
+mod equal;
 mod full_adder;
 mod mem;
 mod mips_branch_logic;
