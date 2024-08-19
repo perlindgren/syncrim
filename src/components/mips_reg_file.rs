@@ -204,6 +204,8 @@ impl RegFile {
         write_data_in: Input,
         write_enable_in: Input,
     ) -> Self {
+        let mut arr: [u32; 32] = [0; 32];
+        arr[29] = 0x8000_0000;
         RegFile {
             id: id.to_string(),
             pos,
@@ -212,7 +214,7 @@ impl RegFile {
             write_address_in,
             write_data_in,
             write_enable_in,
-            registers: RefCell::new([0; 32]), // create 32 zeros
+            registers: RefCell::new(arr), // create 32 zeros, wit 29(stack pointer) at 0x8000_0000
             history: RefCell::new(vec![]),
             show_reg_names: RefCell::default(),
             reg_format: RefCell::default(),
@@ -237,5 +239,9 @@ impl RegFile {
             write_data_in,
             write_enable_in,
         ))
+    }
+
+    pub fn get_registers(&self, i: usize) -> u32 {
+        self.registers.borrow()[i]
     }
 }
