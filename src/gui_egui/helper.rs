@@ -2,7 +2,7 @@ use crate::common::{Components, EguiComponent, Input, Ports, SignalValue, Simula
 use crate::gui_egui::editor::{EditorMode, SnapPriority};
 use egui::{
     Align2, Area, Color32, Context, InnerResponse, Order, Pos2, Rect, Response, RichText, Sense,
-    Ui, Vec2,
+    TextWrapMode, Ui, Vec2,
 };
 use epaint::Shadow;
 
@@ -143,6 +143,7 @@ pub fn component_area<R>(
 /// The default hover function displays component id and  in/out signals formatet as hex
 ///
 /// # Arguments
+/// - size: if size is (0f32,0f32) the component will be as large as its content
 /// - content: Note the function don't size the components,
 /// that is the responsibility of the content closure
 /// - on_hover: if this is some this overides the on hover function and displays that instead
@@ -188,14 +189,14 @@ pub fn component_area<R>(
 ///             |ui| {
 ///                 ui.label(RichText::new("Jump Merge").size(12f32 * scale));
 ///             },
-///             // This is a hack to stop the compiler from complaining
-///             // will hopefully be optimized away
-///             None::<Box<dyn FnOnce(&mut Ui)>>,
+///             |ui| {
+///                 ui.label("i am hovered")
+///             },
 ///         )
 ///     }
 /// }
 /// ```
-pub fn basic_component_gui(
+pub fn basic_component_gui_with_on_hover(
     component: &dyn EguiComponent,
     simulator: &Option<&mut Simulator>,
     ctx: &Context,
@@ -204,7 +205,7 @@ pub fn basic_component_gui(
     scale: f32,
     clip_rect: Rect,
     content: impl FnOnce(&mut Ui),
-    on_hover: Option<impl FnOnce(&mut Ui)>,
+    on_hover: impl FnOnce(&mut Ui),
 ) -> Option<Vec<Response>> {
     let size: Vec2 = size.into();
     let offset: Vec2 = offset.into();
@@ -226,9 +227,12 @@ pub fn basic_component_gui(
             // group.fill = Color32::LIGHT_RED; // Use this ween component background is implemented, probably when we implement dark mode
             group
                 .show(ui, |ui| {
+                    ui.style_mut().wrap_mode = Some(TextWrapMode::Extend);
                     ui.set_height(component_rect.height());
                     ui.set_width(component_rect.width());
-                    ui.set_clip_rect(component_rect.intersect(clip_rect));
+                    if size != (0f32, 0f32).into() {
+                        ui.set_clip_rect(component_rect.intersect(clip_rect));
+                    }
                     content(ui);
                 })
                 .response
@@ -236,43 +240,71 @@ pub fn basic_component_gui(
     )
     .inner;
 
-    r.clone().on_hover_ui(|ui| match on_hover {
-        Some(hover_content) => hover_content(ui),
-        None => {
-            ui.label(format!("id: {}", component.get_id_ports().0));
-            if let Some(sim) = simulator {
-                ui.separator();
-                for port in component.get_id_ports().1.inputs {
-                    ui.label(format!(
-                        "{} <- {}:{} ({})",
-                        port.port_id,
-                        port.input.id,
-                        port.input.field,
-                        match sim.get_input_value(&port.input) {
-                            SignalValue::Uninitialized => "Uninitialized".to_string(),
-                            SignalValue::Unknown => "Unknown".to_string(),
-                            SignalValue::DontCare => "don't care".to_string(),
-                            SignalValue::Data(v) => format!("{:#010x}", v),
-                        },
-                    ));
-                }
-                ui.separator();
-                for port_id in component.get_id_ports().1.outputs {
-                    ui.label(format!(
-                        "{} -> {}",
-                        port_id,
-                        match sim
-                            .get_input_value(&Input::new(&component.get_id_ports().0, &port_id))
-                        {
-                            SignalValue::Uninitialized => "Uninitialized".to_string(),
-                            SignalValue::Unknown => "Unknown".to_string(),
-                            SignalValue::DontCare => "Don't care".to_string(),
-                            SignalValue::Data(v) => format!("{:#010x}", v),
-                        },
-                    ));
-                }
-            };
-        }
-    });
+    r.clone().on_hover_ui(on_hover);
     Some(vec![r])
+}
+
+pub fn basic_component_gui(
+    component: &dyn EguiComponent,
+    simulator: &Option<&mut Simulator>,
+    ctx: &Context,
+    size: impl Into<Vec2>,
+    offset: impl Into<Vec2>,
+    scale: f32,
+    clip_rect: Rect,
+    content: impl FnOnce(&mut Ui),
+) -> Option<Vec<Response>> {
+    basic_component_gui_with_on_hover(
+        component,
+        simulator,
+        ctx,
+        size,
+        offset,
+        scale,
+        clip_rect,
+        content,
+        |ui| basic_on_hover(ui, component, simulator),
+    )
+}
+
+/// example
+/// r.on_hover(|ui| {
+///     basic_on_hover(ui,self,simulator)
+/// })
+pub fn basic_on_hover(
+    ui: &mut Ui,
+    component: &dyn EguiComponent,
+    simulator: &Option<&mut Simulator>,
+) {
+    ui.label(format!("id: {}", component.get_id_ports().0));
+    if let Some(sim) = simulator {
+        ui.separator();
+        for port in component.get_id_ports().1.inputs {
+            ui.label(format!(
+                "{} <- {}:{} ({})",
+                port.port_id,
+                port.input.id,
+                port.input.field,
+                match sim.get_input_value(&port.input) {
+                    SignalValue::Uninitialized => "Uninitialized".to_string(),
+                    SignalValue::Unknown => "Unknown".to_string(),
+                    SignalValue::DontCare => "don't care".to_string(),
+                    SignalValue::Data(v) => format!("{:#010x}", v),
+                },
+            ));
+        }
+        ui.separator();
+        for port_id in component.get_id_ports().1.outputs {
+            ui.label(format!(
+                "{} -> {}",
+                port_id,
+                match sim.get_input_value(&Input::new(&component.get_id_ports().0, &port_id)) {
+                    SignalValue::Uninitialized => "Uninitialized".to_string(),
+                    SignalValue::Unknown => "Unknown".to_string(),
+                    SignalValue::DontCare => "Don't care".to_string(),
+                    SignalValue::Data(v) => format!("{:#010x}", v),
+                },
+            ));
+        }
+    };
 }

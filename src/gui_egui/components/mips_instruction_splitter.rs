@@ -33,9 +33,6 @@ impl EguiComponent for InstrSplit {
                     ui.label(RichText::new("instruction\nspliter").size(12f32 * scale));
                 });
             },
-            // This is a hack to stop the compiler from complaining
-            // will hopefully be optimized away
-            None::<Box<dyn FnOnce(&mut Ui)>>,
         )
     }
 

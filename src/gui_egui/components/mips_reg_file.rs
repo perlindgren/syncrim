@@ -98,9 +98,6 @@ impl EguiComponent for RegFile {
                     ui.label(RichText::new(str).size(12f32 * scale).monospace())
                 });
             },
-            // compiler hack to allow None
-            // will hopefully be optimized away
-            None::<Box<dyn FnOnce(&mut Ui)>>,
         )
     }
 

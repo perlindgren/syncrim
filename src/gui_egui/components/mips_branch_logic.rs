@@ -17,14 +17,11 @@ impl EguiComponent for BranchLogic {
         clip_rect: Rect,
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
-        // size of the component
-        let width = 100f32;
-        let height: f32 = 12f32;
         basic_component_gui(
             self,
             &simulator,
             ui.ctx(),
-            (width, height),
+            (0f32, 0f32),
             offset,
             scale,
             clip_rect,
@@ -33,9 +30,6 @@ impl EguiComponent for BranchLogic {
                     ui.label(RichText::new("Branch Logic").size(12f32 * scale));
                 });
             },
-            // This is a hack to stop the compiler from complaining
-            // will hopefully be optimized away
-            None::<Box<dyn FnOnce(&mut Ui)>>,
         )
     }
 
