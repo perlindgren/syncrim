@@ -228,9 +228,9 @@ pub fn basic_component_gui_with_on_hover(
             group
                 .show(ui, |ui| {
                     ui.style_mut().wrap_mode = Some(TextWrapMode::Extend);
-                    ui.set_height(component_rect.height());
-                    ui.set_width(component_rect.width());
                     if size != (0f32, 0f32).into() {
+                        ui.set_height(component_rect.height());
+                        ui.set_width(component_rect.width());
                         ui.set_clip_rect(component_rect.intersect(clip_rect));
                     }
                     content(ui);
