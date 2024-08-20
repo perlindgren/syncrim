@@ -186,6 +186,7 @@ impl Component for RegFile {
 
     fn reset(&self) {
         *self.registers.borrow_mut() = [0; 32];
+        self.registers.borrow_mut()[29] = 0x8000_0000;
         *self.history.borrow_mut() = vec![];
     }
 
