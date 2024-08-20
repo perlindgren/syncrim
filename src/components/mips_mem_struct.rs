@@ -1,48 +1,60 @@
 use elf::{endian::AnyEndian, ElfBytes};
-use std::{
-    collections::{BTreeMap, HashMap},
-    fs,
-    path::PathBuf,
-};
+use std::collections::{BTreeMap, HashMap};
 
+use serde::{Deserialize, Serialize};
 /// A men contains two fields. One with the memory mapped data in a BTreeMap<u32,u8>.
 /// And a hashmap with symbols.
-#[derive(Default)]
-pub struct Mem {
+#[derive(Default, Serialize, Deserialize)]
+pub struct MipsMem {
     symbols: HashMap<u32, String>,
+    sections: HashMap<u32, String>,
     data: BTreeMap<u32, u8>,
 }
-pub enum MemGetSize {
+pub enum MemOpSize {
     Byte,
     Half,
     Word,
 }
 
-impl Mem {
+impl MipsMem {
     /// This function constructs a Mem struct using the elf sections to load the data.
     /// This may be un-reliable as the Elf might not always contain the sections,
     /// or contain un-relevant sections and no relevant ones
     /// # TODO fix result error. currently panics
-    pub fn from_sections(elf_bytes: &[u8]) -> Result<Mem, ()> {
-        let mut mem: Mem = Mem {
+    pub fn from_sections(elf_bytes: &[u8]) -> Result<MipsMem, ()> {
+        let mut mem: MipsMem = MipsMem {
             symbols: HashMap::new(),
             data: BTreeMap::new(),
+            sections: HashMap::new(),
         };
 
         let file = ElfBytes::<AnyEndian>::minimal_parse(elf_bytes).unwrap();
-
+        // will crash if three is no str table
+        let sect_head_str_tab = file.section_headers_with_strtab().unwrap();
+        let sections = sect_head_str_tab.0.unwrap();
+        let str_tab = sect_head_str_tab.1.unwrap();
         // for each section in elf
-        for sect in file.section_headers().unwrap() {
-            // if the section has flag alloc(0x2), aka lives in memory
-            // if the section has a size larger than zero
-            if sect.sh_flags & 0x2 == 0x2 && sect.sh_size != 0 {
-                let elf_address = sect.sh_offset; // offset into elf file where data is stored (note inside of elf Segment)
-                let elf_end_address = elf_address + sect.sh_size; // end address of data
+        for sect in sections {
+            // if section is PROG BITS and size is none zero
+            if sect.sh_type == 0x1 && sect.sh_size != 0 {
                 let v_address = sect.sh_addr as u32;
-                let sect_data = &elf_bytes[elf_address as usize..elf_end_address as usize];
-                for (i, byte) in sect_data.into_iter().enumerate() {
-                    mem.data.insert(v_address + i as u32, byte.to_owned());
-                }
+
+                // if the section has flag alloc(0x2), aka lives in memory
+                // if the section has a size larger than zero
+                if sect.sh_flags & 0x2 == 0x2 && sect.sh_size != 0 {
+                    let elf_address = sect.sh_offset; // offset into elf file where data is stored (note inside of elf Segment)
+                    let elf_end_address = elf_address + sect.sh_size; // end address of data
+                    let sect_data = &elf_bytes[elf_address as usize..elf_end_address as usize];
+                    for (i, byte) in sect_data.into_iter().enumerate() {
+                        mem.data.insert(v_address + i as u32, byte.to_owned());
+                    }
+                };
+
+                // add section to section hashmap
+                mem.sections.insert(
+                    v_address,
+                    str_tab.get(sect.sh_name as usize).unwrap().to_string(),
+                );
             }
         }
         mem.get_symbols(&file);
@@ -53,21 +65,21 @@ impl Mem {
     pub fn get_unaligned(
         &self,
         address: u32,
-        size: MemGetSize,
+        size: MemOpSize,
         sign_extend: bool,
         big_endian: bool,
     ) -> u32 {
         let size_int: usize = match size {
-            MemGetSize::Byte => 1,
-            MemGetSize::Half => 2,
-            MemGetSize::Word => 4,
+            MemOpSize::Byte => 1,
+            MemOpSize::Half => 2,
+            MemOpSize::Word => 4,
         };
         let bytes: Vec<u8> = (0..size_int)
             .map(|i| *self.data.get(&(address + i as u32)).unwrap_or(&0))
             .collect();
 
         match size {
-            MemGetSize::Byte => {
+            MemOpSize::Byte => {
                 if sign_extend {
                     // first make byte an i8
                     // then when cast to i32 to sign extends
@@ -77,7 +89,7 @@ impl Mem {
                     bytes[0] as u32
                 }
             }
-            MemGetSize::Half => {
+            MemOpSize::Half => {
                 if sign_extend {
                     let int_16 = if big_endian {
                         i16::from_be_bytes(bytes.try_into().unwrap())
@@ -95,7 +107,7 @@ impl Mem {
                     uint_16 as u32
                 }
             }
-            MemGetSize::Word => {
+            MemOpSize::Word => {
                 if sign_extend {
                     let int_32 = if big_endian {
                         i32::from_be_bytes(bytes.try_into().unwrap())
@@ -118,14 +130,14 @@ impl Mem {
     pub fn get(
         &self,
         address: u32,
-        size: MemGetSize,
+        size: MemOpSize,
         sign_extend: bool,
         big_endian: bool,
     ) -> Result<u32, ()> {
         let size_int: u32 = match size {
-            MemGetSize::Byte => 1,
-            MemGetSize::Half => 2,
-            MemGetSize::Word => 4,
+            MemOpSize::Byte => 1,
+            MemOpSize::Half => 2,
+            MemOpSize::Word => 4,
         };
         if address % size_int != 0 {
             Err(())
@@ -134,33 +146,13 @@ impl Mem {
         }
     }
 
-    /// Gets the elf symbol table, and set the self hashmap
-    fn get_symbols(&mut self, elf_file: &ElfBytes<AnyEndian>) {
-        match elf_file.symbol_table().unwrap() {
-            Some((sym_table, string_table)) => {
-                let mut sym_hash_map: HashMap<u32, String> = HashMap::new();
-
-                // for each symbol entry
-                for sym_entry in sym_table {
-                    let sym_name = string_table.get(sym_entry.st_name as usize).unwrap();
-
-                    // if the symboltype is NOTYPE and has a string add it
-                    if sym_entry.st_symtype() == 0x0 && sym_name != "" {
-                        sym_hash_map.insert(sym_entry.st_value as u32, sym_name.to_string());
-                    }
-                }
-                self.symbols = sym_hash_map
-            }
-            None => (),
-        }
-    }
     /// Will truncate the data to the given size and write the data to memory
-    pub fn write(&mut self, address: u32, data: u32, size: MemGetSize, big_endian: bool) {
+    pub fn write(&mut self, address: u32, data: u32, size: MemOpSize, big_endian: bool) {
         match size {
-            MemGetSize::Byte => {
+            MemOpSize::Byte => {
                 self.data.insert(address, data as u8);
             }
-            MemGetSize::Half => {
+            MemOpSize::Half => {
                 let uint_16 = data as u16;
                 let bytes = if big_endian {
                     uint_16.to_be_bytes()
@@ -170,7 +162,7 @@ impl Mem {
                 self.data.insert(address, bytes[0]);
                 self.data.insert(address + 1, bytes[1]);
             }
-            MemGetSize::Word => {
+            MemOpSize::Word => {
                 let bytes = if big_endian {
                     data.to_be_bytes()
                 } else {
@@ -188,13 +180,13 @@ impl Mem {
         &mut self,
         address: u32,
         data: u32,
-        size: MemGetSize,
+        size: MemOpSize,
         big_endian: bool,
     ) -> Result<(), ()> {
         let size_int: u32 = match size {
-            MemGetSize::Byte => 1,
-            MemGetSize::Half => 2,
-            MemGetSize::Word => 4,
+            MemOpSize::Byte => 1,
+            MemOpSize::Half => 2,
+            MemOpSize::Word => 4,
         };
         if address % size_int != 0 {
             Err(())
@@ -202,5 +194,35 @@ impl Mem {
             self.write(address, data, size, big_endian);
             Ok(())
         }
+    }
+
+    /// Gets the elf symbol table, and set the self hashmap
+    fn get_symbols(&mut self, elf_file: &ElfBytes<AnyEndian>) {
+        match elf_file.symbol_table().unwrap() {
+            Some((sym_table, string_table)) => {
+                let mut sym_hash_map: HashMap<u32, String> = HashMap::new();
+                let mut _hash_map: HashMap<u32, String> = HashMap::new();
+
+                // for each symbol entry
+                for sym_entry in sym_table {
+                    let sym_name = string_table.get(sym_entry.st_name as usize).unwrap();
+
+                    // if the symboltype is NOTYPE, bind is LOCAL and has a string add it
+                    if sym_entry.st_symtype() == 0x0 && sym_entry.st_bind() == 0x0 && sym_name != ""
+                    {
+                        sym_hash_map.insert(sym_entry.st_value as u32, sym_name.to_string());
+                    }
+                }
+                self.symbols = sym_hash_map
+            }
+            None => (),
+        }
+    }
+
+    pub fn get_symbol_table(&self) -> HashMap<u32, String> {
+        self.symbols.clone()
+    }
+    pub fn get_section_table(&self) -> HashMap<u32, String> {
+        self.sections.clone()
     }
 }
