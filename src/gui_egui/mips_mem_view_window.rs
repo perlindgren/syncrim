@@ -202,7 +202,7 @@ impl MemViewWindow {
                 },
             ) {
             Some(adrs) => self.go_to_address = GoAddress::Top(*adrs),
-            None => self.go_to_address = GoAddress::None,
+            None => self.go_to_address = GoAddress::Top(0x1000),
         };
         self.format = DataFormat::ByteAndUtf8;
         self
