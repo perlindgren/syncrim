@@ -20,7 +20,7 @@ fn main() {
         (3100.0, 2000.0),
         Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
         Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
-        Input::new("mux_write_addr", REGISTER_OUT_ID), //write address
+        Input::new("reg_write_addr", REGISTER_OUT_ID), //write address
         Input::new("result_reg", REGISTER_OUT_ID),     //write data
         Input::new("reg_we", REGISTER_OUT_ID),
     );
@@ -126,7 +126,7 @@ fn main() {
                 Input::new("control_unit", cntr_field::ALU_SRC_A_OUT),
                 vec![
                     Input::new("zero_extend_for_chamt", SIGNZEROEXTEND_OUT_ID),
-                    Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
+                    Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID), //FIXME should be rs? changed from rt
                     Input::new("0_a_inp", "out"),
                 ],
             ),
@@ -137,7 +137,7 @@ fn main() {
                 (3800.0, 2200.0),
                 Input::new("control_unit", cntr_field::ALU_SRC_B_OUT),
                 vec![
-                    Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID),
+                    Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID), //FIXME should be rt? changed from rs
                     Input::new("pc+4", ADD_OUT_ID),
                     Input::new("signzero_extend", SIGNZEROEXTEND_OUT_ID),
                 ],
@@ -208,8 +208,8 @@ fn main() {
                 Input::new("control_unit", cntr_field::REG_DEST_OUT),
                 vec![
                     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
-                    Input::new("0x_1F", "out"),
                     Input::new("instruction_split", INSTRUCTION_SPLITTER_RD_ID),
+                    Input::new("0x_1F", "out"),
                 ],
             ),
             //
