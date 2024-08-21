@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::{any::Any, rc::Rc};
 
 use super::alu_op; // values used in communication to the alu
-
+use super::data_op; // values used in communication with the data memory
 /// The input and output felid ids for the control unit
 pub mod cntr_field {
 
@@ -65,7 +65,7 @@ pub mod cntr_field {
     //TODO
     // NOTE no mem mode, decided to pass opcode to data mem instead,
     // might change when LWL/LWR is implemented along with the load/store controller
-    // pub const MEM_MODE_OUT : &str = "mem_mode";
+    pub const MEM_MODE_OUT: &str = "mem_mode";
 }
 
 const NOP: u32 = 0;
@@ -217,6 +217,7 @@ impl Component for ControlUnit {
                     cntr_field::BRANCH_INTERRUPT_OUT,
                     cntr_field::CP0_OUT,
                     cntr_field::MMU_OUT,
+                    cntr_field::MEM_MODE_OUT,
                 ],
             ),
         )
@@ -326,6 +327,7 @@ impl Component for ControlUnit {
             cntr_field::BRANCH_INTERRUPT_OUT,
             cntr_unit_signals::NO_BRANCH_INTERRUPT
         );
+        set!(cntr_field::MEM_MODE_OUT,);
         //TODO an idea would be to init all variables
         // let alu_src_a : Signal;
         // this would make the compiler force us to populate all paths so to not let any signal be undefined
@@ -635,12 +637,44 @@ impl Component for ControlUnit {
                 )))
             }
             //TODO use mem_mode, now it assumed data_mem uses opcode to determine that itself
-            OP_LB | OP_LBU | OP_LH | OP_LHU | OP_LW => {
+            OP_LB => {
+                set!(cntr_field::MEM_MODE_OUT, data_op::LOAD_BYTE);
+                set_load_instr!();
+                Ok(())
+            }
+            OP_LBU => {
+                set!(cntr_field::MEM_MODE_OUT, data_op::LOAD_BYTE_U);
+                set_load_instr!();
+                Ok(())
+            }
+            OP_LH => {
+                set!(cntr_field::MEM_MODE_OUT, data_op::LOAD_HALF);
+                set_load_instr!();
+                Ok(())
+            }
+            OP_LHU => {
+                set!(cntr_field::MEM_MODE_OUT, data_op::LOAD_HALF_U);
+                set_load_instr!();
+                Ok(())
+            }
+            OP_LW => {
+                set!(cntr_field::MEM_MODE_OUT, data_op::LOAD_WORD);
                 set_load_instr!();
                 Ok(())
             }
 
-            OP_SB | OP_SH | OP_SW => {
+            OP_SB => {
+                set!(cntr_field::MEM_MODE_OUT, data_op::STORE_WORD);
+                set_store_instr!();
+                Ok(())
+            }
+            OP_SH => {
+                set!(cntr_field::MEM_MODE_OUT, data_op::STORE_WORD);
+                set_store_instr!();
+                Ok(())
+            }
+            OP_SW => {
+                set!(cntr_field::MEM_MODE_OUT, data_op::STORE_WORD);
                 set_store_instr!();
                 Ok(())
             }
