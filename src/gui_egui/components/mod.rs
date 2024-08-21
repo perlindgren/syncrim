@@ -8,6 +8,7 @@ mod full_adder;
 mod mem;
 mod mips_branch_logic;
 mod mips_controll_unit;
+mod mips_dm;
 mod mips_im;
 mod mips_instruction_splitter;
 mod mips_jump_merge;

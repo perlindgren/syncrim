@@ -1,6 +1,6 @@
 use std::cell::RefCell;
+use std::path::PathBuf;
 use std::rc::Rc;
-use std::{path::PathBuf, rc};
 use syncrim::common::EguiComponent;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
@@ -51,12 +51,23 @@ fn main() {
                     Rc::clone(&mem),
                 )
                 .set_mem_view_reg(Rc::clone(&reg_file)),
-            ), // InstrMem::rc_new(
-            //     "instr_mem".into(),
-            //     (200.0, 500.0),
-            //     Input::new("pc", "out"),
-            //     Rc::clone(&mem),
-            // ).set_mem_view_reg(reg_rc),
+            ),
+            ProbeEdit::rc_new("data_adrs", (60.0, 660.0)),
+            ProbeEdit::rc_new("data_write_enable", (60.0, 700.0)),
+            ProbeEdit::rc_new("data_mem_op", (60.0, 740.0)),
+            ProbeEdit::rc_new("data_write_data", (60.0, 780.0)),
+            Rc::new(
+                DataMem::new(
+                    "data_mem".into(),
+                    (200.0, 700.0),
+                    Input::new("data_adrs", "out"),
+                    Input::new("data_write_data", "out"),
+                    Input::new("data_mem_op", "out"),
+                    Input::new("data_write_enable", "out"),
+                    Rc::clone(&mem),
+                )
+                .set_mem_view_reg(Rc::clone(&reg_file)),
+            ),
             reg_file,
         ],
     };
