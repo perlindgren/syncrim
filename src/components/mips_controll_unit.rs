@@ -148,7 +148,7 @@ pub mod cntr_unit_signals {
 
     pub const ALU_SRC_A_SHAMT: u32 = 0;
     pub const ALU_SRC_A_RS: u32 = 1;
-    pub const ALU_SRC_A_ZERO: u32 = 3;
+    pub const ALU_SRC_A_ZERO: u32 = 2;
 
     pub const ALU_SRC_B_RT: u32 = 0;
     pub const ALU_SRC_B_PC: u32 = 1;
@@ -327,7 +327,7 @@ impl Component for ControlUnit {
             cntr_field::BRANCH_INTERRUPT_OUT,
             cntr_unit_signals::NO_BRANCH_INTERRUPT
         );
-        set!(cntr_field::MEM_MODE_OUT,);
+        set!(cntr_field::MEM_MODE_OUT, data_op::NO_OP);
         //TODO an idea would be to init all variables
         // let alu_src_a : Signal;
         // this would make the compiler force us to populate all paths so to not let any signal be undefined

@@ -121,7 +121,7 @@ impl Component for InstrMem {
         // sign extend doesn't mater since we have 32 bits so extending to 32bits does nothing
         match self.mem.borrow().get(pc, MemOpSize::Word, false, true) {
             Ok(instr) => {
-                simulator.set_out_value(&self.id, "instruction", instr);
+                simulator.set_out_value(&self.id, INSTR_MEM_INSTRUCTION_ID, instr);
                 // check if pc is at breakpoint
                 match self.mem_view.borrow().is_break_point(&pc) {
                     true => Err(Condition::Halt(format!("Reached breakpoint at {:#0x}", pc))),
