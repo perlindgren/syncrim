@@ -77,7 +77,7 @@ impl Component for JumpMerge {
             .try_into()
             .unwrap();
 
-        let output = (instr_addr & 0xf000_0000) & (jump_addr << 2);
+        let output = (instr_addr & 0xf000_0000) | ((jump_addr << 2) & 0x0fff_ffff);
 
         simulator.set_out_value(&self.id, MERGE_OUT_ID, SignalValue::Data(output));
         Ok(())

@@ -664,12 +664,12 @@ impl Component for ControlUnit {
             }
 
             OP_SB => {
-                set!(cntr_field::MEM_MODE_OUT, data_op::STORE_WORD);
+                set!(cntr_field::MEM_MODE_OUT, data_op::STORE_BYTE);
                 set_store_instr!();
                 Ok(())
             }
             OP_SH => {
-                set!(cntr_field::MEM_MODE_OUT, data_op::STORE_WORD);
+                set!(cntr_field::MEM_MODE_OUT, data_op::STORE_HALF);
                 set_store_instr!();
                 Ok(())
             }

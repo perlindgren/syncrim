@@ -57,7 +57,7 @@ fn main() {
                 Input::new("branch", BRANCH_OUT_ID),
                 vec![
                     Input::new("pc_add_branch", ADD_OUT_ID), //TODO: describe origin
-                    Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID), // goes to addr, RD2
+                    Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID), // goes to addr, RD2
                     Input::new("jump_merge", MERGE_OUT_ID),  //
                     Input::new("pc+4", CLK_OUT_ID),
                 ],
@@ -201,7 +201,7 @@ fn main() {
             ),
             //
             //
-            Constant::rc_new("0x_1F", (3750.0, 5500.0), 0),
+            Constant::rc_new("0x_1F", (3750.0, 5500.0), 0x_1F),
             Mux::rc_new(
                 "mux_write_addr",
                 (3800.0, 5500.0),
