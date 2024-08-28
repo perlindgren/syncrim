@@ -18,22 +18,15 @@ impl EguiComponent for InstrSplit {
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
         // size of the component
-        let width = 50f32;
-        let height: f32 = 300f32;
-        basic_component_gui(
-            self,
-            &simulator,
-            ui.ctx(),
-            (width, height),
-            offset,
-            scale,
-            clip_rect,
-            |ui| {
-                ui.centered_and_justified(|ui| {
-                    ui.label(RichText::new("instruction\nspliter").size(12f32 * scale));
-                });
-            },
-        )
+        let width = 50f32 * scale;
+        let height: f32 = 300f32 * scale;
+        basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
+            ui.set_height(height);
+            ui.set_width(width);
+            ui.centered_and_justified(|ui| {
+                ui.label(RichText::new("instruction\nspliter").size(12f32 * scale));
+            });
+        })
     }
 
     fn render_editor(

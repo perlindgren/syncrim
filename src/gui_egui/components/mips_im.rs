@@ -36,34 +36,25 @@ impl EguiComponent for InstrMem {
         let mut path_option: Option<PathBuf> = None;
         let mut mem_view_vis: bool = self.mem_view.borrow().visible;
 
-        let r = basic_component_gui(
-            self,
-            &simulator,
-            ui.ctx(),
-            (0f32, 0f32),
-            offset,
-            scale,
-            clip_rect,
-            |ui| {
-                // ui.centered_and_justified(|ui| {
-                ui.label(RichText::new("Instruction memory").size(12f32 * scale));
-                if ui.button("load file").clicked() {
-                    path_option = rfd::FileDialog::new().pick_file();
-                };
+        let r = basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
+            // ui.centered_and_justified(|ui| {
+            ui.label(RichText::new("Instruction memory").size(12f32 * scale));
+            if ui.button("load file").clicked() {
+                path_option = rfd::FileDialog::new().pick_file();
+            };
 
-                match mem_view_vis {
-                    false => {
-                        if ui.button("Show mem window").clicked() {
-                            mem_view_vis = true;
-                        }
+            match mem_view_vis {
+                false => {
+                    if ui.button("Show mem window").clicked() {
+                        mem_view_vis = true;
                     }
-                    true => {
-                        ui.toggle_value(&mut mem_view_vis, "Hide mem window");
-                    }
-                };
-                // });
-            },
-        );
+                }
+                true => {
+                    ui.toggle_value(&mut mem_view_vis, "Hide mem window");
+                }
+            };
+            // });
+        });
 
         if let Some(path) = path_option {
             let data = fs::read(path).unwrap();

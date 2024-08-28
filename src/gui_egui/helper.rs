@@ -1,7 +1,7 @@
 use crate::common::{Components, EguiComponent, Input, Ports, SignalValue, Simulator};
 use crate::gui_egui::editor::{EditorMode, SnapPriority};
 use egui::{
-    Align2, Area, Color32, Context, InnerResponse, Order, Pos2, Rect, Response, RichText, Sense,
+    Align2, Area, Color32, Context, InnerResponse, Order, Pos2, Rect, Response, Sense,
     TextWrapMode, Ui, Vec2,
 };
 use epaint::Shadow;
@@ -187,7 +187,7 @@ pub fn component_area<R>(
 ///             offset,
 ///             scale,
 ///             |ui| {
-///                 ui.label(RichText::new("Jump Merge").size(12f32 * scale));
+///                 ui.label("Jump Merge"));
 ///             },
 ///             |ui| {
 ///                 ui.label("i am hovered")
@@ -198,41 +198,42 @@ pub fn component_area<R>(
 /// ```
 pub fn basic_component_gui_with_on_hover(
     component: &dyn EguiComponent,
-    simulator: &Option<&mut Simulator>,
     ctx: &Context,
-    size: impl Into<Vec2>,
     offset: impl Into<Vec2>,
     scale: f32,
     clip_rect: Rect,
     content: impl FnOnce(&mut Ui),
     on_hover: impl FnOnce(&mut Ui),
 ) -> Option<Vec<Response>> {
-    let size: Vec2 = size.into();
     let offset: Vec2 = offset.into();
-
-    let component_rect = Rect::from_center_size(
-        Pos2::from(component.get_pos()) * scale + offset,
-        size * scale,
-    );
 
     let r = component_area(
         component.get_id_ports().0,
         ctx,
-        component_rect.center(),
+        Pos2::from(component.get_pos()) * scale + offset,
         |ui| {
             ui.set_clip_rect(clip_rect);
+
+            ui.style_mut().wrap_mode = Some(TextWrapMode::Extend);
+
+            for (_text_style, font) in ui.style_mut().text_styles.iter_mut() {
+                font.size *= scale;
+            }
+            ui.spacing_mut().button_padding *= scale;
+            ui.spacing_mut().item_spacing *= scale;
+            ui.spacing_mut().combo_height *= scale;
+            ui.spacing_mut().combo_width *= scale;
+            ui.spacing_mut().icon_width *= scale;
+            ui.spacing_mut().icon_width_inner *= scale;
+            ui.spacing_mut().icon_spacing *= scale;
+            ui.spacing_mut().interact_size *= scale;
+
             let mut group = egui::containers::Frame::group(ui.style());
             group.inner_margin *= scale;
             group.rounding *= scale;
             // group.fill = Color32::LIGHT_RED; // Use this ween component background is implemented, probably when we implement dark mode
             group
                 .show(ui, |ui| {
-                    ui.style_mut().wrap_mode = Some(TextWrapMode::Extend);
-                    if size != (0f32, 0f32).into() {
-                        ui.set_height(component_rect.height());
-                        ui.set_width(component_rect.width());
-                        ui.set_clip_rect(component_rect.intersect(clip_rect));
-                    }
                     content(ui);
                 })
                 .response
@@ -248,23 +249,14 @@ pub fn basic_component_gui(
     component: &dyn EguiComponent,
     simulator: &Option<&mut Simulator>,
     ctx: &Context,
-    size: impl Into<Vec2>,
     offset: impl Into<Vec2>,
     scale: f32,
     clip_rect: Rect,
     content: impl FnOnce(&mut Ui),
 ) -> Option<Vec<Response>> {
-    basic_component_gui_with_on_hover(
-        component,
-        simulator,
-        ctx,
-        size,
-        offset,
-        scale,
-        clip_rect,
-        content,
-        |ui| basic_on_hover(ui, component, simulator),
-    )
+    basic_component_gui_with_on_hover(component, ctx, offset, scale, clip_rect, content, |ui| {
+        basic_on_hover(ui, component, simulator)
+    })
 }
 
 /// example

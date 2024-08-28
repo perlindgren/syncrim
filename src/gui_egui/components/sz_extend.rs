@@ -17,43 +17,29 @@ impl EguiComponent for SignZeroExtend {
         clip_rect: Rect,
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
-        basic_component_gui(
-            self,
-            &simulator,
-            ui.ctx(),
-            (0f32, 0f32),
-            offset,
-            scale,
-            clip_rect,
-            |ui| {
-                match &simulator {
-                    Some(sim) => {
-                        ui.label(
-                            RichText::new(match sim.get_input_value(&self.signzero_ctrl_in) {
-                                SignalValue::Uninitialized => {
-                                    " Sign/Zero extend: Uninitialized cntr".to_string()
-                                }
-                                SignalValue::Unknown => "Sign/Zero extendUnknown".to_string(),
-                                SignalValue::DontCare => "Sign/Zero extend: Don't Care".to_string(),
-                                SignalValue::Data(v) => match v {
-                                    0 => "Sign/Zero extend: Zero",
-                                    1 => "Sign/Zero extend: Sign",
-                                    _ => "Sign/Zero extend: Invalid cntr",
-                                }
-                                .to_string(),
-                            })
-                            .size(12f32 * scale),
-                        );
-                    }
-
-                    None => {
-                        ui.label(RichText::new("Signal Extender: No Sim").size(12f32 * scale));
-                    }
+        basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
+            match &simulator {
+                Some(sim) => {
+                    ui.label(match sim.get_input_value(&self.signzero_ctrl_in) {
+                        SignalValue::Uninitialized => {
+                            " Sign/Zero extend:\nUninitialized cntr".to_string()
+                        }
+                        SignalValue::Unknown => "Sign/Zero extend:\nextendUnknown".to_string(),
+                        SignalValue::DontCare => "Sign/Zero extend:\nDon't Care".to_string(),
+                        SignalValue::Data(v) => match v {
+                            0 => "Sign/Zero extend:\nZero",
+                            1 => "Sign/Zero extend:\nSign",
+                            _ => "Sign/Zero extend:\nInvalid cntr",
+                        }
+                        .to_string(),
+                    });
                 }
 
-                ui.label(RichText::new("Jump Merge").size(12f32 * scale));
-            },
-        )
+                None => {
+                    ui.label(RichText::new("Signal Extender:\nNo Sim").size(12f32 * scale));
+                }
+            }
+        })
     }
 
     fn render_editor(
