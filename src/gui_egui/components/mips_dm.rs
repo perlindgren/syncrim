@@ -1,18 +1,12 @@
-use std::borrow::BorrowMut;
-use std::cell::RefCell;
-use std::fs;
-use std::path::PathBuf;
-
 use crate::common::{EguiComponent, Id, Ports, Simulator};
-use crate::components::{InstrMem, MipsMem};
+use crate::components::DataMem;
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::basic_component_gui;
-use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 use egui::{Rect, Response, RichText, Ui, Vec2};
 
 #[typetag::serde]
-impl EguiComponent for InstrMem {
+impl EguiComponent for DataMem {
     fn render(
         &self,
         ui: &mut Ui,
@@ -33,15 +27,17 @@ impl EguiComponent for InstrMem {
         // we save 27 bytes of clone
         // and most of that clone might even be optimized away
         // yes this was premature optimization
-        let mut path_option: Option<PathBuf> = None;
         let mut mem_view_vis: bool = self.mem_view.borrow().visible;
 
         let r = basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
             // ui.centered_and_justified(|ui| {
-            ui.label(RichText::new("Instruction memory").size(12f32 * scale));
-            if ui.button("load file").clicked() {
-                path_option = rfd::FileDialog::new().pick_file();
-            };
+            ui.label(RichText::new("Data memory").size(12f32 * scale));
+            ui.button(
+                RichText::new("load file")
+                    .size(12f32 * scale)
+                    .strikethrough(),
+            )
+            .on_hover_text("Use instruction memory to load a file");
 
             match mem_view_vis {
                 false => {
@@ -55,18 +51,9 @@ impl EguiComponent for InstrMem {
             };
             // });
         });
-
-        if let Some(path) = path_option {
-            let data = fs::read(path).unwrap();
-            &self.mem.replace(MipsMem::from_sections(&data).unwrap());
-            mem_view_vis = true;
-        };
-        // {} to drop RefMut as early as possible
-        {
-            let mut mem_view = self.mem_view.borrow_mut();
-            mem_view.visible = mem_view_vis;
-            mem_view.render(ui.ctx());
-        }
+        let mut mem_view = self.mem_view.borrow_mut();
+        mem_view.visible = mem_view_vis;
+        mem_view.render(ui.ctx());
         // return response from basic component gui
         r
     }

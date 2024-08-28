@@ -17,20 +17,9 @@ impl EguiComponent for ZeroExtend {
         clip_rect: Rect,
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
-        basic_component_gui(
-            self,
-            &simulator,
-            ui.ctx(),
-            (0f32, 0f32),
-            offset,
-            scale,
-            clip_rect,
-            |ui| {
-                ui.centered_and_justified(|ui| {
-                    ui.label(RichText::new("Zero Extend").size(12f32 * scale));
-                });
-            },
-        )
+        basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
+            ui.label("Zero Extend");
+        })
     }
 
     fn render_editor(
