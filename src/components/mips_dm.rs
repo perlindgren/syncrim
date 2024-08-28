@@ -206,7 +206,7 @@ impl Component for DataMem {
         const SIGNED: bool = true;
         const UNSIGNED: bool = false;
 
-        match mem_op {
+        let ret: Result<(), Condition> = match mem_op {
             data_op::NO_OP => {
                 simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, 0);
                 Ok(())
@@ -315,6 +315,23 @@ impl Component for DataMem {
                 }
             }
             _ => Err(Condition::Error(format!("unknown mem op {}", mem_op))),
+        };
+        // test breakpoint
+        match ret {
+            Ok(_) => match mem_op {
+                data_op::NO_OP => Ok(()),
+                _ => {
+                    if self.mem_view.borrow().is_break_point(&(address & !0b11)) {
+                        Err(Condition::Halt(format!(
+                            "Read or write at breakpoint address {:#0x}",
+                            address
+                        )))
+                    } else {
+                        Ok(())
+                    }
+                }
+            },
+            Err(_) => ret,
         }
     }
 }
