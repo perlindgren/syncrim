@@ -12,7 +12,7 @@ use std::rc::Rc;
 pub const EQUAL_A_IN_ID: &str = "a_in";
 pub const EQUAL_B_IN_ID: &str = "b_in";
 
-pub const EQUAL_OUT_ID: &str = "equals_out";
+pub const EQUAL_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Equal {

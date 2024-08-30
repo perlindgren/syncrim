@@ -11,7 +11,7 @@ use std::rc::Rc;
 
 pub const MUX_SELECT_ID: &str = "select";
 pub const MUX_TEMPLATE_ID: &str = "in";
-pub const MUX_OUT_ID: &str = "mux_out";
+pub const MUX_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Mux {

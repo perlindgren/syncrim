@@ -6,7 +6,7 @@ use crate::gui_egui::component_ui::{
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::{basic_on_hover, offset_helper};
+use crate::gui_egui::helper::offset_helper;
 use egui::{Color32, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
 
 #[typetag::serde]
@@ -52,7 +52,29 @@ impl EguiComponent for Register {
             max: oh((10f32, 20f32), s, o),
         };
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
-            basic_on_hover(ui, self, &simulator)
+            ui.label(format!("Id: {}", self.id.clone()));
+            if let Some(s) = &simulator {
+                ui.label({
+                    let r: Result<SignalUnsigned, String> =
+                        s.get_input_value(&self.r_in).try_into();
+                    match r {
+                        Ok(data) => format!("In {:#x}", data),
+                        _ => format!("In {:?}", r),
+                    }
+                });
+                ui.label({
+                    let r: Result<SignalUnsigned, String> = s
+                        .get_input_value(&Input {
+                            id: self.id.clone(),
+                            field: "out".to_string(),
+                        })
+                        .try_into();
+                    match r {
+                        Ok(data) => format!("Out {:#x}", data),
+                        _ => format!("Out {:?}", r),
+                    }
+                });
+            }
         });
 
         match editor_mode {

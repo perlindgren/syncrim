@@ -8,7 +8,7 @@ use std::rc::Rc;
 
 pub const REGISTER_R_IN_ID: &str = "r_in";
 
-pub const REGISTER_OUT_ID: &str = "abc_out";
+pub const REGISTER_OUT_ID: &str = "out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Register {

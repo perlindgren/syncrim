@@ -6,7 +6,7 @@ use crate::gui_egui::component_ui::{
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::{basic_on_hover, offset_helper};
+use crate::gui_egui::helper::offset_helper;
 use egui::{Color32, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
 
 #[typetag::serde]
@@ -33,7 +33,7 @@ impl EguiComponent for Mux {
         let pa = self.m_in.len() as f32;
 
         // selector, here we can treat Signal better (see Vizia counterpart)
-        let select: SignalUnsigned = match &simulator {
+        let select: SignalUnsigned = match simulator {
             Some(s) => s.get_input_value(&self.select).try_into().unwrap_or(0),
             None => 0,
         };
@@ -75,7 +75,8 @@ impl EguiComponent for Mux {
             max: oh((10f32, pa * 10f32 + 10f32), s, o),
         };
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
-            basic_on_hover(ui, self, &simulator)
+            ui.label(format!("Id: {}", self.id.clone()));
+            ui.label("Mux");
         });
         match editor_mode {
             EditorMode::Simulator => (),

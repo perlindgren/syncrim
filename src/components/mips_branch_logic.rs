@@ -16,7 +16,7 @@ pub const BRANCH_FUNCT_ID: &str = "branch_funct_in";
 pub const BRANCH_RS_VALUE_ID: &str = "branch_rs_vlaue_id";
 pub const BRANCH_RT_VALUE_ID: &str = "branch_rt_value_id";
 
-pub const BRANCH_OUT_ID: &str = "branch_logic_out";
+pub const BRANCH_OUT_ID: &str = "out";
 
 pub const BRANCH_OFFSET: u32 = 0;
 pub const BRANCH_REGISTER: u32 = 1;
