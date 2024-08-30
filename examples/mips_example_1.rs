@@ -17,7 +17,7 @@ fn main() {
     let mem = Rc::new(RefCell::new(MipsMem::default()));
     let rc_reg_file = RegFile::rc_new(
         "reg_file",
-        (360.0, 170.0),
+        (450.0, 150.0),
         Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
         Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
         Input::new("reg_write_addr", REGISTER_OUT_ID), //write address
@@ -28,22 +28,26 @@ fn main() {
     let cs = ComponentStore {
         store: vec![
             // register that holds instr addr
-            Register::rc_new("pc", (170.0, 410.0), Input::new("mux_jump_merge", "out")),
+            Register::rc_new(
+                "pc",
+                (150.0, 390.0),
+                Input::new("mux_jump_merge", MUX_OUT_ID),
+            ),
             // step addr from reg by 4
-            Constant::rc_new("+4", (170.0, 380.0), 4),
+            Constant::rc_new("+4", (150.0, 450.0), 4),
             Add::rc_new(
                 "pc+4",
-                (220.0, 380.0),
-                Input::new("pc", "out"),
-                Input::new("+4", "out"),
+                (220.0, 420.0),
+                Input::new("+4", CONSTANT_OUT_ID),
+                Input::new("pc", REGISTER_OUT_ID),
             ),
             //
             //
             Rc::new(
                 InstrMem::new(
                     "instr_mem".into(),
-                    (280.0, 600.0),
-                    Input::new("pc", "out"),
+                    (250.0, 700.0),
+                    Input::new("pc", REGISTER_OUT_ID),
                     Rc::clone(&mem),
                 )
                 .set_mem_view_reg(rc_reg_file.clone()),
@@ -53,20 +57,20 @@ fn main() {
             // MUX to choose what intruction addr to choose from, branch jump, reg, pc+4
             Mux::rc_new(
                 "mux_jump_merge",
-                (140.0, 390.0),
+                (100.0, 390.0),
                 Input::new("branch", BRANCH_OUT_ID),
                 vec![
                     Input::new("pc_add_branch", ADD_OUT_ID), //TODO: describe origin
                     Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID), // goes to addr, RD2
                     Input::new("jump_merge", MERGE_OUT_ID),  //
-                    Input::new("pc+4", CLK_OUT_ID),
+                    Input::new("pc+4", ADD_OUT_ID),
                 ],
             ),
             //
             // merges to find out jump location
             JumpMerge::rc_new(
                 "jump_merge",
-                (125.0, 500.0),
+                (125.0, 525.0),
                 Input::new("pc", REGISTER_OUT_ID), //input from reg before pc+4
                 Input::new("instr_mem", INSTR_MEM_INSTRUCTION_ID), //input from instruction mem
             ),
@@ -74,14 +78,14 @@ fn main() {
             // splits intructions from ir to fields
             InstrSplit::rc_new(
                 "instruction_split",
-                (280.0, 140.0),
+                (275.0, 150.0),
                 Input::new("instr_mem", INSTR_MEM_INSTRUCTION_ID),
             ),
             //
             //
             ControlUnit::rc_new(
                 "control_unit",
-                (280.0, 100.0),
+                (500.0, 100.0),
                 Input::new("instr_mem", INSTR_MEM_INSTRUCTION_ID),
             ),
             //
@@ -95,7 +99,7 @@ fn main() {
             // extends immediate field
             SignZeroExtend::rc_new(
                 "signzero_extend",
-                (310.0, 410.0),
+                (400.0, 475.0),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_IMMEDIATE_ID),
                 Input::new("control_unit", cntr_field::EXTEND_SELECT_OUT), // cu tells it to either sing- or zero- extend
             ),
@@ -103,7 +107,7 @@ fn main() {
             //
             BranchLogic::rc_new(
                 "branch",
-                (525.0, 300.0),
+                (575.0, 150.0),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_OP_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_FUNCT_ID),
@@ -125,9 +129,9 @@ fn main() {
                 (650.0, 220.0),
                 Input::new("control_unit", cntr_field::ALU_SRC_A_OUT),
                 vec![
-                    Input::new("zero_extend_for_chamt", SIGNZEROEXTEND_OUT_ID),
+                    Input::new("zero_extend_for_chamt", ZEROEXTEND_OUT_ID),
                     Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID), //FIXME should be rs? changed from rt
-                    Input::new("0_a_inp", "out"),
+                    Input::new("0_a_inp", CONSTANT_OUT_ID),
                 ],
             ),
             //
@@ -156,7 +160,7 @@ fn main() {
             Rc::new(
                 DataMem::new(
                     "data_mem".into(),
-                    (600.0, 580.0),
+                    (600.0, 700.0),
                     Input::new("alu", FULL_ADD_OUT_ID), // calculated from rs and imm
                     Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
                     Input::new("control_unit", cntr_field::MEM_MODE_OUT),
@@ -187,7 +191,7 @@ fn main() {
             //
             ShiftConst::rc_new(
                 "branch_shift",
-                (380.0, 460.0),
+                (475.0, 550.0),
                 Input::new("signzero_extend", SIGNZEROEXTEND_OUT_ID),
                 2,
             ),
@@ -195,7 +199,7 @@ fn main() {
             //
             Add::rc_new(
                 "pc_add_branch",
-                (420.0, 440.0),
+                (525.0, 600.0),
                 Input::new("pc+4", ADD_OUT_ID),
                 Input::new("branch_shift", SHIFT_OUT_ID),
             ),
@@ -209,7 +213,7 @@ fn main() {
                 vec![
                     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
                     Input::new("instruction_split", INSTRUCTION_SPLITTER_RD_ID),
-                    Input::new("0x_1F", "out"),
+                    Input::new("0x_1F", CONSTANT_OUT_ID),
                 ],
             ),
             //
@@ -225,7 +229,7 @@ fn main() {
         ],
     };
 
-    let cs = autowire(cs);
+    //let cs = autowire(cs);
 
     let path = PathBuf::from("add.json");
     cs.save_file(&path);

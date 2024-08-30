@@ -11,7 +11,7 @@ use std::rc::Rc;
 
 pub const MUX_SELECT_ID: &str = "select";
 pub const MUX_TEMPLATE_ID: &str = "in";
-pub const MUX_OUT_ID: &str = "out";
+pub const MUX_OUT_ID: &str = "mux_out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Mux {
@@ -83,7 +83,7 @@ impl Component for Mux {
         };
         trace!("-----------------value:{:?}, end---------------", value);
         // set output
-        simulator.set_out_value(&self.id, "out", value);
+        simulator.set_out_value(&self.id, MUX_OUT_ID, value);
         res
     }
 

@@ -6,6 +6,7 @@ use std::{
 };
 
 use crate::components::{InstrMem, MemOpSize, MipsMem, RegFile};
+use MIPS_disassembly;
 
 use serde::{Deserialize, Serialize};
 
@@ -531,7 +532,11 @@ impl MemViewWindow {
                 format!("{:#010x}", data_u32)
             }
             DataFormat::HexAndMips => {
-                format!("{:#010x} MIPS DISASSEMBLY NOT IMPLEMENTED", data_u32)
+                format!(
+                    "{:#010x} {:015}",
+                    data_u32,
+                    MIPS_disassembly::get_dissassembly(data_u32)
+                )
             }
             DataFormat::Bin => {
                 format!("{:032b}", data_u32)

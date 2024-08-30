@@ -12,7 +12,7 @@ use std::rc::Rc;
 
 pub const ZEROEXTEND_SIGNAL_IN_ID: &str = "signal_in";
 
-pub const ZEROEXTEND_OUT_ID: &str = "out";
+pub const ZEROEXTEND_OUT_ID: &str = "zero_extend_out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ZeroExtend {
