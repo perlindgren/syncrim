@@ -38,14 +38,18 @@ fn main() {
     let cs = ComponentStore {
         store: vec![
             // register that holds instr addr
-            Register::rc_new("pc", (170.0, 410.0), Input::new("mux_jump_merge", "out")),
+            Register::rc_new(
+                "pc",
+                (170.0, 410.0),
+                Input::new("mux_jump_merge", MUX_OUT_ID),
+            ),
             // step addr from reg by 4
             Constant::rc_new("+4", (170.0, 380.0), 4),
             Add::rc_new(
                 "pc+4",
                 (220.0, 380.0),
-                Input::new("pc", "out"),
-                Input::new("+4", "out"),
+                Input::new("pc", REGISTER_OUT_ID),
+                Input::new("+4", CONSTANT_OUT_ID),
             ),
             //
             //
@@ -53,7 +57,7 @@ fn main() {
                 InstrMem::new(
                     "instr_mem".into(),
                     (280.0, 600.0),
-                    Input::new("pc", "out"),
+                    Input::new("pc", REGISTER_OUT_ID),
                     Rc::clone(&mem),
                 )
                 .set_mem_view_reg(rc_reg_file.clone()),
@@ -69,7 +73,7 @@ fn main() {
                     Input::new("pc_add_branch", ADD_OUT_ID), // describe origin
                     Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID), // goes to addr, RD2
                     Input::new("merge_reg", REGISTER_OUT_ID), //
-                    Input::new("pc+4", CLK_OUT_ID),
+                    Input::new("pc+4", ADD_OUT_ID),          //clk
                 ],
             ),
             //
@@ -106,28 +110,28 @@ fn main() {
             // First CU, handles, selcet for signzero_extend and mux_write_addr
             ControlUnit::rc_new(
                 "control_unit_1",
-                (280.0, 100.0),
+                (480.0, 100.0),
                 Input::new("InMem_reg", REGISTER_OUT_ID),
             ),
             //
             // Second CU, handles, mux_source_a, mux_source_b and the alu
             ControlUnit::rc_new(
                 "control_unit_2",
-                (380.0, 100.0),
+                (580.0, 100.0),
                 Input::new("control_EX_reg", REGISTER_OUT_ID),
             ),
             //
             // Third CU, handles, write_back_mux, and DMs memread and memwrite
             ControlUnit::rc_new(
                 "control_unit_3",
-                (480.0, 100.0),
+                (680.0, 100.0),
                 Input::new("control_MEM_reg", REGISTER_OUT_ID),
             ),
             //
             // Fourth CU, handles, WE for reg_file in the WB stage
             ControlUnit::rc_new(
                 "control_unit_4",
-                (580.0, 100.0),
+                (780.0, 100.0),
                 Input::new("control_WB_reg", REGISTER_OUT_ID),
             ),
             //
@@ -243,14 +247,14 @@ fn main() {
                 //TODO: fix after adding 4 muxes
                 "operand_a_reg",
                 (3450.0, 1800.0),
-                Input::new("equals_operand_A_2", MUX_OUT_ID),
+                Input::new("operand_A_mux_2", MUX_OUT_ID),
             ),
             //
             Register::rc_new(
                 //TODO: fix after muxes
                 "operand_b_reg",
                 (3450.0, 2200.0),
-                Input::new("equals_operand_B_2", MERGE_OUT_ID),
+                Input::new("operand_B_mux_2", MUX_OUT_ID),
             ),
             //
             Register::rc_new(
@@ -286,7 +290,7 @@ fn main() {
                 vec![
                     Input::new("zero_extend_for_chamt", SIGNZEROEXTEND_OUT_ID),
                     Input::new("operand_a_reg", REGISTER_OUT_ID),
-                    Input::new("0_a_inp", "out"),
+                    Input::new("0_a_inp", CONSTANT_OUT_ID),
                 ],
             ),
             //
@@ -407,7 +411,7 @@ fn main() {
                 vec![
                     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
                     Input::new("instruction_split", INSTRUCTION_SPLITTER_RD_ID),
-                    Input::new("0x_1F", "out"),
+                    Input::new("0x_1F", CONSTANT_OUT_ID),
                 ],
             ),
             //
@@ -419,7 +423,7 @@ fn main() {
         ],
     };
 
-    let cs = autowire(cs);
+    //let cs = autowire(cs);
 
     let path = PathBuf::from("add.json");
     cs.save_file(&path);

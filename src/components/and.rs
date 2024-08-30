@@ -1,8 +1,7 @@
 #[cfg(feature = "gui-egui")]
 use crate::common::EguiComponent;
 use crate::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
-    SignalValue, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -11,7 +10,7 @@ use std::rc::Rc;
 pub const AND_A_IN_ID: &str = "a_in";
 pub const AND_B_IN_ID: &str = "b_in";
 
-pub const AND_OUT_ID: &str = "out";
+pub const AND_OUT_ID: &str = "and_out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct And {

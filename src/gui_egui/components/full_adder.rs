@@ -6,7 +6,7 @@ use crate::gui_egui::component_ui::{
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::offset_helper;
+use crate::gui_egui::helper::{basic_on_hover, offset_helper};
 use egui::{
     Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Shape, Stroke, TextWrapMode, Ui,
     Vec2,
@@ -56,7 +56,7 @@ impl EguiComponent for FullAdd {
             min: oh((-20f32, -40f32), s, o),
             max: oh((20f32, 40f32), s, o),
         };
-        let op: String = if let Some(s) = simulator {
+        let op: String = if let Some(s) = &simulator {
             match TryInto::<u32>::try_into(s.get_input_value(&self.op_in)).unwrap() {
                 alu_op::ADD => "ADD",
                 alu_op::ADDU => "ADDU",
@@ -91,6 +91,7 @@ impl EguiComponent for FullAdd {
                 ui.set_clip_rect(clip_rect);
                 ui.style_mut().wrap_mode = Some(TextWrapMode::Extend);
                 ui.label(RichText::new(format!("ALU\n{}", op)).size(scale * 12f32))
+                    .on_hover_ui(|ui| basic_on_hover(ui, self, &simulator))
             });
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));

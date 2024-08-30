@@ -14,7 +14,7 @@ use std::rc::Rc;
 pub const SIGNZEROEXTEND_SIGNAL_IN_ID: &str = "signzero_signal_in";
 pub const SIGNZEROEXTEND_CTRL_IN_ID: &str = "signzero_ctrl_in";
 
-pub const SIGNZEROEXTEND_OUT_ID: &str = "out";
+pub const SIGNZEROEXTEND_OUT_ID: &str = "sign_zero_out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct SignZeroExtend {

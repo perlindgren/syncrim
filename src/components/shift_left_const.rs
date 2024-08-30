@@ -12,7 +12,7 @@ use std::rc::Rc;
 
 pub const SHIFT_SIGNAL_IN_ID: &str = "shift_in";
 
-pub const SHIFT_OUT_ID: &str = "out";
+pub const SHIFT_OUT_ID: &str = "shift_left_const_out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ShiftConst {

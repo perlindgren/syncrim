@@ -11,7 +11,7 @@ use std::rc::Rc;
 
 pub const CLK_IN_ID: &str = "clk_in";
 
-pub const CLK_OUT_ID: &str = "out";
+pub const CLK_OUT_ID: &str = "clk_out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct MIPSCLK {

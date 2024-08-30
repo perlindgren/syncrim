@@ -153,10 +153,10 @@ impl Component for FullAdd {
                 output = (a < b) as u32;
             }
             alu_op::SLL => {
-                output = a << b;
+                (output, _) = a.overflowing_shl(b);
             }
             alu_op::SRL => {
-                output = a >> b;
+                (output, _) = a.overflowing_shr(b);
             }
             alu_op::SRA => {
                 output = ((a as i32) >> b) as u32;
