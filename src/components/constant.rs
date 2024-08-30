@@ -4,7 +4,7 @@ use crate::common::{Component, Condition, Id, OutputType, Ports, Signal, Simulat
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::{convert::Into, rc::Rc};
-pub const CONSTANT_OUT_ID: &str = "out";
+pub const CONSTANT_OUT_ID: &str = "constant_out";
 use std::any::Any;
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Constant {

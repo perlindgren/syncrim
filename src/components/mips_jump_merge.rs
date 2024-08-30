@@ -12,7 +12,7 @@ use std::rc::Rc;
 pub const MERGE_INSTR_ADDR_ID: &str = "merge_instr_addr_in";
 pub const MERGE_JUMP_ADDR_ID: &str = "merge_jump_addr_in";
 
-pub const MERGE_OUT_ID: &str = "out";
+pub const MERGE_OUT_ID: &str = "merge_out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct JumpMerge {

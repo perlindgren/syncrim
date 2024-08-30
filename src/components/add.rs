@@ -11,7 +11,7 @@ use std::rc::Rc;
 pub const ADD_A_IN_ID: &str = "a_in";
 pub const ADD_B_IN_ID: &str = "b_in";
 
-pub const ADD_OUT_ID: &str = "out";
+pub const ADD_OUT_ID: &str = "add_out";
 pub const ADD_OVERFLOW_ID: &str = "overflow";
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -89,8 +89,8 @@ impl Component for Add {
         );
 
         // set output
-        simulator.set_out_value(&self.id, "out", value);
-        simulator.set_out_value(&self.id, "overflow", overflow);
+        simulator.set_out_value(&self.id, ADD_OUT_ID, value);
+        simulator.set_out_value(&self.id, ADD_OVERFLOW_ID, overflow);
         res
     }
 

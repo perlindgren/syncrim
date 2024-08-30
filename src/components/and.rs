@@ -11,7 +11,7 @@ use std::rc::Rc;
 pub const AND_A_IN_ID: &str = "a_in";
 pub const AND_B_IN_ID: &str = "b_in";
 
-pub const AND_OUT_ID: &str = "out";
+pub const AND_OUT_ID: &str = "and_out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct And {

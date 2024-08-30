@@ -8,7 +8,7 @@ use std::rc::Rc;
 
 pub const REGISTER_R_IN_ID: &str = "r_in";
 
-pub const REGISTER_OUT_ID: &str = "out";
+pub const REGISTER_OUT_ID: &str = "register_out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Register {
@@ -51,7 +51,7 @@ impl Component for Register {
         // get input value
         let value = simulator.get_input_value(&self.r_in);
         // set output
-        simulator.set_out_value(&self.id, "out", value);
+        simulator.set_out_value(&self.id, REGISTER_OUT_ID, value);
         trace!("eval: register id {} in {:?}", self.id, value);
         Ok(())
     }

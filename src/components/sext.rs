@@ -12,7 +12,7 @@ use std::rc::Rc;
 
 pub const SEXT_IN_ID: &str = "sext_in";
 
-pub const SEXT_OUT_ID: &str = "out";
+pub const SEXT_OUT_ID: &str = "sext_out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Sext {
@@ -82,10 +82,10 @@ impl Component for Sext {
                 value >>= to_shr;
 
                 // set output
-                simulator.set_out_value(&self.id, "out", SignalValue::Data(value));
+                simulator.set_out_value(&self.id, SEXT_OUT_ID, SignalValue::Data(value));
             }
             _ => {
-                simulator.set_out_value(&self.id, "out", SignalValue::Unknown);
+                simulator.set_out_value(&self.id, SEXT_OUT_ID, SignalValue::Unknown);
                 trace!("{} unknown input", self.id);
             }
         }
