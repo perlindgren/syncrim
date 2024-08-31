@@ -1,5 +1,5 @@
 use crate::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
-use crate::components::Register;
+use crate::components::{Register, REGISTER_OUT_ID};
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
     rect_with_hover, visualize_ports,
@@ -66,7 +66,7 @@ impl EguiComponent for Register {
                     let r: Result<SignalUnsigned, String> = s
                         .get_input_value(&Input {
                             id: self.id.clone(),
-                            field: "out".to_string(),
+                            field: REGISTER_OUT_ID.to_string(),
                         })
                         .try_into();
                     match r {

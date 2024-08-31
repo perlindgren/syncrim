@@ -130,7 +130,7 @@ fn main() {
                 Input::new("control_unit", cntr_field::ALU_SRC_A_OUT),
                 vec![
                     Input::new("zero_extend_for_chamt", ZEROEXTEND_OUT_ID),
-                    Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID), //FIXME should be rs? changed from rt
+                    Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID),
                     Input::new("0_a_inp", CONSTANT_OUT_ID),
                 ],
             ),
@@ -141,7 +141,7 @@ fn main() {
                 (650.0, 300.0),
                 Input::new("control_unit", cntr_field::ALU_SRC_B_OUT),
                 vec![
-                    Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID), //FIXME should be rt? changed from rs
+                    Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
                     Input::new("pc+4", ADD_OUT_ID),
                     Input::new("signzero_extend", SIGNZEROEXTEND_OUT_ID),
                 ],
