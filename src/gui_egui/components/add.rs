@@ -33,18 +33,27 @@ impl EguiComponent for Add {
         let s = scale;
         let o = offset;
         // The shape
+        #[rustfmt::skip] // stop formate from "compacting" our vec, doesn't affect anything else
+        let shape: Vec<(f32, f32)> = vec![
+            (-20f32, -40f32),
+            (0f32, -40f32),
+            (20f32, -20f32),
+            (20f32, 20f32),
+            (0f32, 40f32),
+            (-20f32, 40f32),
+            (-20f32, 20f32),
+            (-10f32, 0f32),
+            (-20f32, -20f32),
+        ];
+
+        let comp_scale = 0.6;
+
+        // The shape
         ui.painter().add(Shape::closed_line(
-            vec![
-                oh((-20f32, -40f32), s, o),
-                oh((0f32, -40f32), s, o),
-                oh((20f32, -20f32), s, o),
-                oh((20f32, 20f32), s, o),
-                oh((0f32, 40f32), s, o),
-                oh((-20f32, 40f32), s, o),
-                oh((-20f32, 20f32), s, o),
-                oh((-10f32, 0f32), s, o),
-                oh((-20f32, -20f32), s, o),
-            ],
+            shape
+                .iter()
+                .map(|(x, y)| oh((x * comp_scale, y * comp_scale), s, o))
+                .collect(),
             Stroke {
                 width: scale,
                 color: Color32::RED,

@@ -37,17 +37,22 @@ impl EguiComponent for Mux {
             Some(s) => s.get_input_value(&self.select).try_into().unwrap_or(0),
             None => 0,
         };
+        let mut shape: Vec<(f32, f32)> = vec![
+            (-20f32, pa * (-10f32) - 10f32),
+            (0f32, pa * (-10f32) - 10f32),
+            (10f32, pa * (-10f32) + 10f32),
+            (10f32, pa * (10f32) - 10f32),
+            (0f32, pa * (10f32) + 10f32),
+            (-20f32, pa * (10f32) + 10f32),
+        ];
+        for (x, y) in shape.iter_mut() {
+            *x *= 0.6;
+            *y *= 0.6;
+        }
 
         // The shape
         ui.painter().add(Shape::closed_line(
-            vec![
-                oh((-20f32, pa * (-10f32) - 10f32), s, o),
-                oh((0f32, pa * (-10f32) - 10f32), s, o),
-                oh((10f32, pa * (-10f32) + 10f32), s, o),
-                oh((10f32, pa * (10f32) - 10f32), s, o),
-                oh((0f32, pa * (10f32) + 10f32), s, o),
-                oh((-20f32, pa * (10f32) + 10f32), s, o),
-            ],
+            shape.clone().iter().map(|point| oh(*point, s, o)).collect(),
             Stroke {
                 width: scale,
                 color: Color32::BLACK,
@@ -58,11 +63,14 @@ impl EguiComponent for Mux {
         ui.painter().add(Shape::line_segment(
             [
                 oh(
-                    (-20f32, ((select as f32) * 20f32) - pa * 10f32 + 10f32),
+                    (
+                        -20f32 * 0.6,
+                        (((select as f32) * 20f32) - pa * 10f32 + 10f32) * 0.6,
+                    ),
                     s,
                     o,
                 ),
-                oh((10f32, 0f32), s, o),
+                oh((10f32 * 0.6, 0f32 * 0.6), s, o),
             ],
             Stroke {
                 width: scale,
@@ -71,8 +79,8 @@ impl EguiComponent for Mux {
         ));
 
         let rect = Rect {
-            min: oh((-20f32, pa * (-10f32) - 10f32), s, o),
-            max: oh((10f32, pa * 10f32 + 10f32), s, o),
+            min: oh((-20f32 * 0.6, (pa * (-10f32) - 10f32) * 0.6), s, o),
+            max: oh((10f32 * 0.6, (pa * 10f32 + 10f32) * 0.6), s, o),
         };
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));

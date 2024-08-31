@@ -25,7 +25,7 @@ impl EguiComponent for RegFile {
     ) -> Option<Vec<Response>> {
         basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
             ui.set_width(120f32 * scale);
-            ui.set_height(300f32 * scale);
+            ui.set_height(250f32 * scale);
             ui.label("Register File");
 
             // A toggle button for showing register names
