@@ -527,6 +527,8 @@ impl MemViewWindow {
             .borrow()
             .get_unaligned(adrs, MemOpSize::Word, false, true)
             .to_be_bytes();
+        // TODO get symbol table clones the hashmap, this is infective
+        let sym_tab = self.mem.borrow().get_symbol_table();
         match self.format {
             DataFormat::Hex => {
                 format!("{:#010x}", data_u32)
@@ -535,7 +537,12 @@ impl MemViewWindow {
                 format!(
                     "{:#010x} {:015}",
                     data_u32,
-                    MIPS_disassembly::get_dissassembly(data_u32)
+                    MIPS_disassembly::get_disassembly_adv(
+                        data_u32,
+                        adrs,
+                        &sym_tab,
+                        &MIPS_disassembly::MipsDisassemblyOptions::new(true, true)
+                    )
                 )
             }
             DataFormat::Bin => {
