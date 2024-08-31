@@ -13,45 +13,49 @@ use egui::{
 /// Note points is often same as pixels, but some times differ with the points_per_pixels value in egui
 const TOOLTIP_DISTANCE: f32 = 5.0;
 
+/// Calculates the minimum distance the point is from our line going from start: Vec2 to end: Vec2
 fn min_from_line(start: Vec2, end: Vec2, point: Vec2) -> f32 {
     // could probably use length_sq, but this don't need to be optimized
-    let length = (end - start).length();
+    let length: f32 = (end - start).length();
+    // if length is zero, get length between start and point
     if length == 0f32 {
         return (start - point).length();
     };
 
-    let dir_to_end = (end - start).normalized();
-    let point_rel_to_start = point - start;
-    // dot prud,
+    let dir_to_end: Vec2 = (end - start).normalized();
+    let point_rel_to_start: Vec2 = point - start;
+    // dot product,
     // a dot b = abs(a)*abs(b)*cos(theta)
-    // if a is one we can use this to determine how far along the line our point is
-    let dist_along_line = dir_to_end.dot(point_rel_to_start);
+    // if abs(a)=1 we can use this to determine how far along the line our point is
+    let dist_along_line: f32 = dir_to_end.dot(point_rel_to_start);
 
     // if we are before our line start
     if dist_along_line < 0f32 {
         // distance to our start point
-        (point - start).length()
+        (point - start).length() // return this value
     }
     // if our point is after the end of our line
     else if dist_along_line > length {
         // distance to our end point
-        (point - end).length()
+        (point - end).length() // return this value
     }
     // our point is between the line
     else {
         // project vec a up on vec b
+        // theta is the angel between our vectors
         // abs(a) * cos(theta) * b/abs(b)
-        // we can se the resemblance to dot product
-        // abs(a) * abs(b) * cos(theta) * b/abs(b) # one tu much abs (b)
+        // we can se the resemblance to a dot product
+        // abs(a) * abs(b) * cos(theta) * b/abs(b) # one to much abs(b)
         // abs(a) * abs(b) * cos(theta) * b/(abs(b))^2
         // a dot b * b/abs(b)^2
-        // this is our point projected along our line (line starts at origin)
-        // if abs(b) is one, aka normalized we can simplify the math
+        // this is our point projected along our line (line starts at origin (0,0))
+        // if abs(b)=1, aka normalized we can simplify the math
         // a dot b * b/1^2
         // a dot b * b
-        let proj_point_on_line = point_rel_to_start.dot(dir_to_end) * dir_to_end;
+        // a dot b is already calculated in dist along line
+        let proj_point_on_line: Vec2 = dist_along_line * dir_to_end;
         // lets use this to calculate the orthogonal vector from our line to our point
-        (point_rel_to_start - proj_point_on_line).length()
+        (point_rel_to_start - proj_point_on_line).length() // return this value
     }
 }
 
