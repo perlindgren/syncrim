@@ -17,7 +17,7 @@ fn main() {
     let mem = Rc::new(RefCell::new(MipsMem::default()));
     let rc_reg_file = RegFile::rc_new(
         "reg_file",
-        (450.0, 150.0),
+        (350.0, 225.0),
         Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
         Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
         Input::new("reg_write_addr", REGISTER_OUT_ID), //write address
@@ -34,10 +34,10 @@ fn main() {
                 Input::new("mux_jump_merge", MUX_OUT_ID),
             ),
             // step addr from reg by 4
-            Constant::rc_new("+4", (150.0, 450.0), 4),
+            Constant::rc_new("+4", (150.0, 440.0), 4),
             Add::rc_new(
                 "pc+4",
-                (220.0, 420.0),
+                (200.0, 400.0),
                 Input::new("+4", CONSTANT_OUT_ID),
                 Input::new("pc", REGISTER_OUT_ID),
             ),
@@ -46,7 +46,7 @@ fn main() {
             Rc::new(
                 InstrMem::new(
                     "instr_mem".into(),
-                    (250.0, 700.0),
+                    (250.0, 575.0),
                     Input::new("pc", REGISTER_OUT_ID),
                     Rc::clone(&mem),
                 )
@@ -70,7 +70,7 @@ fn main() {
             // merges to find out jump location
             JumpMerge::rc_new(
                 "jump_merge",
-                (125.0, 525.0),
+                (125.0, 475.0),
                 Input::new("pc", REGISTER_OUT_ID), //input from reg before pc+4
                 Input::new("instr_mem", INSTR_MEM_INSTRUCTION_ID), //input from instruction mem
             ),
@@ -78,28 +78,28 @@ fn main() {
             // splits intructions from ir to fields
             InstrSplit::rc_new(
                 "instruction_split",
-                (275.0, 150.0),
+                (200.0, 225.0),
                 Input::new("instr_mem", INSTR_MEM_INSTRUCTION_ID),
             ),
             //
             //
             ControlUnit::rc_new(
                 "control_unit",
-                (500.0, 100.0),
+                (500.0, 50.0),
                 Input::new("instr_mem", INSTR_MEM_INSTRUCTION_ID),
             ),
             //
             //
             Register::rc_new(
                 "reg_we",
-                (850.0, 100.0),
+                (850.0, 50.0),
                 Input::new("control_unit", cntr_field::REG_WRITE_ENABLE_OUT),
             ),
             //
             // extends immediate field
             SignZeroExtend::rc_new(
                 "signzero_extend",
-                (400.0, 475.0),
+                (325.0, 425.0),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_IMMEDIATE_ID),
                 Input::new("control_unit", cntr_field::EXTEND_SELECT_OUT), // cu tells it to either sing- or zero- extend
             ),
@@ -107,7 +107,7 @@ fn main() {
             //
             BranchLogic::rc_new(
                 "branch",
-                (575.0, 150.0),
+                (475.0, 225.0),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_OP_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_FUNCT_ID),
@@ -118,15 +118,15 @@ fn main() {
             //
             ZeroExtend::rc_new(
                 "zero_extend_for_chamt",
-                (550.0, 170.0),
+                (600.0, 150.0),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_SHAMT_ID),
             ),
             //
             //
-            Constant::rc_new("0_a_inp", (600.0, 230.0), 0),
+            Constant::rc_new("0_a_inp", (610.0, 220.0), 0),
             Mux::rc_new(
                 "mux_source_a",
-                (650.0, 220.0),
+                (650.0, 195.0),
                 Input::new("control_unit", cntr_field::ALU_SRC_A_OUT),
                 vec![
                     Input::new("zero_extend_for_chamt", ZEROEXTEND_OUT_ID),
@@ -138,7 +138,7 @@ fn main() {
             //
             Mux::rc_new(
                 "mux_source_b",
-                (650.0, 300.0),
+                (650.0, 255.0),
                 Input::new("control_unit", cntr_field::ALU_SRC_B_OUT),
                 vec![
                     Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
@@ -150,7 +150,7 @@ fn main() {
             //
             FullAdd::rc_new(
                 "alu",
-                (720.0, 220.0),
+                (720.0, 225.0),
                 Input::new("mux_source_a", MUX_OUT_ID),
                 Input::new("mux_source_b", MUX_OUT_ID),
                 Input::new("control_unit", cntr_field::ALU_OP_OUT),
@@ -160,7 +160,7 @@ fn main() {
             Rc::new(
                 DataMem::new(
                     "data_mem".into(),
-                    (600.0, 700.0),
+                    (600.0, 575.0),
                     Input::new("alu", FULL_ADD_OUT_ID), // calculated from rs and imm
                     Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
                     Input::new("control_unit", cntr_field::MEM_MODE_OUT),
@@ -173,7 +173,7 @@ fn main() {
             //
             Mux::rc_new(
                 "mux_write_back",
-                (800.0, 270.0),
+                (800.0, 225.0),
                 Input::new("control_unit", cntr_field::REG_WRITE_SRC_OUT),
                 vec![
                     Input::new("alu", FULL_ADD_OUT_ID),
@@ -184,14 +184,14 @@ fn main() {
             //
             Register::rc_new(
                 "result_reg",
-                (850.0, 290.0),
+                (850.0, 225.0),
                 Input::new("mux_write_back", MUX_OUT_ID),
             ),
             //
             //
             ShiftConst::rc_new(
                 "branch_shift",
-                (475.0, 550.0),
+                (325.0, 480.0),
                 Input::new("signzero_extend", SIGNZEROEXTEND_OUT_ID),
                 2,
             ),
@@ -199,16 +199,16 @@ fn main() {
             //
             Add::rc_new(
                 "pc_add_branch",
-                (525.0, 600.0),
+                (400.0, 475.0),
                 Input::new("pc+4", ADD_OUT_ID),
                 Input::new("branch_shift", SHIFT_OUT_ID),
             ),
             //
             //
-            Constant::rc_new("0x_1F", (500.0, 510.0), 0x_1F),
+            Constant::rc_new("0x_1F", (350.0, 550.0), 0x_1F),
             Mux::rc_new(
                 "mux_write_addr",
-                (560.0, 500.0),
+                (400.0, 525.0),
                 Input::new("control_unit", cntr_field::REG_DEST_OUT),
                 vec![
                     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
@@ -220,7 +220,7 @@ fn main() {
             //
             Register::rc_new(
                 "reg_write_addr",
-                (850.0, 520.0),
+                (850.0, 525.0),
                 Input::new("mux_write_addr", MUX_OUT_ID),
             ),
             //
@@ -229,7 +229,7 @@ fn main() {
         ],
     };
 
-    //let cs = autowire(cs);
+    let cs = autowire(cs);
 
     let path = PathBuf::from("add.json");
     cs.save_file(&path);
