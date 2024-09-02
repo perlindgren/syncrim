@@ -1,3 +1,0 @@
-# MIPS
-
-MIPS specific components.

@@ -1,0 +1,29 @@
+[package]
+name = "mips-lib"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.72"
+clap = { version = "4.3.15", features = ["derive"] }
+elf = "0.7.4"
+fern = "0.6.2"
+log = "0.4.19"
+num_enum = "0.6.1"
+petgraph = "0.6.3"
+rfd = "0.11.4"
+serde = { version = "1.0.171", features = ["rc"] }
+serde_derive = "1.0.171"
+serde_json = "1.0.103"
+typetag = "0.2.10"
+egui = {version = "0.28.0"}
+[dependencies.syncrim]
+path = "../"
+default-features = false
+
+[features]
+default = ["gui-egui"]
+
+components = ["syncrim/components"]
+gui-vizia = ["syncrim/gui-vizia"]
+gui-egui = ["syncrim/gui-egui"]

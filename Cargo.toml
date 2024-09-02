@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [workspace]
-members = ["mips", "riscv"]
+members = [ "mips-lib","mips-simple", "riscv"]
 
 [dependencies]
 MIPS_disassembly = "0.1.2"

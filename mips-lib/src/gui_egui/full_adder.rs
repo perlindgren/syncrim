@@ -1,16 +1,16 @@
-use crate::common::{EguiComponent, Ports, Simulator};
 use crate::components::{alu_op, FullAdd};
-use crate::gui_egui::component_ui::{
-    drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
-    rect_with_hover, visualize_ports,
-};
-use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
-use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::offset_helper;
 use egui::{
     Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Shape, Stroke, TextWrapMode, Ui,
     Vec2,
 };
+use syncrim::common::{EguiComponent, Ports, Simulator};
+use syncrim::gui_egui::component_ui::{
+    drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
+    rect_with_hover, visualize_ports,
+};
+use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
+use syncrim::gui_egui::gui::EguiExtra;
+use syncrim::gui_egui::helper::offset_helper;
 
 #[typetag::serde]
 impl EguiComponent for FullAdd {
@@ -111,7 +111,7 @@ impl EguiComponent for FullAdd {
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
-        id_ports: &[(crate::common::Id, Ports)],
+        id_ports: &[(syncrim::common::Id, Ports)],
         grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
@@ -176,15 +176,15 @@ impl EguiComponent for FullAdd {
         }
     }
 
-    fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
+    fn ports_location(&self) -> Vec<(syncrim::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         vec![
             (
-                crate::components::SEXT_IN_ID.to_string(),
+                syncrim::components::SEXT_IN_ID.to_string(),
                 Pos2::new(-40f32, 0f32) + own_pos,
             ),
             (
-                crate::components::SEXT_OUT_ID.to_string(),
+                syncrim::components::SEXT_OUT_ID.to_string(),
                 Pos2::new(40f32, 0f32) + own_pos,
             ),
         ]
