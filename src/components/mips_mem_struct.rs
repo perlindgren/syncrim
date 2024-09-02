@@ -10,10 +10,35 @@ pub struct MipsMem {
     sections: HashMap<u32, String>,
     data: BTreeMap<u32, u8>,
 }
+#[derive(Clone)]
 pub enum MemOpSize {
     Byte,
     Half,
     Word,
+}
+/// This struct is not ment to be cloned
+#[derive(Clone)]
+pub struct MemWriteReturn {
+    address: u32,
+    op_size: MemOpSize,
+    bytes: [u8; 4],
+}
+impl MemWriteReturn {
+    /// return the address the bytes comes from
+    pub fn address(&self) -> u32 {
+        self.address
+    }
+    pub fn op_size(&self) -> MemOpSize {
+        self.op_size.clone()
+    }
+    /// return the bytes befre the write where [0] is at address, [1] is at address + 1 and [N] is at address + N
+    pub fn before_bytes(&self) -> Vec<u8> {
+        match self.op_size {
+            MemOpSize::Byte => vec![self.bytes[0]],
+            MemOpSize::Half => vec![self.bytes[0], self.bytes[1]],
+            MemOpSize::Word => vec![self.bytes[0], self.bytes[1], self.bytes[4], self.bytes[3]],
+        }
+    }
 }
 
 impl MipsMem {
@@ -147,10 +172,21 @@ impl MipsMem {
     }
 
     /// Will truncate the data to the given size and write the data to memory
-    pub fn write(&mut self, address: u32, data: u32, size: MemOpSize, big_endian: bool) {
+    pub fn write(
+        &mut self,
+        address: u32,
+        data: u32,
+        size: MemOpSize,
+        big_endian: bool,
+    ) -> MemWriteReturn {
         match size {
             MemOpSize::Byte => {
-                self.data.insert(address, data as u8);
+                let b = self.data.insert(address, data as u8).unwrap_or(0);
+                MemWriteReturn {
+                    address,
+                    op_size: size,
+                    bytes: [b, 0, 0, 0],
+                }
             }
             MemOpSize::Half => {
                 let uint_16 = data as u16;
@@ -159,8 +195,13 @@ impl MipsMem {
                 } else {
                     uint_16.to_le_bytes()
                 };
-                self.data.insert(address, bytes[0]);
-                self.data.insert(address + 1, bytes[1]);
+                let b0 = self.data.insert(address, bytes[0]).unwrap_or(0);
+                let b1 = self.data.insert(address + 1, bytes[1]).unwrap_or(0);
+                MemWriteReturn {
+                    address,
+                    op_size: size,
+                    bytes: [b0, b1, 0, 0],
+                }
             }
             MemOpSize::Word => {
                 let bytes = if big_endian {
@@ -168,9 +209,18 @@ impl MipsMem {
                 } else {
                     data.to_le_bytes()
                 };
+                let mut b: [u8; 4] = [0; 4];
                 bytes.iter().enumerate().for_each(|(i, byte)| {
-                    self.data.insert(address + i as u32, byte.to_owned());
+                    b[i] = self
+                        .data
+                        .insert(address + i as u32, byte.to_owned())
+                        .unwrap_or(0);
                 });
+                MemWriteReturn {
+                    address,
+                    op_size: size,
+                    bytes: b,
+                }
             }
         }
     }
@@ -182,7 +232,7 @@ impl MipsMem {
         data: u32,
         size: MemOpSize,
         big_endian: bool,
-    ) -> Result<(), ()> {
+    ) -> Result<MemWriteReturn, ()> {
         let size_int: u32 = match size {
             MemOpSize::Byte => 1,
             MemOpSize::Half => 2,
@@ -191,8 +241,7 @@ impl MipsMem {
         if address % size_int != 0 {
             Err(())
         } else {
-            self.write(address, data, size, big_endian);
-            Ok(())
+            Ok(self.write(address, data, size, big_endian))
         }
     }
 
@@ -216,6 +265,38 @@ impl MipsMem {
                 self.symbols = sym_hash_map
             }
             None => (),
+        }
+    }
+    /// consumes undo the passed related mem write operation
+    pub fn revert(&mut self, op: MemWriteReturn) {
+        match op.op_size {
+            MemOpSize::Byte => {
+                self.data
+                    .insert(op.address, op.bytes[0])
+                    .expect("tried to revert an write operation that did not happen");
+            }
+            MemOpSize::Half => {
+                self.data
+                    .insert(op.address, op.bytes[0])
+                    .expect("tried to revert an write operation that did not happen");
+                self.data
+                    .insert(op.address + 1, op.bytes[1])
+                    .expect("tried to revert an write operation that did not happen");
+            }
+            MemOpSize::Word => {
+                self.data
+                    .insert(op.address, op.bytes[0])
+                    .expect("tried to revert an write operation that did not happen");
+                self.data
+                    .insert(op.address + 1, op.bytes[1])
+                    .expect("tried to revert an write operation that did not happen");
+                self.data
+                    .insert(op.address + 2, op.bytes[2])
+                    .expect("tried to revert an write operation that did not happen");
+                self.data
+                    .insert(op.address + 3, op.bytes[3])
+                    .expect("tried to revert an write operation that did not happen");
+            }
         }
     }
 
