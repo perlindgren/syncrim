@@ -137,6 +137,10 @@ pub trait EguiComponent: Component {
         }
     }
 
+    fn get_port_location(&self, id: Input) -> egui::Pos2 {
+        self.get_pos().into()
+    }
+
     fn top_padding(&self) -> f32 {
         todo!("Create top_padding for this EguiComponent");
     }
