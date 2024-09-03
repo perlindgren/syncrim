@@ -1,12 +1,12 @@
-use crate::common::{EguiComponent, Id, Ports, Simulator};
-use crate::components::ControlUnit;
-use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
-use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::basic_component_gui;
+use crate::components::BranchLogic;
 use egui::{Rect, Response, RichText, Ui, Vec2};
+use syncrim::common::{EguiComponent, Id, Ports, Simulator};
+use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
+use syncrim::gui_egui::gui::EguiExtra;
+use syncrim::gui_egui::helper::basic_component_gui;
 
 #[typetag::serde]
-impl EguiComponent for ControlUnit {
+impl EguiComponent for BranchLogic {
     fn render(
         &self,
         ui: &mut Ui,
@@ -17,15 +17,8 @@ impl EguiComponent for ControlUnit {
         clip_rect: Rect,
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
-        // size of the component
-        let width = 100f32 * scale;
-        let height: f32 = 12f32 * scale;
         basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
-            ui.set_height(height);
-            ui.set_width(width);
-            ui.centered_and_justified(|ui| {
-                ui.label("Control Unit");
-            });
+            ui.label("Branch Logic".to_string());
         })
     }
 

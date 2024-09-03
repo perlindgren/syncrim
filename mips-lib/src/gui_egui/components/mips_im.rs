@@ -3,13 +3,14 @@ use std::cell::RefCell;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::common::{EguiComponent, Id, Ports, Simulator};
-use crate::components::{InstrMem, MipsMem};
-use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
-use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::basic_component_gui;
+use crate::components::InstrMem;
+use crate::components::MipsMem;
 use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 use egui::{Rect, Response, RichText, Ui, Vec2};
+use syncrim::common::{EguiComponent, Id, Ports, Simulator};
+use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
+use syncrim::gui_egui::gui::EguiExtra;
+use syncrim::gui_egui::helper::basic_component_gui;
 
 #[typetag::serde]
 impl EguiComponent for InstrMem {

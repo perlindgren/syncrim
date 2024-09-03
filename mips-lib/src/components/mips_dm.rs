@@ -1,18 +1,14 @@
+use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 use core::cell::RefCell;
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, rc::Rc};
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
-use syncrim::{
-    common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
-    gui_egui::mips_mem_view_window::MemViewWindow,
-};
+use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 
-use syncrim::components::{
-    mips_mem_struct::{MemOpSize, MemWriteReturn, MipsMem},
-    RegFile,
-};
+use crate::components::mips_mem_struct::{MemOpSize, MemWriteReturn, MipsMem};
+use crate::components::RegFile;
 
 pub mod data_op {
     pub const NO_OP: u32 = 0;

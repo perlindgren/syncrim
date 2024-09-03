@@ -1,18 +1,14 @@
-#[cfg(feature = "gui-egui")]
-use crate::common::EguiComponent;
-use crate::{
-    common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
-    gui_egui::mips_mem_view_window::MemViewWindow,
-};
 use core::cell::RefCell;
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::{any::Any, rc::Rc};
+#[cfg(feature = "gui-egui")]
+use syncrim::common::EguiComponent;
+use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 
-use super::{
-    mips_mem_struct::{MemOpSize, MipsMem},
-    RegFile,
-};
+use crate::components::mips_mem_struct::{MemOpSize, MipsMem};
+use crate::components::RegFile;
+use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 
 pub const INSTR_MEM_PC_ID: &str = "pc";
 

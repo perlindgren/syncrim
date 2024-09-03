@@ -1,4 +1,2 @@
-mod full_adder;
-mod mips_control_unit;
-mod mips_dm;
-mod sz_extend;
+pub mod components;
+pub mod mips_mem_view_window;

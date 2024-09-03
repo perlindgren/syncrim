@@ -1,9 +1,9 @@
-use crate::common::{EguiComponent, Id, Ports, Simulator};
 use crate::components::InstrSplit;
-use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
-use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::basic_component_gui;
 use egui::{Rect, Response, RichText, Ui, Vec2};
+use syncrim::common::{EguiComponent, Id, Ports, Simulator};
+use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
+use syncrim::gui_egui::gui::EguiExtra;
+use syncrim::gui_egui::helper::basic_component_gui;
 
 #[typetag::serde]
 impl EguiComponent for InstrSplit {

@@ -1,12 +1,12 @@
-use crate::common::{EguiComponent, Id, Ports, Simulator};
-use crate::components::BranchLogic;
-use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
-use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::basic_component_gui;
+use crate::components::JumpMerge;
 use egui::{Rect, Response, RichText, Ui, Vec2};
+use syncrim::common::{EguiComponent, Id, Ports, Simulator};
+use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
+use syncrim::gui_egui::gui::EguiExtra;
+use syncrim::gui_egui::helper::basic_component_gui;
 
 #[typetag::serde]
-impl EguiComponent for BranchLogic {
+impl EguiComponent for JumpMerge {
     fn render(
         &self,
         ui: &mut Ui,
@@ -18,7 +18,7 @@ impl EguiComponent for BranchLogic {
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
         basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
-            ui.label("Branch Logic".to_string());
+            ui.label(RichText::new("Jump Merge").size(12f32 * scale));
         })
     }
 

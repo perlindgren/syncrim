@@ -1,10 +1,4 @@
 // use std::fmt::Alignment;
-#[cfg(feature = "gui-egui")]
-use crate::common::EguiComponent;
-use crate::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
-    SignalValue, Simulator,
-};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -12,6 +6,12 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::ops::Deref;
 use std::rc::Rc;
+#[cfg(feature = "gui-egui")]
+use syncrim::common::EguiComponent;
+use syncrim::common::{
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
+    SignalValue, Simulator,
+};
 
 pub mod reg_file_fields {
     pub const RS_ADDRESS_IN_ID: &str = "rs_address_in";

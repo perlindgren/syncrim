@@ -707,7 +707,7 @@ impl ControlUnit {
 }
 #[cfg(test)]
 mod test {
-    use crate::{common::ComponentStore, components::ProbeOut};
+    use syncrim::{common::ComponentStore, components::ProbeOut};
 
     use super::*;
 

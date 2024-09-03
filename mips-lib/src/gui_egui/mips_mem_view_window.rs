@@ -1,11 +1,12 @@
-use egui::{scroll_area, RichText, ScrollArea, TextWrapMode, Ui, ViewportBuilder, ViewportId};
+use egui::{RichText, ScrollArea, TextWrapMode, Ui, ViewportBuilder, ViewportId};
 use std::{
     cell::RefCell,
     collections::{HashMap, HashSet},
     rc::Rc,
 };
 
-use crate::components::{InstrMem, MemOpSize, MipsMem, RegFile};
+use crate::components::RegFile;
+use crate::components::{MemOpSize, MipsMem};
 use MIPS_disassembly;
 
 use serde::{Deserialize, Serialize};

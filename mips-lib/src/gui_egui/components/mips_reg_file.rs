@@ -1,9 +1,9 @@
-use crate::common::{EguiComponent, Simulator};
 use crate::components::{RegFile, RegFormat};
-use crate::gui_egui::editor::EditorMode;
-use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::basic_component_gui;
 use egui::{ComboBox, Rect, Response, RichText, ScrollArea, Ui, Vec2};
+use syncrim::common::{EguiComponent, Simulator};
+use syncrim::gui_egui::editor::EditorMode;
+use syncrim::gui_egui::gui::EguiExtra;
+use syncrim::gui_egui::helper::basic_component_gui;
 
 const REG_NAMES: [&str; 32] = [
     "zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6",

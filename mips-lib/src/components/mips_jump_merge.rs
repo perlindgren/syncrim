@@ -1,13 +1,13 @@
 // use std::fmt::Alignment;
-#[cfg(feature = "gui-egui")]
-use crate::common::EguiComponent;
-use crate::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
-};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::rc::Rc;
+#[cfg(feature = "gui-egui")]
+use syncrim::common::EguiComponent;
+use syncrim::common::{
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
+};
 
 pub const MERGE_INSTR_ADDR_ID: &str = "merge_instr_addr_in";
 pub const MERGE_JUMP_ADDR_ID: &str = "merge_jump_addr_in";
