@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::cell::RefCell;
 use std::rc::Rc;
-#[cfg(feature = "gui-egui")]
 use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 
 pub mod reg_file_fields {

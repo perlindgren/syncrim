@@ -3,7 +3,6 @@ use log::*;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::rc::Rc;
-#[cfg(feature = "gui-egui")]
 use syncrim::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
