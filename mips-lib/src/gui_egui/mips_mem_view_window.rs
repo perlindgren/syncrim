@@ -31,7 +31,7 @@ pub struct MemViewWindow {
     #[serde(skip)]
     custom_address: u32,
 
-    // used for formatning the view
+    // used for formatting the view
     big_endian: bool,
     format: DataFormat,
 

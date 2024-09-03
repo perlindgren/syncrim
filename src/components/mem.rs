@@ -144,8 +144,8 @@ impl Memory {
     ///
     /// let mem = Memory::default(); // creates a memory with only zeros
     ///
-    /// let align_addrs = mem.align(0xa3f5, 4);
-    /// assert_eq!(SignalValue::from(0xa3f4), align_addrs)
+    /// let align_adrs = mem.align(0xa3f5, 4);
+    /// assert_eq!(SignalValue::from(0xa3f4), align_adrs)
     /// ```
     pub fn align(&self, addr: usize, size: usize) -> SignalValue {
         ((addr % size != 0) as SignalUnsigned).into()
@@ -179,7 +179,7 @@ impl Memory {
                 }
             }
             2 => {
-                // Loading half word, most stuff here is for tracing and degbuggning
+                // Loading half word, most stuff here is for tracing and debugging
                 if sign {
                     if big_endian {
                         // sign big endian
