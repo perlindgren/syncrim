@@ -1,6 +1,6 @@
 use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 use core::cell::RefCell;
-use log::*;
+// use log::*;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, rc::Rc};
 #[cfg(feature = "gui-egui")]

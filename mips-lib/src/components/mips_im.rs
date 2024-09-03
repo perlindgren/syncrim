@@ -1,7 +1,7 @@
 use core::cell::RefCell;
-use log::*;
+// use log::*;
 use serde::{Deserialize, Serialize};
-use std::{any::Any, rc::Rc};
+use std::rc::Rc;
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
 use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};

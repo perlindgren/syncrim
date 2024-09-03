@@ -203,11 +203,11 @@ impl FullAdd {
 mod test {
     use super::*;
 
-    use crate::{
+    use std::rc::Rc;
+    use syncrim::{
         common::{ComponentStore, Input, Simulator},
         components::ProbeOut,
     };
-    use std::rc::Rc;
 
     #[test]
     fn test_some_alu_op() {

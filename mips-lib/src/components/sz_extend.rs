@@ -5,11 +5,9 @@ use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::rc::Rc;
 #[cfg(feature = "gui-egui")]
-use syncrim::common::EguiComponent;
 use syncrim::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
-use syncrim::signal;
 
 pub const SIGNZEROEXTEND_SIGNAL_IN_ID: &str = "signzero_signal_in";
 pub const SIGNZEROEXTEND_CTRL_IN_ID: &str = "signzero_ctrl_in";
