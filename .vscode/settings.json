@@ -1,9 +1,9 @@
 {
   "json.schemaDownload.enable": true,
   "rust-analyzer.linkedProjects": [
-    "./mips/Cargo.toml",
+    "./mips-lib/Cargo.toml",
     "./Cargo.toml",
-    ".\\mips\\Cargo.toml"
+    "./mips-simple/Cargo.toml"
   ],
   "cSpell.ignoreWords": [
     "Clippy",
