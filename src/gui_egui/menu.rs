@@ -3,7 +3,7 @@ use crate::gui_egui::{
     gui::Gui,
     keymap,
 };
-use egui::{menu, Button, Color32, DragValue, KeyboardShortcut, Response, RichText, Ui};
+use egui::{menu, Button, DragValue, KeyboardShortcut, Response, Ui};
 pub(crate) struct Menu {}
 
 impl Menu {

@@ -169,8 +169,6 @@ impl Memory {
 
         trace!("{:x?}", data);
 
-        let tmp: SignalValue = 0x34.into();
-
         match size {
             1 => {
                 // Loading one byte

@@ -1,8 +1,7 @@
 #[cfg(feature = "gui-egui")]
 use crate::common::EguiComponent;
 use crate::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalSigned, SignalUnsigned,
-    SignalValue, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
 use log::*;
 use serde::{Deserialize, Serialize};

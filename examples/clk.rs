@@ -1,6 +1,4 @@
 use std::path::PathBuf;
-use std::rc::Rc;
-use syncrim::common::EguiComponent;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
 use syncrim::{

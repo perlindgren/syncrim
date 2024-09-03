@@ -4,7 +4,6 @@ use crate::common::EguiComponent;
 use crate::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
-use crate::signal;
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
