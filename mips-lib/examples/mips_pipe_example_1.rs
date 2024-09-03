@@ -1,7 +1,7 @@
 // use crate::src::components::cntr_unit_signals;
+use mips_lib::components::*;
 use std::rc::Rc;
 use std::{cell::RefCell, path::PathBuf};
-use syncrim::common::EguiComponent;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
 use syncrim::{

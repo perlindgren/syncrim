@@ -1,18 +1,13 @@
-use std::rc::Rc;
-use std::{
-    any::{Any, TypeId},
-    path::PathBuf,
-};
-use syncrim::common::EguiComponent;
+use mips_lib::components::*;
+use std::path::PathBuf;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
+use syncrim::mips_helper_functions::autowire;
 use syncrim::{
     common::{ComponentStore, Input},
-    component_store,
     components::*,
     fern::fern_setup,
 };
-
 fn main() {
     fern_setup();
     let cs = ComponentStore {
