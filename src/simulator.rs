@@ -255,7 +255,7 @@ impl Simulator {
         self.history.push(self.sim_state.clone());
         trace!("cycle:{}", self.cycle);
         for component in self.ordered_components.clone() {
-            //trace!("evaling component:{}", component.get_id_ports().0);
+            //trace!("evaluating component:{}", component.get_id_ports().0);
             match component.clock(self) {
                 Ok(_) => {}
                 Err(cond) => match cond {

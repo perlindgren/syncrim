@@ -49,7 +49,7 @@ fn main() {
                 Input::new("instruction_splitter", INSTRUCTION_SPLITTER_FUNCT_ID),
             ),
             Probe::rc_new(
-                "immiediate",
+                "immediate",
                 (270.0, 240.0),
                 Input::new("instruction_splitter", INSTRUCTION_SPLITTER_IMMEDIATE_ID),
             ),

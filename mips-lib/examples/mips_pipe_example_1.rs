@@ -60,7 +60,7 @@ fn main() {
             ),
             //
             //
-            // MUX to choose what intruction addr to choose from, branch jump, reg, pc+4
+            // MUX to choose what instruction addr to choose from, branch jump, reg, pc+4
             Mux::rc_new(
                 "mux_jump_merge",
                 (140.0, 390.0),
@@ -96,14 +96,14 @@ fn main() {
                 Input::new("jump_merge", MERGE_OUT_ID),
             ),
             //
-            // splits intructions from ir to fields
+            // splits instructions from ir to fields
             InstrSplit::rc_new(
                 "instruction_split",
                 (280.0, 140.0),
                 Input::new("InMem_reg", REGISTER_OUT_ID),
             ),
             //
-            // First CU, handles, selcet for signzero_extend and mux_write_addr
+            // First CU, handles, select for sign/zero_extend and mux_write_addr
             ControlUnit::rc_new(
                 "control_unit_1",
                 (280.0, 100.0),
@@ -117,7 +117,7 @@ fn main() {
                 Input::new("control_EX_reg", REGISTER_OUT_ID),
             ),
             //
-            // Third CU, handles, write_back_mux, and DMs memread and memwrite
+            // Third CU, handles, write_back_mux, and DMs mem-read and mem-write
             ControlUnit::rc_new(
                 "control_unit_3",
                 (480.0, 100.0),
@@ -227,7 +227,7 @@ fn main() {
             //
             //
             Register::rc_new(
-                //TODO: make 2 more controll units
+                //TODO: make 2 more control units
                 "control_EX_reg",
                 (3450.0, 1400.0),
                 Input::new("InMem_reg", REGISTER_OUT_ID),
@@ -272,7 +272,7 @@ fn main() {
             //
             //
             ZeroExtend::rc_new(
-                "zero_extend_for_chamt",
+                "zero_extend_for_shamt",
                 (550.0, 170.0),
                 Input::new("zero_extend_reg", REGISTER_OUT_ID),
             ),
@@ -284,7 +284,7 @@ fn main() {
                 (650.0, 220.0),
                 Input::new("control_unit_2", cntr_field::ALU_SRC_A_OUT),
                 vec![
-                    Input::new("zero_extend_for_chamt", SIGNZEROEXTEND_OUT_ID),
+                    Input::new("zero_extend_for_shamt", SIGNZEROEXTEND_OUT_ID),
                     Input::new("operand_a_reg", REGISTER_OUT_ID),
                     Input::new("0_a_inp", "out"),
                 ],

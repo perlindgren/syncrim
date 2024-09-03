@@ -59,7 +59,7 @@ pub mod cntr_field {
     pub const MMU_OUT: &str = "mmu_out";
 
     //TODO
-    // Opcode is passed to branch unit wich is responsible to controll branch logic
+    // Opcode is passed to branch unit which is responsible to control branch logic
     // pub const BRANCH_TYPE_OUT: &str = "branch";
 
     //TODO
@@ -354,7 +354,7 @@ impl Component for ControlUnit {
                 set!(
                     cntr_field::BRANCH_INTERRUPT_OUT,
                     cntr_unit_signals::NO_BRANCH_INTERRUPT
-                ); // overiden by jr and jalr
+                ); // overwritten by jr and jalr
 
                 match funct {
                     FUNCT_SLL => {
@@ -409,7 +409,7 @@ impl Component for ControlUnit {
                             cntr_field::BRANCH_INTERRUPT_OUT,
                             cntr_unit_signals::BRANCH_INTERRUPT
                         );
-                        set!(cntr_field::REG_DEST_OUT, cntr_unit_signals::REG_DEST_RD); // this is different from syncsim as there its defined as 31, but that dosen't match mips documentation;
+                        set!(cntr_field::REG_DEST_OUT, cntr_unit_signals::REG_DEST_RD); // this is different from syncsim as there its defined as 31, but that doesn't match mips documentation;
                         set!(cntr_field::ALU_SRC_A_OUT, cntr_unit_signals::ALU_SRC_A_ZERO);
                         set!(cntr_field::ALU_SRC_B_OUT, cntr_unit_signals::ALU_SRC_B_PC);
                         set!(cntr_field::ALU_OP_OUT, alu_op::ADDU);

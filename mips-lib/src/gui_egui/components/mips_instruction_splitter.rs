@@ -24,7 +24,7 @@ impl EguiComponent for InstrSplit {
             ui.set_height(height);
             ui.set_width(width);
             ui.centered_and_justified(|ui| {
-                ui.label(RichText::new("instruction\nspliter").size(12f32 * scale));
+                ui.label(RichText::new("instruction\n splitter").size(12f32 * scale));
             });
         })
     }

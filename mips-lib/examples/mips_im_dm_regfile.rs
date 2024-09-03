@@ -13,7 +13,7 @@ use syncrim::{
 fn main() {
     fern_setup();
 
-    // create an empty memory that both IM and DM can refrence
+    // create an empty memory that both IM and DM can reference
     let mem = Rc::new(RefCell::new(MipsMem::default()));
     let reg_file = RegFile::rc_new(
         "reg_file",

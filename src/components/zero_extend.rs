@@ -4,7 +4,6 @@ use crate::common::EguiComponent;
 use crate::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
-use crate::signal;
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -65,7 +64,7 @@ impl Component for ZeroExtend {
             .try_into()
             .unwrap();
 
-        let output: u32 = signal_in & 0x0000_FFFF; // already zero exrtended
+        let output: u32 = signal_in & 0x0000_FFFF; // already zero extended
 
         simulator.set_out_value(&self.id, ZEROEXTEND_OUT_ID, SignalValue::Data(output));
         Ok(())

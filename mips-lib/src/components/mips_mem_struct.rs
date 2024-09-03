@@ -31,7 +31,7 @@ impl MemWriteReturn {
     pub fn op_size(&self) -> MemOpSize {
         self.op_size.clone()
     }
-    /// return the bytes befre the write where [0] is at address, [1] is at address + 1 and [N] is at address + N
+    /// return the bytes before the write where [0] is at address, [1] is at address + 1 and [N] is at address + N
     pub fn before_bytes(&self) -> Vec<u8> {
         match self.op_size {
             MemOpSize::Byte => vec![self.bytes[0]],
@@ -256,7 +256,7 @@ impl MipsMem {
                 for sym_entry in sym_table {
                     let sym_name = string_table.get(sym_entry.st_name as usize).unwrap();
 
-                    // if the symboltype is NOTYPE, bind is LOCAL and has a string add it
+                    // if the symbol type is NOTYPE, bind is LOCAL and has a string add it
                     if sym_entry.st_symtype() == 0x0 && sym_entry.st_bind() == 0x0 && sym_name != ""
                     {
                         sym_hash_map.insert(sym_entry.st_value as u32, sym_name.to_string());
