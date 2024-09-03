@@ -1,11 +1,11 @@
-use std::borrow::BorrowMut;
-use std::cell::RefCell;
+// use std::borrow::BorrowMut;
+// use std::cell::RefCell;
 use std::fs;
 use std::path::PathBuf;
 
 use crate::components::InstrMem;
 use crate::components::MipsMem;
-use crate::gui_egui::mips_mem_view_window::MemViewWindow;
+// use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 use egui::{Rect, Response, RichText, Ui, Vec2};
 use syncrim::common::{EguiComponent, Id, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
@@ -59,7 +59,7 @@ impl EguiComponent for InstrMem {
 
         if let Some(path) = path_option {
             let data = fs::read(path).unwrap();
-            &self.mem.replace(MipsMem::from_sections(&data).unwrap());
+            let _ = &self.mem.replace(MipsMem::from_sections(&data).unwrap());
             mem_view_vis = true;
         };
         // {} to drop RefMut as early as possible
