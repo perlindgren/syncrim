@@ -1,4 +1,4 @@
-//TODO: add so it can take undefiend number of inputs
+//TODO: add so it can take undefined number of inputs
 use crate::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
