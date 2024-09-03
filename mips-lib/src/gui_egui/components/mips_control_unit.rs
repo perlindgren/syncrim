@@ -1,5 +1,5 @@
 use crate::components::ControlUnit;
-use egui::{Rect, Response, RichText, Ui, Vec2};
+use egui::{Rect, Response, Ui, Vec2};
 use syncrim::common::{EguiComponent, Id, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;

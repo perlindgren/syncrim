@@ -122,7 +122,7 @@ impl MemViewWindow {
         title: String,
         mem: Rc<RefCell<MipsMem>>,
         regfile: Rc<RegFile>,
-        pc_ref: Rc<RefCell<u32>>,
+        _pc_ref: Rc<RefCell<u32>>,
     ) -> Self {
         MemViewWindow::new(id, title, mem).set_regfile(regfile)
     }

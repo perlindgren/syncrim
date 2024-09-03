@@ -68,7 +68,7 @@ pub mod cntr_field {
     pub const MEM_MODE_OUT: &str = "mem_mode";
 }
 
-const NOP: u32 = 0;
+// const NOP: u32 = 0;
 const OP_0: u32 = 0;
 
 const FUNCT_SLL: u32 = 0;
@@ -115,10 +115,10 @@ const OP_XORI: u32 = 0b00_1110;
 const OP_LUI: u32 = 0b00_1111;
 
 const OP_CP0: u32 = 0b01_0000;
-const CP0_FUNCT_MFC0: u32 = 0;
-const CP0_FUNCT_MTF0: u32 = 0b0_0100;
-const CP0_FUNCT_SPECIAL: u32 = 0b1_0000;
-const CP0_FUNCT_SPECIAL_: u32 = 0b1_0000;
+// const CP0_FUNCT_MFC0: u32 = 0;
+// const CP0_FUNCT_MTF0: u32 = 0b0_0100;
+// const CP0_FUNCT_SPECIAL: u32 = 0b1_0000;
+// const CP0_FUNCT_SPECIAL_: u32 = 0b1_0000;
 
 const OP_LB: u32 = 0b10_0000;
 const OP_LH: u32 = 0b10_0001;
