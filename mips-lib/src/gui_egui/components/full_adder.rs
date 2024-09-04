@@ -1,9 +1,9 @@
-use crate::components::{alu_op, FullAdd};
+use crate::components::{alu_op, FullAdd, FULL_ADD_OUT_ID, FULL_ADD_OVERFLOW_OUT_ID};
 use egui::{
-    Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Shape, Stroke, TextWrapMode, Ui,
-    Vec2,
+    vec2, Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Shape, Stroke,
+    TextWrapMode, Ui, Vec2,
 };
-use syncrim::common::{EguiComponent, Ports, Simulator};
+use syncrim::common::{EguiComponent, Input, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
     rect_with_hover, visualize_ports,
@@ -176,20 +176,6 @@ impl EguiComponent for FullAdd {
         }
     }
 
-    fn ports_location(&self) -> Vec<(syncrim::common::Id, Pos2)> {
-        let own_pos = Vec2::new(self.pos.0, self.pos.1);
-        vec![
-            (
-                syncrim::components::SEXT_IN_ID.to_string(),
-                Pos2::new(-40f32, 0f32) + own_pos,
-            ),
-            (
-                syncrim::components::SEXT_OUT_ID.to_string(),
-                Pos2::new(40f32, 0f32) + own_pos,
-            ),
-        ]
-    }
-
     fn top_padding(&self) -> f32 {
         20f32
     }
@@ -200,5 +186,21 @@ impl EguiComponent for FullAdd {
 
     fn get_pos(&self) -> (f32, f32) {
         self.pos
+    }
+
+    fn get_port_location(&self, id: Input) -> Option<(f32, f32)> {
+        if id == self.a_in {
+            Some((Pos2::from(self.pos) + vec2(-20.0, -30.0)).into())
+        } else if id == self.b_in {
+            Some((Pos2::from(self.pos) + vec2(-20.0, 30.0)).into())
+        } else if id == Input::new(&self.id, FULL_ADD_OUT_ID) {
+            Some((Pos2::from(self.pos) + vec2(20.0, 0.0)).into())
+        } else if id == Input::new(&self.id, FULL_ADD_OVERFLOW_OUT_ID) {
+            Some((Pos2::from(self.pos) + vec2(20.0, 5.0)).into())
+        } else if id == self.op_in {
+            Some((Pos2::from(self.pos) + vec2(-10.0, -40.0)).into())
+        } else {
+            None
+        }
     }
 }

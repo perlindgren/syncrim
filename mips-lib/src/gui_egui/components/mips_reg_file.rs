@@ -1,6 +1,6 @@
-use crate::components::{RegFile, RegFormat};
-use egui::{ComboBox, Rect, Response, RichText, ScrollArea, Ui, Vec2};
-use syncrim::common::{EguiComponent, Simulator};
+use crate::components::{reg_file_fields, RegFile, RegFormat};
+use egui::{vec2, ComboBox, Pos2, Rect, Response, RichText, ScrollArea, Ui, Vec2};
+use syncrim::common::{EguiComponent, Input, Simulator};
 use syncrim::gui_egui::editor::EditorMode;
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::basic_component_gui;
@@ -89,6 +89,32 @@ impl EguiComponent for RegFile {
                 ui.label(RichText::new(str).size(12f32 * scale).monospace())
             });
         })
+    }
+
+    fn get_port_location(&self, id: Input) -> Option<(f32, f32)> {
+        // components size = (120,250)
+        let margin = egui::style::Spacing::default().window_margin;
+
+        // inputs
+        if id == self.rs_address_in {
+            Some((Pos2::from(self.pos) + vec2(0f32, -125.0 - margin.top)).into())
+        } else if id == self.rt_address_in {
+            Some((Pos2::from(self.pos) + vec2(0f32, 125.0 + margin.bottom)).into())
+        } else if id == self.write_enable_in {
+            Some((Pos2::from(self.pos) + vec2(-60.0 - margin.left, 70.0)).into())
+        } else if id == self.write_address_in {
+            Some((Pos2::from(self.pos) + vec2(-60.0 - margin.left, 90.0)).into())
+        } else if id == self.write_data_in {
+            Some((Pos2::from(self.pos) + vec2(-60.0 - margin.left, 110.0)).into())
+        // outputs
+        } else if id == Input::new(&self.id, reg_file_fields::RS_VALUE_OUT_ID) {
+            Some((Pos2::from(self.pos) + vec2(60.0 + margin.right, 40.0)).into())
+        } else if id == Input::new(&self.id, reg_file_fields::RT_VALUE_OUT_ID) {
+            Some((Pos2::from(self.pos) + vec2(60.0 + margin.right, -40.0)).into())
+        // no match
+        } else {
+            None
+        }
     }
 
     fn top_padding(&self) -> f32 {
