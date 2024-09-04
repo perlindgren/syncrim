@@ -137,8 +137,8 @@ pub trait EguiComponent: Component {
         }
     }
 
-    fn get_port_location(&self, id: Input) -> egui::Pos2 {
-        self.get_pos().into()
+    fn get_port_location(&self, id: Input) -> Option<(f32, f32)> {
+        None
     }
 
     fn top_padding(&self) -> f32 {
@@ -184,7 +184,7 @@ impl Ports {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Input {
     pub id: Id,
     pub field: Id,
