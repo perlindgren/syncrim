@@ -6,9 +6,11 @@ use std::rc::Rc;
 use syncrim::common::EguiComponent;
 use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 
-use crate::components::mips_mem_struct::{MemOpSize, MipsMem};
+use crate::components::physical_mem::{MemOpSize, MipsMem};
 use crate::components::RegFile;
 use crate::gui_egui::mips_mem_view_window::MemViewWindow;
+
+use super::PhysicalMem;
 
 pub const INSTR_MEM_PC_ID: &str = "pc";
 
@@ -19,9 +21,9 @@ pub struct InstrMem {
     pub id: String,
     pub pos: (f32, f32),
     pub pc: Input,
-    // should probably not skip mem rc here, since we still need them to point to the same MipsMem
-    #[serde(skip)]
-    pub mem: Rc<RefCell<MipsMem>>,
+    // All components who deal with memory acess this
+    pub phys_mem_id: String,
+    pub regfile_id: String,
     pub mem_view: RefCell<MemViewWindow>,
 }
 
@@ -30,33 +32,28 @@ impl InstrMem {
         id: String,
         pos: (f32, f32),
         pc_input: Input,
-        mem: Rc<RefCell<MipsMem>>,
+        phys_mem_id: String,
+        regfile_id: String,
     ) -> InstrMem {
-        let mem_view = MemViewWindow::new(
-            id.clone(),
-            "instruction memory view".into(),
-            Rc::clone(&mem),
-        )
-        .set_code_view();
+        let mem_view =
+            MemViewWindow::new(id.clone(), "instruction memory view".into()).set_code_view(None);
         InstrMem {
             id: id,
             pos: pos,
             pc: pc_input,
-            mem: mem,
+            phys_mem_id: phys_mem_id,
             mem_view: RefCell::new(mem_view),
+            regfile_id: regfile_id,
         }
     }
     pub fn rc_new(
         id: String,
         pos: (f32, f32),
         pc_input: Input,
-        mem: Rc<RefCell<MipsMem>>,
+        phys_mem_id: String,
+        regfile_id: String,
     ) -> Rc<InstrMem> {
-        Rc::new(InstrMem::new(id, pos, pc_input, mem))
-    }
-    pub fn set_mem_view_reg(mut self, reg_rc: Rc<RegFile>) -> Self {
-        self.mem_view.get_mut().update_regfile(reg_rc);
-        self
+        Rc::new(InstrMem::new(id, pos, pc_input, phys_mem_id, regfile_id))
     }
 }
 
@@ -72,17 +69,13 @@ impl Component for InstrMem {
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy_input = Input::new("dummy", "out");
-        let memref = Rc::new(RefCell::new(MipsMem::default()));
         Box::new(Rc::new(InstrMem {
             id: id.into(),
             pos: pos,
             pc: dummy_input,
-            mem: memref.clone(),
-            mem_view: RefCell::new(MemViewWindow::new(
-                "dummy".into(),
-                "IM dummy".into(),
-                memref,
-            )),
+            phys_mem_id: "dummy".into(),
+            mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
+            regfile_id: "dummy".into(),
         }))
     }
 
@@ -110,12 +103,31 @@ impl Component for InstrMem {
         // get instr at pc/4
         let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
 
+        // this is inside a {} to make sure our simulator borrow is returned before its used to set signal
+        let option_instr = {
+            let v = &simulator.ordered_components;
+            let comp = v
+                .into_iter()
+                .find(|x| x.get_id_ports().0 == self.phys_mem_id)
+                .expect(&format!("cant find {} in simulator", self.phys_mem_id));
+            // deref to get Rc
+            // deref again to get &dyn EguiComponent
+            let comp_any = (**comp).as_any();
+            let phys_mem: &PhysicalMem = comp_any
+                .downcast_ref()
+                .expect("can't downcast to physical memory");
+            phys_mem
+                .mem
+                .borrow_mut()
+                .get(pc, MemOpSize::Word, false, true)
+        };
+
         // update dynamic symbol PC_IM
         self.mem_view.borrow_mut().set_dynamic_symbol("PC_IM", pc);
 
         // Get a word at PC with the size of 32bits, read as big endian,
         // sign extend doesn't mater since we have 32 bits so extending to 32bits does nothing
-        match self.mem.borrow().get(pc, MemOpSize::Word, false, true) {
+        match option_instr {
             Ok(instr) => {
                 simulator.set_out_value(&self.id, INSTR_MEM_INSTRUCTION_ID, instr);
                 // check if pc is at breakpoint

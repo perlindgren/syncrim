@@ -1,7 +1,7 @@
 // use crate::src::components::cntr_unit_signals;
 use mips_lib::components::*;
+use std::path::PathBuf;
 use std::rc::Rc;
-use std::{cell::RefCell, path::PathBuf};
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
 use syncrim::{
@@ -14,7 +14,6 @@ use syncrim::{
 fn main() {
     fern_setup();
 
-    let mem = Rc::new(RefCell::new(MipsMem::default()));
     let rc_reg_file = RegFile::rc_new(
         "reg_file",
         (360.0, 170.0),
@@ -37,6 +36,7 @@ fn main() {
 
     let cs = ComponentStore {
         store: vec![
+            Rc::new(PhysicalMem::new("phys_mem", (0.0, 0.0))),
             // register that holds instr addr
             Register::rc_new("pc", (170.0, 410.0), Input::new("mux_jump_merge", "out")),
             // step addr from reg by 4
@@ -49,15 +49,13 @@ fn main() {
             ),
             //
             //
-            Rc::new(
-                InstrMem::new(
-                    "instr_mem".into(),
-                    (280.0, 600.0),
-                    Input::new("pc", "out"),
-                    Rc::clone(&mem),
-                )
-                .set_mem_view_reg(rc_reg_file.clone()),
-            ),
+            Rc::new(InstrMem::new(
+                "instr_mem".into(),
+                (280.0, 600.0),
+                Input::new("pc", "out"),
+                "phys_mem".into(),
+                "reg_file".into(),
+            )),
             //
             //
             // MUX to choose what instruction addr to choose from, branch jump, reg, pc+4
@@ -314,18 +312,16 @@ fn main() {
             ),
             //
             //
-            Rc::new(
-                DataMem::new(
-                    "data_mem".into(),
-                    (600.0, 580.0),
-                    Input::new("alu_reg", REGISTER_OUT_ID), // calculated from rs and imm
-                    Input::new("data_MEM_reg", REGISTER_OUT_ID),
-                    Input::new("control_unit_3", cntr_field::MEM_MODE_OUT),
-                    Input::new("control_unit_3", cntr_field::MEM_WRITE_ENABLE_OUT),
-                    Rc::clone(&mem),
-                )
-                .set_mem_view_reg(rc_reg_file.clone()),
-            ),
+            Rc::new(DataMem::new(
+                "data_mem".into(),
+                (600.0, 580.0),
+                Input::new("alu_reg", REGISTER_OUT_ID), // calculated from rs and imm
+                Input::new("data_MEM_reg", REGISTER_OUT_ID),
+                Input::new("control_unit_3", cntr_field::MEM_MODE_OUT),
+                Input::new("control_unit_3", cntr_field::MEM_WRITE_ENABLE_OUT),
+                "phys_mem".into(),
+                "reg_file".into(),
+            )),
             //
             //
             Register::rc_new(

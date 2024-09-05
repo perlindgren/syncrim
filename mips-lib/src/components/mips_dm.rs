@@ -1,5 +1,6 @@
 use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 use core::cell::RefCell;
+use std::cell::RefMut;
 // use log::*;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, rc::Rc};
@@ -7,8 +8,10 @@ use std::{collections::HashMap, rc::Rc};
 use syncrim::common::EguiComponent;
 use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 
-use crate::components::mips_mem_struct::{MemOpSize, MemWriteReturn, MipsMem};
+use crate::components::physical_mem::{MemOpSize, MemWriteReturn, MipsMem};
 use crate::components::RegFile;
+
+use super::PhysicalMem;
 
 pub mod data_op {
     pub const NO_OP: u32 = 0;
@@ -38,16 +41,9 @@ pub struct DataMem {
     pub data_input: Input,
     pub op_input: Input,
     pub write_enable_input: Input,
-    // FIXME should probably not skip mem rc here, since we still need them to point to the same MipsMem
-    #[serde(skip)]
-    pub mem: Rc<RefCell<MipsMem>>,
+    pub phys_mem_id: String,
+    pub regfile_id: String,
     pub mem_view: RefCell<MemViewWindow>,
-
-    #[serde(skip)]
-    history: RefCell<HashMap<usize, MemWriteReturn>>,
-    // used for the un_clock(), this is because the simulator is not passed in un clock and we dont know what cycle we un clock to
-    #[serde(skip)]
-    cycle: RefCell<usize>,
 }
 
 impl DataMem {
@@ -58,21 +54,21 @@ impl DataMem {
         data_input: Input,
         op_input: Input,
         write_enable_input: Input,
-        mem: Rc<RefCell<MipsMem>>,
+        phys_mem_id: String,
+        regfile_id: String,
     ) -> Self {
-        let mem_view = MemViewWindow::new(id.clone(), "Data memory view".into(), Rc::clone(&mem))
-            .set_data_view();
+        let mem_view =
+            MemViewWindow::new(id.clone(), "Data memory view".into()).set_data_view(None);
         DataMem {
             id: id,
             pos: pos,
-            mem: mem,
+            phys_mem_id: phys_mem_id,
             address_input: address_input,
             data_input: data_input,
             op_input: op_input,
             write_enable_input: write_enable_input,
             mem_view: RefCell::new(mem_view),
-            history: RefCell::new(HashMap::new()),
-            cycle: RefCell::default(), // this doesn't mater will be overwritten when clock is called
+            regfile_id: regfile_id,
         }
     }
     pub fn rc_new(
@@ -82,7 +78,8 @@ impl DataMem {
         data_input: Input,
         op_input: Input,
         write_enable_input: Input,
-        mem: Rc<RefCell<MipsMem>>,
+        phys_mem_id: String,
+        regfile_id: String,
     ) -> Rc<Self> {
         Rc::new(DataMem::new(
             id,
@@ -91,15 +88,43 @@ impl DataMem {
             data_input,
             op_input,
             write_enable_input,
-            mem,
+            phys_mem_id,
+            regfile_id,
         ))
     }
-    pub fn set_mem_view_reg(mut self, reg_rc: Rc<RegFile>) -> Self {
-        self.mem_view.get_mut().update_regfile(reg_rc);
-        self
+    /// This gets a &PhysicalMem from the component named self.phys_mem_id
+    ///
+    /// # Panics
+    ///
+    /// Panics if This functions panics if phys_mem_id is not found in simulator
+    /// or phys_mem_id is not of type PhysicalMem
+    fn get_phys_mem<'a>(&self, sim: &'a Simulator) -> &'a PhysicalMem {
+        let v = &sim.ordered_components;
+        let comp = v
+            .into_iter()
+            .find(|x| x.get_id_ports().0 == self.phys_mem_id)
+            .expect(&format!("cant find {} in simulator", self.phys_mem_id));
+        // deref to get &dyn EguiComponent
+        let comp_any = (*comp).as_any();
+        let phys_mem: &PhysicalMem = comp_any
+            .downcast_ref()
+            .expect("can't downcast to physical memory");
+        phys_mem
     }
-    fn up_hist(&self, op: MemWriteReturn) {
-        self.history.borrow_mut().insert(*self.cycle.borrow(), op);
+
+    fn get_mut_mem<'a>(&self, sim: &'a Simulator) -> RefMut<'a, MipsMem> {
+        self.get_phys_mem(sim).mem.borrow_mut()
+    }
+
+    fn up_hist(&self, sim: &Simulator, op: MemWriteReturn, cycle: usize) {
+        self.get_phys_mem(sim)
+            .history
+            .borrow_mut()
+            .insert(cycle, op);
+    }
+    fn up_cycle(&self, sim: &Simulator) {
+        let cycle = sim.cycle;
+        let _ = self.get_phys_mem(sim).cycle.replace(cycle);
     }
 }
 
@@ -115,7 +140,6 @@ impl Component for DataMem {
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy_input = Input::new("dummy", "out");
-        let memref = Rc::new(RefCell::new(MipsMem::default()));
         Box::new(DataMem::rc_new(
             id.to_string(),
             pos,
@@ -123,7 +147,8 @@ impl Component for DataMem {
             dummy_input.clone(),
             dummy_input.clone(),
             dummy_input,
-            memref,
+            "dummy".into(),
+            "dummy".into(),
         ))
     }
 
@@ -166,7 +191,8 @@ impl Component for DataMem {
     }
 
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
-        *self.cycle.borrow_mut() = simulator.cycle;
+        let cycle = simulator.cycle;
+        self.up_cycle(&simulator);
         // get instr at pc/4s
         let address: u32 = simulator
             .get_input_value(&self.address_input)
@@ -220,27 +246,30 @@ impl Component for DataMem {
                 Ok(())
             }
             data_op::LOAD_BYTE => {
-                let val = self
-                    .mem
-                    .borrow()
-                    .get_unaligned(address, MemOpSize::Byte, SIGNED, true);
+                let val = self.get_mut_mem(&simulator).get_unaligned(
+                    address,
+                    MemOpSize::Byte,
+                    SIGNED,
+                    true,
+                );
                 simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, val);
                 Ok(())
             }
             data_op::LOAD_BYTE_U => {
-                let val = self
-                    .mem
-                    .borrow()
-                    .get_unaligned(address, MemOpSize::Byte, UNSIGNED, true);
+                let val = self.get_mut_mem(&simulator).get_unaligned(
+                    address,
+                    MemOpSize::Byte,
+                    UNSIGNED,
+                    true,
+                );
                 simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, val);
                 Ok(())
             }
             data_op::LOAD_HALF => {
-                match self
-                    .mem
-                    .borrow()
-                    .get(address, MemOpSize::Half, SIGNED, true)
-                {
+                let l_ret =
+                    self.get_mut_mem(&simulator)
+                        .get(address, MemOpSize::Half, SIGNED, true);
+                match l_ret {
                     Ok(val) => {
                         simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, val);
                         Ok(())
@@ -252,11 +281,10 @@ impl Component for DataMem {
                 }
             }
             data_op::LOAD_HALF_U => {
-                match self
-                    .mem
-                    .borrow()
-                    .get(address, MemOpSize::Half, UNSIGNED, true)
-                {
+                let l_ret =
+                    self.get_mut_mem(&simulator)
+                        .get(address, MemOpSize::Half, UNSIGNED, true);
+                match l_ret {
                     Ok(val) => {
                         simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, val);
                         Ok(())
@@ -268,11 +296,10 @@ impl Component for DataMem {
                 }
             }
             data_op::LOAD_WORD => {
-                match self
-                    .mem
-                    .borrow()
-                    .get(address, MemOpSize::Word, UNSIGNED, true)
-                {
+                let l_ret =
+                    self.get_mut_mem(&simulator)
+                        .get(address, MemOpSize::Word, UNSIGNED, true);
+                match l_ret {
                     Ok(val) => {
                         simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, val);
                         Ok(())
@@ -284,22 +311,23 @@ impl Component for DataMem {
                 }
             }
             data_op::STORE_BYTE => {
-                self.up_hist(
-                    self.mem
-                        .borrow_mut()
-                        .write(address, data, MemOpSize::Byte, true),
-                );
+                let ret = self
+                    .get_mut_mem(&simulator)
+                    .write(address, data, MemOpSize::Byte, true);
+                self.up_hist(&simulator, ret, cycle);
                 simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, 0);
                 Ok(())
             }
             data_op::STORE_HALF => {
-                match self
-                    .mem
-                    .borrow_mut()
-                    .write_aligned(address, data, MemOpSize::Half, true)
-                {
+                let w_ret = self.get_mut_mem(&simulator).write_aligned(
+                    address,
+                    data,
+                    MemOpSize::Half,
+                    true,
+                );
+                match w_ret {
                     Ok(ret) => {
-                        self.up_hist(ret);
+                        self.up_hist(&simulator, ret, cycle);
                         simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, 0);
                         Ok(())
                     }
@@ -310,13 +338,15 @@ impl Component for DataMem {
                 }
             }
             data_op::STORE_WORD => {
-                match self
-                    .mem
-                    .borrow_mut()
-                    .write_aligned(address, data, MemOpSize::Word, true)
-                {
+                let w_ret = self.get_mut_mem(&simulator).write_aligned(
+                    address,
+                    data,
+                    MemOpSize::Word,
+                    true,
+                );
+                match w_ret {
                     Ok(ret) => {
-                        self.up_hist(ret);
+                        self.up_hist(&simulator, ret, cycle);
                         simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, 0);
                         Ok(())
                     }
@@ -344,26 +374,6 @@ impl Component for DataMem {
                 }
             },
             Err(_) => ret,
-        }
-    }
-
-    fn un_clock(&self) {
-        *self.cycle.borrow_mut() -= 1;
-        if let Some(op) = self.history.borrow_mut().remove(&*self.cycle.borrow()) {
-            self.mem.borrow_mut().revert(op);
-        };
-    }
-
-    fn reset(&self) {
-        // dont need to reset cycle, since cycle is updated in clock
-
-        let mut hist_vec: Vec<(usize, MemWriteReturn)> =
-            self.history.borrow_mut().drain().collect();
-        // sort vec with largest first
-        hist_vec.sort_by(|(a, _), (b, _)| a.cmp(b).reverse());
-        let mut mem = self.mem.borrow_mut();
-        for (_, op) in hist_vec {
-            mem.revert(op);
         }
     }
 }
