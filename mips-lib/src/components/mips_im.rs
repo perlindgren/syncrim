@@ -23,11 +23,18 @@ pub struct InstrMem {
     pub pc: Input,
     // All components who deal with memory acess this
     pub phys_mem_id: String,
+    pub regfile_id: String,
     pub mem_view: RefCell<MemViewWindow>,
 }
 
 impl InstrMem {
-    pub fn new(id: String, pos: (f32, f32), pc_input: Input, phys_mem_id: String) -> InstrMem {
+    pub fn new(
+        id: String,
+        pos: (f32, f32),
+        pc_input: Input,
+        phys_mem_id: String,
+        regfile_id: String,
+    ) -> InstrMem {
         let mem_view =
             MemViewWindow::new(id.clone(), "instruction memory view".into()).set_code_view(None);
         InstrMem {
@@ -36,6 +43,7 @@ impl InstrMem {
             pc: pc_input,
             phys_mem_id: phys_mem_id,
             mem_view: RefCell::new(mem_view),
+            regfile_id: regfile_id,
         }
     }
     pub fn rc_new(
@@ -43,12 +51,9 @@ impl InstrMem {
         pos: (f32, f32),
         pc_input: Input,
         phys_mem_id: String,
+        regfile_id: String,
     ) -> Rc<InstrMem> {
-        Rc::new(InstrMem::new(id, pos, pc_input, phys_mem_id))
-    }
-    pub fn set_mem_view_reg(mut self, reg_rc: Rc<RegFile>) -> Self {
-        self.mem_view.get_mut().update_regfile(reg_rc);
-        self
+        Rc::new(InstrMem::new(id, pos, pc_input, phys_mem_id, regfile_id))
     }
 }
 
@@ -70,6 +75,7 @@ impl Component for InstrMem {
             pc: dummy_input,
             phys_mem_id: "dummy".into(),
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
+            regfile_id: "dummy".into(),
         }))
     }
 

@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use crate::components::InstrMem;
 use crate::components::MipsMem;
 use crate::components::PhysicalMem;
+use crate::components::RegFile;
 // use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 use egui::{Rect, Response, RichText, Ui, Vec2};
 use syncrim::common::{EguiComponent, Id, Ports, Simulator};
@@ -58,7 +59,23 @@ impl EguiComponent for InstrMem {
             // });
         });
 
-        if let Some(sim) = simulator {
+        if let Some(sim) = &simulator {
+            let v = &sim.ordered_components;
+            let comp = v
+                .into_iter()
+                .find(|x| x.get_id_ports().0 == self.regfile_id)
+                .expect(&format!("cant find {} in simulator", self.regfile_id));
+            // deref to get &dyn EguiComponent
+            let comp_any = (*comp).as_any();
+            let regfile: &RegFile = comp_any
+                .downcast_ref()
+                .expect("can't downcast to physical memory");
+            self.mem_view
+                .borrow_mut()
+                .set_reg_values(regfile.registers.borrow().clone());
+        }
+
+        if let Some(sim) = &simulator {
             let v = &sim.ordered_components;
             let comp = v
                 .into_iter()

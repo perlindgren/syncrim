@@ -13,16 +13,6 @@ use syncrim::{
 fn main() {
     fern_setup();
 
-    let rc_reg_file = RegFile::rc_new(
-        "reg_file",
-        (350.0, 225.0),
-        Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
-        Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
-        Input::new("reg_write_addr", REGISTER_OUT_ID), //write address
-        Input::new("result_reg", REGISTER_OUT_ID),     //write data
-        Input::new("reg_we", REGISTER_OUT_ID),
-    );
-
     let cs = ComponentStore {
         store: vec![
             Rc::new(PhysicalMem::new("phys_mem", (0.0, 0.0))),
@@ -42,15 +32,13 @@ fn main() {
             ),
             //
             //
-            Rc::new(
-                InstrMem::new(
-                    "instr_mem".into(),
-                    (250.0, 575.0),
-                    Input::new("pc", REGISTER_OUT_ID),
-                    "phys_mem".into(),
-                )
-                .set_mem_view_reg(rc_reg_file.clone()),
-            ),
+            Rc::new(InstrMem::new(
+                "instr_mem".into(),
+                (250.0, 575.0),
+                Input::new("pc", REGISTER_OUT_ID),
+                "phys_mem".into(),
+                "reg_file".into(),
+            )),
             //
             //
             // MUX to choose what intruction addr to choose from, branch jump, reg, pc+4
@@ -156,18 +144,16 @@ fn main() {
             ),
             //
             //
-            Rc::new(
-                DataMem::new(
-                    "data_mem".into(),
-                    (600.0, 575.0),
-                    Input::new("alu", FULL_ADD_OUT_ID), // calculated from rs and imm
-                    Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
-                    Input::new("control_unit", cntr_field::MEM_MODE_OUT),
-                    Input::new("control_unit", cntr_field::MEM_WRITE_ENABLE_OUT),
-                    "phys_mem".into(),
-                )
-                .set_mem_view_reg(rc_reg_file.clone()),
-            ),
+            Rc::new(DataMem::new(
+                "data_mem".into(),
+                (600.0, 575.0),
+                Input::new("alu", FULL_ADD_OUT_ID), // calculated from rs and imm
+                Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
+                Input::new("control_unit", cntr_field::MEM_MODE_OUT),
+                Input::new("control_unit", cntr_field::MEM_WRITE_ENABLE_OUT),
+                "phys_mem".into(),
+                "reg_file".into(),
+            )),
             //
             //
             Mux::rc_new(
@@ -224,7 +210,15 @@ fn main() {
             ),
             //
             //
-            rc_reg_file,
+            RegFile::rc_new(
+                "reg_file",
+                (350.0, 225.0),
+                Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
+                Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
+                Input::new("reg_write_addr", REGISTER_OUT_ID), //write address
+                Input::new("result_reg", REGISTER_OUT_ID),     //write data
+                Input::new("reg_we", REGISTER_OUT_ID),
+            ),
         ],
     };
 

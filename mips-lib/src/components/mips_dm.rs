@@ -41,9 +41,8 @@ pub struct DataMem {
     pub data_input: Input,
     pub op_input: Input,
     pub write_enable_input: Input,
-    // FIXME should probably not skip mem rc here, since we still need them to point to the same MipsMem
-    #[serde(skip)]
     pub phys_mem_id: String,
+    pub regfile_id: String,
     pub mem_view: RefCell<MemViewWindow>,
 }
 
@@ -56,6 +55,7 @@ impl DataMem {
         op_input: Input,
         write_enable_input: Input,
         phys_mem_id: String,
+        regfile_id: String,
     ) -> Self {
         let mem_view =
             MemViewWindow::new(id.clone(), "Data memory view".into()).set_data_view(None);
@@ -68,6 +68,7 @@ impl DataMem {
             op_input: op_input,
             write_enable_input: write_enable_input,
             mem_view: RefCell::new(mem_view),
+            regfile_id: regfile_id,
         }
     }
     pub fn rc_new(
@@ -78,6 +79,7 @@ impl DataMem {
         op_input: Input,
         write_enable_input: Input,
         phys_mem_id: String,
+        regfile_id: String,
     ) -> Rc<Self> {
         Rc::new(DataMem::new(
             id,
@@ -87,14 +89,9 @@ impl DataMem {
             op_input,
             write_enable_input,
             phys_mem_id,
+            regfile_id,
         ))
     }
-
-    pub fn set_mem_view_reg(mut self, reg_rc: Rc<RegFile>) -> Self {
-        self.mem_view.get_mut().update_regfile(reg_rc);
-        self
-    }
-
     /// This gets a &PhysicalMem from the component named self.phys_mem_id
     ///
     /// # Panics
@@ -150,6 +147,7 @@ impl Component for DataMem {
             dummy_input.clone(),
             dummy_input.clone(),
             dummy_input,
+            "dummy".into(),
             "dummy".into(),
         ))
     }

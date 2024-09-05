@@ -13,18 +13,6 @@ use syncrim::{
 fn main() {
     fern_setup();
 
-    // create an empty memory that both IM and DM can reference
-    let mem = Rc::new(RefCell::new(MipsMem::default()));
-    let reg_file = RegFile::rc_new(
-        "reg_file",
-        (200.0, 200.0),
-        Input::new("rs_addr", "out"),
-        Input::new("rt_addr", "out"),
-        Input::new("write_addr", "out"),
-        Input::new("write_data", "out"),
-        Input::new("write_enable", "out"),
-    );
-
     let cs = ComponentStore {
         store: vec![
             Rc::new(PhysicalMem::new("phys_mem", (0.0, 0.0))),
@@ -44,32 +32,36 @@ fn main() {
                 Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
             ),
             ProbeEdit::rc_new("pc", (60.0, 500.0)),
-            Rc::new(
-                InstrMem::new(
-                    "instr_mem".into(),
-                    (200.0, 500.0),
-                    Input::new("pc", "out"),
-                    "phys_mem".into(),
-                )
-                .set_mem_view_reg(Rc::clone(&reg_file)),
-            ),
+            Rc::new(InstrMem::new(
+                "instr_mem".into(),
+                (200.0, 500.0),
+                Input::new("pc", "out"),
+                "phys_mem".into(),
+                "reg_file".into(),
+            )),
             ProbeEdit::rc_new("data_adrs", (60.0, 660.0)),
             ProbeEdit::rc_new("data_write_enable", (60.0, 700.0)),
             ProbeEdit::rc_new("data_mem_op", (60.0, 740.0)),
             ProbeEdit::rc_new("data_write_data", (60.0, 780.0)),
-            Rc::new(
-                DataMem::new(
-                    "data_mem".into(),
-                    (200.0, 700.0),
-                    Input::new("data_adrs", "out"),
-                    Input::new("data_write_data", "out"),
-                    Input::new("data_mem_op", "out"),
-                    Input::new("data_write_enable", "out"),
-                    "phys_mem".into(),
-                )
-                .set_mem_view_reg(Rc::clone(&reg_file)),
+            Rc::new(DataMem::new(
+                "data_mem".into(),
+                (200.0, 700.0),
+                Input::new("data_adrs", "out"),
+                Input::new("data_write_data", "out"),
+                Input::new("data_mem_op", "out"),
+                Input::new("data_write_enable", "out"),
+                "phys_mem".into(),
+                "reg_file".into(),
+            )),
+            RegFile::rc_new(
+                "reg_file",
+                (200.0, 200.0),
+                Input::new("rs_addr", "out"),
+                Input::new("rt_addr", "out"),
+                Input::new("write_addr", "out"),
+                Input::new("write_data", "out"),
+                Input::new("write_enable", "out"),
             ),
-            reg_file,
         ],
     };
 

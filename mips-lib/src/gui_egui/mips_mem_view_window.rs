@@ -38,7 +38,7 @@ pub struct MemViewWindow {
     show_settings: ShowSettings,
 
     // used for show register
-    reg_ref: Option<Rc<RegFile>>,
+    register_values: Option<[u32; 32]>,
 
     // used to show pc and jump to pc
     // why not a Rc<InstrMem>? because that would cause circular dependency and a memory leak
@@ -109,30 +109,15 @@ impl MemViewWindow {
                 program_counter: false,
                 registers: [false; 32],
             },
-            reg_ref: None,
+            register_values: None,
             dynamic_symbols: HashMap::new(),
             break_points: HashSet::new(),
         }
     }
 
-    pub fn new_with_reg(
-        id: String,
-        title: String,
-        mem: Rc<RefCell<MipsMem>>,
-        regfile: Rc<RegFile>,
-        _pc_ref: Rc<RefCell<u32>>,
-    ) -> Self {
-        MemViewWindow::new(id, title).set_regfile(regfile)
-    }
-
-    /// set a reference to a regfile which allows for jumping and displaying registers
-    pub fn set_regfile(mut self, regfile_rc: Rc<RegFile>) -> Self {
-        self.reg_ref = Some(regfile_rc);
-        self
-    }
-
-    pub fn update_regfile(&mut self, regfile_rc: Rc<RegFile>) {
-        self.reg_ref = Some(regfile_rc)
+    /// set register values, allows to display where they point as well as jump to them
+    pub fn set_reg_values(&mut self, reg_values: [u32; 32]) {
+        self.register_values = Some(reg_values);
     }
     /// Set the extra symbols address, if no symbol exist add that symbol
     pub fn set_dynamic_symbol(&mut self, symbol: &str, adrs: u32) {
@@ -335,33 +320,32 @@ impl MemViewWindow {
                         }
                     }
 
-                    if let Some(reg) = &self.reg_ref {
+                    if let Some(reg) = &self.register_values {
                         ui.separator();
 
-                        let gp = reg.get_registers(28);
+                        let gp = reg[28];
                         if ui.button(format!("Global pointer ({:#0x})", gp)).clicked() {
                             self.go_to_address = set_address(&self.go_type, gp)
                         }
-                        let sp = reg.get_registers(29);
+                        let sp = reg[29];
                         if ui.button(format!("Stack pointer ({:#0x})", sp)).clicked() {
                             self.go_to_address = set_address(&self.go_type, sp)
                         }
-                        let fp = reg.get_registers(30);
+                        let fp = reg[30];
                         if ui.button(format!("Frame pointer ({:#0x})", fp)).clicked() {
                             self.go_to_address = set_address(&self.go_type, fp)
                         }
-                        let ra = reg.get_registers(31);
+                        let ra = reg[31];
                         if ui.button(format!("Return address ({:#0x})", gp)).clicked() {
                             self.go_to_address = set_address(&self.go_type, ra)
                         }
 
                         ui.separator();
 
-                        // TODO add "go to other register"
                         ui.menu_button("Other Register", |ui| {
                             ScrollArea::vertical().show(ui, |ui| {
                                 for (i, name) in REG_NAMES.iter().enumerate() {
-                                    let val = reg.get_registers(i);
+                                    let val = reg[i];
                                     if ui.button(format!("${} {:#0x}", name, val)).clicked() {
                                         self.go_to_address = set_address(&self.go_type, val);
                                         ui.close_menu();
@@ -421,7 +405,7 @@ impl MemViewWindow {
                 ui.menu_button("Show", |ui| {
                     ui.checkbox(&mut self.show_settings.symbols, "Symbols");
                     ui.checkbox(&mut self.show_settings.sections, "Sections");
-                    if let Some(_) = &self.reg_ref {
+                    if let Some(_) = &self.register_values {
                         ui.separator();
 
                         ui.checkbox(&mut self.show_settings.registers[28], "Global Pointer");
@@ -620,9 +604,9 @@ impl MemViewWindow {
             out_vec.push(sym.get(adrs).unwrap())
         }
 
-        if let Some(reg) = &self.reg_ref {
+        if let Some(reg) = &self.register_values {
             for (i, show) in self.show_settings.registers.iter().enumerate() {
-                if *show && (reg.get_registers(i) & !0b11) == *adrs {
+                if *show && (reg[i] & !0b11) == *adrs {
                     out_vec.push(REG_NAMES[i])
                 }
             }

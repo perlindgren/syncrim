@@ -1,7 +1,7 @@
 // use crate::src::components::cntr_unit_signals;
 use mips_lib::components::*;
+use std::path::PathBuf;
 use std::rc::Rc;
-use std::{cell::RefCell, path::PathBuf};
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
 use syncrim::{
@@ -49,15 +49,13 @@ fn main() {
             ),
             //
             //
-            Rc::new(
-                InstrMem::new(
-                    "instr_mem".into(),
-                    (280.0, 600.0),
-                    Input::new("pc", "out"),
-                    "phys_mem".into(),
-                )
-                .set_mem_view_reg(rc_reg_file.clone()),
-            ),
+            Rc::new(InstrMem::new(
+                "instr_mem".into(),
+                (280.0, 600.0),
+                Input::new("pc", "out"),
+                "phys_mem".into(),
+                "reg_file".into(),
+            )),
             //
             //
             // MUX to choose what instruction addr to choose from, branch jump, reg, pc+4
@@ -314,18 +312,16 @@ fn main() {
             ),
             //
             //
-            Rc::new(
-                DataMem::new(
-                    "data_mem".into(),
-                    (600.0, 580.0),
-                    Input::new("alu_reg", REGISTER_OUT_ID), // calculated from rs and imm
-                    Input::new("data_MEM_reg", REGISTER_OUT_ID),
-                    Input::new("control_unit_3", cntr_field::MEM_MODE_OUT),
-                    Input::new("control_unit_3", cntr_field::MEM_WRITE_ENABLE_OUT),
-                    "phys_mem".into(),
-                )
-                .set_mem_view_reg(rc_reg_file.clone()),
-            ),
+            Rc::new(DataMem::new(
+                "data_mem".into(),
+                (600.0, 580.0),
+                Input::new("alu_reg", REGISTER_OUT_ID), // calculated from rs and imm
+                Input::new("data_MEM_reg", REGISTER_OUT_ID),
+                Input::new("control_unit_3", cntr_field::MEM_MODE_OUT),
+                Input::new("control_unit_3", cntr_field::MEM_WRITE_ENABLE_OUT),
+                "phys_mem".into(),
+                "reg_file".into(),
+            )),
             //
             //
             Register::rc_new(

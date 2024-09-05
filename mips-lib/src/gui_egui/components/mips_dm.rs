@@ -1,4 +1,4 @@
-use crate::components::{DataMem, PhysicalMem};
+use crate::components::{DataMem, PhysicalMem, RegFile};
 use egui::{Rect, Response, RichText, Ui, Vec2};
 use syncrim::common::{EguiComponent, Id, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
@@ -51,7 +51,24 @@ impl EguiComponent for DataMem {
             };
             // });
         });
-        if let Some(sim) = simulator {
+
+        if let Some(sim) = &simulator {
+            let v = &sim.ordered_components;
+            let comp = v
+                .into_iter()
+                .find(|x| x.get_id_ports().0 == self.regfile_id)
+                .expect(&format!("cant find {} in simulator", self.regfile_id));
+            // deref to get &dyn EguiComponent
+            let comp_any = (*comp).as_any();
+            let regfile: &RegFile = comp_any
+                .downcast_ref()
+                .expect("can't downcast to physical memory");
+            self.mem_view
+                .borrow_mut()
+                .set_reg_values(regfile.registers.borrow().clone());
+        }
+
+        if let Some(sim) = &simulator {
             let v = &sim.ordered_components;
             let comp = v
                 .into_iter()
