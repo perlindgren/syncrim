@@ -27,6 +27,7 @@ fn main() {
 
     let cs = ComponentStore {
         store: vec![
+            Rc::new(PhysicalMem::new("phys_mem", (0.0, 0.0))),
             ProbeEdit::rc_new("rs_addr", (60.0, 100.0)),
             ProbeEdit::rc_new("rt_addr", (60.0, 140.0)),
             ProbeEdit::rc_new("write_addr", (60.0, 180.0)),
@@ -48,7 +49,7 @@ fn main() {
                     "instr_mem".into(),
                     (200.0, 500.0),
                     Input::new("pc", "out"),
-                    Rc::clone(&mem),
+                    "phys_mem".into(),
                 )
                 .set_mem_view_reg(Rc::clone(&reg_file)),
             ),
@@ -64,7 +65,7 @@ fn main() {
                     Input::new("data_write_data", "out"),
                     Input::new("data_mem_op", "out"),
                     Input::new("data_write_enable", "out"),
-                    Rc::clone(&mem),
+                    "phys_mem".into(),
                 )
                 .set_mem_view_reg(Rc::clone(&reg_file)),
             ),

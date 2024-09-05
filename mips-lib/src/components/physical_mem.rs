@@ -1,10 +1,81 @@
 use elf::{endian::AnyEndian, ElfBytes};
-use std::collections::{BTreeMap, HashMap};
+use std::{
+    any::Any,
+    cell::RefCell,
+    collections::{BTreeMap, HashMap},
+};
+use syncrim::{
+    common::{Component, Ports},
+    signal::Id,
+};
 
 use serde::{Deserialize, Serialize};
-/// A men contains two fields. One with the memory mapped data in a BTreeMap<u32,u8>.
-/// And a hashmap with symbols.
-#[derive(Default, Serialize, Deserialize)]
+
+/// Used to contain the "physical memory" which instruction memory and data memory uses
+#[derive(Serialize, Deserialize, Clone)]
+pub struct PhysicalMem {
+    pub id: String,
+    pub pos: (f32, f32),
+    #[serde(skip)]
+    pub mem: RefCell<MipsMem>,
+    #[serde(skip)]
+    pub history: RefCell<HashMap<usize, MemWriteReturn>>,
+    // used for the un_clock(), this is because the simulator is not passed in un clock and we dont know what cycle we un clock to
+    #[serde(skip)]
+    pub cycle: RefCell<usize>,
+}
+
+impl PhysicalMem {
+    pub fn new(id: impl Into<String>, pos: (f32, f32)) -> Self {
+        Self {
+            id: id.into(),
+            pos: pos,
+            mem: RefCell::default(),
+            history: RefCell::default(),
+            cycle: RefCell::default(),
+        }
+    }
+}
+
+#[typetag::serde]
+impl Component for PhysicalMem {
+    #[doc = " returns the (id, Ports) of the component"]
+    fn get_id_ports(&self) -> (Id, Ports) {
+        (
+            self.id.clone(),
+            Ports::new(vec![], syncrim::common::OutputType::Combinatorial, vec![]),
+        )
+    }
+
+    #[doc = " any"]
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn un_clock(&self) {
+        *self.cycle.borrow_mut() -= 1;
+        if let Some(op) = self.history.borrow_mut().remove(&*self.cycle.borrow()) {
+            self.mem.borrow_mut().revert(op);
+        };
+    }
+
+    fn reset(&self) {
+        // dont need to reset cycle, since cycle is updated in clock
+
+        let mut hist_vec: Vec<(usize, MemWriteReturn)> =
+            self.history.borrow_mut().drain().collect();
+        // sort vec with largest first
+        hist_vec.sort_by(|(a, _), (b, _)| a.cmp(b).reverse());
+        let mut mem = self.mem.borrow_mut();
+        for (_, op) in hist_vec {
+            mem.revert(op);
+        }
+    }
+}
+
+/// A men contains three fields. One with the memory mapped data in a BTreeMap<u32,u8>,
+/// hashmap with symbols and a hashmap with sections
+#[derive(Default, Serialize, Deserialize, Clone)]
 pub struct MipsMem {
     symbols: HashMap<u32, String>,
     sections: HashMap<u32, String>,

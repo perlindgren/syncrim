@@ -5,6 +5,7 @@ use std::path::PathBuf;
 
 use crate::components::InstrMem;
 use crate::components::MipsMem;
+use crate::components::PhysicalMem;
 // use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 use egui::{Rect, Response, RichText, Ui, Vec2};
 use syncrim::common::{EguiComponent, Id, Ports, Simulator};
@@ -57,17 +58,31 @@ impl EguiComponent for InstrMem {
             // });
         });
 
-        if let Some(path) = path_option {
-            let data = fs::read(path).unwrap();
-            let _ = &self.mem.replace(MipsMem::from_sections(&data).unwrap());
-            mem_view_vis = true;
-        };
-        // {} to drop RefMut as early as possible
-        {
-            let mut mem_view = self.mem_view.borrow_mut();
-            mem_view.visible = mem_view_vis;
-            mem_view.render(ui.ctx());
+        if let Some(sim) = simulator {
+            let v = &sim.ordered_components;
+            let comp = v
+                .into_iter()
+                .find(|x| x.get_id_ports().0 == self.phys_mem_id)
+                .expect(&format!("cant find {} in simulator", self.phys_mem_id));
+            // deref to get &dyn EguiComponent
+            let comp_any = (*comp).as_any();
+            let phys_mem: &PhysicalMem = comp_any
+                .downcast_ref()
+                .expect("can't downcast to physical memory");
+
+            if let Some(path) = path_option {
+                let data = fs::read(path).unwrap();
+                let _ = phys_mem.mem.replace(MipsMem::from_sections(&data).unwrap());
+                mem_view_vis = true;
+            };
+            // {} to drop RefMut as early as possible
+            {
+                let mut mem_view = self.mem_view.borrow_mut();
+                mem_view.visible = mem_view_vis;
+                mem_view.render(ui.ctx(), &*phys_mem.mem.borrow());
+            }
         }
+
         // return response from basic component gui
         r
     }

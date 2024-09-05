@@ -14,7 +14,6 @@ use syncrim::{
 fn main() {
     fern_setup();
 
-    let mem = Rc::new(RefCell::new(MipsMem::default()));
     let rc_reg_file = RegFile::rc_new(
         "reg_file",
         (360.0, 170.0),
@@ -37,6 +36,7 @@ fn main() {
 
     let cs = ComponentStore {
         store: vec![
+            Rc::new(PhysicalMem::new("phys_mem", (0.0, 0.0))),
             // register that holds instr addr
             Register::rc_new("pc", (170.0, 410.0), Input::new("mux_jump_merge", "out")),
             // step addr from reg by 4
@@ -54,7 +54,7 @@ fn main() {
                     "instr_mem".into(),
                     (280.0, 600.0),
                     Input::new("pc", "out"),
-                    Rc::clone(&mem),
+                    "phys_mem".into(),
                 )
                 .set_mem_view_reg(rc_reg_file.clone()),
             ),
@@ -322,7 +322,7 @@ fn main() {
                     Input::new("data_MEM_reg", REGISTER_OUT_ID),
                     Input::new("control_unit_3", cntr_field::MEM_MODE_OUT),
                     Input::new("control_unit_3", cntr_field::MEM_WRITE_ENABLE_OUT),
-                    Rc::clone(&mem),
+                    "phys_mem".into(),
                 )
                 .set_mem_view_reg(rc_reg_file.clone()),
             ),

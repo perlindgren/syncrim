@@ -6,4 +6,5 @@ mod mips_im;
 mod mips_instruction_splitter;
 mod mips_jump_merge;
 mod mips_reg_file;
+mod physical_mem;
 mod sz_extend;

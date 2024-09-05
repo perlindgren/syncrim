@@ -1,4 +1,4 @@
-use crate::components::DataMem;
+use crate::components::{DataMem, PhysicalMem};
 use egui::{Rect, Response, RichText, Ui, Vec2};
 use syncrim::common::{EguiComponent, Id, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
@@ -51,9 +51,24 @@ impl EguiComponent for DataMem {
             };
             // });
         });
-        let mut mem_view = self.mem_view.borrow_mut();
-        mem_view.visible = mem_view_vis;
-        mem_view.render(ui.ctx());
+        if let Some(sim) = simulator {
+            let v = &sim.ordered_components;
+            let comp = v
+                .into_iter()
+                .find(|x| x.get_id_ports().0 == self.phys_mem_id)
+                .expect(&format!("cant find {} in simulator", self.phys_mem_id));
+            // deref to get &dyn EguiComponent
+            let comp_any = (*comp).as_any();
+            let phys_mem: &PhysicalMem = comp_any
+                .downcast_ref()
+                .expect("can't downcast to physical memory");
+            // {} to drop RefMut as early as possible
+            {
+                let mut mem_view = self.mem_view.borrow_mut();
+                mem_view.visible = mem_view_vis;
+                mem_view.render(ui.ctx(), &*phys_mem.mem.borrow());
+            }
+        }
         // return response from basic component gui
         r
     }

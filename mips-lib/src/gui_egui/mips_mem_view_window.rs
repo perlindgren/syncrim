@@ -16,7 +16,6 @@ pub struct MemViewWindow {
     pub visible: bool,
     title: String,
     id: String,
-    mem: Rc<RefCell<MipsMem>>,
     row_offset: u32,
     max_rows: u32,
     /// when set to top, the given address will be displayed at the top of the scroll area
@@ -92,14 +91,13 @@ fn set_address(adrs: &GoAddress, new_adrs: u32) -> GoAddress {
 
 impl MemViewWindow {
     // creates a new memory view window with id string and the given memory
-    pub fn new(id: String, title: String, mem: Rc<RefCell<MipsMem>>) -> Self {
+    pub fn new(id: String, title: String) -> Self {
         MemViewWindow {
             title: title,
             id: id,
             visible: false,
             row_offset: 0,
             max_rows: 1024,
-            mem: mem,
             go_to_address: GoAddress::None,
             go_type: GoAddress::Top(0),
             custom_address: 0,
@@ -124,7 +122,7 @@ impl MemViewWindow {
         regfile: Rc<RegFile>,
         _pc_ref: Rc<RefCell<u32>>,
     ) -> Self {
-        MemViewWindow::new(id, title, mem).set_regfile(regfile)
+        MemViewWindow::new(id, title).set_regfile(regfile)
     }
 
     /// set a reference to a regfile which allows for jumping and displaying registers
@@ -157,25 +155,20 @@ impl MemViewWindow {
     }
 
     /// This sets the format to hex + mips and if possible goes to the section .text
-    pub fn set_code_view(mut self) -> MemViewWindow {
+    pub fn set_code_view(mut self, mem: Option<&MipsMem>) -> MemViewWindow {
         // find if value ".text" exists, if so go to that
-        match self
-            .mem
-            .borrow()
-            .get_section_table()
-            .iter()
-            .find_map(
-                |(adrs, name)| {
-                    if name == ".text" {
-                        Some(adrs)
-                    } else {
-                        None
-                    }
-                },
-            ) {
-            Some(adrs) => self.go_to_address = GoAddress::Top(*adrs),
-            None => self.go_to_address = GoAddress::None,
-        };
+        if let Some(m) = mem {
+            match m.get_section_table().iter().find_map(|(adrs, name)| {
+                if name == ".text" {
+                    Some(adrs)
+                } else {
+                    None
+                }
+            }) {
+                Some(adrs) => self.go_to_address = GoAddress::Top(*adrs),
+                None => self.go_to_address = GoAddress::None,
+            };
+        }
 
         // set
         self.format = DataFormat::HexAndMips;
@@ -187,25 +180,20 @@ impl MemViewWindow {
     }
 
     /// This sets the format to byte + utf8 and if possible goes to the section .data
-    pub fn set_data_view(mut self) -> MemViewWindow {
-        // find if value ".text" exists
-        match self
-            .mem
-            .borrow()
-            .get_section_table()
-            .iter()
-            .find_map(
-                |(adrs, name)| {
-                    if name == ".data" {
-                        Some(adrs)
-                    } else {
-                        None
-                    }
-                },
-            ) {
-            Some(adrs) => self.go_to_address = GoAddress::Top(*adrs),
-            None => self.go_to_address = GoAddress::Top(0x1000),
-        };
+    pub fn set_data_view(mut self, mem: Option<&MipsMem>) -> MemViewWindow {
+        if let Some(m) = mem {
+            // find if value ".text" exists
+            match m.get_section_table().iter().find_map(|(adrs, name)| {
+                if name == ".data" {
+                    Some(adrs)
+                } else {
+                    None
+                }
+            }) {
+                Some(adrs) => self.go_to_address = GoAddress::Top(*adrs),
+                None => self.go_to_address = GoAddress::Top(0x1000),
+            };
+        }
         self.format = DataFormat::ByteAndUtf8;
         self
     }
@@ -214,7 +202,7 @@ impl MemViewWindow {
         self.break_points.contains(address)
     }
 
-    pub fn render(&mut self, ctx: &egui::Context) {
+    pub fn render(&mut self, ctx: &egui::Context, mem: &MipsMem) {
         if !self.visible {
             return ();
         };
@@ -230,7 +218,7 @@ impl MemViewWindow {
                 }
 
                 // Render top panel with go to, format and show menus
-                self.render_top(ctx);
+                self.render_top(ctx, mem);
 
                 egui::CentralPanel::default().show(ctx, |ui| {
                     let h = ui.text_style_height(&egui::TextStyle::Body);
@@ -242,7 +230,7 @@ impl MemViewWindow {
                         ui.style_mut().wrap_mode = Some(TextWrapMode::Truncate);
                         ui.set_width(ui.available_width());
                         for i in draw_range.clone() {
-                            self.render_scroll_area_item(ui, i);
+                            self.render_scroll_area_item(ui, i, mem);
                         }
                     });
                 })
@@ -250,7 +238,7 @@ impl MemViewWindow {
         );
     }
 
-    fn render_top(&mut self, ctx: &egui::Context) {
+    fn render_top(&mut self, ctx: &egui::Context, mem: &MipsMem) {
         egui::TopBottomPanel::top(self.id.clone()).show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("Go to", |ui| {
@@ -267,7 +255,7 @@ impl MemViewWindow {
                     // add submenu with a button for each symbol, which sets self.go_to_address
                     ui.menu_button("symbol", |ui| {
                         ScrollArea::vertical().show(ui, |ui| {
-                            let because_lifetimes_sad = self.mem.borrow().get_symbol_table();
+                            let because_lifetimes_sad = mem.get_symbol_table();
                             let mut symbols = because_lifetimes_sad.iter().collect::<Vec<_>>();
                             symbols.sort_by(|a, b| a.0.partial_cmp(b.0).unwrap());
 
@@ -281,7 +269,7 @@ impl MemViewWindow {
                         });
                     });
                     ui.menu_button("section", |ui| {
-                        let because_lifetimes_sad = self.mem.borrow().get_section_table();
+                        let because_lifetimes_sad = mem.get_section_table();
                         let mut sections = because_lifetimes_sad.iter().collect::<Vec<_>>();
                         sections.sort_by(|a, b| a.0.partial_cmp(b.0).unwrap());
 
@@ -471,7 +459,7 @@ impl MemViewWindow {
         });
     }
     /// NOTE borrows mem
-    fn render_scroll_area_item(&mut self, ui: &mut Ui, scroll_area_row: usize) {
+    fn render_scroll_area_item(&mut self, ui: &mut Ui, scroll_area_row: usize, mem: &MipsMem) {
         let more_row_text = RichText::new(format!("show {} more rows", &self.max_rows / 2));
         if scroll_area_row == 0 {
             if self.row_offset == 0 {
@@ -499,8 +487,8 @@ impl MemViewWindow {
                             false => "",
                         },
                         address,
-                        self.format_row(address),
-                        match self.get_symbols_etc_at_address(&address) {
+                        self.format_row(address, mem),
+                        match self.get_symbols_etc_at_address(&address, mem) {
                             Some(string) => format!("\t<= {}", string),
                             None => String::new(),
                         }
@@ -518,18 +506,13 @@ impl MemViewWindow {
         }
     }
     /// NOTE BORROWS MEM
-    fn format_row(&self, adrs: u32) -> String {
-        let data_u32 =
-            self.mem
-                .borrow()
-                .get_unaligned(adrs, MemOpSize::Word, false, self.big_endian);
-        let bytes = self
-            .mem
-            .borrow()
+    fn format_row(&self, adrs: u32, mem: &MipsMem) -> String {
+        let data_u32 = mem.get_unaligned(adrs, MemOpSize::Word, false, self.big_endian);
+        let bytes = mem
             .get_unaligned(adrs, MemOpSize::Word, false, true)
             .to_be_bytes();
         // TODO get symbol table clones the hashmap, this is infective
-        let sym_tab = self.mem.borrow().get_symbol_table();
+        let sym_tab = mem.get_symbol_table();
         match self.format {
             DataFormat::Hex => {
                 format!("{:#010x}", data_u32)
@@ -618,10 +601,10 @@ impl MemViewWindow {
 
     // TODO symbol or sect might not be word aligned,
     // since we check word aligned addresses we might miss the symbol/reg ect
-    fn get_symbols_etc_at_address(&self, adrs: &u32) -> Option<String> {
+    fn get_symbols_etc_at_address(&self, adrs: &u32, mem: &MipsMem) -> Option<String> {
         let mut out_vec: Vec<&str> = vec![];
-        let sym = self.mem.borrow().get_symbol_table();
-        let sect = self.mem.borrow().get_section_table();
+        let sym = mem.get_symbol_table();
+        let sect = mem.get_section_table();
 
         for (name, _) in self
             .dynamic_symbols
