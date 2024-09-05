@@ -87,10 +87,15 @@ impl EguiComponent for Wire {
                 color: Color32::BLACK,
             },
         ));
+        let mut r: Vec<Response> = vec![];
 
         for val in line_vec.windows(2) {
             let first_pos = val[0];
             let last_pos = val[1];
+            r.push(
+                ui.allocate_ui_at_rect(Rect::from_two_pos(first_pos, last_pos), |_| {})
+                    .response,
+            );
             if let Some(cursor) = ui.ctx().pointer_latest_pos() {
                 if min_from_line(first_pos.to_vec2(), last_pos.to_vec2(), cursor.to_vec2())
                     < TOOLTIP_DISTANCE
@@ -113,7 +118,7 @@ impl EguiComponent for Wire {
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
         }
 
-        Some(vec![])
+        Some(r)
     }
 
     fn render_editor(
