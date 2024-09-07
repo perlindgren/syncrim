@@ -86,6 +86,7 @@ impl Default for Library {
                 pos: (0.0, 0.0),
                 a_in: dummy_input.clone(),
                 b_in: dummy_input.clone(),
+                scale: 1.0,
             }),
             Rc::new(Constant {
                 id: "c".to_string(),
@@ -127,6 +128,7 @@ impl Default for Library {
                 pos: (0.0, 0.0),
                 select: dummy_input.clone(),
                 m_in: vec![dummy_input.clone(), dummy_input.clone()],
+                scale: 1.0,
             }),
             Rc::new(Register {
                 id: "reg".to_string(),

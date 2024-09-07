@@ -46,8 +46,8 @@ impl EguiComponent for Mux {
             (-20f32, pa * (10f32) + 10f32),
         ];
         for (x, y) in shape.iter_mut() {
-            *x *= 0.6;
-            *y *= 0.6;
+            *x *= self.scale;
+            *y *= self.scale;
         }
 
         // The shape
@@ -64,13 +64,13 @@ impl EguiComponent for Mux {
             [
                 oh(
                     (
-                        -20f32 * 0.6,
-                        (((select as f32) * 20f32) - pa * 10f32 + 10f32) * 0.6,
+                        -20f32 * self.scale,
+                        (((select as f32) * 20f32) - pa * 10f32 + 10f32) * self.scale,
                     ),
                     s,
                     o,
                 ),
-                oh((10f32 * 0.6, 0f32 * 0.6), s, o),
+                oh((10f32 * self.scale, 0f32 * self.scale), s, o),
             ],
             Stroke {
                 width: scale,
@@ -79,8 +79,16 @@ impl EguiComponent for Mux {
         ));
 
         let rect = Rect {
-            min: oh((-20f32 * 0.6, (pa * (-10f32) - 10f32) * 0.6), s, o),
-            max: oh((10f32 * 0.6, (pa * 10f32 + 10f32) * 0.6), s, o),
+            min: oh(
+                (-20f32 * self.scale, (pa * (-10f32) - 10f32) * self.scale),
+                s,
+                o,
+            ),
+            max: oh(
+                (10f32 * self.scale, (pa * 10f32 + 10f32) * self.scale),
+                s,
+                o,
+            ),
         };
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
@@ -185,12 +193,12 @@ impl EguiComponent for Mux {
         for i in 0..=self.m_in.len() - 1 {
             v.push((
                 format!("{}{}", crate::components::MUX_TEMPLATE_ID, i),
-                Pos2::new(-20f32, top + i as f32 * 20f32 + 20f32) + own_pos,
+                Pos2::new(-20f32, top + i as f32 * 20f32 + 20f32) * self.scale + own_pos,
             ));
         }
         v.push((
             crate::components::MUX_OUT_ID.to_string(),
-            Pos2::new(10f32, 0f32) + own_pos,
+            Pos2::new(10f32, 0f32) * self.scale + own_pos,
         ));
         v
     }

@@ -20,6 +20,7 @@ pub struct Add {
     pub(crate) pos: (f32, f32),
     pub(crate) a_in: Input,
     pub(crate) b_in: Input,
+    pub(crate) scale: f32,
 }
 
 #[typetag::serde]
@@ -35,6 +36,7 @@ impl Component for Add {
             pos: (pos.0, pos.1),
             a_in: dummy_input.clone(),
             b_in: dummy_input.clone(),
+            scale: 1.0,
         }))
     }
     fn get_id_ports(&self) -> (Id, Ports) {
@@ -114,11 +116,28 @@ impl Add {
             pos,
             a_in,
             b_in,
+            scale: 1.0,
         }
     }
 
     pub fn rc_new(id: &str, pos: (f32, f32), a_in: Input, b_in: Input) -> Rc<Self> {
         Rc::new(Add::new(id, pos, a_in, b_in))
+    }
+
+    pub fn rc_new_with_scale(
+        id: &str,
+        pos: (f32, f32),
+        a_in: Input,
+        b_in: Input,
+        scale: f32,
+    ) -> Rc<Self> {
+        Rc::new(Add {
+            id: id.to_string(),
+            pos,
+            a_in,
+            b_in,
+            scale,
+        })
     }
 }
 
@@ -143,6 +162,7 @@ mod test {
                     pos: (0.0, 0.0),
                     a_in: Input::new("po1", "out"),
                     b_in: Input::new("po2", "out"),
+                    scale: 1.0,
                 }),
             ],
         };

@@ -24,11 +24,12 @@ fn main() {
             ),
             // step addr from reg by 4
             Constant::rc_new("+4", (150.0, 440.0), 4),
-            Add::rc_new(
+            Add::rc_new_with_scale(
                 "pc+4",
                 (200.0, 400.0),
                 Input::new("+4", CONSTANT_OUT_ID),
                 Input::new("pc", REGISTER_OUT_ID),
+                0.6,
             ),
             //
             //
@@ -42,7 +43,7 @@ fn main() {
             //
             //
             // MUX to choose what intruction addr to choose from, branch jump, reg, pc+4
-            Mux::rc_new(
+            Mux::rc_new_with_scale(
                 "mux_jump_merge",
                 (100.0, 390.0),
                 Input::new("branch", BRANCH_OUT_ID),
@@ -52,6 +53,7 @@ fn main() {
                     Input::new("jump_merge", MERGE_OUT_ID),  //
                     Input::new("pc+4", ADD_OUT_ID),
                 ],
+                0.6,
             ),
             //
             // merges to find out jump location
@@ -111,7 +113,7 @@ fn main() {
             //
             //
             Constant::rc_new("0_a_inp", (610.0, 220.0), 0),
-            Mux::rc_new(
+            Mux::rc_new_with_scale(
                 "mux_source_a",
                 (650.0, 195.0),
                 Input::new("control_unit", cntr_field::ALU_SRC_A_OUT),
@@ -120,10 +122,11 @@ fn main() {
                     Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID),
                     Input::new("0_a_inp", CONSTANT_OUT_ID),
                 ],
+                0.6,
             ),
             //
             //
-            Mux::rc_new(
+            Mux::rc_new_with_scale(
                 "mux_source_b",
                 (650.0, 255.0),
                 Input::new("control_unit", cntr_field::ALU_SRC_B_OUT),
@@ -132,6 +135,7 @@ fn main() {
                     Input::new("pc+4", ADD_OUT_ID),
                     Input::new("signzero_extend", SIGNZEROEXTEND_OUT_ID),
                 ],
+                0.6,
             ),
             //
             //
@@ -156,7 +160,7 @@ fn main() {
             )),
             //
             //
-            Mux::rc_new(
+            Mux::rc_new_with_scale(
                 "mux_write_back",
                 (800.0, 225.0),
                 Input::new("control_unit", cntr_field::REG_WRITE_SRC_OUT),
@@ -164,6 +168,7 @@ fn main() {
                     Input::new("alu", FULL_ADD_OUT_ID),
                     Input::new("data_mem", DATA_MEM_READ_DATA_OUT_ID), //TODO: data meme output
                 ],
+                0.6,
             ),
             //
             //
@@ -182,16 +187,17 @@ fn main() {
             ),
             //
             //
-            Add::rc_new(
+            Add::rc_new_with_scale(
                 "pc_add_branch",
                 (400.0, 475.0),
                 Input::new("pc+4", ADD_OUT_ID),
                 Input::new("branch_shift", SHIFT_OUT_ID),
+                0.6,
             ),
             //
             //
             Constant::rc_new("0x_1F", (350.0, 550.0), 0x_1F),
-            Mux::rc_new(
+            Mux::rc_new_with_scale(
                 "mux_write_addr",
                 (400.0, 525.0),
                 Input::new("control_unit", cntr_field::REG_DEST_OUT),
@@ -200,6 +206,7 @@ fn main() {
                     Input::new("instruction_split", INSTRUCTION_SPLITTER_RD_ID),
                     Input::new("0x_1F", CONSTANT_OUT_ID),
                 ],
+                0.6,
             ),
             //
             //

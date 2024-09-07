@@ -46,7 +46,7 @@ impl EguiComponent for Add {
             (-20f32, -20f32),
         ];
 
-        let comp_scale = 0.6;
+        let comp_scale = self.scale;
 
         // The shape
         ui.painter().add(Shape::closed_line(
@@ -75,8 +75,8 @@ impl EguiComponent for Add {
             },
         ));
         let rect = Rect {
-            min: oh((-20f32, -40f32), s, o),
-            max: oh((20f32, 40f32), s, o),
+            min: oh((-20.0 * self.scale, -40.0 * self.scale), s, o),
+            max: oh((20.0 * self.scale, 40.0 * self.scale), s, o),
         };
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
@@ -161,19 +161,19 @@ impl EguiComponent for Add {
         vec![
             (
                 crate::components::ADD_A_IN_ID.to_string(),
-                Pos2::new(-20f32, -20f32) + own_pos,
+                Pos2::new(-20f32, -20f32) * self.scale + own_pos,
             ),
             (
                 crate::components::ADD_B_IN_ID.to_string(),
-                Pos2::new(-20f32, 20f32) + own_pos,
+                Pos2::new(-20f32, 20f32) * self.scale + own_pos,
             ),
             (
                 crate::components::ADD_OUT_ID.to_string(),
-                Pos2::new(20f32, 0f32) + own_pos,
+                Pos2::new(20f32, 0f32) * self.scale + own_pos,
             ),
             (
                 crate::components::ADD_OVERFLOW_ID.to_string(),
-                Pos2::new(0f32, -40f32) + own_pos,
+                Pos2::new(0f32, -40f32) * self.scale + own_pos,
             ),
         ]
     }

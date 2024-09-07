@@ -19,6 +19,7 @@ pub struct Mux {
     pub(crate) pos: (f32, f32),
     pub(crate) select: Input,
     pub(crate) m_in: Vec<Input>,
+    pub scale: f32,
 }
 
 #[typetag::serde]
@@ -34,6 +35,7 @@ impl Component for Mux {
             pos: (pos.0, pos.1),
             select: dummy_input.clone(),
             m_in: vec![dummy_input.clone(), dummy_input.clone()],
+            scale: 1.0,
         }))
     }
     fn get_id_ports(&self) -> (Id, Ports) {
@@ -113,10 +115,27 @@ impl Mux {
             pos,
             select,
             m_in,
+            scale: 1.0,
         }
     }
 
     pub fn rc_new(id: &str, pos: (f32, f32), select: Input, m_in: Vec<Input>) -> Rc<Self> {
         Rc::new(Mux::new(id, pos, select, m_in))
+    }
+
+    pub fn rc_new_with_scale(
+        id: &str,
+        pos: (f32, f32),
+        select: Input,
+        m_in: Vec<Input>,
+        scale: f32,
+    ) -> Rc<Self> {
+        Rc::new(Mux {
+            id: id.to_string(),
+            pos,
+            select,
+            m_in,
+            scale,
+        })
     }
 }
