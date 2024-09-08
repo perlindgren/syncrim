@@ -11,6 +11,7 @@ use egui::{
     Response, Rounding, Shape, Stroke, Ui, Vec2, Window,
 };
 use epaint::Shadow;
+use log::trace;
 
 #[typetag::serde]
 impl EguiComponent for Wire {
@@ -24,6 +25,12 @@ impl EguiComponent for Wire {
         clip_rect: Rect,
         editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
+        let is_active = simulator
+            .as_ref()
+            .map_or(false, |sim| sim.is_active(&self.input.id));
+
+        trace!("render constant {}, active {}", self.id, is_active);
+
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
         let offset_old = offset;
         let s = scale;
@@ -37,7 +44,11 @@ impl EguiComponent for Wire {
             line_vec.clone(),
             Stroke {
                 width: scale,
-                color: Color32::BLACK,
+                color: if is_active {
+                    Color32::RED
+                } else {
+                    Color32::BLACK
+                },
             },
         ));
         let mut r_vec = vec![];
