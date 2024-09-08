@@ -8,7 +8,7 @@ use petgraph::{
     dot::{Config, Dot},
     Graph,
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::{fs::File, io::prelude::*, path::PathBuf};
 
 pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
@@ -159,6 +159,9 @@ impl Simulator {
             component_ids,
             graph,
             running: false,
+            // clock_mode: false,
+            inputs_read: HashSet::new(),
+            active: HashSet::new(),
         };
 
         trace!("sim_state {:?}", simulator.sim_state);
@@ -200,6 +203,16 @@ impl Simulator {
 
     /// get input value
     pub fn get_input_value(&self, input: &Input) -> SignalValue {
+        // trace!("get_input_value, input {:?}", input);
+
+        self.get_input_signal(input).get_value()
+    }
+
+    /// get input value and update set of inputs read
+    pub fn get_input_value_mut(&mut self, input: &Input) -> SignalValue {
+        trace!("get_input_value_mut {:?}", input);
+        self.inputs_read.insert(input.id.clone());
+
         self.get_input_signal(input).get_value()
     }
 
@@ -247,11 +260,16 @@ impl Simulator {
 
     /// iterate over the evaluators and increase clock by one
     pub fn clock(&mut self) {
+        self.clean_active();
+
         // push current state
         self.history.push(self.sim_state.clone());
         trace!("cycle:{}", self.cycle);
+
+        // set clock mode
+        // self.clock_mode = true;
         for component in self.ordered_components.clone() {
-            //trace!("evaling component:{}", component.get_id_ports().0);
+            trace!("evaluating component:{}", component.get_id_ports().0);
             match component.clock(self) {
                 Ok(_) => {}
                 Err(cond) => match cond {
@@ -271,6 +289,34 @@ impl Simulator {
             }
         }
         self.cycle = self.history.len();
+        self.active()
+        // self.clock_mode = false;
+    }
+
+    // internal function to clear active components
+    fn clean_active(&mut self) {
+        trace!("clear_active");
+        self.inputs_read = HashSet::new();
+    }
+    // internal function to determine active components
+    fn active(&mut self) {
+        trace!("active - determine active components");
+        trace!("inputs read {:?}", self.inputs_read);
+
+        self.active = HashSet::new();
+
+        for component in self.ordered_components.clone().into_iter().rev() {
+            trace!("check {:?}", component.get_id_ports().0);
+            if self.inputs_read.contains(&component.get_id_ports().0) {
+                trace!("read {}", component.get_id_ports().0);
+                self.active.insert(component.get_id_ports().0);
+            }
+        }
+    }
+
+    /// check if component is active
+    pub fn is_active(&self, id: &Id) -> bool {
+        self.active.contains(id)
     }
 
     /// free running mode until Halt condition

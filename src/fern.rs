@@ -32,8 +32,13 @@ pub fn fern_setup() {
 
     #[cfg(feature = "gui-egui")]
     let f = f
-        .level_for("eframe::native::run", LevelFilter::Info)
-        .level_for("async_io::driver", LevelFilter::Warn);
+        .level_for("eframe", LevelFilter::Warn)
+        .level_for("async_io", LevelFilter::Warn)
+        .level_for("polling", LevelFilter::Warn)
+        .level_for("arboard", LevelFilter::Warn)
+        .level_for("egui_glow", LevelFilter::Warn)
+        // .level_for("egui", LevelFilter::Error)
+        ;
 
     f
         // Output to stdout, files, and other Dispatch configurations

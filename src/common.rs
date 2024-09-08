@@ -1,7 +1,10 @@
 use petgraph::Graph;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
-use std::{collections::HashMap, rc::Rc};
+use std::{
+    collections::{HashMap, HashSet},
+    rc::Rc,
+};
 
 #[cfg(feature = "gui-egui")]
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapPriority};
@@ -39,6 +42,11 @@ pub struct Simulator {
     pub graph: Graph<Id, ()>,
     // Running state, (do we need it accessible from other crates?)
     pub(crate) running: bool,
+
+    // Used to determine active components
+    // pub clock_mode: bool,
+    pub inputs_read: HashSet<Id>,
+    pub active: HashSet<Id>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -177,7 +185,7 @@ impl Ports {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Hash, Eq, PartialEq)]
 pub struct Input {
     pub id: Id,
     pub field: Id,
