@@ -104,7 +104,7 @@ fn main() {
             Wire::rc_new(
                 "w6",
                 vec![(310.0, 300.0), (350.0, 300.0)],
-                Input::new("mux", "out"),
+                Input::new("mux2", "out"),
             ),
             Probe::rc_new("probe_mux", (360.0, 300.0), Input::new("mux2", "out")),
         ],
