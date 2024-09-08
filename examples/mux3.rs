@@ -106,7 +106,7 @@ fn main() {
                 vec![(310.0, 300.0), (350.0, 300.0)],
                 Input::new("mux", "out"),
             ),
-            Probe::rc_new("p_mux", (360.0, 300.0), Input::new("mux2", "out")),
+            Probe::rc_new("probe_mux", (360.0, 300.0), Input::new("mux2", "out")),
         ],
     };
 

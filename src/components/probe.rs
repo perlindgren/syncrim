@@ -49,7 +49,7 @@ impl Component for Probe {
 
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input value
-        let value = simulator.get_input_value_mut(&self.input);
+        let value = simulator.get_input_value_mut(self.id.clone(), &self.input);
         trace!("probe: register id {} in {:?}", self.id, value);
         Ok(())
     }
@@ -58,6 +58,10 @@ impl Component for Probe {
         if target_port_id.as_str() == PROBE_IN_ID {
             self.input = new_input
         }
+    }
+
+    fn is_sink(&self) -> bool {
+        true
     }
 
     fn as_any(&self) -> &dyn Any {

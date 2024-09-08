@@ -44,7 +44,8 @@ pub struct Simulator {
     pub(crate) running: bool,
 
     // Used to determine active components
-    pub inputs_read: HashSet<Id>,
+    pub sinks: Vec<Id>,
+    pub inputs_read: HashMap<Id, HashSet<Id>>,
     pub active: HashSet<Id>,
 }
 
@@ -89,6 +90,13 @@ pub trait Component {
     fn un_clock(&self) {}
     /// reset component internal state to initial value
     fn reset(&self) {}
+
+    /// consider component to be a sink
+    /// either output to environment (e.g., for visualization)
+    /// or stateful (e.g., register)
+    fn is_sink(&self) -> bool {
+        false
+    }
     /// any
     fn as_any(&self) -> &dyn Any;
 }

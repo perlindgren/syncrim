@@ -32,12 +32,19 @@ impl Simulator {
 
         let mut id_nr_outputs = HashMap::new();
         let mut id_field_index = HashMap::new();
+
+        let mut sinks = vec![];
         // allocate storage for lensed outputs
 
         trace!("-- allocate storage for lensed outputs");
         for c in &component_store.store {
             trace!("{:?}", c.get_id_ports().0);
             let (id, ports) = c.get_id_ports();
+
+            // push all sinks
+            if c.is_sink() {
+                sinks.push(id.clone());
+            }
 
             trace!("id {}, ports {:?}", id, ports);
             // start index for outputs related to component
@@ -64,6 +71,8 @@ impl Simulator {
             }
             id_nr_outputs.insert(id.clone(), ports.outputs.len());
         }
+
+        trace!("sinks {:?}", sinks);
 
         let mut graph = Graph::<_, (), petgraph::Directed>::new();
         let mut id_node = HashMap::new();
@@ -159,8 +168,9 @@ impl Simulator {
             component_ids,
             graph,
             running: false,
-            // clock_mode: false,
-            inputs_read: HashSet::new(),
+            // used for determine active components
+            sinks,
+            inputs_read: HashMap::new(),
             active: HashSet::new(),
         };
 
@@ -209,9 +219,21 @@ impl Simulator {
     }
 
     /// get input value and update set of inputs read
-    pub fn get_input_value_mut(&mut self, input: &Input) -> SignalValue {
-        trace!("get_input_value_mut {:?}", input);
-        self.inputs_read.insert(input.id.clone());
+    /// id, represents the component reading
+    /// input, represents the input it is reading
+    pub fn get_input_value_mut(&mut self, id: Id, input: &Input) -> SignalValue {
+        trace!("get_input_value_mut {:?} reading {:?}", id, input);
+
+        self.inputs_read
+            .entry(id)
+            .and_modify(|hs| {
+                hs.insert(input.id.clone());
+            })
+            .or_insert({
+                let mut hs = HashSet::new();
+                hs.insert(input.id.clone());
+                hs
+            });
 
         self.get_input_signal(input).get_value()
     }
@@ -293,11 +315,12 @@ impl Simulator {
         // self.clock_mode = false;
     }
 
-    // internal function to clear active components
+    // internal function to clear inputs read
     fn clean_active(&mut self) {
         trace!("clear_active");
-        self.inputs_read = HashSet::new();
+        self.inputs_read = HashMap::new();
     }
+
     // internal function to determine active components
     fn active(&mut self) {
         trace!("active - determine active components");
@@ -305,11 +328,20 @@ impl Simulator {
 
         self.active = HashSet::new();
 
-        for component in self.ordered_components.clone().into_iter().rev() {
-            trace!("check {:?}", component.get_id_ports().0);
-            if self.inputs_read.contains(&component.get_id_ports().0) {
-                trace!("read {}", component.get_id_ports().0);
-                self.active.insert(component.get_id_ports().0);
+        // iterate from sinks towards inputs
+        let mut to_visit = self.sinks.clone();
+
+        // extremely un-Rusty
+        while let Some(id) = to_visit.pop() {
+            if !self.active.contains(&id) {
+                trace!("id not found {}", id);
+                if let Some(ids) = self.inputs_read.get(&id) {
+                    trace!("reading input(s) {:?}", ids);
+                    for id in ids {
+                        to_visit.push(id.clone());
+                    }
+                }
+                self.active.insert(id);
             }
         }
     }

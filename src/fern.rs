@@ -37,6 +37,7 @@ pub fn fern_setup() {
         .level_for("polling", LevelFilter::Warn)
         .level_for("arboard", LevelFilter::Warn)
         .level_for("egui_glow", LevelFilter::Warn)
+        .level_for("syncrim::gui_egui::components", LevelFilter::Warn)
         // .level_for("egui", LevelFilter::Error)
         ;
 
