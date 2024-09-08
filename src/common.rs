@@ -44,7 +44,6 @@ pub struct Simulator {
     pub(crate) running: bool,
 
     // Used to determine active components
-    // pub clock_mode: bool,
     pub inputs_read: HashSet<Id>,
     pub active: HashSet<Id>,
 }
