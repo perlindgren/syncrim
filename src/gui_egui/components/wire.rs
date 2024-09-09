@@ -92,39 +92,39 @@ impl EguiComponent for Wire {
         for val in line_vec.windows(2) {
             let first_pos = val[0];
             let last_pos = val[1];
-            let rect = Rect::from_two_pos(first_pos, last_pos);
+            let rect = Rect::from_two_pos(first_pos, last_pos).expand(2.5);
 
             // why the fuck do i need this much code just to make sure its rendered at the correct layer
-            // let resp = ui
-            //     .allocate_ui_at_rect(rect, |ui| {
-            //         let mut layer = ui.layer_id();
-            //         layer.order = Order::Foreground;
-            //         ui.with_layer_id(layer, |ui| {
-            //             ui.allocate_exact_size(
-            //                 rect.size(),
-            //                 Sense {
-            //                     click: true,
-            //                     drag: true,
-            //                     focusable: true,
-            //                 },
-            //             )
-            //         })
-            //     })
-            //     .inner
-            //     .inner
-            //     .1;
-            // // log::debug!("{:?}", resp);
-            // if resp.contains_pointer() {
-            //     ui.painter().rect_stroke(
-            //         resp.interact_rect,
-            //         Rounding::same(0.0),
-            //         Stroke {
-            //             width: scale,
-            //             color: Color32::RED,
-            //         },
-            //     );
-            // }
-            // r.push(resp);
+            let resp = ui
+                .allocate_ui_at_rect(rect, |ui| {
+                    let mut layer = ui.layer_id();
+                    layer.order = Order::Middle;
+                    ui.with_layer_id(layer, |ui| {
+                        ui.allocate_exact_size(
+                            rect.size(),
+                            Sense {
+                                click: true,
+                                drag: true,
+                                focusable: true,
+                            },
+                        )
+                    })
+                })
+                .inner
+                .inner
+                .1;
+            // log::debug!("{:?}", resp);
+            if resp.contains_pointer() {
+                ui.painter().rect_stroke(
+                    resp.interact_rect,
+                    Rounding::same(0.0),
+                    Stroke {
+                        width: scale,
+                        color: Color32::RED,
+                    },
+                );
+            }
+            r.push(resp);
             if let Some(cursor) = ui.ctx().pointer_latest_pos() {
                 if min_from_line(first_pos.to_vec2(), last_pos.to_vec2(), cursor.to_vec2())
                     < TOOLTIP_DISTANCE

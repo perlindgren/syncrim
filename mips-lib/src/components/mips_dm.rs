@@ -9,7 +9,6 @@ use syncrim::common::EguiComponent;
 use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 
 use crate::components::physical_mem::{MemOpSize, MemWriteReturn, MipsMem};
-use crate::components::RegFile;
 
 use super::PhysicalMem;
 

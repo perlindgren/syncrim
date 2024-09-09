@@ -7,12 +7,19 @@ use crate::components::InstrMem;
 use crate::components::MipsMem;
 use crate::components::PhysicalMem;
 use crate::components::RegFile;
+use crate::components::INSTR_MEM_INSTRUCTION_ID;
+use egui::pos2;
+use egui::Pos2;
 // use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 use egui::{Rect, Response, RichText, Ui, Vec2};
+use syncrim::common::Input;
 use syncrim::common::{EguiComponent, Id, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::basic_component_gui;
+
+const WIDTH: f32 = 120.0;
+const HEIGHT: f32 = 55.0;
 
 #[typetag::serde]
 impl EguiComponent for InstrMem {
@@ -41,6 +48,8 @@ impl EguiComponent for InstrMem {
 
         let r = basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
             // ui.centered_and_justified(|ui| {
+            ui.set_height(HEIGHT * scale);
+            ui.set_width(WIDTH * scale);
             ui.label(RichText::new("Instruction memory").size(12f32 * scale));
             if ui.button("load file").clicked() {
                 path_option = rfd::FileDialog::new().pick_file();
@@ -141,5 +150,38 @@ impl EguiComponent for InstrMem {
 
     fn top_padding(&self) -> f32 {
         20f32
+    }
+
+    fn ports_location(&self) -> Vec<(syncrim::common::Id, Pos2)> {
+        // width 50
+        // height 200
+        let own_pos = Vec2::new(self.pos.0, self.pos.1);
+        const M: f32 = 6.0;
+        vec![
+            (
+                crate::components::INSTR_MEM_PC_ID.to_string(),
+                pos2(-WIDTH / 3.0, -HEIGHT / 2.0 - M) + own_pos,
+            ),
+            (
+                crate::components::DATA_MEM_A_IN_ID.to_string(),
+                pos2(WIDTH / 3.0, -HEIGHT / 2.0 - M) + own_pos,
+            ),
+        ]
+    }
+
+    fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {
+        let loc = self
+            .ports_location()
+            .iter()
+            .map(|(_, loc)| <(f32, f32)>::from(loc))
+            .collect::<Vec<(f32, f32)>>();
+
+        if id == self.pc {
+            Some(loc[0])
+        } else if id == Input::new(&self.id, INSTR_MEM_INSTRUCTION_ID) {
+            Some(loc[1])
+        } else {
+            None
+        }
     }
 }

@@ -1,9 +1,10 @@
 use crate::components::{reg_file_fields, RegFile, RegFormat};
 use egui::{vec2, ComboBox, Pos2, Rect, Response, RichText, ScrollArea, Ui, Vec2};
-use syncrim::common::{EguiComponent, Input, Simulator};
-use syncrim::gui_egui::editor::EditorMode;
+use syncrim::common::{EguiComponent, Input, Ports, Simulator};
+use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::basic_component_gui;
+use syncrim::signal::Id;
 
 const REG_NAMES: [&str; 32] = [
     "zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6",
@@ -89,6 +90,32 @@ impl EguiComponent for RegFile {
                 ui.label(RichText::new(str).size(12f32 * scale).monospace())
             });
         })
+    }
+    fn render_editor(
+        &mut self,
+        ui: &mut egui::Ui,
+        context: &mut EguiExtra,
+        simulator: Option<&mut Simulator>,
+        offset: egui::Vec2,
+        scale: f32,
+        clip_rect: egui::Rect,
+        _id_ports: &[(Id, Ports)],
+        _grid: &GridOptions,
+        editor_mode: EditorMode,
+    ) -> EditorRenderReturn {
+        self.render(
+            ui,
+            context,
+            simulator,
+            offset,
+            scale,
+            clip_rect,
+            editor_mode,
+        );
+        EditorRenderReturn {
+            delete: false,
+            resp: None,
+        }
     }
 
     fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {
