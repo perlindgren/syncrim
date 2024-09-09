@@ -239,25 +239,32 @@ impl EguiComponent for Wire {
                     );
 
                     let mut i = 0;
+                    let mut to_insert: Option<(usize, (f32, f32))> = None;
                     let mut first_item = true;
                     self.pos.retain_mut(|seg_pos| {
                         let mut delete = false;
                         ui.horizontal(|ui| {
                             ui.label(format!("Segment {}:", i));
                             ui.label("pos x");
-                            ui.add(DragValue::new(&mut seg_pos.0));
+                            ui.add(DragValue::new(&mut seg_pos.0).speed(0.5));
                             ui.label("pos y");
-                            ui.add(DragValue::new(&mut seg_pos.1));
+                            ui.add(DragValue::new(&mut seg_pos.1).speed(0.5));
 
                             if first_item {
                                 first_item = false;
                             } else if ui.button("🗙").clicked() {
                                 delete = true;
                             }
+                            if ui.button("NEW").clicked() {
+                                to_insert = Some((i, seg_pos.clone()));
+                            }
                         });
                         i += 1;
                         !delete
                     });
+                    if let Some((i, pos)) = to_insert {
+                        self.pos.insert(i, pos)
+                    };
 
                     if ui.button("+ Add new segment").clicked() {
                         self.pos.push(*self.pos.last().unwrap());
