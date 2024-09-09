@@ -310,7 +310,7 @@ impl Simulator {
             }
         }
         self.cycle = self.history.len();
-        self.active()
+        self.active_components()
         // self.clock_mode = false;
     }
 
@@ -321,7 +321,7 @@ impl Simulator {
     }
 
     // internal function to determine active components
-    fn active(&mut self) {
+    fn active_components(&mut self) {
         trace!("active - determine active components");
         trace!("inputs read {:?}", self.inputs_read);
 
