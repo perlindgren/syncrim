@@ -1,3 +1,5 @@
+use crate::common::Input;
+use crate::components::{ADD_OUT_ID, ADD_OVERFLOW_ID};
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
     rect_with_hover, visualize_ports,
@@ -176,6 +178,26 @@ impl EguiComponent for Add {
                 Pos2::new(0f32, -40f32) * self.scale + own_pos,
             ),
         ]
+    }
+
+    fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {
+        let loc = self
+            .ports_location()
+            .iter()
+            .map(|(_, loc)| <(f32, f32)>::from(loc))
+            .collect::<Vec<(f32, f32)>>();
+
+        if id == self.a_in {
+            Some(loc[0])
+        } else if id == self.b_in {
+            Some(loc[1])
+        } else if id == Input::new(&self.id, ADD_OUT_ID) {
+            Some(loc[2])
+        } else if id == Input::new(&self.id, ADD_OVERFLOW_ID) {
+            Some(loc[3])
+        } else {
+            None
+        }
     }
 
     fn top_padding(&self) -> f32 {

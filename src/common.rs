@@ -137,7 +137,7 @@ pub trait EguiComponent: Component {
         }
     }
 
-    fn get_port_location(&self, _id: Input) -> Option<(f32, f32)> {
+    fn get_input_location(&self, _id: Input) -> Option<(f32, f32)> {
         None
     }
 

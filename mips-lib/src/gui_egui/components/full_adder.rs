@@ -1,6 +1,9 @@
-use crate::components::{alu_op, FullAdd, FULL_ADD_OUT_ID, FULL_ADD_OVERFLOW_OUT_ID};
+use crate::components::{
+    alu_op, FullAdd, FULL_ADD_A_IN_ID, FULL_ADD_B_IN_ID, FULL_ADD_OP_IN_ID, FULL_ADD_OUT_ID,
+    FULL_ADD_OVERFLOW_OUT_ID,
+};
 use egui::{
-    vec2, Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Shape, Stroke,
+    pos2, vec2, Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Shape, Stroke,
     TextWrapMode, Ui, Vec2,
 };
 use syncrim::common::{EguiComponent, Input, Ports, Simulator};
@@ -11,6 +14,7 @@ use syncrim::gui_egui::component_ui::{
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::offset_helper;
+use syncrim::signal::Id;
 
 #[typetag::serde]
 impl EguiComponent for FullAdd {
@@ -176,19 +180,7 @@ impl EguiComponent for FullAdd {
         }
     }
 
-    fn top_padding(&self) -> f32 {
-        20f32
-    }
-
-    fn set_pos(&mut self, pos: (f32, f32)) {
-        self.pos = pos;
-    }
-
-    fn get_pos(&self) -> (f32, f32) {
-        self.pos
-    }
-
-    fn get_port_location(&self, id: Input) -> Option<(f32, f32)> {
+    fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {
         if id == self.a_in {
             Some((Pos2::from(self.pos) + vec2(-20.0, -30.0)).into())
         } else if id == self.b_in {
@@ -202,5 +194,31 @@ impl EguiComponent for FullAdd {
         } else {
             None
         }
+    }
+
+    fn ports_location(&self) -> Vec<(Id, egui::Pos2)> {
+        let own_pos: Vec2 = self.pos.into();
+        vec![
+            (FULL_ADD_A_IN_ID.to_string(), pos2(-20.0, -30.0) + own_pos),
+            (FULL_ADD_B_IN_ID.to_string(), pos2(-20.0, 30.0) + own_pos),
+            (FULL_ADD_OP_IN_ID.to_string(), pos2(-10.0, -40.0) + own_pos),
+            (FULL_ADD_OUT_ID.to_string(), pos2(20.0, 0.0) + own_pos),
+            (
+                FULL_ADD_OVERFLOW_OUT_ID.to_string(),
+                pos2(-20.0, 5.0) + own_pos,
+            ),
+        ]
+    }
+
+    fn top_padding(&self) -> f32 {
+        20f32
+    }
+
+    fn set_pos(&mut self, pos: (f32, f32)) {
+        self.pos = pos;
+    }
+
+    fn get_pos(&self) -> (f32, f32) {
+        self.pos
     }
 }

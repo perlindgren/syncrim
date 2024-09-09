@@ -159,7 +159,7 @@ impl EguiComponent for Register {
         ]
     }
 
-    fn get_port_location(&self, input: Input) -> Option<(f32, f32)> {
+    fn get_input_location(&self, input: Input) -> Option<(f32, f32)> {
         let own_pos = self.get_pos();
         let input_pos_change = (-10f32, 0f32);
         let output_pos_change = (10f32, 0f32);

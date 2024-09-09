@@ -33,10 +33,10 @@ pub fn autowire(mut cs: ComponentStore) -> ComponentStore {
                 &format!("from {}:{} to {}:{}", s_id, s_field, d_id, d_field),
                 vec![
                     source_component
-                        .get_port_location(Input::new(s_id, s_field))
+                        .get_input_location(Input::new(s_id, s_field))
                         .unwrap_or(source_component.get_pos()),
                     destination_component
-                        .get_port_location(Input::new(s_id, s_field))
+                        .get_input_location(Input::new(s_id, s_field))
                         .unwrap_or(destination_component.get_pos()),
                 ],
                 source_port.clone(),

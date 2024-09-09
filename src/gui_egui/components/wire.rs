@@ -5,8 +5,8 @@ use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapP
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::{basic_on_hover, offset_helper, shadow_small_dark};
 use egui::{
-    Color32, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers, PointerButton, Pos2, Rect,
-    Response, Rounding, Shape, Stroke, Ui, Vec2, Window,
+    Color32, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers, Order, PointerButton,
+    Pos2, Rect, Response, Rounding, Sense, Shape, Stroke, Ui, Vec2, Window,
 };
 
 /// if the mouse cursor is less than this distance in points away from the wire display tooltip
@@ -92,10 +92,39 @@ impl EguiComponent for Wire {
         for val in line_vec.windows(2) {
             let first_pos = val[0];
             let last_pos = val[1];
-            r.push(
-                ui.allocate_ui_at_rect(Rect::from_two_pos(first_pos, last_pos), |_| {})
-                    .response,
-            );
+            let rect = Rect::from_two_pos(first_pos, last_pos);
+
+            // why the fuck do i need this much code just to make sure its rendered at the correct layer
+            // let resp = ui
+            //     .allocate_ui_at_rect(rect, |ui| {
+            //         let mut layer = ui.layer_id();
+            //         layer.order = Order::Foreground;
+            //         ui.with_layer_id(layer, |ui| {
+            //             ui.allocate_exact_size(
+            //                 rect.size(),
+            //                 Sense {
+            //                     click: true,
+            //                     drag: true,
+            //                     focusable: true,
+            //                 },
+            //             )
+            //         })
+            //     })
+            //     .inner
+            //     .inner
+            //     .1;
+            // // log::debug!("{:?}", resp);
+            // if resp.contains_pointer() {
+            //     ui.painter().rect_stroke(
+            //         resp.interact_rect,
+            //         Rounding::same(0.0),
+            //         Stroke {
+            //             width: scale,
+            //             color: Color32::RED,
+            //         },
+            //     );
+            // }
+            // r.push(resp);
             if let Some(cursor) = ui.ctx().pointer_latest_pos() {
                 if min_from_line(first_pos.to_vec2(), last_pos.to_vec2(), cursor.to_vec2())
                     < TOOLTIP_DISTANCE
@@ -108,7 +137,6 @@ impl EguiComponent for Wire {
                         (first_pos + last_pos.to_vec2()) / 2.0,
                         |ui| basic_on_hover(ui, self, &simulator),
                     );
-                    break;
                 }
             };
         }

@@ -1,5 +1,5 @@
 use crate::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
-use crate::components::Mux;
+use crate::components::{Mux, MUX_OUT_ID};
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, input_selector_removeable, pos_drag_value,
     properties_window, rect_with_hover, visualize_ports,
@@ -182,13 +182,30 @@ impl EguiComponent for Mux {
         }
     }
 
+    fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {
+        let loc = self
+            .ports_location()
+            .iter()
+            .map(|(_, loc)| <(f32, f32)>::from(loc))
+            .collect::<Vec<(f32, f32)>>();
+        if let Some(i) = self.m_in.iter().position(|item| item == &id) {
+            Some(loc[i + 1])
+        } else if id == self.select {
+            Some(loc[0])
+        } else if id == Input::new(&self.id, MUX_OUT_ID) {
+            Some(*loc.last().unwrap())
+        } else {
+            None
+        }
+    }
+
     fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         let pa = self.m_in.len() as f32;
         let top = -pa * 10f32 - 10f32;
         let mut v = vec![(
             crate::components::MUX_SELECT_ID.to_string(),
-            Pos2::new(-10f32, top) + own_pos,
+            Pos2::new(-10f32, top) * self.scale + own_pos,
         )];
         for i in 0..=self.m_in.len() - 1 {
             v.push((

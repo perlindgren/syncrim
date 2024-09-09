@@ -1,9 +1,9 @@
-use crate::common::{EguiComponent, Id, Ports, Simulator};
-use crate::components::Equal;
+use crate::common::{EguiComponent, Id, Input, Ports, Simulator};
+use crate::components::{Equal, EQUAL_A_IN_ID, EQUAL_B_IN_ID, EQUAL_OUT_ID};
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::basic_component_gui;
-use egui::{Rect, Response, Ui, Vec2};
+use egui::{pos2, Rect, Response, Ui, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Equal {
@@ -59,5 +59,33 @@ impl EguiComponent for Equal {
 
     fn top_padding(&self) -> f32 {
         20f32
+    }
+
+    fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {
+        let loc = self
+            .ports_location()
+            .iter()
+            .map(|(_, loc)| <(f32, f32)>::from(loc))
+            .collect::<Vec<(f32, f32)>>();
+        if id == self.a_in {
+            Some(loc[0])
+        } else if id == self.b_in {
+            Some(loc[1])
+        } else if id == Input::new(&self.id, EQUAL_OUT_ID) {
+            Some(loc[2])
+        } else {
+            None
+        }
+    }
+
+    fn ports_location(&self) -> Vec<(Id, egui::Pos2)> {
+        //size 22-14
+        let m = 6f32; // margin
+        let pos: Vec2 = self.pos.into();
+        vec![
+            (EQUAL_A_IN_ID.to_string(), pos2(-11.0 - m, -10.0) + pos),
+            (EQUAL_B_IN_ID.to_string(), pos2(-11.0 - m, 10.0) + pos),
+            (EQUAL_OUT_ID.to_string(), pos2(11.0 + m, 0.0) + pos),
+        ]
     }
 }

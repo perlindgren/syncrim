@@ -91,7 +91,7 @@ impl EguiComponent for RegFile {
         })
     }
 
-    fn get_port_location(&self, id: Input) -> Option<(f32, f32)> {
+    fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {
         // components size = (120,250)
         let margin = egui::style::Spacing::default().window_margin;
 
