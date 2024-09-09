@@ -1,6 +1,6 @@
 #[cfg(feature = "gui-egui")]
 use crate::common::EguiComponent;
-use crate::common::{Component, Id, Input, InputPort, OutputType, Ports};
+use crate::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -47,10 +47,21 @@ impl Component for Probe {
         )
     }
 
+    fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
+        // get input value
+        let value = simulator.get_input_value_mut(self.id.clone(), &self.input);
+        trace!("probe: register id {} in {:?}", self.id, value);
+        Ok(())
+    }
+
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         if target_port_id.as_str() == PROBE_IN_ID {
             self.input = new_input
         }
+    }
+
+    fn is_sink(&self) -> bool {
+        true
     }
 
     fn as_any(&self) -> &dyn Any {
