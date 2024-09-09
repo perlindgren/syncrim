@@ -2,6 +2,10 @@
 
 Tracking changes per date:
 
+## 240909
+
+- Added un-clock history for set of active components
+
 ## 240908
 
 - Added functionality to determine set of active components

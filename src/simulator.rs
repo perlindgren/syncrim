@@ -282,14 +282,13 @@ impl Simulator {
 
     /// iterate over the evaluators and increase clock by one
     pub fn clock(&mut self) {
-        self.clean_active();
-
         // push current state
-        self.history.push(self.sim_state.clone());
+        self.history
+            .push((self.sim_state.clone(), self.active.clone()));
         trace!("cycle:{}", self.cycle);
 
-        // set clock mode
-        // self.clock_mode = true;
+        self.clean_active();
+
         for component in self.ordered_components.clone() {
             trace!("evaluating component:{}", component.get_id_ports().0);
             match component.clock(self) {
@@ -373,9 +372,11 @@ impl Simulator {
     /// reverse simulation using history if clock > 1
     pub fn un_clock(&mut self) {
         if self.cycle > 1 {
-            let state = self.history.pop().unwrap();
+            let (state, active) = self.history.pop().unwrap();
             // set old state
             self.sim_state = state;
+            self.active = active;
+
             // to ensure that history length and cycle count complies
             self.cycle = self.history.len();
 

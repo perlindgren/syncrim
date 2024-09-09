@@ -37,7 +37,7 @@ pub struct Simulator {
     pub sim_state: Vec<Signal>,
     pub id_nr_outputs: IdNrOutputs,
     pub id_field_index: IdFieldIndex,
-    pub history: Vec<Vec<Signal>>,
+    pub history: Vec<(Vec<Signal>, HashSet<Id>)>,
     pub component_ids: Vec<Id>,
     pub graph: Graph<Id, ()>,
     // Running state, (do we need it accessible from other crates?)
