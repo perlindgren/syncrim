@@ -18,7 +18,7 @@ impl ComponentStore {
     }
 
     pub fn save_file(&self, path: &PathBuf) {
-        let json = serde_json::to_string(self).unwrap();
+        let json = serde_json::to_string_pretty(self).unwrap();
         trace!("json: {}", json);
         trace!("path {:?}", path);
         let mut file = File::create(path).unwrap();

@@ -11,6 +11,15 @@ pub struct Wire {
     pub(crate) id: Id,
     pub(crate) pos: Vec<(f32, f32)>,
     pub(crate) input: Input,
+    // this is colour32, using [u8;4] instead of color
+    // because we are not sure if egui feature is present
+    // if this field does not exist in wire call basic color to generate it
+    // skip serializing color if color matches basic color
+    #[serde(
+        default = "Wire::basic_color",
+        skip_serializing_if = "Wire::is_color_basic"
+    )]
+    pub(crate) color_rgba: [u8; 4],
 }
 
 #[typetag::serde]
@@ -46,10 +55,19 @@ impl Wire {
             id: id.to_string(),
             pos,
             input,
+            color_rgba: Wire::basic_color(),
         }
     }
 
     pub fn rc_new(id: &str, pos: Vec<(f32, f32)>, input: Input) -> Rc<Wire> {
         Rc::new(Wire::new(id, pos, input))
+    }
+
+    pub const fn basic_color() -> [u8; 4] {
+        [0x00, 0x00, 0x00, 0xff]
+    }
+
+    pub fn is_color_basic(x: &[u8; 4]) -> bool {
+        &Wire::basic_color() == x
     }
 }

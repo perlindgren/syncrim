@@ -101,11 +101,7 @@ pub fn last_click(e: &mut Editor, closest_uw: CloseToComponent) {
             #[allow(ambiguous_wide_pointer_comparisons)]
             if !Rc::ptr_eq(&in_c.comp, &out_c.comp) {
                 let comp = if is_input_in_comp_start { out_c } else { in_c };
-                e.components.push(Rc::new(Wire {
-                    id: id.to_string(),
-                    pos: pos_v,
-                    input: i.clone(),
-                }));
+                e.components.push(Rc::new(Wire::new(id, pos_v, i.clone())));
                 e.contexts.insert(
                     id.to_string(),
                     EguiExtra {

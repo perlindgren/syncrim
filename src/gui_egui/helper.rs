@@ -268,6 +268,7 @@ pub fn basic_on_hover(
     component: &dyn EguiComponent,
     simulator: &Option<&mut Simulator>,
 ) {
+    ui.set_max_width(200.0);
     ui.label(format!("id: {}", component.get_id_ports().0));
     if let Some(sim) = simulator {
         ui.separator();

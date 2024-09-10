@@ -84,7 +84,12 @@ impl EguiComponent for Wire {
             line_vec.clone(),
             Stroke {
                 width: scale,
-                color: Color32::BLACK,
+                color: Color32::from_rgba_unmultiplied(
+                    self.color_rgba[0],
+                    self.color_rgba[1],
+                    self.color_rgba[2],
+                    self.color_rgba[3],
+                ),
             },
         ));
         let mut r: Vec<Response> = vec![];
@@ -93,38 +98,43 @@ impl EguiComponent for Wire {
             let first_pos = val[0];
             let last_pos = val[1];
             let rect = Rect::from_two_pos(first_pos, last_pos).expand(2.5);
-
-            // why the fuck do i need this much code just to make sure its rendered at the correct layer
-            let resp = ui
-                .allocate_ui_at_rect(rect, |ui| {
-                    let mut layer = ui.layer_id();
-                    layer.order = Order::Middle;
-                    ui.with_layer_id(layer, |ui| {
-                        ui.allocate_exact_size(
-                            rect.size(),
-                            Sense {
-                                click: true,
-                                drag: true,
-                                focusable: true,
+            match editor_mode {
+                EditorMode::Default => {
+                    // why the fuck do i need this much code just to make sure its rendered at the correct layer
+                    let resp = ui
+                        .allocate_ui_at_rect(rect, |ui| {
+                            let mut layer = ui.layer_id();
+                            layer.order = Order::Middle;
+                            ui.with_layer_id(layer, |ui| {
+                                ui.allocate_exact_size(
+                                    rect.size(),
+                                    Sense {
+                                        click: true,
+                                        drag: true,
+                                        focusable: true,
+                                    },
+                                )
+                            })
+                        })
+                        .inner
+                        .inner
+                        .1;
+                    // log::debug!("{:?}", resp);
+                    if resp.contains_pointer() {
+                        ui.painter().rect_stroke(
+                            resp.interact_rect,
+                            Rounding::same(0.0),
+                            Stroke {
+                                width: scale,
+                                color: Color32::RED,
                             },
-                        )
-                    })
-                })
-                .inner
-                .inner
-                .1;
-            // log::debug!("{:?}", resp);
-            if resp.contains_pointer() {
-                ui.painter().rect_stroke(
-                    resp.interact_rect,
-                    Rounding::same(0.0),
-                    Stroke {
-                        width: scale,
-                        color: Color32::RED,
-                    },
-                );
-            }
-            r.push(resp);
+                        );
+                    }
+                    r.push(resp);
+                }
+                _ => {}
+            };
+
             if let Some(cursor) = ui.ctx().pointer_latest_pos() {
                 if min_from_line(first_pos.to_vec2(), last_pos.to_vec2(), cursor.to_vec2())
                     < TOOLTIP_DISTANCE
@@ -237,6 +247,14 @@ impl EguiComponent for Wire {
                         id_ports,
                         self.id.clone(),
                     );
+                    let mut c: Color32 = Color32::from_rgba_unmultiplied(
+                        self.color_rgba[0],
+                        self.color_rgba[1],
+                        self.color_rgba[2],
+                        self.color_rgba[3],
+                    );
+                    ui.color_edit_button_srgba(&mut c);
+                    self.color_rgba = c.to_array();
 
                     let mut i = 0;
                     let mut to_insert: Option<(usize, (f32, f32))> = None;
