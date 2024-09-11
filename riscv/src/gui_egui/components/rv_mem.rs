@@ -36,8 +36,8 @@ impl RVMem {
                     body.rows(
                         15.0,
                         ((self.range.end - self.range.start) / 4) as usize,
-                        |index, mut row| {
-                            //println!("{}", index);
+                        |mut row| {
+                            let index = row.index();
                             let address = self.range.start as usize + index * 4;
                             let memory = self.memory.0.borrow().clone();
                             row.col(|ui| {
@@ -68,10 +68,10 @@ impl RVMem {
                                 }
                             }
                             row.col(|ui| {
-                                ui.add(Label::new(word).truncate(true));
+                                ui.add(Label::new(word).truncate());
                             });
                             row.col(|ui| {
-                                ui.add(Label::new(ascii).truncate(true));
+                                ui.add(Label::new(ascii).truncate());
                             });
                         },
                     );

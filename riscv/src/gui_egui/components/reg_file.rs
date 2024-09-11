@@ -124,7 +124,8 @@ impl EguiComponent for RegFile {
                                 15.0 * scale,
                                 RegStore::lo_range().end as usize
                                     - RegStore::lo_range().start as usize,
-                                |index, mut row| {
+                                |mut row| {
+                                    let index = row.index();
                                     row.col(|ui| {
                                         ui.add(Label::new(
                                             RichText::new(format!(
