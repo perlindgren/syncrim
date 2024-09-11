@@ -23,17 +23,13 @@ typetag = "0.2.10"
 
 [dependencies.vizia]
 git = "https://github.com/vizia/vizia.git"
+rev = "7093bfd518c4bee5544a75c2ffc92dfe4f817bc0"
 #path = "../vizia"
 optional = true
 
 [dependencies.egui]
 optional = true
 version = "0.28.0"
-
-[dependencies.winapi]
-optional = true
-version = "0.3.9"
-features = ["winuser"]
 
 [dependencies.eframe]
 optional = true
@@ -47,7 +43,7 @@ version = "0.28.0"
 default = ["gui-egui"]
 components = []
 gui-vizia = ["vizia", "components"]
-gui-egui = ["egui", "eframe", "epaint", "winapi", "components"]
+gui-egui = ["egui", "eframe", "epaint", "components"]
 
 [profile.dev]
 debug = 1 # faster build, still allows for stack back trace

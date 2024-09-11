@@ -1,7 +1,10 @@
 use petgraph::Graph;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
-use std::{collections::HashMap, rc::Rc};
+use std::{
+    collections::{HashMap, HashSet},
+    rc::Rc,
+};
 
 #[cfg(feature = "gui-egui")]
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapPriority};
@@ -46,7 +49,7 @@ pub struct Simulator {
     pub sim_state: Vec<Signal>,
     pub id_nr_outputs: IdNrOutputs,
     pub id_field_index: IdFieldIndex,
-    pub history: Vec<Vec<Signal>>,
+    pub history: Vec<(Vec<Signal>, HashSet<Id>)>,
     pub component_ids: Vec<Id>,
     pub graph: Graph<Id, ()>,
 
@@ -58,6 +61,11 @@ pub struct Simulator {
     // stores if components return a condition
     // TODO add component condition history
     pub component_condition: Vec<(Id, Condition)>,
+
+    // Used to determine active components
+    pub sinks: Vec<Id>,
+    pub inputs_read: HashMap<Id, HashSet<Id>>,
+    pub active: HashSet<Id>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -101,6 +109,13 @@ pub trait Component {
     fn un_clock(&self) {}
     /// reset component internal state to initial value
     fn reset(&self) {}
+
+    /// consider component to be a sink
+    /// either output to environment (e.g., for visualization)
+    /// or stateful (e.g., register)
+    fn is_sink(&self) -> bool {
+        false
+    }
     /// any
     fn as_any(&self) -> &dyn Any;
 }
@@ -196,7 +211,7 @@ impl Ports {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Hash, Eq, PartialEq)]
 pub struct Input {
     pub id: Id,
     pub field: Id,

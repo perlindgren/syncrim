@@ -2,6 +2,14 @@
 
 Tracking changes per date:
 
+## 240909
+
+- Added un-clock history for set of active components
+
+## 240908
+
+- Added functionality to determine set of active components
+
 ## 230801
 
 - Simulator run/halt is implemented in `vizia` using a simple eventing mechanism. Later we might want to spawn a simulation thread for faster execution (right now its tied to frame rate).
