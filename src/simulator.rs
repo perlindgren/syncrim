@@ -249,40 +249,63 @@ impl Simulator {
 
     /// iterate over the evaluators and increase clock by one
     pub fn clock(&mut self) {
+        // if state is error stop simulator from clocking
+        if self.running_state == RunningState::Err {
+            return;
+        }
         // push current state
         self.history.push(self.sim_state.clone());
         trace!("cycle:{}", self.cycle);
 
-        // TODO push component state
         // clear component condition data for this new cycle
         self.component_condition.clear();
         for component in self.ordered_components.clone() {
             //trace!("evaling component:{}", component.get_id_ports().0);
+
+            // Clock component and add its condition if error self.component_condition
             match component.clock(self) {
                 Ok(_) => {}
                 Err(cond) => {
                     self.component_condition
                         .push((component.get_id_ports().0, cond.clone()));
+                    // is this trace necessary?
                     match cond {
                         Condition::Warning(warn) => {
                             trace!("warning {}", warn);
-                            if self.halt_on_warning {
-                                self.running_state = RunningState::Halt;
-                            }
                         }
                         Condition::Error(err) => {
                             error!("component error {}", err);
-                            self.running_state = RunningState::Err;
                         }
                         Condition::Assert(assert) => {
                             error!("assertion failed {}", assert);
-                            self.running_state = RunningState::Halt;
                         }
                         Condition::Halt(halt) => {
                             info!("halt {}", halt);
-                            self.running_state = RunningState::Halt;
                         }
                     }
+                }
+            }
+        }
+        // if there exist a component condition
+        // get the most severe component condition
+        // and update running state accordingly
+        // order of servery from low to high is
+        // warning -> halt -> assert -> error
+        if let Some(max) = self.component_condition.iter().max_by(|a, b| a.1.cmp(&b.1)) {
+            match max.1 {
+                Condition::Warning(_) => {
+                    if self.halt_on_warning {
+                        self.running_state = RunningState::Halt;
+                    }
+                }
+                Condition::Halt(_) => {
+                    self.running_state = RunningState::Halt;
+                }
+                Condition::Assert(_) => {
+                    self.running_state = RunningState::Halt;
+                }
+                Condition::Error(_) => {
+                    self.running_state = RunningState::Err;
                 }
             }
         }

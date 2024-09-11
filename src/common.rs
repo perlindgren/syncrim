@@ -105,12 +105,12 @@ pub trait Component {
     fn as_any(&self) -> &dyn Any;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Condition {
     Warning(String),
-    Error(String),
-    Assert(String),
     Halt(String),
+    Assert(String),
+    Error(String),
 }
 
 #[cfg(feature = "gui-egui")]
