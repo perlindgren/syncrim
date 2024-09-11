@@ -174,6 +174,8 @@ impl Simulator {
             sinks,
             inputs_read: HashMap::new(),
             active: HashSet::new(),
+            running_state_history: vec![],
+            component_condition_history: vec![],
         };
 
         trace!("sim_state {:?}", simulator.sim_state);
@@ -293,6 +295,9 @@ impl Simulator {
             .push((self.sim_state.clone(), self.active.clone()));
         trace!("cycle:{}", self.cycle);
 
+        self.component_condition_history
+            .push(self.component_condition.clone());
+        self.running_state_history.push(self.running_state.clone());
         self.clean_active();
 
         // clear component condition data for this new cycle
@@ -439,6 +444,13 @@ impl Simulator {
             self.cycle = self.history.len();
             // TODO add component_condition history pop
 
+            self.component_condition = self.component_condition_history.pop().unwrap();
+            match self.running_state_history.pop().unwrap() {
+                RunningState::Halt => self.running_state = RunningState::Halt,
+                RunningState::Err => self.running_state = RunningState::Err,
+                _ => self.running_state = RunningState::Stopped,
+            };
+
             for component in self.ordered_components.clone() {
                 component.un_clock();
             }
@@ -452,6 +464,8 @@ impl Simulator {
         self.history = vec![];
         self.cycle = 0;
         self.running_state = RunningState::Stopped;
+        self.component_condition_history = vec![];
+        self.running_state_history = vec![];
         let _ = self.stop();
 
         self.sim_state.iter_mut().for_each(|val| *val = 0.into());

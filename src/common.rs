@@ -58,9 +58,11 @@ pub struct Simulator {
     pub(crate) halt_on_warning: bool,
     // says if simulation is running, halted, stopped or stepping to a specific cycle
     pub running_state: RunningState,
+    pub running_state_history: Vec<RunningState>,
     // stores if components return a condition
     // TODO add component condition history
     pub component_condition: Vec<(Id, Condition)>,
+    pub component_condition_history: Vec<Vec<(Id, Condition)>>,
 
     // Used to determine active components
     pub sinks: Vec<Id>,
