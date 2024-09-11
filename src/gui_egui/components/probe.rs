@@ -6,7 +6,7 @@ use crate::gui_egui::component_ui::{
 };
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
-use egui::{Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Ui, Vec2};
+use egui::{Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, TextWrapMode, Ui, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for Probe {
@@ -29,15 +29,17 @@ impl EguiComponent for Probe {
             Some(s) => s.get_input_value(&input),
             None => SignalValue::Uninitialized,
         };
-        let area = Area::new(self.id.to_string())
+        let area = Area::new(egui::Id::from(self.id.to_string()))
             .order(Order::Middle)
             .current_pos(offset.to_pos2())
             .movable(false)
             .enabled(true)
             .interactable(false)
             .pivot(Align2::CENTER_CENTER)
+            .constrain(false)
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);
+                ui.style_mut().wrap_mode = Some(TextWrapMode::Extend);
                 let text = if let SignalValue::Data(v) = value {
                     format!("{:#010x}", v)
                 } else {
@@ -51,24 +53,23 @@ impl EguiComponent for Probe {
                     ),
                     _ => ui.label(RichText::new(text.clone()).size(scale * 12f32).underline()),
                 }
-                .on_hover_text(text);
+                .on_hover_text({
+                    if let SignalValue::Data(v) = value {
+                        format!("{:#010x}\nAs unsigned: {}\nAs signed: {}", v, v, v as i32)
+                    } else {
+                        text
+                    }
+                });
             });
-
-        let r = rect_with_hover(
-            area.response.rect,
-            clip_rect,
-            editor_mode,
-            ui,
-            self.id.clone(),
-            |ui| {
-                ui.label(format!("Id: {}", self.id.clone()));
-                if let SignalValue::Data(v) = value {
-                    ui.label(format!("{:#010x}", v));
-                } else {
-                    ui.label(format!("{:?}", value));
-                }
-            },
-        );
+        let rect = area.response.rect;
+        let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
+            ui.label(format!("Id: {}", self.id.clone()));
+            if let SignalValue::Data(v) = value {
+                ui.label(format!("{:#010x}", v));
+            } else {
+                ui.label(format!("{:?}", value));
+            }
+        });
         match editor_mode {
             EditorMode::Simulator => (),
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),

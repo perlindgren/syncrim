@@ -392,9 +392,9 @@ impl Editor {
         }
         if central_panel.response.hovered() {
             ctx.input_mut(|i| {
-                if i.scroll_delta.y > 0f32 {
+                if i.raw_scroll_delta.y > 0f32 {
                     keymap::view_zoom_in_fn(gui);
-                } else if i.scroll_delta.y < 0f32 {
+                } else if i.raw_scroll_delta.y < 0f32 {
                     keymap::view_zoom_out_fn(gui);
                 }
             });

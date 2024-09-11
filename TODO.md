@@ -12,3 +12,7 @@ Each target (e.g. `mips`, has a separate `TODO.md`).
 - Better tooltips for components. (Complexity moderate.)
 
 - Better popups for components. (Complexity moderate.)
+
+## Egui
+
+- Add better formatted tooltip for probe, maybe use ``LayoutJob``, if style is not respected maybe force to ``galley`` (Complexity low, but weird egui stuff)

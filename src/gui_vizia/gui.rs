@@ -1,5 +1,5 @@
 use crate::{
-    common::{ComponentStore, Simulator},
+    common::{ComponentStore, RunningState, Simulator},
     gui_vizia::{grid::Grid, keymap::init_keymap, menu::Menu, transport::Transport},
 };
 use rfd::FileDialog;
@@ -70,15 +70,19 @@ impl Model for GuiData {
                 self.simulator.reset();
             }
             GuiEvent::Play => {
-                self.simulator.running = true;
+                self.simulator.running_state = RunningState::Running;
                 self.simulator.clock();
             }
             GuiEvent::Pause => {
-                self.simulator.running = false;
+                self.simulator.running_state = RunningState::Halt;
             }
             GuiEvent::PlayToggle => {
-                self.simulator.running = !self.simulator.running;
-                if self.simulator.running {
+                if self.simulator.running_state == RunningState::Running {
+                    self.simulator.running_state = RunningState::Halt;
+                } else {
+                    self.simulator.running_state = RunningState::Running;
+                }
+                if self.simulator.running_state == RunningState::Running {
                     self.simulator.clock();
                 }
             }
@@ -154,7 +158,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf) {
 
             //let simulator = GuiData::simulator.get(cx);
             let simulator = GuiData::simulator.view(cx.data().unwrap()).unwrap();
-            if simulator.running {
+            if simulator.running_state == RunningState::Running {
                 trace!("send clock event");
                 cx.emit(GuiEvent::Clock);
             };
