@@ -452,7 +452,7 @@ impl Simulator {
         self.history = vec![];
         self.cycle = 0;
         self.running_state = RunningState::Stopped;
-        self.stop();
+        let _ = self.stop();
 
         self.sim_state.iter_mut().for_each(|val| *val = 0.into());
 
