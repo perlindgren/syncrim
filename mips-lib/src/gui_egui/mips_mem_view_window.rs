@@ -24,7 +24,7 @@ pub struct MemViewWindow {
     #[serde(skip)]
     go_to_address: GoAddress,
     // determents what is used as GoAddress in the top bar
-    #[serde(skip)]
+    #[serde(skip, default = "MemViewWindow::go_type_def")]
     go_type: GoAddress,
     // used when user wants to go to another address
     #[serde(skip)]
@@ -90,6 +90,9 @@ fn set_address(adrs: &GoAddress, new_adrs: u32) -> GoAddress {
 }
 
 impl MemViewWindow {
+    fn go_type_def() -> GoAddress {
+        GoAddress::Top(0)
+    }
     // creates a new memory view window with id string and the given memory
     pub fn new(id: String, title: String) -> Self {
         MemViewWindow {
