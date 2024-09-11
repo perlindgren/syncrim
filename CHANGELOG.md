@@ -2,6 +2,12 @@
 
 Tracking changes per date:
 
+## 240911
+- Added so that simulator now tracks what component condition
+- Added simulator running state, such as running, halt or error
+- Added stepping functionality
+- Added functionality to gui to show running state and component condition
+
 ## 240909
 
 - Added un-clock history for set of active components
