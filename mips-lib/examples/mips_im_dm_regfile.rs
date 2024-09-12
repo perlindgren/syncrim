@@ -1,5 +1,4 @@
 use mips_lib::components::*;
-use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
 #[cfg(feature = "gui-egui")]

@@ -1,9 +1,9 @@
 use mips_lib::components::*;
 use std::path::PathBuf;
 use std::rc::Rc;
+use syncrim::autowire::autowire;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
-use syncrim::mips_helper_functions::autowire;
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,

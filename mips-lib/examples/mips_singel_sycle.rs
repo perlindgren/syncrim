@@ -1,13 +1,13 @@
 // use crate::src::components::cntr_unit_signals;
 use mips_lib::components::*;
+use std::path::PathBuf;
 use std::rc::Rc;
-use std::{cell::RefCell, path::PathBuf};
 use syncrim::gui_egui::editor::Library;
 use syncrim::{
+    autowire::autowire,
     common::{ComponentStore, Input},
     components::*,
     fern::fern_setup,
-    mips_helper_functions::autowire,
 };
 
 fn main() {
@@ -139,7 +139,7 @@ fn main() {
             ),
             //
             //
-            FullAdd::rc_new(
+            ALU::rc_new(
                 "alu",
                 (720.0, 225.0),
                 Input::new("mux_source_a", MUX_OUT_ID),

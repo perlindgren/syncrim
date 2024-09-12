@@ -1,8 +1,8 @@
 use mips_lib::components::*;
 use std::path::PathBuf;
+use syncrim::autowire::autowire;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
-use syncrim::mips_helper_functions::autowire;
 use syncrim::{
     common::{ComponentStore, Input},
     components::*,
@@ -13,7 +13,7 @@ fn main() {
     fern_setup();
     let cs = ComponentStore {
         store: vec![
-            FullAdd::rc_new(
+            ALU::rc_new(
                 "full_adder",
                 (200.0, 120.0),
                 Input::new("c0", "out"),
