@@ -66,7 +66,8 @@ impl Component for ShiftConst {
             .try_into()
             .unwrap();
 
-        let output: u32 = signal_in << self.shift_by;
+        // let output: u32 = signal_in << self.shift_by;
+        let output: u32 = signal_in.overflowing_shl(self.shift_by).0;
         simulator.set_out_value(&self.id, SHIFT_OUT_ID, SignalValue::Data(output));
         Ok(())
     }

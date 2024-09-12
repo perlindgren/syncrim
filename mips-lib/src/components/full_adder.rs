@@ -153,13 +153,13 @@ impl Component for FullAdd {
                 output = (a < b) as u32;
             }
             alu_op::SLL => {
-                output = a.overflowing_shl(b).0; // https://doc.rust-lang.org/std/primitive.u32.html#method.overflowing_shl
+                output = b.overflowing_shl(a).0; // https://doc.rust-lang.org/std/primitive.u32.html#method.overflowing_shl
             }
             alu_op::SRL => {
-                output = a.overflowing_shr(b).0;
+                output = b.overflowing_shr(a).0;
             }
             alu_op::SRA => {
-                output = (a as i32).overflowing_shr(b).0 as u32;
+                output = (b as i32).overflowing_shr(a).0 as u32;
             }
             alu_op::LUI => {
                 output = (a & 0x0000_ffff) | b.overflowing_shl(16).0;
