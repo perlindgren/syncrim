@@ -3,6 +3,7 @@ use std::rc::Rc;
 use crate::common::{ComponentStore, EguiComponent, Input};
 use crate::components::Wire;
 
+/// Adds a wire component in a straight line from the output port location of the source component to the inut port locaition of the destination component.
 pub fn autowire(mut cs: ComponentStore) -> ComponentStore {
     let mut wires: Vec<Rc<dyn EguiComponent>> = vec![];
 

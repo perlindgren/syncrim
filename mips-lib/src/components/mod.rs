@@ -1,4 +1,4 @@
-mod full_adder;
+mod mips_alu;
 mod mips_branch_logic;
 mod mips_control_unit;
 mod mips_dm;
@@ -9,7 +9,7 @@ mod mips_reg_file;
 mod physical_mem;
 mod sz_extend;
 
-pub use full_adder::*;
+pub use mips_alu::*;
 pub use mips_branch_logic::*;
 pub use mips_control_unit::*;
 pub use mips_dm::*;

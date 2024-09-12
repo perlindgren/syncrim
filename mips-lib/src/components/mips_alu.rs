@@ -33,7 +33,7 @@ pub mod alu_op {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct FullAdd {
+pub struct ALU {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
     pub(crate) a_in: Input,
@@ -42,14 +42,14 @@ pub struct FullAdd {
 }
 
 #[typetag::serde]
-impl Component for FullAdd {
+impl Component for ALU {
     fn to_(&self) {
         trace!("full_adder");
     }
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, _id: &str, _pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy_input = Input::new("dummy", "out");
-        Box::new(Rc::new(FullAdd {
+        Box::new(Rc::new(ALU {
             id: "dummy".to_string(),
             pos: (0.0, 0.0),
             a_in: dummy_input.clone(),
@@ -184,9 +184,9 @@ impl Component for FullAdd {
     }
 }
 
-impl FullAdd {
+impl ALU {
     pub fn new(id: &str, pos: (f32, f32), a_in: Input, b_in: Input, op_in: Input) -> Self {
-        FullAdd {
+        ALU {
             id: id.to_string(),
             pos,
             a_in,
@@ -196,7 +196,7 @@ impl FullAdd {
     }
 
     pub fn rc_new(id: &str, pos: (f32, f32), a_in: Input, b_in: Input, op_in: Input) -> Rc<Self> {
-        Rc::new(FullAdd::new(id, pos, a_in, b_in, op_in))
+        Rc::new(ALU::new(id, pos, a_in, b_in, op_in))
     }
 }
 #[cfg(test)]
@@ -216,7 +216,7 @@ mod test {
                 Rc::new(ProbeOut::new("op")),
                 Rc::new(ProbeOut::new("a")),
                 Rc::new(ProbeOut::new("b")),
-                FullAdd::rc_new(
+                ALU::rc_new(
                     "ALU",
                     (0.0, 0.0),
                     Input::new("a", "out"),

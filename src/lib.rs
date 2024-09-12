@@ -1,7 +1,7 @@
+pub mod autowire;
 pub mod common;
 pub mod component_store;
 pub mod fern;
-pub mod mips_helper_functions;
 pub mod signal;
 pub mod simulator;
 

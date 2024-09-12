@@ -1,5 +1,5 @@
 use crate::components::{
-    alu_op, FullAdd, FULL_ADD_A_IN_ID, FULL_ADD_B_IN_ID, FULL_ADD_OP_IN_ID, FULL_ADD_OUT_ID,
+    alu_op, ALU, FULL_ADD_A_IN_ID, FULL_ADD_B_IN_ID, FULL_ADD_OP_IN_ID, FULL_ADD_OUT_ID,
     FULL_ADD_OVERFLOW_OUT_ID,
 };
 use egui::{
@@ -17,7 +17,7 @@ use syncrim::gui_egui::helper::offset_helper;
 use syncrim::signal::Id;
 
 #[typetag::serde]
-impl EguiComponent for FullAdd {
+impl EguiComponent for ALU {
     fn render(
         &self,
         ui: &mut Ui,
@@ -119,7 +119,7 @@ impl EguiComponent for FullAdd {
         grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let r_vec = FullAdd::render(
+        let r_vec = ALU::render(
             self,
             ui,
             context,
