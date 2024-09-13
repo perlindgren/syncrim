@@ -3,6 +3,8 @@ use std::{
     any::Any,
     cell::RefCell,
     collections::{BTreeMap, HashMap},
+    fs,
+    path::PathBuf,
 };
 use syncrim::{
     common::{Component, Ports},
@@ -34,6 +36,12 @@ impl PhysicalMem {
             history: RefCell::default(),
             cycle: RefCell::default(),
         }
+    }
+
+    pub fn load_file(&self, path: &PathBuf) {
+        let data = fs::read(path).unwrap();
+        self.mem.replace(MipsMem::from_sections(&data).unwrap());
+        self.history.borrow_mut().clear();
     }
 }
 

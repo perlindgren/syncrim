@@ -1,16 +1,12 @@
-// use std::borrow::BorrowMut;
-// use std::cell::RefCell;
-use std::fs;
 use std::path::PathBuf;
 
 use crate::components::InstrMem;
-use crate::components::MipsMem;
 use crate::components::PhysicalMem;
 use crate::components::RegFile;
 use crate::components::INSTR_MEM_INSTRUCTION_ID;
+use crate::helpers::find_component_with_type;
 use egui::pos2;
 use egui::Pos2;
-// use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 use egui::{Rect, Response, RichText, Ui, Vec2};
 use syncrim::common::Input;
 use syncrim::common::{EguiComponent, Id, Ports, Simulator};
@@ -20,6 +16,16 @@ use syncrim::gui_egui::helper::basic_component_gui;
 
 const WIDTH: f32 = 120.0;
 const HEIGHT: f32 = 55.0;
+
+impl InstrMem {
+    fn update_mem_view_register_values(&self, sim: &Simulator) {
+        let reg: &RegFile = find_component_with_type(sim, &self.regfile_id)
+            .expect(&format!("can't find {} with type Regfile", self.regfile_id));
+        self.mem_view
+            .borrow_mut()
+            .set_reg_values(reg.registers.borrow().clone());
+    }
+}
 
 #[typetag::serde]
 impl EguiComponent for InstrMem {
@@ -68,44 +74,28 @@ impl EguiComponent for InstrMem {
             // });
         });
 
+        // handle mem_window and load of new file
         if let Some(sim) = &simulator {
-            let v = &sim.ordered_components;
-            let comp = v
-                .into_iter()
-                .find(|x| x.get_id_ports().0 == self.regfile_id)
-                .expect(&format!("cant find {} in simulator", self.regfile_id));
-            // deref to get &dyn EguiComponent
-            let comp_any = (*comp).as_any();
-            let regfile: &RegFile = comp_any
-                .downcast_ref()
-                .expect("can't downcast to physical memory");
-            self.mem_view
-                .borrow_mut()
-                .set_reg_values(regfile.registers.borrow().clone());
-        }
+            self.update_mem_view_register_values(sim);
 
-        if let Some(sim) = &simulator {
-            let v = &sim.ordered_components;
-            let comp = v
-                .into_iter()
-                .find(|x| x.get_id_ports().0 == self.phys_mem_id)
-                .expect(&format!("cant find {} in simulator", self.phys_mem_id));
-            // deref to get &dyn EguiComponent
-            let comp_any = (*comp).as_any();
-            let phys_mem: &PhysicalMem = comp_any
-                .downcast_ref()
-                .expect("can't downcast to physical memory");
+            let phys_mem: &PhysicalMem = find_component_with_type(sim, &self.phys_mem_id).expect(
+                &format!("can't find {} with type PhysicalMem", self.regfile_id),
+            );
 
-            if let Some(path) = path_option {
-                let data = fs::read(path).unwrap();
-                let _ = phys_mem.mem.replace(MipsMem::from_sections(&data).unwrap());
+            if let Some(path) = &path_option {
+                let _ = phys_mem.load_file(path);
                 mem_view_vis = true;
             };
-            // {} to drop RefMut as early as possible
-            {
-                let mut mem_view = self.mem_view.borrow_mut();
-                mem_view.visible = mem_view_vis;
-                mem_view.render(ui.ctx(), &*phys_mem.mem.borrow());
+
+            let mut mem_view = self.mem_view.borrow_mut();
+            mem_view.visible = mem_view_vis;
+            mem_view.render(ui.ctx(), &*phys_mem.mem.borrow());
+        }
+
+        // this is done after handle mem_window, because our simulator need to be returned
+        if let Some(sim) = simulator {
+            if path_option.is_some() {
+                sim.reset();
             }
         }
 
