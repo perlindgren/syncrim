@@ -813,7 +813,7 @@
     },
     {
       "type": "Wire",
-      "id": "from control_unit:alu_op to alu:full_add_op_in",
+      "id": "from control_unit:alu_op to alu:alu_op_in",
       "pos": [
         [
           660.0,
@@ -1246,7 +1246,7 @@
     },
     {
       "type": "Wire",
-      "id": "from mux_source_a:mux_out to alu:full_add_a_in",
+      "id": "from mux_source_a:mux_out to alu:alu_a_in",
       "pos": [
         [
           656.0,
@@ -1553,7 +1553,7 @@
     },
     {
       "type": "Wire",
-      "id": "from mux_source_b:mux_out to alu:full_add_b_in",
+      "id": "from mux_source_b:mux_out to alu:alu_b_in",
       "pos": [
         [
           656.0,
@@ -1570,7 +1570,7 @@
       }
     },
     {
-      "type": "FullAdd",
+      "type": "ALU",
       "id": "alu",
       "pos": [
         720.0,
