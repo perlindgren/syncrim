@@ -62,8 +62,8 @@ impl Component for Add {
     // propagate addition to output
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input values
-        let a_in = u32::try_from(simulator.get_input_value(&self.a_in));
-        let b_in = u32::try_from(simulator.get_input_value(&self.b_in));
+        let a_in = u32::try_from(simulator.get_input_value_mut(self.id.clone(), &self.a_in));
+        let b_in = u32::try_from(simulator.get_input_value_mut(self.id.clone(), &self.b_in));
 
         let (value, overflow, res) = match (&a_in, &b_in) {
             (Ok(a), Ok(b)) => {

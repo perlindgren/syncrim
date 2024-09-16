@@ -49,7 +49,7 @@ impl Component for Register {
     // propagate input value to output
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input value
-        let value = simulator.get_input_value(&self.r_in);
+        let value = simulator.get_input_value_mut(self.id.clone(), &self.r_in);
         // set output
         simulator.set_out_value(&self.id, REGISTER_OUT_ID, value);
         trace!("eval: register id {} in {:?}", self.id, value);
@@ -60,6 +60,10 @@ impl Component for Register {
         if target_port_id == REGISTER_R_IN_ID {
             self.r_in = new_input;
         }
+    }
+
+    fn is_sink(&self) -> bool {
+        true
     }
 
     fn as_any(&self) -> &dyn Any {

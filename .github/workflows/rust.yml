@@ -38,6 +38,10 @@ jobs:
           args: --no-default-features --features gui-egui
       - name: Run tests
         run: cargo test --workspace --no-default-features --features components --verbose
+      - name: Build RISC-V
+        run: | 
+          cd riscv
+          cargo build --example riscv --verbose
   rustfmt:
     runs-on: ubuntu-latest
     steps:

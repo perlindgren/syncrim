@@ -1,7 +1,10 @@
 use petgraph::Graph;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
-use std::{collections::HashMap, rc::Rc};
+use std::{
+    collections::{HashMap, HashSet},
+    rc::Rc,
+};
 
 #[cfg(feature = "gui-egui")]
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapPriority};
@@ -23,6 +26,18 @@ type Components = Vec<Rc<dyn ViziaComponent>>;
 #[cfg(feature = "gui-egui")]
 pub type Components = Vec<Rc<dyn EguiComponent>>;
 
+pub enum SimulatorError {
+    RunningStateIsErr(),
+}
+#[derive(PartialEq, Clone, Debug)]
+pub enum RunningState {
+    Running,
+    StepTo(usize),
+    Halt,
+    Err,
+    Stopped,
+}
+
 #[cfg_attr(feature = "gui-vizia", derive(Lens))]
 #[derive(Clone)]
 pub struct Simulator {
@@ -34,11 +49,25 @@ pub struct Simulator {
     pub sim_state: Vec<Signal>,
     pub id_nr_outputs: IdNrOutputs,
     pub id_field_index: IdFieldIndex,
-    pub history: Vec<Vec<Signal>>,
+    pub history: Vec<(Vec<Signal>, HashSet<Id>)>,
     pub component_ids: Vec<Id>,
     pub graph: Graph<Id, ()>,
-    // Running state, (do we need it accessible from other crates?)
-    pub(crate) running: bool,
+
+    // if set to true, running state is set to Halt when a component returns Warning
+    // pub(crate) might not be needed but easier than implementing setters and getters
+    pub(crate) halt_on_warning: bool,
+    // says if simulation is running, halted, stopped or stepping to a specific cycle
+    pub running_state: RunningState,
+    pub running_state_history: Vec<RunningState>,
+    // stores if components return a condition
+    // TODO add component condition history
+    pub component_condition: Vec<(Id, Condition)>,
+    pub component_condition_history: Vec<Vec<(Id, Condition)>>,
+
+    // Used to determine active components
+    pub sinks: Vec<Id>,
+    pub inputs_read: HashMap<Id, HashSet<Id>>,
+    pub active: HashSet<Id>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -85,16 +114,23 @@ pub trait Component {
     fn un_clock(&self) {}
     /// reset component internal state to initial value
     fn reset(&self) {}
+
+    /// consider component to be a sink
+    /// either output to environment (e.g., for visualization)
+    /// or stateful (e.g., register)
+    fn is_sink(&self) -> bool {
+        false
+    }
     /// any
     fn as_any(&self) -> &dyn Any;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Condition {
     Warning(String),
-    Error(String),
-    Assert(String),
     Halt(String),
+    Assert(String),
+    Error(String),
 }
 
 #[cfg(feature = "gui-egui")]
@@ -184,7 +220,7 @@ impl Ports {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, Hash, Eq, PartialEq)]
 pub struct Input {
     pub id: Id,
     pub field: Id,

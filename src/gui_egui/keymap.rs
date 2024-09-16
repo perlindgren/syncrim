@@ -386,7 +386,7 @@ pub fn control_play_toggle_fn(gui: &mut Gui) {
 pub fn control_play_fn(gui: &mut Gui) {
     if !gui.editor_use {
         gui.pause = false;
-        gui.simulator.as_mut().unwrap().running = true;
+        let _ = gui.simulator.as_mut().unwrap().set_running();
         //gui.simulator.as_mut().unwrap().run();
         //gui.pause = true;
     }
@@ -399,7 +399,7 @@ pub fn control_play_fn(gui: &mut Gui) {
 pub fn control_pause_fn(gui: &mut Gui) {
     if !gui.editor_use {
         gui.pause = true;
-        gui.simulator.as_mut().unwrap().running = false;
+        let _ = gui.simulator.as_mut().unwrap().stop();
     }
 }
 pub fn control_reset_fn(gui: &mut Gui) {

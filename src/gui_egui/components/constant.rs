@@ -9,6 +9,7 @@ use crate::gui_egui::gui::EguiExtra;
 use egui::{
     Align2, Area, Color32, DragValue, Order, Pos2, Rect, Response, RichText, TextWrapMode, Ui, Vec2,
 };
+use log::trace;
 
 #[typetag::serde]
 impl EguiComponent for Constant {
@@ -22,6 +23,10 @@ impl EguiComponent for Constant {
         clip_rect: Rect,
         editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
+        let is_active = _simulator.map_or(false, |sim| sim.is_active(&self.id));
+
+        trace!("render constant {}, active {}", self.id, is_active);
+
         let offset_old = offset;
         let mut offset = offset;
         offset.x += self.pos.0 * scale;
@@ -41,7 +46,11 @@ impl EguiComponent for Constant {
                     EditorMode::Simulator => ui.label(
                         RichText::new(format!("{}", self.value))
                             .size(scale * 12f32)
-                            .background_color(Color32::LIGHT_GREEN),
+                            .background_color(if is_active {
+                                Color32::LIGHT_GREEN
+                            } else {
+                                Color32::LIGHT_GRAY
+                            }),
                     ),
                     _ => ui.label(
                         RichText::new(format!("{}", self.value))

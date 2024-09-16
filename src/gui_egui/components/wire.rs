@@ -58,6 +58,7 @@ fn min_from_line(start: Vec2, end: Vec2, point: Vec2) -> f32 {
         (point_rel_to_start - proj_point_on_line).length() // return this value
     }
 }
+use log::trace;
 
 #[typetag::serde]
 impl EguiComponent for Wire {
@@ -71,6 +72,12 @@ impl EguiComponent for Wire {
         clip_rect: Rect,
         editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
+        let is_active = simulator
+            .as_ref()
+            .map_or(false, |sim| sim.is_active(&self.input.id));
+
+        trace!("render constant {}, active {}", self.id, is_active);
+
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
         let offset_old = offset;
         let s = scale;
@@ -143,18 +150,24 @@ impl EguiComponent for Wire {
             };
         }
 
-        ui.painter().add(Shape::line(
-            line_vec.clone(),
-            Stroke {
-                width: if hovered { scale * 3.0 } else { scale },
-                color: Color32::from_rgba_unmultiplied(
-                    self.color_rgba[0],
-                    self.color_rgba[1],
-                    self.color_rgba[2],
-                    self.color_rgba[3],
-                ),
-            },
-        ));
+        let sk = Stroke {
+            width: if hovered { scale * 3.0 } else { scale },
+            color: Color32::from_rgba_unmultiplied(
+                self.color_rgba[0],
+                self.color_rgba[1],
+                self.color_rgba[2],
+                self.color_rgba[3],
+            ),
+        };
+        if is_active {
+            ui.painter().add(Shape::line(line_vec.clone(), sk));
+        } else {
+            Shape::dashed_line(&line_vec, sk, 10.0, 2.0)
+                .drain(..)
+                .for_each(|s| {
+                    ui.painter().add(s);
+                });
+        }
 
         match editor_mode {
             EditorMode::Simulator => (),

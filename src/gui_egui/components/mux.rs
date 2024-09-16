@@ -8,6 +8,7 @@ use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
 use egui::{Color32, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
+use log::trace;
 
 #[typetag::serde]
 impl EguiComponent for Mux {
@@ -21,6 +22,12 @@ impl EguiComponent for Mux {
         clip_rect: Rect,
         editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
+        let is_active = simulator
+            .as_ref()
+            .map_or(false, |sim| sim.is_active(&self.id));
+
+        trace!("render mux {}, active {}", self.id, is_active);
+
         // 41x(20*ports + 11)
         // middle: 21x ((20*ports + 10)/2+1)y (0 0)
         let oh: fn((f32, f32), f32, Vec2) -> Pos2 = offset_helper;
@@ -74,7 +81,11 @@ impl EguiComponent for Mux {
             ],
             Stroke {
                 width: scale,
-                color: Color32::RED,
+                color: if is_active {
+                    Color32::RED
+                } else {
+                    Color32::BLACK
+                },
             },
         ));
 

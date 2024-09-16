@@ -1,4 +1,4 @@
-use crate::common::Simulator;
+use crate::common::{RunningState, Simulator};
 use crate::gui_vizia::{GuiData, GuiEvent};
 use vizia::{icons, prelude::*};
 pub(crate) struct Transport {}
@@ -78,13 +78,15 @@ impl Transport {
                     |cx| {
                         Label::new(
                             cx,
-                            GuiData::simulator.then(Simulator::running).map(|running| {
-                                if *running {
-                                    icons::ICON_PLAYER_PLAY_FILLED
-                                } else {
-                                    icons::ICON_PLAYER_PLAY
-                                }
-                            }),
+                            GuiData::simulator
+                                .then(Simulator::running_state)
+                                .map(|running| {
+                                    if *running == RunningState::Running {
+                                        icons::ICON_PLAYER_PLAY_FILLED
+                                    } else {
+                                        icons::ICON_PLAYER_PLAY
+                                    }
+                                }),
                         )
                         .on_press(|cx| cx.emit(GuiEvent::Play))
                         .class("icon")
@@ -107,13 +109,15 @@ impl Transport {
                     |cx| {
                         Label::new(
                             cx,
-                            GuiData::simulator.then(Simulator::running).map(|running| {
-                                if *running {
-                                    icons::ICON_PLAYER_PAUSE
-                                } else {
-                                    icons::ICON_PLAYER_PAUSE_FILLED
-                                }
-                            }),
+                            GuiData::simulator
+                                .then(Simulator::running_state)
+                                .map(|running| {
+                                    if *running == RunningState::Running {
+                                        icons::ICON_PLAYER_PAUSE
+                                    } else {
+                                        icons::ICON_PLAYER_PAUSE_FILLED
+                                    }
+                                }),
                         )
                         .on_press(|cx| cx.emit(GuiEvent::Pause))
                         .class("icon")
