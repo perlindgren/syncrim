@@ -80,18 +80,7 @@ impl EguiComponent for Wire {
             line_vec.push(oh(pos, s, o));
         }
 
-        ui.painter().add(Shape::line(
-            line_vec.clone(),
-            Stroke {
-                width: scale,
-                color: Color32::from_rgba_unmultiplied(
-                    self.color_rgba[0],
-                    self.color_rgba[1],
-                    self.color_rgba[2],
-                    self.color_rgba[3],
-                ),
-            },
-        ));
+        let mut hovered = false;
         let mut r: Vec<Response> = vec![];
 
         for val in line_vec.windows(2) {
@@ -140,16 +129,32 @@ impl EguiComponent for Wire {
                     < TOOLTIP_DISTANCE
                     && clip_rect.contains(cursor)
                 {
-                    egui::containers::popup::show_tooltip_at(
-                        ui.ctx(),
-                        ui.layer_id(),
-                        egui::Id::new(&self.id),
-                        (first_pos + last_pos.to_vec2()) / 2.0,
-                        |ui| basic_on_hover(ui, self, &simulator),
-                    );
+                    if !hovered {
+                        hovered = true;
+                        egui::containers::popup::show_tooltip_at(
+                            ui.ctx(),
+                            ui.layer_id(),
+                            egui::Id::new(&self.id),
+                            (first_pos + last_pos.to_vec2()) / 2.0,
+                            |ui| basic_on_hover(ui, self, &simulator),
+                        );
+                    }
                 }
             };
         }
+
+        ui.painter().add(Shape::line(
+            line_vec.clone(),
+            Stroke {
+                width: if hovered { scale * 3.0 } else { scale },
+                color: Color32::from_rgba_unmultiplied(
+                    self.color_rgba[0],
+                    self.color_rgba[1],
+                    self.color_rgba[2],
+                    self.color_rgba[3],
+                ),
+            },
+        ));
 
         match editor_mode {
             EditorMode::Simulator => (),
