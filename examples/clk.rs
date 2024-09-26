@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 #[cfg(feature = "gui-egui")]
+use syncrim::autowire::autowire;
+#[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
 use syncrim::{
-    autowire::autowire,
     common::{ComponentStore, Input},
     components::*,
     fern::fern_setup,
