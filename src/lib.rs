@@ -1,4 +1,3 @@
-pub mod autowire;
 pub mod common;
 pub mod component_store;
 pub mod fern;
@@ -13,6 +12,8 @@ pub mod components;
 #[cfg(feature = "gui-vizia")]
 pub mod gui_vizia;
 
+#[cfg(feature = "gui-egui")]
+pub mod autowire;
 // Egui frontend
 #[cfg(feature = "gui-egui")]
 pub mod gui_egui;
