@@ -20,7 +20,7 @@ fn main() {
             // Probe::rc_new("p1", (270.0, 120.0), Input::new("clk", CLK_OUT_ID)),
         ],
     };
-
+    #[cfg(feature = "gui-egui")]
     let cs = autowire(cs);
 
     let path = PathBuf::from("add.json");
