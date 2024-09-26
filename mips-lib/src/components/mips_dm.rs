@@ -1,3 +1,4 @@
+#[cfg(feature = "gui-egui")]
 use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 use core::cell::RefCell;
 use std::cell::RefMut;
@@ -42,6 +43,7 @@ pub struct DataMem {
     pub write_enable_input: Input,
     pub phys_mem_id: String,
     pub regfile_id: String,
+    #[cfg(feature = "gui-egui")]
     pub mem_view: RefCell<MemViewWindow>,
 }
 
@@ -56,6 +58,7 @@ impl DataMem {
         phys_mem_id: String,
         regfile_id: String,
     ) -> Self {
+        #[cfg(feature = "gui-egui")]
         let mem_view =
             MemViewWindow::new(id.clone(), "Data memory view".into()).set_data_view(None);
         DataMem {
@@ -66,6 +69,7 @@ impl DataMem {
             data_input: data_input,
             op_input: op_input,
             write_enable_input: write_enable_input,
+            #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
             regfile_id: regfile_id,
         }
@@ -215,6 +219,7 @@ impl Component for DataMem {
             .unwrap();
 
         // update dynamic symbol PC_IM
+        #[cfg(feature = "gui-egui")]
         self.mem_view
             .borrow_mut()
             .set_dynamic_symbol("DM_ADRS", address);
@@ -362,6 +367,7 @@ impl Component for DataMem {
             Ok(_) => match mem_op {
                 data_op::NO_OP => Ok(()),
                 _ => {
+                    #[cfg(feature = "gui-egui")]
                     if self.mem_view.borrow().is_break_point(&(address & !0b11)) {
                         Err(Condition::Halt(format!(
                             "Read or write at breakpoint address {:#0x}",
@@ -370,6 +376,8 @@ impl Component for DataMem {
                     } else {
                         Ok(())
                     }
+                    #[cfg(not(feature = "gui-egui"))]
+                    Ok(())
                 }
             },
             Err(_) => ret,

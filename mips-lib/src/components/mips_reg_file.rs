@@ -61,19 +61,7 @@ impl Component for RegFile {
     fn to_(&self) {
         trace!("reg_file");
     }
-    #[cfg(feature = "gui-egui")]
-    // fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
-    //     let dummy_input = Input::new("dummy", "out");
-    //     Box::new(Rc::new(RegFile {
-    //         id: "dummy".to_string(),
-    //         pos: (0.0, 0.0),
-    //         a1_in: dummy_input.clone(),
-    //         a2_in: dummy_input.clone(),
-    //         a3_in: dummy_input.clone(),
-    //         wd3_in: dummy_input.clone(),
-    //         we3_in: dummy_input.clone(),
-    //     }))
-    // }
+
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

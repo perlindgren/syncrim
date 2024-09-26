@@ -26,15 +26,7 @@ impl Component for SignZeroExtend {
     fn to_(&self) {
         trace!("pc+4");
     }
-    #[cfg(feature = "gui-egui")]
-    // fn dummy(&self, _id: &str, _pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
-    //     let dummy_input = Input::new("dummy", "out");
-    //     Box::new(Rc::new(SignZeroExtend {
-    //         id: "dummy".to_string(),
-    //         pos: (0.0, 0.0),
-    //         signzero_extend_in: dummy_input.clone(),
-    //     }))
-    // }
+
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),

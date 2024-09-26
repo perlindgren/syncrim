@@ -8,6 +8,7 @@ use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Po
 
 use crate::components::physical_mem::{MemOpSize, MipsMem};
 use crate::components::RegFile;
+#[cfg(feature = "gui-egui")]
 use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 
 use super::PhysicalMem;
@@ -24,6 +25,7 @@ pub struct InstrMem {
     // All components who deal with memory acess this
     pub phys_mem_id: String,
     pub regfile_id: String,
+    #[cfg(feature = "gui-egui")]
     pub mem_view: RefCell<MemViewWindow>,
 }
 
@@ -35,6 +37,7 @@ impl InstrMem {
         phys_mem_id: String,
         regfile_id: String,
     ) -> InstrMem {
+        #[cfg(feature = "gui-egui")]
         let mem_view =
             MemViewWindow::new(id.clone(), "instruction memory view".into()).set_code_view(None);
         InstrMem {
@@ -42,6 +45,7 @@ impl InstrMem {
             pos: pos,
             pc: pc_input,
             phys_mem_id: phys_mem_id,
+            #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
             regfile_id: regfile_id,
         }
@@ -74,6 +78,7 @@ impl Component for InstrMem {
             pos: pos,
             pc: dummy_input,
             phys_mem_id: "dummy".into(),
+            #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
             regfile_id: "dummy".into(),
         }))
@@ -123,6 +128,7 @@ impl Component for InstrMem {
         };
 
         // update dynamic symbol PC_IM
+        #[cfg(feature = "gui-egui")]
         self.mem_view.borrow_mut().set_dynamic_symbol("PC_IM", pc);
 
         // Get a word at PC with the size of 32bits, read as big endian,
@@ -131,10 +137,13 @@ impl Component for InstrMem {
             Ok(instr) => {
                 simulator.set_out_value(&self.id, INSTR_MEM_INSTRUCTION_ID, instr);
                 // check if pc is at breakpoint
+                #[cfg(feature = "gui-egui")]
                 match self.mem_view.borrow().is_break_point(&pc) {
                     true => Err(Condition::Halt(format!("Reached breakpoint at {:#0x}", pc))),
                     false => Ok(()),
                 }
+                #[cfg(not(feature = "gui-egui"))]
+                Ok(())
             }
             Err(_) => Err(Condition::Error(format!("Unaligned Read, PC = {:#0x}", pc))),
         }
