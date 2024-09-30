@@ -201,6 +201,8 @@ impl ALU {
 }
 #[cfg(test)]
 mod test {
+    use crate::components::cntr_field::ALU_OP_OUT;
+
     use super::*;
 
     use std::rc::Rc;
@@ -230,7 +232,7 @@ mod test {
         assert_eq!(simulator.cycle, 1);
 
         // outputs
-        let alu_val = &Input::new("ALU", "out");
+        let alu_val = &Input::new("ALU", FULL_ADD_OUT_ID);
 
         // reset
         assert_eq!(simulator.get_input_value(alu_val), (0 + 0).into());
