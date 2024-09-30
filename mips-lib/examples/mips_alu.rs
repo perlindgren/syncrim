@@ -1,6 +1,5 @@
 use mips_lib::components::*;
 use std::path::PathBuf;
-use syncrim::autowire::autowire;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
 use syncrim::{
@@ -54,13 +53,16 @@ fn main() {
         ],
     };
 
-    let cs = autowire(cs);
-
-    let path = PathBuf::from("add.json");
+    let path = PathBuf::from("alu.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::gui(cs, &path, Library::default()).ok();
+    {
+        use syncrim::autowire::autowire;
+        let cs = autowire(cs);
+        cs.save_file(&path);
+        syncrim::gui_egui::gui(cs, &path, Library::default()).ok();
+    }
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(cs, &path);

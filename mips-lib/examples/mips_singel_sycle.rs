@@ -4,7 +4,6 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use syncrim::gui_egui::editor::Library;
 use syncrim::{
-    autowire::autowire,
     common::{ComponentStore, Input},
     components::*,
     fern::fern_setup,
@@ -229,13 +228,16 @@ fn main() {
         ],
     };
 
-    let cs = autowire(cs);
-
-    let path = PathBuf::from("add.json");
+    let path = PathBuf::from("mips_single_ex.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::gui(cs, &path, Library::default()).ok();
+    {
+        use syncrim::autowire::autowire;
+        let cs = autowire(cs);
+        cs.save_file(&path);
+        syncrim::gui_egui::gui(cs, &path, Library::default()).ok();
+    }
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(cs, &path);
