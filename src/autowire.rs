@@ -19,8 +19,7 @@ pub fn autowire(mut cs: ComponentStore) -> ComponentStore {
             let source_component = cs
                 .store
                 .iter()
-                .filter(|comp| comp.get_id_ports().0 == source_port.id) // compare id
-                .next()
+                .find(|comp| comp.get_id_ports().0 == source_port.id)
                 .expect(&format!("can't find comonent with id {}", source_port.id));
 
             // create wire with correct source destination and positions
@@ -45,5 +44,5 @@ pub fn autowire(mut cs: ComponentStore) -> ComponentStore {
         }
     }
     cs.store.append(&mut wires);
-    return cs;
+    cs
 }

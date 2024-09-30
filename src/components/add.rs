@@ -171,7 +171,7 @@ mod test {
         assert_eq!(simulator.cycle, 1);
 
         // outputs
-        let add_val = &Input::new("add", "out");
+        let add_val = &Input::new("add", ADD_OUT_ID);
         let add_overflow = &Input::new("add", "overflow");
 
         // reset

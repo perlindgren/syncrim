@@ -30,7 +30,7 @@ impl EguiComponent for RegFile {
             ui.label("Register File");
 
             // A toggle button for showing register names
-            ui.toggle_value(&mut *self.show_reg_names.borrow_mut(), "Show names");
+            ui.toggle_value(&mut self.show_reg_names.borrow_mut(), "Show names");
 
             // showing the display format of the register
             let mut tmp: RegFormat = self.reg_format.borrow().clone();
@@ -83,7 +83,7 @@ impl EguiComponent for RegFile {
                         }
                         .as_str(),
                     );
-                    str.push_str("\n")
+                    str.push('\n')
                 }
 
                 // push the string as monospace to the ui

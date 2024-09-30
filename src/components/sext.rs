@@ -150,8 +150,8 @@ mod test {
         assert_eq!(simulator.cycle, 1);
 
         // outputs
-        let sext32_out = &Input::new("sext32", "out");
-        let sext16_out = &Input::new("sext16", "out");
+        let sext32_out = &Input::new("sext32", SEXT_OUT_ID);
+        let sext16_out = &Input::new("sext16", SEXT_OUT_ID);
 
         // reset
         assert_eq!(simulator.get_input_value(sext32_out), 0.into());

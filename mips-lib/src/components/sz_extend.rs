@@ -71,7 +71,7 @@ impl Component for SignZeroExtend {
 
         if ctrl == cntr_unit_signals::EXTEND_SIGNED {
             if (signal >> 15) == 1 {
-                signal = signal | 0xffff_0000;
+                signal |= 0xffff_0000;
             }
         }
 

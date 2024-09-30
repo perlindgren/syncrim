@@ -3,7 +3,7 @@ use crate::components::{And, AND_A_IN_ID, AND_B_IN_ID, AND_OUT_ID};
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::basic_component_gui;
-use egui::{pos2, Pos2, Rect, Response, Ui, Vec2};
+use egui::{pos2, Rect, Response, Ui, Vec2};
 
 #[typetag::serde]
 impl EguiComponent for And {

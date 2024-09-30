@@ -136,7 +136,7 @@ impl Memory {
         Memory(Rc::new(RefCell::new(data)))
     }
 
-    /// Aligns a memory address to the size
+    /// is one if addres is unaligend, and zero if it is.
     /// # Example
     /// ```
     /// use syncrim::components::Memory;
@@ -145,7 +145,7 @@ impl Memory {
     /// let mem = Memory::default(); // creates a memory with only zeros
     ///
     /// let align_adrs = mem.align(0xa3f5, 4);
-    /// assert_eq!(SignalValue::from(0xa3f4), align_adrs)
+    /// assert_eq!(SignalValue::from(1), align_adrs)
     /// ```
     pub fn align(&self, addr: usize, size: usize) -> SignalValue {
         ((addr % size != 0) as SignalUnsigned).into()

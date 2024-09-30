@@ -115,7 +115,7 @@ impl MemWriteReturn {
         match self.op_size {
             MemOpSize::Byte => vec![self.bytes[0]],
             MemOpSize::Half => vec![self.bytes[0], self.bytes[1]],
-            MemOpSize::Word => vec![self.bytes[0], self.bytes[1], self.bytes[4], self.bytes[3]],
+            MemOpSize::Word => vec![self.bytes[0], self.bytes[1], self.bytes[2], self.bytes[3]],
         }
     }
 }

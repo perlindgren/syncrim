@@ -165,6 +165,23 @@ pub fn component_area<R>(
 /// out-> 0x00000000
 ///  
 /// ```
+/// # use std::any::Any;
+/// # use egui::{Ui, Vec2, Rect, Response};
+/// # use syncrim::common::{Ports, EguiComponent, Component, Simulator};
+/// # use syncrim::gui_egui::{EguiExtra, editor::EditorMode};
+/// # use serde::{Deserialize, Serialize};
+/// # #[derive(Serialize, Deserialize, Clone)]
+/// # struct JumpMerge {tmp: u32}
+/// # impl Component for JumpMerge {
+/// #   fn get_id_ports(&self) -> (std::string::String, Ports) { todo!() }
+/// #   fn as_any(&self) -> &(dyn Any + 'static) { todo!() }
+/// #   fn typetag_name(&self) -> &'static str { todo!() }
+/// #   fn typetag_deserialize(&self) { todo!() }
+/// # }
+///
+/// use syncrim::gui_egui::helper::basic_component_gui_with_on_hover;
+///
+/// # #[typetag::serde]
 /// impl EguiComponent for JumpMerge {
 ///     fn render(
 ///         &self,
@@ -173,24 +190,23 @@ pub fn component_area<R>(
 ///         simulator: Option<&mut Simulator>,
 ///         offset: Vec2,
 ///         scale: f32,
-///         _clip_rect: Rect,
+///         clip_rect: Rect,
 ///         _editor_mode: EditorMode,
 ///     ) -> Option<Vec<Response>> {
 ///         // size of the component
 ///         let width = 100f32;
 ///         let height: f32 = 20f32;
-///         basic_component_gui(
+///         basic_component_gui_with_on_hover(
 ///             self,
-///             &simulator,
 ///             ui.ctx(),
-///             (width, height),
 ///             offset,
 ///             scale,
+///             clip_rect,
 ///             |ui| {
-///                 ui.label("Jump Merge"));
+///                 ui.label("Jump Merge");
 ///             },
 ///             |ui| {
-///                 ui.label("i am hovered")
+///                 ui.label("i am hovered");
 ///             },
 ///         )
 ///     }

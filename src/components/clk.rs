@@ -48,6 +48,7 @@ impl Component for MIPSCLK {
         )
     }
 
+    #[allow(clippy::single_match)]
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
             CLK_IN_ID => self.clk_in = new_input,

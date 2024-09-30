@@ -94,6 +94,8 @@ impl EguiComponent for Wire {
             let first_pos = val[0];
             let last_pos = val[1];
             let rect = Rect::from_two_pos(first_pos, last_pos).expand(2.5);
+
+            #[allow(clippy::single_match)]
             match editor_mode {
                 EditorMode::Default => {
                     // why the fuck do i need this much code just to make sure its rendered at the correct layer
@@ -135,17 +137,16 @@ impl EguiComponent for Wire {
                 if min_from_line(first_pos.to_vec2(), last_pos.to_vec2(), cursor.to_vec2())
                     < TOOLTIP_DISTANCE
                     && clip_rect.contains(cursor)
+                    && !hovered
                 {
-                    if !hovered {
-                        hovered = true;
-                        egui::containers::popup::show_tooltip_at(
-                            ui.ctx(),
-                            ui.layer_id(),
-                            egui::Id::new(&self.id),
-                            (first_pos + last_pos.to_vec2()) / 2.0,
-                            |ui| basic_on_hover(ui, self, &simulator),
-                        );
-                    }
+                    hovered = true;
+                    egui::containers::popup::show_tooltip_at(
+                        ui.ctx(),
+                        ui.layer_id(),
+                        egui::Id::new(&self.id),
+                        (first_pos + last_pos.to_vec2()) / 2.0,
+                        |ui| basic_on_hover(ui, self, &simulator),
+                    );
                 }
             };
         }
@@ -292,7 +293,7 @@ impl EguiComponent for Wire {
                                 delete = true;
                             }
                             if ui.button("NEW").clicked() {
-                                to_insert = Some((i, seg_pos.clone()));
+                                to_insert = Some((i, *seg_pos));
                             }
                         });
                         i += 1;

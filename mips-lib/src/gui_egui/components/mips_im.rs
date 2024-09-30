@@ -23,7 +23,7 @@ impl InstrMem {
             .expect(&format!("can't find {} with type Regfile", self.regfile_id));
         self.mem_view
             .borrow_mut()
-            .set_reg_values(reg.registers.borrow().clone());
+            .set_reg_values(*reg.registers.borrow());
     }
 }
 
@@ -89,7 +89,7 @@ impl EguiComponent for InstrMem {
 
             let mut mem_view = self.mem_view.borrow_mut();
             mem_view.visible = mem_view_vis;
-            mem_view.render(ui.ctx(), &*phys_mem.mem.borrow());
+            mem_view.render(ui.ctx(), &phys_mem.mem.borrow());
         }
 
         // this is done after handle mem_window, because our simulator need to be returned

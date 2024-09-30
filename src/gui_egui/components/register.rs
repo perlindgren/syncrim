@@ -1,5 +1,4 @@
-use crate::common::{self, EguiComponent, Input, Ports, SignalUnsigned, Simulator};
-use crate::component_store;
+use crate::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
 use crate::components::{Register, REGISTER_OUT_ID};
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -178,9 +177,7 @@ impl EguiComponent for Register {
             ));
         }
 
-        println!("{:?} == {:?}\n\n", self.r_in, input);
-
-        return self.get_pos().into();
+        None
     }
 
     fn top_padding(&self) -> f32 {

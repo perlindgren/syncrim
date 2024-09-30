@@ -603,6 +603,6 @@ mod test {
         let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
-        let _ = simulator.get_input_fmt(&Input::new("c", "out"));
+        let _ = simulator.get_input_fmt(&Input::new("c", CONSTANT_OUT_ID));
     }
 }

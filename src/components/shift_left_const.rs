@@ -50,6 +50,7 @@ impl Component for ShiftConst {
         )
     }
 
+    #[allow(clippy::single_match)]
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
             SHIFT_SIGNAL_IN_ID => self.signal_in = new_input,

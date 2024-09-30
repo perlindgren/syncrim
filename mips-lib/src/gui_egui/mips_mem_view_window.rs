@@ -136,10 +136,7 @@ impl MemViewWindow {
     }
     /// Get the address of a symbol, if no such symbol exist return None
     pub fn get_dynamic_symbol(&self, symbol: &str) -> Option<u32> {
-        match self.dynamic_symbols.get(symbol) {
-            Some((adrs, _)) => Some(*adrs),
-            None => None,
-        }
+        self.dynamic_symbols.get(symbol).map(|(adrs, _)| *adrs)
     }
 
     /// This sets the format to hex + mips and if possible goes to the section .text
@@ -271,55 +268,43 @@ impl MemViewWindow {
                     });
 
                     // Does any PC pointer exists, make them visible in this menu for quick access
-                    if self.dynamic_symbols.get("PC_IM").is_some()
-                        || self.dynamic_symbols.get("PC_DE").is_some()
-                        || self.dynamic_symbols.get("PC_EX").is_some()
-                        || self.dynamic_symbols.get("PC_DM").is_some()
+                    if self.dynamic_symbols.contains_key("PC_IM")
+                        || self.dynamic_symbols.contains_key("PC_DE")
+                        || self.dynamic_symbols.contains_key("PC_EX")
+                        || self.dynamic_symbols.contains_key("PC_DM")
                     {
                         ui.separator();
 
-                        match self.dynamic_symbols.get("PC_IM") {
-                            Some((adrs, _)) => {
-                                if ui.button(format!("PC_IM ({:#0x})", adrs)).clicked() {
-                                    self.go_to_address = set_address(&self.go_type, *adrs);
-                                    ui.close_menu();
-                                    close_menu = true;
-                                }
+                        if let Some((adrs, _)) = self.dynamic_symbols.get("PC_IM") {
+                            if ui.button(format!("PC_IM ({:#0x})", adrs)).clicked() {
+                                self.go_to_address = set_address(&self.go_type, *adrs);
+                                ui.close_menu();
+                                close_menu = true;
                             }
-                            None => {}
                         }
 
-                        match self.dynamic_symbols.get("PC_DE") {
-                            Some((adrs, _)) => {
-                                if ui.button(format!("PC_DE ({:#0x})", adrs)).clicked() {
-                                    self.go_to_address = set_address(&self.go_type, *adrs);
-                                    ui.close_menu();
-                                    close_menu = true;
-                                }
+                        if let Some((adrs, _)) = self.dynamic_symbols.get("PC_DE") {
+                            if ui.button(format!("PC_DE ({:#0x})", adrs)).clicked() {
+                                self.go_to_address = set_address(&self.go_type, *adrs);
+                                ui.close_menu();
+                                close_menu = true;
                             }
-                            None => {}
                         }
 
-                        match self.dynamic_symbols.get("PC_EX") {
-                            Some((adrs, _)) => {
-                                if ui.button(format!("PC_EX ({:#0x})", adrs)).clicked() {
-                                    self.go_to_address = set_address(&self.go_type, *adrs);
-                                    ui.close_menu();
-                                    close_menu = true;
-                                }
+                        if let Some((adrs, _)) = self.dynamic_symbols.get("PC_EX") {
+                            if ui.button(format!("PC_EX ({:#0x})", adrs)).clicked() {
+                                self.go_to_address = set_address(&self.go_type, *adrs);
+                                ui.close_menu();
+                                close_menu = true;
                             }
-                            None => {}
                         }
 
-                        match self.dynamic_symbols.get("PC_DM") {
-                            Some((adrs, _)) => {
-                                if ui.button(format!("PC_DM ({:#0x})", adrs)).clicked() {
-                                    self.go_to_address = set_address(&self.go_type, *adrs);
-                                    ui.close_menu();
-                                    close_menu = true;
-                                }
+                        if let Some((adrs, _)) = self.dynamic_symbols.get("PC_DM") {
+                            if ui.button(format!("PC_DM ({:#0x})", adrs)).clicked() {
+                                self.go_to_address = set_address(&self.go_type, *adrs);
+                                ui.close_menu();
+                                close_menu = true;
                             }
-                            None => {}
                         }
                     }
 
@@ -408,7 +393,7 @@ impl MemViewWindow {
                 ui.menu_button("Show", |ui| {
                     ui.checkbox(&mut self.show_settings.symbols, "Symbols");
                     ui.checkbox(&mut self.show_settings.sections, "Sections");
-                    if let Some(_) = &self.register_values {
+                    if self.register_values.is_some() {
                         ui.separator();
 
                         ui.checkbox(&mut self.show_settings.registers[28], "Global Pointer");
@@ -598,7 +583,7 @@ impl MemViewWindow {
             .iter()
             .filter(|(_name, (sym_adrs, vis))| sym_adrs == adrs && *vis)
         {
-            out_vec.push(&name)
+            out_vec.push(name)
         }
         if self.show_settings.sections && sect.contains_key(adrs) {
             out_vec.push(sect.get(adrs).unwrap())

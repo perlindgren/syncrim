@@ -59,7 +59,7 @@ impl EguiComponent for DataMem {
         if let Some(sim) = &simulator {
             let v = &sim.ordered_components;
             let comp = v
-                .into_iter()
+                .iter()
                 .find(|x| x.get_id_ports().0 == self.regfile_id)
                 .expect(&format!("cant find {} in simulator", self.regfile_id));
             // deref to get &dyn EguiComponent
@@ -69,13 +69,13 @@ impl EguiComponent for DataMem {
                 .expect("can't downcast to physical memory");
             self.mem_view
                 .borrow_mut()
-                .set_reg_values(regfile.registers.borrow().clone());
+                .set_reg_values(*regfile.registers.borrow());
         }
 
         if let Some(sim) = &simulator {
             let v = &sim.ordered_components;
             let comp = v
-                .into_iter()
+                .iter()
                 .find(|x| x.get_id_ports().0 == self.phys_mem_id)
                 .expect(&format!("cant find {} in simulator", self.phys_mem_id));
             // deref to get &dyn EguiComponent
@@ -87,7 +87,7 @@ impl EguiComponent for DataMem {
             {
                 let mut mem_view = self.mem_view.borrow_mut();
                 mem_view.visible = mem_view_vis;
-                mem_view.render(ui.ctx(), &*phys_mem.mem.borrow());
+                mem_view.render(ui.ctx(), &phys_mem.mem.borrow());
             }
         }
         // return response from basic component gui

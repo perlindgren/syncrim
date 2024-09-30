@@ -61,7 +61,7 @@ impl EguiComponent for MIPSCLK {
                         Ok(data) => s += &format!("{:#x}", data),
                         _ => s += &format!("{:?}", clk_r),
                     }
-                    format!("{}", s)
+                    s.to_string()
                 });
                 ui.label("pc+4");
             }
