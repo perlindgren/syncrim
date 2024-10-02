@@ -6,8 +6,7 @@ use std::rc::Rc;
 use syncrim::common::EguiComponent;
 use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 
-use crate::components::physical_mem::{MemOpSize, MipsMem};
-use crate::components::RegFile;
+use crate::components::physical_mem::MemOpSize;
 #[cfg(feature = "gui-egui")]
 use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 
@@ -41,13 +40,13 @@ impl InstrMem {
         let mem_view =
             MemViewWindow::new(id.clone(), "instruction memory view".into()).set_code_view(None);
         InstrMem {
-            id: id,
-            pos: pos,
+            id,
+            pos,
             pc: pc_input,
-            phys_mem_id: phys_mem_id,
+            phys_mem_id,
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
-            regfile_id: regfile_id,
+            regfile_id,
         }
     }
     pub fn rc_new(
@@ -75,7 +74,7 @@ impl Component for InstrMem {
         let dummy_input = Input::new("dummy", "out");
         Box::new(Rc::new(InstrMem {
             id: id.into(),
-            pos: pos,
+            pos,
             pc: dummy_input,
             phys_mem_id: "dummy".into(),
             #[cfg(feature = "gui-egui")]
@@ -109,10 +108,11 @@ impl Component for InstrMem {
         let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
 
         // this is inside a {} to make sure our simulator borrow is returned before its used to set signal
+        #[allow(clippy::expect_fun_call)]
         let option_instr = {
             let v = &simulator.ordered_components;
             let comp = v
-                .into_iter()
+                .iter()
                 .find(|x| x.get_id_ports().0 == self.phys_mem_id)
                 .expect(&format!("cant find {} in simulator", self.phys_mem_id));
             // deref to get Rc

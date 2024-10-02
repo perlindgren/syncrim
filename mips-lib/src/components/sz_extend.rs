@@ -69,10 +69,8 @@ impl Component for SignZeroExtend {
             .try_into()
             .unwrap();
 
-        if ctrl == cntr_unit_signals::EXTEND_SIGNED {
-            if (signal >> 15) == 1 {
-                signal |= 0xffff_0000;
-            }
+        if ctrl == cntr_unit_signals::EXTEND_SIGNED && (signal >> 15) == 1 {
+            signal |= 0xffff_0000;
         }
 
         simulator.set_out_value(&self.id, SIGNZEROEXTEND_OUT_ID, SignalValue::Data(signal));

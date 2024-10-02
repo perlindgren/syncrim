@@ -31,7 +31,7 @@ impl PhysicalMem {
     pub fn new(id: impl Into<String>, pos: (f32, f32)) -> Self {
         Self {
             id: id.into(),
-            pos: pos,
+            pos,
             mem: RefCell::default(),
             history: RefCell::default(),
             cycle: RefCell::default(),
@@ -149,7 +149,7 @@ impl MipsMem {
                     let elf_address = sect.sh_offset; // offset into elf file where data is stored (note inside of elf Segment)
                     let elf_end_address = elf_address + sect.sh_size; // end address of data
                     let sect_data = &elf_bytes[elf_address as usize..elf_end_address as usize];
-                    for (i, byte) in sect_data.into_iter().enumerate() {
+                    for (i, byte) in sect_data.iter().enumerate() {
                         mem.data.insert(v_address + i as u32, byte.to_owned());
                     }
                 };
@@ -211,7 +211,9 @@ impl MipsMem {
                     uint_16 as u32
                 }
             }
-            MemOpSize::Word => {
+            MemOpSize::Word =>
+            {
+                #[allow(clippy::collapsible_else_if)]
                 if sign_extend {
                     let int_32 = if big_endian {
                         i32::from_be_bytes(bytes.try_into().unwrap())
@@ -326,24 +328,23 @@ impl MipsMem {
 
     /// Gets the elf symbol table, and set the self hashmap
     fn get_symbols(&mut self, elf_file: &ElfBytes<AnyEndian>) {
-        match elf_file.symbol_table().unwrap() {
-            Some((sym_table, string_table)) => {
-                let mut sym_hash_map: HashMap<u32, String> = HashMap::new();
-                let mut _hash_map: HashMap<u32, String> = HashMap::new();
+        if let Some((sym_table, string_table)) = elf_file.symbol_table().unwrap() {
+            let mut sym_hash_map: HashMap<u32, String> = HashMap::new();
+            let mut _hash_map: HashMap<u32, String> = HashMap::new();
 
-                // for each symbol entry
-                for sym_entry in sym_table {
-                    let sym_name = string_table.get(sym_entry.st_name as usize).unwrap();
+            // for each symbol entry
+            for sym_entry in sym_table {
+                let sym_name = string_table.get(sym_entry.st_name as usize).unwrap();
 
-                    // if the symbol type is NOTYPE, bind is LOCAL and has a string add it
-                    if sym_entry.st_symtype() == 0x0 && sym_entry.st_bind() == 0x0 && sym_name != ""
-                    {
-                        sym_hash_map.insert(sym_entry.st_value as u32, sym_name.to_string());
-                    }
+                // if the symbol type is NOTYPE, bind is LOCAL and has a string add it
+                if sym_entry.st_symtype() == 0x0
+                    && sym_entry.st_bind() == 0x0
+                    && !sym_name.is_empty()
+                {
+                    sym_hash_map.insert(sym_entry.st_value as u32, sym_name.to_string());
                 }
-                self.symbols = sym_hash_map
             }
-            None => (),
+            self.symbols = sym_hash_map
         }
     }
     /// consumes undo the passed related mem write operation

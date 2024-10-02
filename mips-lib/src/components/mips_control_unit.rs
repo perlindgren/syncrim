@@ -224,6 +224,7 @@ impl Component for ControlUnit {
     }
 
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        #[allow(clippy::single_match)]
         match target_port_id.as_str() {
             cntr_field::INSTR_IN => self.a_in = new_input,
             _ => {}
@@ -632,9 +633,9 @@ impl Component for ControlUnit {
                 //         Err(Condition::Error(format!("unknown funct {:#07b}for opcode {:#08b} CP0", cp0_funct, OP_CP0)))
                 //     }
                 // }
-                Err(Condition::Error(format!(
-                    "CP0 instructions not yet implemented"
-                )))
+                Err(Condition::Error(
+                    "CP0 instructions not yet implemented".to_string(),
+                ))
             }
             //TODO use mem_mode, now it assumed data_mem uses opcode to determine that itself
             OP_LB => {

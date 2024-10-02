@@ -58,6 +58,7 @@ impl EguiComponent for DataMem {
 
         if let Some(sim) = &simulator {
             let v = &sim.ordered_components;
+            #[allow(clippy::expect_fun_call)]
             let comp = v
                 .iter()
                 .find(|x| x.get_id_ports().0 == self.regfile_id)
@@ -74,6 +75,7 @@ impl EguiComponent for DataMem {
 
         if let Some(sim) = &simulator {
             let v = &sim.ordered_components;
+            #[allow(clippy::expect_fun_call)]
             let comp = v
                 .iter()
                 .find(|x| x.get_id_ports().0 == self.phys_mem_id)

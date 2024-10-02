@@ -16,6 +16,7 @@ pub fn autowire(mut cs: ComponentStore) -> ComponentStore {
             let dest_comp_field = &input_port.port_id;
 
             // find component with correct source id
+            #[allow(clippy::expect_fun_call)]
             let source_component = cs
                 .store
                 .iter()

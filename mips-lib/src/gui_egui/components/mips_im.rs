@@ -19,6 +19,7 @@ const HEIGHT: f32 = 55.0;
 
 impl InstrMem {
     fn update_mem_view_register_values(&self, sim: &Simulator) {
+        #[allow(clippy::expect_fun_call)]
         let reg: &RegFile = find_component_with_type(sim, &self.regfile_id)
             .expect(&format!("can't find {} with type Regfile", self.regfile_id));
         self.mem_view
@@ -77,13 +78,13 @@ impl EguiComponent for InstrMem {
         // handle mem_window and load of new file
         if let Some(sim) = &simulator {
             self.update_mem_view_register_values(sim);
-
+            #[allow(clippy::expect_fun_call)]
             let phys_mem: &PhysicalMem = find_component_with_type(sim, &self.phys_mem_id).expect(
                 &format!("can't find {} with type PhysicalMem", self.regfile_id),
             );
 
             if let Some(path) = &path_option {
-                let _ = phys_mem.load_file(path);
+                phys_mem.load_file(path);
                 mem_view_vis = true;
             };
 

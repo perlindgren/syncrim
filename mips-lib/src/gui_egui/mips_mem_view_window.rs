@@ -1,11 +1,6 @@
 use egui::{RichText, ScrollArea, TextWrapMode, Ui, ViewportBuilder, ViewportId};
-use std::{
-    cell::RefCell,
-    collections::{HashMap, HashSet},
-    rc::Rc,
-};
+use std::collections::{HashMap, HashSet};
 
-use crate::components::RegFile;
 use crate::components::{MemOpSize, MipsMem};
 use MIPS_disassembly;
 
@@ -96,8 +91,8 @@ impl MemViewWindow {
     // creates a new memory view window with id string and the given memory
     pub fn new(id: String, title: String) -> Self {
         MemViewWindow {
-            title: title,
-            id: id,
+            title,
+            id,
             visible: false,
             row_offset: 0,
             max_rows: 1024,
@@ -189,7 +184,7 @@ impl MemViewWindow {
 
     pub fn render(&mut self, ctx: &egui::Context, mem: &MipsMem) {
         if !self.visible {
-            return ();
+            return;
         };
 
         ctx.show_viewport_immediate(
@@ -436,13 +431,11 @@ impl MemViewWindow {
         if scroll_area_row == 0 {
             if self.row_offset == 0 {
                 _ = ui.small_button(more_row_text.clone().strikethrough());
-            } else {
-                if ui.small_button(more_row_text).clicked() {
-                    // 4* to get memory address
-                    // -1 because the button takes up a row
-                    self.go_to_address = GoAddress::Top((self.row_offset - 1) * 4);
-                };
-            }
+            } else if ui.small_button(more_row_text).clicked() {
+                // 4* to get memory address
+                // -1 because the button takes up a row
+                self.go_to_address = GoAddress::Top((self.row_offset - 1) * 4);
+            };
         } else if scroll_area_row == self.max_rows as usize + 1 {
             if ui.small_button(more_row_text).clicked() {
                 self.go_to_address = GoAddress::Bottom((self.row_offset + self.max_rows) * 4);

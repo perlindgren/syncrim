@@ -1,5 +1,4 @@
 use clap::Parser;
-use mips_lib;
 use std::path::PathBuf;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;

@@ -4,7 +4,7 @@ use core::cell::RefCell;
 use std::cell::RefMut;
 // use log::*;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, rc::Rc};
+use std::rc::Rc;
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
 use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
@@ -48,6 +48,7 @@ pub struct DataMem {
 }
 
 impl DataMem {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: String,
         pos: (f32, f32),
@@ -62,18 +63,19 @@ impl DataMem {
         let mem_view =
             MemViewWindow::new(id.clone(), "Data memory view".into()).set_data_view(None);
         DataMem {
-            id: id,
-            pos: pos,
-            phys_mem_id: phys_mem_id,
-            address_input: address_input,
-            data_input: data_input,
-            op_input: op_input,
-            write_enable_input: write_enable_input,
+            id,
+            pos,
+            phys_mem_id,
+            address_input,
+            data_input,
+            op_input,
+            write_enable_input,
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
-            regfile_id: regfile_id,
+            regfile_id,
         }
     }
+    #[allow(clippy::too_many_arguments)]
     pub fn rc_new(
         id: String,
         pos: (f32, f32),
@@ -101,10 +103,11 @@ impl DataMem {
     ///
     /// Panics if This functions panics if phys_mem_id is not found in simulator
     /// or phys_mem_id is not of type PhysicalMem
+    #[allow(clippy::expect_fun_call)]
     fn get_phys_mem<'a>(&self, sim: &'a Simulator) -> &'a PhysicalMem {
         let v = &sim.ordered_components;
         let comp = v
-            .into_iter()
+            .iter()
             .find(|x| x.get_id_ports().0 == self.phys_mem_id)
             .expect(&format!("cant find {} in simulator", self.phys_mem_id));
         // deref to get &dyn EguiComponent
@@ -195,7 +198,7 @@ impl Component for DataMem {
 
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         let cycle = simulator.cycle;
-        self.up_cycle(&simulator);
+        self.up_cycle(simulator);
         // get instr at pc/4s
         let address: u32 = simulator
             .get_input_value(&self.address_input)
@@ -250,7 +253,7 @@ impl Component for DataMem {
                 Ok(())
             }
             data_op::LOAD_BYTE => {
-                let val = self.get_mut_mem(&simulator).get_unaligned(
+                let val = self.get_mut_mem(simulator).get_unaligned(
                     address,
                     MemOpSize::Byte,
                     SIGNED,
@@ -260,7 +263,7 @@ impl Component for DataMem {
                 Ok(())
             }
             data_op::LOAD_BYTE_U => {
-                let val = self.get_mut_mem(&simulator).get_unaligned(
+                let val = self.get_mut_mem(simulator).get_unaligned(
                     address,
                     MemOpSize::Byte,
                     UNSIGNED,
@@ -270,9 +273,9 @@ impl Component for DataMem {
                 Ok(())
             }
             data_op::LOAD_HALF => {
-                let l_ret =
-                    self.get_mut_mem(&simulator)
-                        .get(address, MemOpSize::Half, SIGNED, true);
+                let l_ret = self
+                    .get_mut_mem(simulator)
+                    .get(address, MemOpSize::Half, SIGNED, true);
                 match l_ret {
                     Ok(val) => {
                         simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, val);
@@ -286,7 +289,7 @@ impl Component for DataMem {
             }
             data_op::LOAD_HALF_U => {
                 let l_ret =
-                    self.get_mut_mem(&simulator)
+                    self.get_mut_mem(simulator)
                         .get(address, MemOpSize::Half, UNSIGNED, true);
                 match l_ret {
                     Ok(val) => {
@@ -301,7 +304,7 @@ impl Component for DataMem {
             }
             data_op::LOAD_WORD => {
                 let l_ret =
-                    self.get_mut_mem(&simulator)
+                    self.get_mut_mem(simulator)
                         .get(address, MemOpSize::Word, UNSIGNED, true);
                 match l_ret {
                     Ok(val) => {
@@ -316,22 +319,19 @@ impl Component for DataMem {
             }
             data_op::STORE_BYTE => {
                 let ret = self
-                    .get_mut_mem(&simulator)
+                    .get_mut_mem(simulator)
                     .write(address, data, MemOpSize::Byte, true);
-                self.up_hist(&simulator, ret, cycle);
+                self.up_hist(simulator, ret, cycle);
                 simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, 0);
                 Ok(())
             }
             data_op::STORE_HALF => {
-                let w_ret = self.get_mut_mem(&simulator).write_aligned(
-                    address,
-                    data,
-                    MemOpSize::Half,
-                    true,
-                );
+                let w_ret =
+                    self.get_mut_mem(simulator)
+                        .write_aligned(address, data, MemOpSize::Half, true);
                 match w_ret {
                     Ok(ret) => {
-                        self.up_hist(&simulator, ret, cycle);
+                        self.up_hist(simulator, ret, cycle);
                         simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, 0);
                         Ok(())
                     }
@@ -342,15 +342,12 @@ impl Component for DataMem {
                 }
             }
             data_op::STORE_WORD => {
-                let w_ret = self.get_mut_mem(&simulator).write_aligned(
-                    address,
-                    data,
-                    MemOpSize::Word,
-                    true,
-                );
+                let w_ret =
+                    self.get_mut_mem(simulator)
+                        .write_aligned(address, data, MemOpSize::Word, true);
                 match w_ret {
                     Ok(ret) => {
-                        self.up_hist(&simulator, ret, cycle);
+                        self.up_hist(simulator, ret, cycle);
                         simulator.set_out_value(&self.id, DATA_MEM_READ_DATA_OUT_ID, 0);
                         Ok(())
                     }

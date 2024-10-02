@@ -137,12 +137,7 @@ impl Component for RegFile {
         //save value to history before write, no need for {} as borrows is dropped after operation?
         self.history.borrow_mut().push(RegOp {
             addr: w_addr as u8,
-            data: self
-                .registers
-                .borrow()
-                .get(w_addr as usize)
-                .unwrap()
-                .clone(),
+            data: *self.registers.borrow().get(w_addr).unwrap(),
         });
 
         // write data

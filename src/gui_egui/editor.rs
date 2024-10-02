@@ -365,6 +365,7 @@ impl Editor {
                     let old_key = c.as_ref().get_id_ports().0;
                     let mut context = e.contexts.remove(&old_key).unwrap();
                     let debug_id = c.get_id_ports().0;
+                    #[allow(clippy::expect_fun_call)]
                     let render_return = (*Rc::get_mut(c)
                         .expect(&format!("More than one reference exist to {}, can't get mut, therefore not render editor", debug_id)))
                     .render_editor(

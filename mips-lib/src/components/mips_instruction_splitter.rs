@@ -63,8 +63,8 @@ impl Component for InstrSplit {
             ),
         )
     }
-
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
+        #[allow(clippy::single_match)]
         match target_port_id.as_str() {
             INSTRUCTION_SPLITTER_IN_ID => self.instruction_in = new_input,
             _ => {}
