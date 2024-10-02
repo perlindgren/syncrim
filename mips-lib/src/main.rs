@@ -9,7 +9,7 @@ use syncrim::{common::ComponentStore, fern::fern_setup};
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Path to the model to load on startup
-    #[arg(short, long, default_value = "empty.json")]
+    #[arg(short, long, default_value = "mips_singel_cycle.json")]
     model: String,
 }
 
