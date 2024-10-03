@@ -62,9 +62,6 @@ pub mod cntr_field {
     // Opcode is passed to branch unit which is responsible to control branch logic
     // pub const BRANCH_TYPE_OUT: &str = "branch";
 
-    //TODO
-    // NOTE no mem mode, decided to pass opcode to data mem instead,
-    // might change when LWL/LWR is implemented along with the load/store controller
     pub const MEM_MODE_OUT: &str = "mem_mode";
 }
 
@@ -614,30 +611,9 @@ impl Component for ControlUnit {
                 set!(cntr_field::ALU_OP_OUT, alu_op::LUI);
                 Ok(())
             }
-            OP_CP0 => {
-                // let cp0_funct:u32 = (&instr_in >> 21) & 0b11111;
-                // match cp0_funct {
-                //     CP0_FUNCT_MFC0 =>{
-                //         set!(cntr_field::REG_DEST_OUT,cntr_unit_signals::REG_DEST_RT);
-                //         set!(cntr_field::REG_WRITE_ENABLE_OUT, cntr_unit_signals::REG_WRITE_ENABLE);
-
-                //         //TODO no idea why alu would be required for this operation and cant find any path in syncsim,
-                //         // but following blindly. If time permits figure out why and change
-                //         set!(cntr_field::ALU_OP_OUT, alu_op::ADDU);
-                //         set!(cntr_field::ALU_SRC_A_OUT,cntr_unit_signals::ALU_SRC_A_SHAMT);
-                //         set!(cntr_field::ALU_SRC_B_OUT,cntr_unit_signals::ALU_SRC_B_IMM);
-                //         todo!("implement memory mode to complete MFC0")
-
-                //     }
-                //     _ => {
-                //         Err(Condition::Error(format!("unknown funct {:#07b}for opcode {:#08b} CP0", cp0_funct, OP_CP0)))
-                //     }
-                // }
-                Err(Condition::Error(
-                    "CP0 instructions not yet implemented".to_string(),
-                ))
-            }
-            //TODO use mem_mode, now it assumed data_mem uses opcode to determine that itself
+            OP_CP0 => Err(Condition::Error(
+                "CP0 instructions not yet implemented".to_string(),
+            )),
             OP_LB => {
                 set!(cntr_field::MEM_MODE_OUT, data_op::LOAD_BYTE);
                 set_load_instr!();

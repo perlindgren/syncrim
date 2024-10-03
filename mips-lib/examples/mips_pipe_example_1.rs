@@ -1,4 +1,3 @@
-// use crate::src::components::cntr_unit_signals;
 use mips_lib::components::*;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -22,16 +21,6 @@ fn main() {
         Input::new("result_reg_EX", REGISTER_OUT_ID), //write data
         Input::new("control_unit_4", cntr_field::REG_WRITE_ENABLE_OUT),
     );
-
-    // RegFile::rc_new(
-    //     "reg_file",
-    //     (3100.0, 2000.0),
-    //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
-    //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
-    //     Input::new("reg_addr_reg", REGISTER_OUT_ID), //write address
-    //     Input::new("result_reg_EX", REGISTER_OUT_ID), //write data
-    //     Input::new("control_unit_4", cntr_field::REG_WRITE_ENABLE_OUT),
-    // ),
 
     let cs = ComponentStore {
         store: vec![
@@ -405,11 +394,6 @@ fn main() {
                     Input::new("0x_1F", "out"),
                 ],
             ),
-            //
-            //
-
-            //
-            //
             rc_reg_file,
         ],
     };

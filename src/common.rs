@@ -96,9 +96,6 @@ pub trait Component {
     /// returns the (id, Ports) of the component
     fn get_id_ports(&self) -> (Id, Ports);
 
-    // #default
-    // fn get_pos(&self) -> (Position);
-
     fn set_id_port(&mut self, _target_port_id: Id, _new_input: Input) {
         todo!("Set set_id_port for this Component");
     }

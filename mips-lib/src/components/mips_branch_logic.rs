@@ -37,15 +37,7 @@ impl Component for BranchLogic {
     fn to_(&self) {
         trace!("branch_logic");
     }
-    // #[cfg(feature = "gui-egui")]
-    // fn dummy(&self, _id: &str, _pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
-    //     let dummy_input = Input::new("dummy", "out");
-    //     Box::new(Rc::new(BranchLogic {
-    //         id: "dummy".to_string(),
-    //         pos: (0.0, 0.0),
-    //         clk_in: dummy_input.clone(),
-    //     }))
-    // }
+
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
@@ -89,8 +81,6 @@ impl Component for BranchLogic {
         }
     }
 
-    // propagate sign extension to output
-    // TODO: always extend to Signal size? (it should not matter and should be slightly cheaper)
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input values
         let op: u32 = simulator.get_input_value(&self.op_in).try_into().unwrap();

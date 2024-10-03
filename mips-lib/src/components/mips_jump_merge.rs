@@ -25,15 +25,7 @@ impl Component for JumpMerge {
     fn to_(&self) {
         trace!("jump_merge");
     }
-    // #[cfg(feature = "gui-egui")]
-    // fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
-    //     let dummy_input = Input::new("dummy", "out");
-    //     Box::new(Rc::new(JumpMerge {
-    //         id: "dummy".to_string(),
-    //         pos: (0.0, 0.0),
-    //         clk_in: dummy_input.clone(),
-    //     }))
-    // }
+
     fn get_id_ports(&self) -> (Id, Ports) {
         (
             self.id.clone(),
@@ -62,8 +54,6 @@ impl Component for JumpMerge {
         }
     }
 
-    // propagate sign extension to output
-    // TODO: always extend to Signal size? (it should not matter and should be slightly cheaper)
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input values
         let instr_addr: u32 = simulator

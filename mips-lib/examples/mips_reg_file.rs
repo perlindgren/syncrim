@@ -39,8 +39,6 @@ fn main() {
         ],
     };
 
-    // let cs = autowire(cs);
-
     let path = PathBuf::from("add.json");
     cs.save_file(&path);
 

@@ -1,4 +1,3 @@
-// use crate::src::components::cntr_unit_signals;
 use mips_lib::components::*;
 use std::path::PathBuf;
 use std::rc::Rc;

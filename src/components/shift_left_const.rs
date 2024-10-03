@@ -58,8 +58,6 @@ impl Component for ShiftConst {
         }
     }
 
-    // propagate sign extension to output
-    // TODO: always extend to Signal size? (it should not matter and should be slightly cheaper)
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
         // get input values
         let signal_in: u32 = simulator
