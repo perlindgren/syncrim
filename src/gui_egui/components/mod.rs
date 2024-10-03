@@ -5,6 +5,7 @@ mod cross;
 mod equal;
 mod mem;
 mod mux;
+mod pass_through;
 mod probe;
 mod probe_assert;
 mod probe_edit;
