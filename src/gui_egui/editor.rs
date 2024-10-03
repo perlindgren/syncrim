@@ -135,11 +135,6 @@ impl Default for Library {
                 pos: (0.0, 0.0),
                 r_in: dummy_input.clone(),
             }),
-            Rc::new(MIPSCLK {
-                id: "clk".to_string(),
-                pos: (0.0, 0.0),
-                clk_in: dummy_input.clone(),
-            }),
         ];
         Library(library)
     }

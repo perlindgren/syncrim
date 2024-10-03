@@ -1,6 +1,5 @@
 mod add;
 mod and;
-mod clk;
 mod constant;
 mod cross;
 mod equals;
@@ -20,7 +19,6 @@ mod zero_extend;
 
 pub use add::*;
 pub use and::*;
-pub use clk::*;
 pub use constant::*;
 pub use cross::*;
 pub use equals::*;

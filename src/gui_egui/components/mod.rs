@@ -1,6 +1,5 @@
 mod add;
 mod and;
-mod clk;
 mod constant;
 mod cross;
 mod equal;
