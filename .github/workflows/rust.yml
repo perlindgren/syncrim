@@ -42,6 +42,10 @@ jobs:
         run: | 
           cd riscv
           cargo build --example riscv --verbose
+      - name: Build MIPS
+        run: | 
+          cd mips-lib
+          cargo build
   rustfmt:
     runs-on: ubuntu-latest
     steps:
