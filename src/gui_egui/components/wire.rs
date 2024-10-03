@@ -1,15 +1,63 @@
-use crate::common::{EguiComponent, Ports, SignalUnsigned, Simulator};
+use crate::common::{EguiComponent, Ports, Simulator};
 use crate::components::Wire;
-use crate::gui_egui::component_ui::{
-    input_change_id, input_selector, rect_with_hover, visualize_ports,
-};
+use crate::gui_egui::component_ui::{input_change_id, input_selector, visualize_ports};
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapPriority};
 use crate::gui_egui::gui::EguiExtra;
-use crate::gui_egui::helper::{offset_helper, shadow_small_dark};
+use crate::gui_egui::helper::{basic_on_hover, offset_helper, shadow_small_dark};
 use egui::{
-    Color32, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers, PointerButton, Pos2, Rect,
-    Response, Rounding, Shape, Stroke, Ui, Vec2, Window,
+    Color32, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers, Order, PointerButton,
+    Pos2, Rect, Response, Rounding, Sense, Shape, Stroke, Ui, Vec2, Window,
 };
+
+/// if the mouse cursor is less than this distance in points away from the wire display tooltip
+/// Note points is often same as pixels, but some times differ with the points_per_pixels value in egui
+const TOOLTIP_DISTANCE: f32 = 5.0;
+
+/// Calculates the minimum distance the point is from our line going from start: Vec2 to end: Vec2
+fn min_from_line(start: Vec2, end: Vec2, point: Vec2) -> f32 {
+    // could probably use length_sq, but this don't need to be optimized
+    let length: f32 = (end - start).length();
+    // if length is zero, get length between start and point
+    if length == 0f32 {
+        return (start - point).length();
+    };
+
+    let dir_to_end: Vec2 = (end - start).normalized();
+    let point_rel_to_start: Vec2 = point - start;
+    // dot product,
+    // a dot b = abs(a)*abs(b)*cos(theta)
+    // if abs(a)=1 we can use this to determine how far along the line our point is
+    let dist_along_line: f32 = dir_to_end.dot(point_rel_to_start);
+
+    // if we are before our line start
+    if dist_along_line < 0f32 {
+        // distance to our start point
+        (point - start).length() // return this value
+    }
+    // if our point is after the end of our line
+    else if dist_along_line > length {
+        // distance to our end point
+        (point - end).length() // return this value
+    }
+    // our point is between the line
+    else {
+        // project vec a up on vec b
+        // theta is the angel between our vectors
+        // abs(a) * cos(theta) * b/abs(b)
+        // we can se the resemblance to a dot product
+        // abs(a) * abs(b) * cos(theta) * b/abs(b) # one to much abs(b)
+        // abs(a) * abs(b) * cos(theta) * b/(abs(b))^2
+        // a dot b * b/abs(b)^2
+        // this is our point projected along our line (line starts at origin (0,0))
+        // if abs(b)=1, aka normalized we can simplify the math
+        // a dot b * b/1^2
+        // a dot b * b
+        // a dot b is already calculated in dist along line
+        let proj_point_on_line: Vec2 = dist_along_line * dir_to_end;
+        // lets use this to calculate the orthogonal vector from our line to our point
+        (point_rel_to_start - proj_point_on_line).length() // return this value
+    }
+}
 use log::trace;
 
 #[typetag::serde]
@@ -39,49 +87,87 @@ impl EguiComponent for Wire {
             line_vec.push(oh(pos, s, o));
         }
 
-        ui.painter().add(Shape::line(
-            line_vec.clone(),
-            Stroke {
-                width: scale,
-                color: if is_active {
-                    Color32::RED
-                } else {
-                    Color32::BLACK
-                },
-            },
-        ));
-        let mut r_vec = vec![];
+        let mut hovered = false;
+        let mut r: Vec<Response> = vec![];
 
-        for (i, _) in line_vec[1..].iter().enumerate() {
-            let (line_top, line_bottom) = if line_vec[i].x > line_vec[i + 1].x {
-                (line_vec[i + 1].x, line_vec[i].x)
-            } else {
-                (line_vec[i].x, line_vec[i + 1].x)
-            };
-            let (line_left, line_right) = if line_vec[i].y > line_vec[i + 1].y {
-                (line_vec[i + 1].y, line_vec[i].y)
-            } else {
-                (line_vec[i].y, line_vec[i + 1].y)
-            };
-            let rect = Rect {
-                min: Pos2::new(line_top, line_left),
-                max: Pos2::new(line_bottom, line_right),
-            };
+        for val in line_vec.windows(2) {
+            let first_pos = val[0];
+            let last_pos = val[1];
+            let rect = Rect::from_two_pos(first_pos, last_pos).expand(2.5);
 
-            let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
-                ui.label(format!("Id: {}", self.id.clone()));
-                if let Some(s) = &simulator {
-                    ui.label({
-                        let r: Result<SignalUnsigned, String> =
-                            s.get_input_value(&self.input).try_into();
-                        match r {
-                            Ok(data) => format!("{:#x}", data),
-                            _ => format!("{:?}", r),
-                        }
-                    });
+            #[allow(clippy::single_match)]
+            match editor_mode {
+                EditorMode::Default => {
+                    // why the fuck do i need this much code just to make sure its rendered at the correct layer
+                    let resp = ui
+                        .allocate_ui_at_rect(rect, |ui| {
+                            let mut layer = ui.layer_id();
+                            layer.order = Order::Middle;
+                            ui.with_layer_id(layer, |ui| {
+                                ui.allocate_exact_size(
+                                    rect.size(),
+                                    Sense {
+                                        click: true,
+                                        drag: true,
+                                        focusable: true,
+                                    },
+                                )
+                            })
+                        })
+                        .inner
+                        .inner
+                        .1;
+                    // log::debug!("{:?}", resp);
+                    if resp.contains_pointer() {
+                        ui.painter().rect_stroke(
+                            resp.interact_rect,
+                            Rounding::same(0.0),
+                            Stroke {
+                                width: scale,
+                                color: Color32::RED,
+                            },
+                        );
+                    }
+                    r.push(resp);
                 }
-            });
-            r_vec.push(r);
+                _ => {}
+            };
+
+            if let Some(cursor) = ui.ctx().pointer_latest_pos() {
+                if min_from_line(first_pos.to_vec2(), last_pos.to_vec2(), cursor.to_vec2())
+                    < TOOLTIP_DISTANCE
+                    && clip_rect.contains(cursor)
+                    && !hovered
+                {
+                    hovered = true;
+                    egui::containers::popup::show_tooltip_at(
+                        ui.ctx(),
+                        ui.layer_id(),
+                        egui::Id::new(&self.id),
+                        (first_pos + last_pos.to_vec2()) / 2.0,
+                        |ui| basic_on_hover(ui, self, &simulator),
+                    );
+                }
+            };
+        }
+
+        let sk = Stroke {
+            width: if hovered { scale * 3.0 } else { scale },
+            color: Color32::from_rgba_unmultiplied(
+                self.color_rgba[0],
+                self.color_rgba[1],
+                self.color_rgba[2],
+                self.color_rgba[3],
+            ),
+        };
+        if is_active {
+            ui.painter().add(Shape::line(line_vec.clone(), sk));
+        } else {
+            Shape::dashed_line(&line_vec, sk, 10.0, 2.0)
+                .drain(..)
+                .for_each(|s| {
+                    ui.painter().add(s);
+                });
         }
 
         match editor_mode {
@@ -89,7 +175,7 @@ impl EguiComponent for Wire {
             _ => visualize_ports(ui, self.ports_location(), offset_old, scale, clip_rect),
         }
 
-        Some(r_vec)
+        Some(r)
     }
 
     fn render_editor(
@@ -180,27 +266,42 @@ impl EguiComponent for Wire {
                         id_ports,
                         self.id.clone(),
                     );
+                    let mut c: Color32 = Color32::from_rgba_unmultiplied(
+                        self.color_rgba[0],
+                        self.color_rgba[1],
+                        self.color_rgba[2],
+                        self.color_rgba[3],
+                    );
+                    ui.color_edit_button_srgba(&mut c);
+                    self.color_rgba = c.to_array();
 
                     let mut i = 0;
+                    let mut to_insert: Option<(usize, (f32, f32))> = None;
                     let mut first_item = true;
                     self.pos.retain_mut(|seg_pos| {
                         let mut delete = false;
                         ui.horizontal(|ui| {
                             ui.label(format!("Segment {}:", i));
                             ui.label("pos x");
-                            ui.add(DragValue::new(&mut seg_pos.0));
+                            ui.add(DragValue::new(&mut seg_pos.0).speed(0.5));
                             ui.label("pos y");
-                            ui.add(DragValue::new(&mut seg_pos.1));
+                            ui.add(DragValue::new(&mut seg_pos.1).speed(0.5));
 
                             if first_item {
                                 first_item = false;
                             } else if ui.button("🗙").clicked() {
                                 delete = true;
                             }
+                            if ui.button("NEW").clicked() {
+                                to_insert = Some((i, *seg_pos));
+                            }
                         });
                         i += 1;
                         !delete
                     });
+                    if let Some((i, pos)) = to_insert {
+                        self.pos.insert(i, pos)
+                    };
 
                     if ui.button("+ Add new segment").clicked() {
                         self.pos.push(*self.pos.last().unwrap());

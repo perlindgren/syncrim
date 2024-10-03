@@ -86,6 +86,7 @@ impl Default for Library {
                 pos: (0.0, 0.0),
                 a_in: dummy_input.clone(),
                 b_in: dummy_input.clone(),
+                scale: 1.0,
             }),
             Rc::new(Constant {
                 id: "c".to_string(),
@@ -127,6 +128,7 @@ impl Default for Library {
                 pos: (0.0, 0.0),
                 select: dummy_input.clone(),
                 m_in: vec![dummy_input.clone(), dummy_input.clone()],
+                scale: 1.0,
             }),
             Rc::new(Register {
                 id: "reg".to_string(),
@@ -357,7 +359,11 @@ impl Editor {
                 _ => e.components.retain_mut(|c| {
                     let old_key = c.as_ref().get_id_ports().0;
                     let mut context = e.contexts.remove(&old_key).unwrap();
-                    let render_return = (*Rc::get_mut(c).unwrap()).render_editor(
+                    let debug_id = c.get_id_ports().0;
+                    #[allow(clippy::expect_fun_call)]
+                    let render_return = (*Rc::get_mut(c)
+                        .expect(&format!("More than one reference exist to {}, can't get mut, therefore not render editor", debug_id)))
+                    .render_editor(
                         ui,
                         &mut context,
                         None,

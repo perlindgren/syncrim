@@ -1,0 +1,21 @@
+mod mips_alu;
+mod mips_branch_logic;
+mod mips_control_unit;
+mod mips_dm;
+mod mips_im;
+mod mips_instruction_splitter;
+mod mips_jump_merge;
+mod mips_reg_file;
+mod physical_mem;
+mod sz_extend;
+
+pub use mips_alu::*;
+pub use mips_branch_logic::*;
+pub use mips_control_unit::*;
+pub use mips_dm::*;
+pub use mips_im::*;
+pub use mips_instruction_splitter::*;
+pub use mips_jump_merge::*;
+pub use mips_reg_file::*;
+pub use physical_mem::*;
+pub use sz_extend::*;

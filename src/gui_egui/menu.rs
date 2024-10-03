@@ -4,7 +4,6 @@ use crate::gui_egui::{
     keymap,
 };
 use egui::{menu, Button, DragValue, KeyboardShortcut, Response, Ui};
-
 pub(crate) struct Menu {}
 
 impl Menu {

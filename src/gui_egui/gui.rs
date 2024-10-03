@@ -149,7 +149,7 @@ impl Gui {
             }
         });
         let cpr = central_panel.response.interact(Sense::drag());
-        if cpr.dragged_by(PointerButton::Middle) {
+        if cpr.dragged_by(PointerButton::Primary) {
             self.pan += cpr.drag_delta();
         }
         if central_panel.response.hovered() {

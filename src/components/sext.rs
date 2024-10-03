@@ -12,7 +12,7 @@ use std::rc::Rc;
 
 pub const SEXT_IN_ID: &str = "sext_in";
 
-pub const SEXT_OUT_ID: &str = "out";
+pub const SEXT_OUT_ID: &str = "sext_out";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Sext {
@@ -82,10 +82,10 @@ impl Component for Sext {
                 value >>= to_shr;
 
                 // set output
-                simulator.set_out_value(&self.id, "out", SignalValue::Data(value));
+                simulator.set_out_value(&self.id, SEXT_OUT_ID, SignalValue::Data(value));
             }
             _ => {
-                simulator.set_out_value(&self.id, "out", SignalValue::Unknown);
+                simulator.set_out_value(&self.id, SEXT_OUT_ID, SignalValue::Unknown);
                 trace!("{} unknown input", self.id);
             }
         }
@@ -150,8 +150,8 @@ mod test {
         assert_eq!(simulator.cycle, 1);
 
         // outputs
-        let sext32_out = &Input::new("sext32", "out");
-        let sext16_out = &Input::new("sext16", "out");
+        let sext32_out = &Input::new("sext32", SEXT_OUT_ID);
+        let sext16_out = &Input::new("sext16", SEXT_OUT_ID);
 
         // reset
         assert_eq!(simulator.get_input_value(sext32_out), 0.into());

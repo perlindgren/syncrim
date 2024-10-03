@@ -1,9 +1,8 @@
 {
   "json.schemaDownload.enable": true,
   "rust-analyzer.linkedProjects": [
-    "./mips/Cargo.toml",
-    "./Cargo.toml",
-    ".\\mips\\Cargo.toml"
+    "./mips-lib/Cargo.toml",
+    // "./Cargo.toml",
   ],
   "cSpell.ignoreWords": [
     "Clippy",
@@ -63,12 +62,47 @@
     "usize",
     "vizia",
     "winit",
-    "xffff"
+    "xffff",
+    "ADDU",
+    "autowire",
+    "BGEZ",
+    "BGEZAL",
+    "BGTZ",
+    "BLEZ",
+    "BLTZAL",
+    "cntr",
+    "funct",
+    "hline",
+    "instrs",
+    "memref",
+    "MIPSCLK",
+    "muxes",
+    "NOTYPE",
+    "shamt",
+    "signzero",
+    "SIGNZEROEXTEND",
+    "SLLV",
+    "SLTI",
+    "SLTIU",
+    "SLTU",
+    "SRAV",
+    "SRLV",
+    "strtab",
+    "SUBU",
+    "symtype",
+    "syncsim",
+    "SYSCALL",
+    "vline",
+    "winapi",
+    "winuser",
+    "XORI",
+    "ZEROEXTEND"
   ],
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer",
     "editor.formatOnSave": true
-  }
+  },
+
   //,
   // "rust-analyzer.cargo.unsetTest": [
   //   "syncrim"

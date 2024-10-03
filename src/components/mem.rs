@@ -136,21 +136,42 @@ impl Memory {
         Memory(Rc::new(RefCell::new(data)))
     }
 
-    fn align(&self, addr: usize, size: usize) -> SignalValue {
+    /// is one if addres is unaligend, and zero if it is.
+    /// # Example
+    /// ```
+    /// use syncrim::components::Memory;
+    /// use syncrim::signal::SignalValue;
+    ///
+    /// let mem = Memory::default(); // creates a memory with only zeros
+    ///
+    /// let align_adrs = mem.align(0xa3f5, 4);
+    /// assert_eq!(SignalValue::from(1), align_adrs)
+    /// ```
+    pub fn align(&self, addr: usize, size: usize) -> SignalValue {
         ((addr % size != 0) as SignalUnsigned).into()
     }
 
-    fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> SignalValue {
+    /// This function reads 1, 2, 4 bytes from the memory,
+    /// and converts them to a SignalValue using the a big_endian and sign arguments
+    ///
+    /// # Panics
+    /// This function panics if the argument size is NOT 1, 2 or 4
+    /// # TODO
+    /// - maybe make size an enum?
+    pub fn read(&self, addr: usize, size: usize, sign: bool, big_endian: bool) -> SignalValue {
+        // Read amount of bytes determined by size, and add them them a vector
         let data: Vec<u8> = (0..size)
             .map(|i| *self.0.borrow().get(&(addr + i)).unwrap_or(&0))
             .collect();
 
+        // why convert to a slice?
         let data = data.as_slice();
 
         trace!("{:x?}", data);
 
         match size {
             1 => {
+                // Loading one byte
                 if sign {
                     data[0] as i8 as SignalSigned as SignalUnsigned
                 } else {
@@ -158,8 +179,10 @@ impl Memory {
                 }
             }
             2 => {
+                // Loading half word, most stuff here is for tracing and debugging
                 if sign {
                     if big_endian {
+                        // sign big endian
                         trace!("read signed half word be");
                         let i_16 = i16::from_be_bytes(data.try_into().unwrap());
                         trace!("i_16 {:x?}", i_16);
@@ -167,6 +190,7 @@ impl Memory {
                         trace!("i_32 {:x?}", i_32);
                         i_32 as SignalUnsigned
                     } else {
+                        // sign little endian
                         trace!("read signed half word le");
                         let i_16 = i16::from_le_bytes(data.try_into().unwrap());
                         trace!("i_16 {:x?}", i_16);
@@ -175,6 +199,7 @@ impl Memory {
                         i_32 as SignalUnsigned
                     }
                 } else if big_endian {
+                    // unsigned big endian
                     trace!("read unsigned half word be");
                     let u_16 = u16::from_be_bytes(data.try_into().unwrap());
                     trace!("u_16 {:x?}", u_16);
@@ -182,6 +207,7 @@ impl Memory {
                     trace!("u_32 {:x?}", u_32);
                     u_32 as SignalUnsigned
                 } else {
+                    // unsigned little endian
                     trace!("read unsigned half word le");
                     let u_16 = u16::from_le_bytes(data.try_into().unwrap());
                     trace!("u_16 {:x?}", u_16);
@@ -191,6 +217,7 @@ impl Memory {
                 }
             }
             4 => {
+                // Load full word
                 if sign {
                     if big_endian {
                         i32::from_be_bytes(data.try_into().unwrap()) as SignalUnsigned
@@ -205,10 +232,17 @@ impl Memory {
             }
             _ => panic!("illegal sized memory operation"),
         }
-        .into()
+        .into() // Convert to SignalValue
     }
 
-    fn write(&self, addr: usize, size: usize, big_endian: bool, data: SignalValue) {
+    /// This function writes 1, 2, 4 bytes from the memory,
+    /// using the a big_endian arguments
+    ///
+    /// # Panics
+    /// This function panics if the argument size is NOT 1, 2 or 4
+    /// # TODO
+    /// - maybe make size an enum?
+    pub fn write(&self, addr: usize, size: usize, big_endian: bool, data: SignalValue) {
         let data: SignalUnsigned = data.try_into().unwrap();
         match size {
             1 => {

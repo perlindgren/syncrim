@@ -1,5 +1,5 @@
 use crate::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
-use crate::components::Mux;
+use crate::components::{Mux, MUX_OUT_ID};
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, input_selector_removeable, pos_drag_value,
     properties_window, rect_with_hover, visualize_ports,
@@ -44,17 +44,22 @@ impl EguiComponent for Mux {
             Some(s) => s.get_input_value(&self.select).try_into().unwrap_or(0),
             None => 0,
         };
+        let mut shape: Vec<(f32, f32)> = vec![
+            (-20f32, pa * (-10f32) - 10f32),
+            (0f32, pa * (-10f32) - 10f32),
+            (10f32, pa * (-10f32) + 10f32),
+            (10f32, pa * (10f32) - 10f32),
+            (0f32, pa * (10f32) + 10f32),
+            (-20f32, pa * (10f32) + 10f32),
+        ];
+        for (x, y) in shape.iter_mut() {
+            *x *= self.scale;
+            *y *= self.scale;
+        }
 
         // The shape
         ui.painter().add(Shape::closed_line(
-            vec![
-                oh((-20f32, pa * (-10f32) - 10f32), s, o),
-                oh((0f32, pa * (-10f32) - 10f32), s, o),
-                oh((10f32, pa * (-10f32) + 10f32), s, o),
-                oh((10f32, pa * (10f32) - 10f32), s, o),
-                oh((0f32, pa * (10f32) + 10f32), s, o),
-                oh((-20f32, pa * (10f32) + 10f32), s, o),
-            ],
+            shape.clone().iter().map(|point| oh(*point, s, o)).collect(),
             Stroke {
                 width: scale,
                 color: Color32::BLACK,
@@ -65,11 +70,14 @@ impl EguiComponent for Mux {
         ui.painter().add(Shape::line_segment(
             [
                 oh(
-                    (-20f32, ((select as f32) * 20f32) - pa * 10f32 + 10f32),
+                    (
+                        -20f32 * self.scale,
+                        (((select as f32) * 20f32) - pa * 10f32 + 10f32) * self.scale,
+                    ),
                     s,
                     o,
                 ),
-                oh((10f32, 0f32), s, o),
+                oh((10f32 * self.scale, 0f32 * self.scale), s, o),
             ],
             Stroke {
                 width: scale,
@@ -82,8 +90,16 @@ impl EguiComponent for Mux {
         ));
 
         let rect = Rect {
-            min: oh((-20f32, pa * (-10f32) - 10f32), s, o),
-            max: oh((10f32, pa * 10f32 + 10f32), s, o),
+            min: oh(
+                (-20f32 * self.scale, (pa * (-10f32) - 10f32) * self.scale),
+                s,
+                o,
+            ),
+            max: oh(
+                (10f32 * self.scale, (pa * 10f32 + 10f32) * self.scale),
+                s,
+                o,
+            ),
         };
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
@@ -177,23 +193,40 @@ impl EguiComponent for Mux {
         }
     }
 
+    fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {
+        let loc = self
+            .ports_location()
+            .iter()
+            .map(|(_, loc)| <(f32, f32)>::from(loc))
+            .collect::<Vec<(f32, f32)>>();
+        if let Some(i) = self.m_in.iter().position(|item| item == &id) {
+            Some(loc[i + 1])
+        } else if id == self.select {
+            Some(loc[0])
+        } else if id == Input::new(&self.id, MUX_OUT_ID) {
+            Some(*loc.last().unwrap())
+        } else {
+            None
+        }
+    }
+
     fn ports_location(&self) -> Vec<(crate::common::Id, Pos2)> {
         let own_pos = Vec2::new(self.pos.0, self.pos.1);
         let pa = self.m_in.len() as f32;
         let top = -pa * 10f32 - 10f32;
         let mut v = vec![(
             crate::components::MUX_SELECT_ID.to_string(),
-            Pos2::new(-10f32, top) + own_pos,
+            Pos2::new(-10f32, top) * self.scale + own_pos,
         )];
         for i in 0..=self.m_in.len() - 1 {
             v.push((
                 format!("{}{}", crate::components::MUX_TEMPLATE_ID, i),
-                Pos2::new(-20f32, top + i as f32 * 20f32 + 20f32) + own_pos,
+                Pos2::new(-20f32, top + i as f32 * 20f32 + 20f32) * self.scale + own_pos,
             ));
         }
         v.push((
             crate::components::MUX_OUT_ID.to_string(),
-            Pos2::new(10f32, 0f32) + own_pos,
+            Pos2::new(10f32, 0f32) * self.scale + own_pos,
         ));
         v
     }

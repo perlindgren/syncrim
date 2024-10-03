@@ -170,6 +170,10 @@ pub trait EguiComponent: Component {
         }
     }
 
+    fn get_input_location(&self, _id: Input) -> Option<(f32, f32)> {
+        None
+    }
+
     fn top_padding(&self) -> f32 {
         todo!("Create top_padding for this EguiComponent");
     }

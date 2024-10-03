@@ -1,3 +1,5 @@
+use crate::common::Input;
+use crate::components::{ADD_OUT_ID, ADD_OVERFLOW_ID};
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
     rect_with_hover, visualize_ports,
@@ -33,18 +35,27 @@ impl EguiComponent for Add {
         let s = scale;
         let o = offset;
         // The shape
+        #[rustfmt::skip] // stop formate from "compacting" our vec, doesn't affect anything else
+        let shape: Vec<(f32, f32)> = vec![
+            (-20f32, -40f32),
+            (0f32, -40f32),
+            (20f32, -20f32),
+            (20f32, 20f32),
+            (0f32, 40f32),
+            (-20f32, 40f32),
+            (-20f32, 20f32),
+            (-10f32, 0f32),
+            (-20f32, -20f32),
+        ];
+
+        let comp_scale = self.scale;
+
+        // The shape
         ui.painter().add(Shape::closed_line(
-            vec![
-                oh((-20f32, -40f32), s, o),
-                oh((0f32, -40f32), s, o),
-                oh((20f32, -20f32), s, o),
-                oh((20f32, 20f32), s, o),
-                oh((0f32, 40f32), s, o),
-                oh((-20f32, 40f32), s, o),
-                oh((-20f32, 20f32), s, o),
-                oh((-10f32, 0f32), s, o),
-                oh((-20f32, -20f32), s, o),
-            ],
+            shape
+                .iter()
+                .map(|(x, y)| oh((x * comp_scale, y * comp_scale), s, o))
+                .collect(),
             Stroke {
                 width: scale,
                 color: Color32::RED,
@@ -66,8 +77,8 @@ impl EguiComponent for Add {
             },
         ));
         let rect = Rect {
-            min: oh((-20f32, -40f32), s, o),
-            max: oh((20f32, 40f32), s, o),
+            min: oh((-20.0 * self.scale, -40.0 * self.scale), s, o),
+            max: oh((20.0 * self.scale, 40.0 * self.scale), s, o),
         };
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));
@@ -152,21 +163,41 @@ impl EguiComponent for Add {
         vec![
             (
                 crate::components::ADD_A_IN_ID.to_string(),
-                Pos2::new(-20f32, -20f32) + own_pos,
+                Pos2::new(-20f32, -20f32) * self.scale + own_pos,
             ),
             (
                 crate::components::ADD_B_IN_ID.to_string(),
-                Pos2::new(-20f32, 20f32) + own_pos,
+                Pos2::new(-20f32, 20f32) * self.scale + own_pos,
             ),
             (
                 crate::components::ADD_OUT_ID.to_string(),
-                Pos2::new(20f32, 0f32) + own_pos,
+                Pos2::new(20f32, 0f32) * self.scale + own_pos,
             ),
             (
                 crate::components::ADD_OVERFLOW_ID.to_string(),
-                Pos2::new(0f32, -40f32) + own_pos,
+                Pos2::new(0f32, -40f32) * self.scale + own_pos,
             ),
         ]
+    }
+
+    fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {
+        let loc = self
+            .ports_location()
+            .iter()
+            .map(|(_, loc)| <(f32, f32)>::from(loc))
+            .collect::<Vec<(f32, f32)>>();
+
+        if id == self.a_in {
+            Some(loc[0])
+        } else if id == self.b_in {
+            Some(loc[1])
+        } else if id == Input::new(&self.id, ADD_OUT_ID) {
+            Some(loc[2])
+        } else if id == Input::new(&self.id, ADD_OVERFLOW_ID) {
+            Some(loc[3])
+        } else {
+            None
+        }
     }
 
     fn top_padding(&self) -> f32 {

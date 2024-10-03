@@ -170,12 +170,12 @@ impl Simulator {
             halt_on_warning: false,
             running_state: RunningState::Stopped,
             component_condition: vec![],
+            running_state_history: vec![],
+            component_condition_history: vec![],
             // used for determine active components
             sinks,
             inputs_read: HashMap::new(),
             active: HashSet::new(),
-            running_state_history: vec![],
-            component_condition_history: vec![],
         };
 
         trace!("sim_state {:?}", simulator.sim_state);
@@ -199,6 +199,10 @@ impl Simulator {
             .id_field_index
             .get(&(input.id.clone(), input.field.clone()))
             .unwrap_or_else(|| {
+                error!(
+                    "Component {:?}, field {:?} not found.",
+                    input.id, input.field
+                );
                 panic!(
                     "Component {:?}, field {:?} not found.",
                     input.id, input.field
@@ -599,6 +603,6 @@ mod test {
         let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
-        let _ = simulator.get_input_fmt(&Input::new("c", "out"));
+        let _ = simulator.get_input_fmt(&Input::new("c", CONSTANT_OUT_ID));
     }
 }

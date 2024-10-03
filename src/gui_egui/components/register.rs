@@ -1,5 +1,5 @@
 use crate::common::{EguiComponent, Input, Ports, SignalUnsigned, Simulator};
-use crate::components::Register;
+use crate::components::{Register, REGISTER_OUT_ID};
 use crate::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
     rect_with_hover, visualize_ports,
@@ -66,7 +66,7 @@ impl EguiComponent for Register {
                     let r: Result<SignalUnsigned, String> = s
                         .get_input_value(&Input {
                             id: self.id.clone(),
-                            field: "out".to_string(),
+                            field: REGISTER_OUT_ID.to_string(),
                         })
                         .try_into();
                     match r {
@@ -156,6 +156,28 @@ impl EguiComponent for Register {
                 Pos2::new(10f32, 0f32) + own_pos,
             ),
         ]
+    }
+
+    fn get_input_location(&self, input: Input) -> Option<(f32, f32)> {
+        let own_pos = self.get_pos();
+        let input_pos_change = (-10f32, 0f32);
+        let output_pos_change = (10f32, 0f32);
+
+        if input == self.r_in {
+            // looks input
+            return Some((
+                own_pos.0 + input_pos_change.0,
+                own_pos.1 + input_pos_change.1,
+            ));
+        } else if input == Input::new(&self.id, REGISTER_OUT_ID) {
+            // look output
+            return Some((
+                own_pos.0 + output_pos_change.0,
+                own_pos.1 + output_pos_change.1,
+            ));
+        }
+
+        None
     }
 
     fn top_padding(&self) -> f32 {
