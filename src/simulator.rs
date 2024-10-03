@@ -17,9 +17,6 @@ pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
 // The topological order does not enforce any specific order of registers
 // Thus registers cannot point to other registers in a cyclic fashion
 // This is (likely) not occurring in practice.
-//
-// A solution is to evaluate register updates separately from other components
-// ... but not currently implemented ...
 impl Simulator {
     pub fn new(component_store: ComponentStore) -> Result<Self, &'static str> {
         for component in &component_store.store {
@@ -138,6 +135,27 @@ impl Simulator {
                 ordered_components.push(c);
             }
         }
+
+        // check if a sequential components is linking to another sequential component and panic
+        // this avoids that the order of sequential components matter as they can't affect one other.
+        for seq_node in &ordered_components {
+            for seq_node_inputs in seq_node
+                .get_id_ports()
+                .1
+                .inputs
+                .iter()
+                .map(|port| &port.input)
+            {
+                if ordered_components
+                    .iter()
+                    .find(|node| node.get_id_ports().0 == seq_node_inputs.id)
+                    .is_some()
+                {
+                    panic!("Component {} read data from {}. Sequential to sequential is not allowed, consider adding a pass trough component", seq_node.get_id_ports().0, seq_node_inputs.id)
+                }
+            }
+        }
+
         //then the rest...
         for node in &top {
             #[allow(suspicious_double_ref_op)]
@@ -563,6 +581,22 @@ mod test {
         let simulator = Simulator::new(cs).unwrap();
 
         assert_eq!(simulator.cycle, 1);
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Component r_2 read data from r_1. Sequential to sequential is not allowed, consider adding a pass trough component"
+    )]
+    fn test_sequential_to_sequential() {
+        let cs = ComponentStore {
+            store: vec![
+                Register::rc_new("r_1", (0.0, 0.0), Input::new("pass", PASS_THROUGH_OUT_ID)),
+                Register::rc_new("r_2", (70.0, 0.0), Input::new("r_1", REGISTER_OUT_ID)),
+                PassThrough::rc_new("pass", (35.0, 35.0), Input::new("r_2", REGISTER_OUT_ID)),
+            ],
+        };
+
+        let _simulator = Simulator::new(cs).unwrap();
     }
 
     #[test]
