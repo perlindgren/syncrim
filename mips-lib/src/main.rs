@@ -1,4 +1,7 @@
 use clap::Parser;
+// The trait impls from here are used dynamically when json is loaded, so this is actually used
+#[allow(unused_imports)]
+use mips_lib::*;
 use std::path::PathBuf;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
@@ -8,7 +11,7 @@ use syncrim::{common::ComponentStore, fern::fern_setup};
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Path to the model to load on startup
-    #[arg(short, long, default_value = "mips_singel_cycle.json")]
+    #[arg(short, long, default_value = "mips_single_cycle.json")]
     model: String,
 }
 
