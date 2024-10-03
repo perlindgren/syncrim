@@ -26,21 +26,25 @@ fn main() {
         store: vec![
             Rc::new(PhysicalMem::new("phys_mem", (0.0, 0.0))),
             // register that holds instr addr
-            Register::rc_new("pc", (170.0, 410.0), Input::new("mux_jump_merge", "out")),
+            Register::rc_new(
+                "pc",
+                (170.0, 410.0),
+                Input::new("mux_jump_merge", MUX_OUT_ID),
+            ),
             // step addr from reg by 4
             Constant::rc_new("+4", (170.0, 380.0), 4),
             Add::rc_new(
                 "pc+4",
                 (220.0, 380.0),
-                Input::new("pc", "out"),
-                Input::new("+4", "out"),
+                Input::new("pc", REGISTER_OUT_ID),
+                Input::new("+4", CONSTANT_OUT_ID),
             ),
             //
             //
             Rc::new(InstrMem::new(
                 "instr_mem".into(),
                 (280.0, 600.0),
-                Input::new("pc", "out"),
+                Input::new("pc", REGISTER_OUT_ID),
                 "phys_mem".into(),
                 "reg_file".into(),
             )),
@@ -69,6 +73,11 @@ fn main() {
             //
             //
             Register::rc_new("pc+4_reg", (2300.0, 5000.0), Input::new("pc+4", ADD_OUT_ID)),
+            PassThrough::rc_new(
+                "pc+4_pass",
+                (2350.0, 5000.0),
+                Input::new("pc+4_reg", REGISTER_OUT_ID),
+            ),
             //
             Register::rc_new(
                 "InMem_reg",
@@ -85,6 +94,11 @@ fn main() {
             // splits instructions from ir to fields
             InstrSplit::rc_new(
                 "instruction_split",
+                (280.0, 140.0),
+                Input::new("InMem_reg", REGISTER_OUT_ID),
+            ),
+            PassThrough::rc_new(
+                "InMem_pass",
                 (280.0, 140.0),
                 Input::new("InMem_reg", REGISTER_OUT_ID),
             ),
@@ -216,7 +230,12 @@ fn main() {
                 //TODO: make 2 more control units
                 "control_EX_reg",
                 (3450.0, 1400.0),
-                Input::new("InMem_reg", REGISTER_OUT_ID),
+                Input::new("InMem_pass", PASS_THROUGH_OUT_ID),
+            ),
+            PassThrough::rc_new(
+                "control_EX_pass",
+                (3480.0, 1400.0),
+                Input::new("control_EX_reg", REGISTER_OUT_ID),
             ),
             //
             Register::rc_new(
@@ -229,20 +248,25 @@ fn main() {
                 //TODO: fix after adding 4 muxes
                 "operand_a_reg",
                 (3450.0, 1800.0),
-                Input::new("equals_operand_A_2", MUX_OUT_ID),
+                Input::new("equals_operand_A_2", EQUAL_OUT_ID),
             ),
             //
             Register::rc_new(
                 //TODO: fix after muxes
                 "operand_b_reg",
                 (3450.0, 2200.0),
-                Input::new("equals_operand_B_2", MERGE_OUT_ID),
+                Input::new("equals_operand_B_2", EQUAL_OUT_ID),
+            ),
+            PassThrough::rc_new(
+                "operand_b_pass",
+                (4200.0, 2500.0),
+                Input::new("operand_b_reg", REGISTER_OUT_ID),
             ),
             //
             Register::rc_new(
                 "mux_b2_reg",
                 (3450.0, 5000.0),
-                Input::new("pc+4_reg", REGISTER_OUT_ID),
+                Input::new("pc+4_pass", PASS_THROUGH_OUT_ID),
             ),
             Register::rc_new(
                 "mux_b3_reg",
@@ -254,6 +278,11 @@ fn main() {
                 "reg_addr_EX_reg",
                 (3450.0, 5500.0),
                 Input::new("mux_write_addr", MUX_OUT_ID),
+            ),
+            PassThrough::rc_new(
+                "reg_addr_EX_pass",
+                (3450.0, 5500.0),
+                Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
             ),
             //
             //
@@ -270,9 +299,9 @@ fn main() {
                 (650.0, 220.0),
                 Input::new("control_unit_2", cntr_field::ALU_SRC_A_OUT),
                 vec![
-                    Input::new("zero_extend_for_shamt", SIGNZEROEXTEND_OUT_ID),
+                    Input::new("zero_extend_for_shamt", ZEROEXTEND_OUT_ID),
                     Input::new("operand_a_reg", REGISTER_OUT_ID),
-                    Input::new("0_a_inp", "out"),
+                    Input::new("0_a_inp", CONSTANT_OUT_ID),
                 ],
             ),
             //
@@ -315,7 +344,12 @@ fn main() {
             Register::rc_new(
                 "control_MEM_reg",
                 (4200.0, 1400.0),
-                Input::new("control_EX_reg", REGISTER_OUT_ID),
+                Input::new("control_EX_pass", PASS_THROUGH_OUT_ID),
+            ),
+            PassThrough::rc_new(
+                "control_MEM_pass",
+                (4200.0, 1400.0),
+                Input::new("control_MEM_reg", REGISTER_OUT_ID),
             ),
             //
             Register::rc_new(
@@ -327,13 +361,18 @@ fn main() {
             Register::rc_new(
                 "data_MEM_reg",
                 (4200.0, 2500.0),
-                Input::new("operand_b_reg", REGISTER_OUT_ID),
+                Input::new("operand_b_pass", PASS_THROUGH_OUT_ID),
             ),
             //
             Register::rc_new(
                 "reg_addr_MEM_reg",
                 (4200.0, 5500.0),
-                Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
+                Input::new("reg_addr_EX_pass", PASS_THROUGH_OUT_ID),
+            ),
+            PassThrough::rc_new(
+                "reg_addr_MEM_pass",
+                (4250.0, 5500.0),
+                Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
             ),
             //
             //
@@ -351,7 +390,7 @@ fn main() {
             Register::rc_new(
                 "control_WB_reg",
                 (4400.0, 1400.0),
-                Input::new("control_MEM_reg", REGISTER_OUT_ID),
+                Input::new("control_MEM_pass", PASS_THROUGH_OUT_ID),
             ),
             //
             Register::rc_new(
@@ -363,7 +402,7 @@ fn main() {
             Register::rc_new(
                 "reg_addr_reg",
                 (4400.0, 5500.0),
-                Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
+                Input::new("reg_addr_MEM_pass", PASS_THROUGH_OUT_ID),
             ),
             //
             //
@@ -391,7 +430,7 @@ fn main() {
                 vec![
                     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
                     Input::new("instruction_split", INSTRUCTION_SPLITTER_RD_ID),
-                    Input::new("0x_1F", "out"),
+                    Input::new("0x_1F", CONSTANT_OUT_ID),
                 ],
             ),
             rc_reg_file,
