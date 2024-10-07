@@ -221,8 +221,8 @@ fn main() {
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_OP_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_FUNCT_ID),
-                Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID),
-                Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
+                Input::new("operand_A_mux_2", MUX_OUT_ID),
+                Input::new("operand_B_mux_2", MUX_OUT_ID),
             ),
             //
             //
@@ -381,7 +381,7 @@ fn main() {
                 (800.0, 270.0),
                 Input::new("control_unit_3", cntr_field::REG_WRITE_SRC_OUT),
                 vec![
-                    Input::new("alu", FULL_ADD_OUT_ID),
+                    Input::new("alu_reg", REGISTER_OUT_ID),
                     Input::new("data_mem", DATA_MEM_READ_DATA_OUT_ID),
                 ],
             ),
