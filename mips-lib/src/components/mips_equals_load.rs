@@ -1,5 +1,3 @@
-use data_op::{LOAD_BYTE, LOAD_BYTE_U, LOAD_HALF, LOAD_HALF_U, LOAD_WORD};
-//TODO: add so it can take undefined number of inputs
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -8,15 +6,17 @@ use syncrim::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
 
-pub const EQUAL_A_IN_ID: &str = "a_in";
-pub const EQUAL_B_IN_ID: &str = "b_in";
-pub const EQUAL_WE_IN_ID: &str = "we_in";
-pub const EQUAL_LOAD_IN_ID: &str = "load_in";
+use super::data_op::{LOAD_BYTE, LOAD_BYTE_U, LOAD_HALF, LOAD_HALF_U, LOAD_WORD};
 
-pub const EQUAL_OUT_ID: &str = "equals_forward_out";
+pub const EQUAL_LOAD_A_IN_ID: &str = "a_in";
+pub const EQUAL_LOAD_B_IN_ID: &str = "b_in";
+pub const EQUAL_LOAD_WE_IN_ID: &str = "we_in";
+pub const EQUAL_LOAD_LOAD_IN_ID: &str = "load_in";
+
+pub const EQUAL_LOAD_OUT_ID: &str = "equals_forward_out";
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct Equal {
+pub struct EqualLoad {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
     pub(crate) a_in: Input,
@@ -25,24 +25,10 @@ pub struct Equal {
     pub(crate) load_in: Input,
 }
 
-pub mod data_op {
-    pub const NO_OP: u32 = 0;
-
-    pub const LOAD_BYTE: u32 = 1;
-    pub const LOAD_BYTE_U: u32 = 2;
-    pub const LOAD_HALF: u32 = 3;
-    pub const LOAD_HALF_U: u32 = 4;
-    pub const LOAD_WORD: u32 = 5;
-
-    pub const STORE_BYTE: u32 = 6;
-    pub const STORE_HALF: u32 = 7;
-    pub const STORE_WORD: u32 = 8;
-}
-
 #[typetag::serde]
-impl Component for Equal {
+impl Component for EqualLoad {
     fn to_(&self) {
-        trace!("Equal_Load");
+        trace!("EqualLoad");
     }
 
     fn get_id_ports(&self) -> (Id, Ports) {
@@ -51,24 +37,24 @@ impl Component for Equal {
             Ports::new(
                 vec![
                     &InputPort {
-                        port_id: EQUAL_A_IN_ID.to_string(),
+                        port_id: EQUAL_LOAD_A_IN_ID.to_string(),
                         input: self.a_in.clone(),
                     },
                     &InputPort {
-                        port_id: EQUAL_B_IN_ID.to_string(),
+                        port_id: EQUAL_LOAD_B_IN_ID.to_string(),
                         input: self.b_in.clone(),
                     },
                     &InputPort {
-                        port_id: EQUAL_WE_IN_ID.to_string(),
+                        port_id: EQUAL_LOAD_WE_IN_ID.to_string(),
                         input: self.we_in.clone(),
                     },
                     &InputPort {
-                        port_id: EQUAL_LOAD_IN_ID.to_string(),
+                        port_id: EQUAL_LOAD_LOAD_IN_ID.to_string(),
                         input: self.load_in.clone(),
                     },
                 ],
                 OutputType::Combinatorial,
-                vec![EQUAL_OUT_ID],
+                vec![EQUAL_LOAD_OUT_ID],
             ),
         )
     }
@@ -96,14 +82,14 @@ impl Component for Equal {
             result = 0;
         }
 
-        simulator.set_out_value(&self.id, EQUAL_OUT_ID, SignalValue::Data(result));
+        simulator.set_out_value(&self.id, EQUAL_LOAD_OUT_ID, SignalValue::Data(result));
         Ok(())
     }
 
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
-            EQUAL_A_IN_ID => self.a_in = new_input,
-            EQUAL_B_IN_ID => self.b_in = new_input,
+            EQUAL_LOAD_A_IN_ID => self.a_in = new_input,
+            EQUAL_LOAD_B_IN_ID => self.b_in = new_input,
             _ => (),
         }
     }
@@ -113,7 +99,7 @@ impl Component for Equal {
     }
 }
 
-impl Equal {
+impl EqualLoad {
     pub fn new(
         id: &str,
         pos: (f32, f32),
@@ -122,7 +108,7 @@ impl Equal {
         we_in: Input,
         load_in: Input,
     ) -> Self {
-        Equal {
+        EqualLoad {
             id: id.to_string(),
             pos,
             a_in,
@@ -140,6 +126,6 @@ impl Equal {
         we_in: Input,
         load_in: Input,
     ) -> Rc<Self> {
-        Rc::new(Equal::new(id, pos, a_in, b_in, we_in, load_in))
+        Rc::new(EqualLoad::new(id, pos, a_in, b_in, we_in, load_in))
     }
 }
