@@ -1,0 +1,2873 @@
+{
+  "store": [
+    {
+      "type": "Register",
+      "id": "operand_a_reg",
+      "pos": [
+        1093.1989,
+        216.00018
+      ],
+      "r_in": {
+        "id": "operand_A_mux_2",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "mux_b2_reg",
+      "pos": [
+        1091.6001,
+        547.2002
+      ],
+      "r_in": {
+        "id": "pc+4_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "InMem_reg",
+      "pos": [
+        208.7998,
+        474.4015
+      ],
+      "r_in": {
+        "id": "instr_mem",
+        "field": "instruction"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "zero_extend_reg",
+      "pos": [
+        1098.0002,
+        107.20001
+      ],
+      "r_in": {
+        "id": "instruction_split",
+        "field": "shamt_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "alu_reg",
+      "pos": [
+        1470.4004,
+        252.79993
+      ],
+      "r_in": {
+        "id": "alu",
+        "field": "alu_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "merge_reg",
+      "pos": [
+        216.00024,
+        582.40155
+      ],
+      "r_in": {
+        "id": "jump_merge",
+        "field": "merge_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "reg_addr_EX_reg",
+      "pos": [
+        1123.5989,
+        794.3998
+      ],
+      "r_in": {
+        "id": "mux_write_addr",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "control_WB_reg",
+      "pos": [
+        1918.4001,
+        -73.60004
+      ],
+      "r_in": {
+        "id": "control_MEM_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "mux_b3_reg",
+      "pos": [
+        1101.1995,
+        624.7999
+      ],
+      "r_in": {
+        "id": "signzero_extend",
+        "field": "sz_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "operand_b_reg",
+      "pos": [
+        1101.1985,
+        324.80035
+      ],
+      "r_in": {
+        "id": "operand_B_mux_2",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "pc+4_reg",
+      "pos": [
+        201.59985,
+        371.20197
+      ],
+      "r_in": {
+        "id": "pc+4",
+        "field": "add_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "pc",
+      "pos": [
+        79.60004,
+        415.60004
+      ],
+      "r_in": {
+        "id": "mux_jump_merge",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "control_MEM_reg",
+      "pos": [
+        1473.6001,
+        -80.00018
+      ],
+      "r_in": {
+        "id": "control_EX_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "control_EX_reg",
+      "pos": [
+        918.7965,
+        -38.400085
+      ],
+      "r_in": {
+        "id": "InMem_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "data_MEM_reg",
+      "pos": [
+        1477.6,
+        566.4001
+      ],
+      "r_in": {
+        "id": "operand_b_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "result_reg_EX",
+      "pos": [
+        1918.3983,
+        268.79993
+      ],
+      "r_in": {
+        "id": "write_back_mux",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "reg_addr_reg",
+      "pos": [
+        1947.2009,
+        799.2012
+      ],
+      "r_in": {
+        "id": "reg_addr_MEM_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Register",
+      "id": "reg_addr_MEM_reg",
+      "pos": [
+        1480.0015,
+        802.40173
+      ],
+      "r_in": {
+        "id": "reg_addr_EX_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "ZeroExtend",
+      "id": "zero_extend_for_shamt",
+      "pos": [
+        1166.7983,
+        107.600006
+      ],
+      "signal_in": {
+        "id": "zero_extend_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Constant",
+      "id": "+4",
+      "pos": [
+        78.80005,
+        382.39996
+      ],
+      "value": {
+        "data": {
+          "Data": 4
+        },
+        "fmt": {
+          "Hex": [
+            "_32",
+            false
+          ]
+        }
+      }
+    },
+    {
+      "type": "ControlUnit",
+      "id": "control_unit_4",
+      "pos": [
+        2216.0002,
+        23.200073
+      ],
+      "a_in": {
+        "id": "control_WB_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "PassThrough",
+      "id": "reg_addr_EX_pass",
+      "pos": [
+        1153.9998,
+        794.401
+      ],
+      "input": {
+        "id": "reg_addr_EX_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "PassThrough",
+      "id": "InMem_pass",
+      "pos": [
+        232.40002,
+        474.8
+      ],
+      "input": {
+        "id": "InMem_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "ControlUnit",
+      "id": "control_unit_1",
+      "pos": [
+        263.2,
+        2.4000092
+      ],
+      "a_in": {
+        "id": "InMem_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "PassThrough",
+      "id": "operand_b_pass",
+      "pos": [
+        1160.8,
+        360.00006
+      ],
+      "input": {
+        "id": "operand_b_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "PassThrough",
+      "id": "pc+4_pass",
+      "pos": [
+        235.60022,
+        371.99823
+      ],
+      "input": {
+        "id": "pc+4_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Add",
+      "id": "pc+4",
+      "pos": [
+        130.40002,
+        380.8
+      ],
+      "a_in": {
+        "id": "pc",
+        "field": "register_out"
+      },
+      "b_in": {
+        "id": "+4",
+        "field": "constant_out"
+      },
+      "scale": 1.0
+    },
+    {
+      "type": "InstrMem",
+      "id": "instr_mem",
+      "pos": [
+        98.400024,
+        585.6
+      ],
+      "pc": {
+        "id": "pc",
+        "field": "register_out"
+      },
+      "phys_mem_id": "phys_mem",
+      "regfile_id": "reg_file",
+      "mem_view": {
+        "visible": true,
+        "title": "instruction memory view",
+        "id": "instr_mem",
+        "row_offset": 0,
+        "max_rows": 1024,
+        "big_endian": true,
+        "format": "HexAndMips",
+        "show_settings": {
+          "symbols": true,
+          "sections": false,
+          "program_counter": false,
+          "registers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            true
+          ]
+        },
+        "register_values": [
+          0,
+          0,
+          4020265517,
+          0,
+          4512,
+          4175,
+          0,
+          0,
+          1478048723,
+          3184185328,
+          56462194,
+          274701634,
+          4176,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2147481728,
+          2147481744,
+          152
+        ],
+        "dynamic_symbols": {
+          "PC_IM": [
+            276,
+            true
+          ]
+        },
+        "break_points": [
+          224
+        ]
+      }
+    },
+    {
+      "type": "JumpMerge",
+      "id": "jump_merge",
+      "pos": [
+        -62.200012,
+        492.80005
+      ],
+      "instr_addr_in": {
+        "id": "pc",
+        "field": "register_out"
+      },
+      "jump_addr_in": {
+        "id": "instr_mem",
+        "field": "instruction"
+      }
+    },
+    {
+      "type": "InstrSplit",
+      "id": "instruction_split",
+      "pos": [
+        271.19995,
+        154.79999
+      ],
+      "instruction_in": {
+        "id": "InMem_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Equal",
+      "id": "equals_operand_A_2",
+      "pos": [
+        969.59796,
+        167.20001
+      ],
+      "a_in": {
+        "id": "reg_addr_EX_reg",
+        "field": "register_out"
+      },
+      "b_in": {
+        "id": "instruction_split",
+        "field": "rs_out"
+      }
+    },
+    {
+      "type": "SignZeroExtend",
+      "id": "signzero_extend",
+      "pos": [
+        310.0,
+        410.0
+      ],
+      "signzero_signal_in": {
+        "id": "instruction_split",
+        "field": "immediate_out"
+      },
+      "signzero_ctrl_in": {
+        "id": "control_unit_1",
+        "field": "extend_select"
+      }
+    },
+    {
+      "type": "ShiftConst",
+      "id": "branch_shift",
+      "pos": [
+        380.0,
+        460.0
+      ],
+      "signal_in": {
+        "id": "signzero_extend",
+        "field": "sz_out"
+      },
+      "shift_by": 2
+    },
+    {
+      "type": "Add",
+      "id": "pc_add_branch",
+      "pos": [
+        420.0,
+        440.0
+      ],
+      "a_in": {
+        "id": "pc+4_reg",
+        "field": "register_out"
+      },
+      "b_in": {
+        "id": "branch_shift",
+        "field": "shift_left_const_out"
+      },
+      "scale": 1.0
+    },
+    {
+      "type": "ControlUnit",
+      "id": "control_unit_3",
+      "pos": [
+        1667.2002,
+        27.199997
+      ],
+      "a_in": {
+        "id": "control_MEM_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "DataMem",
+      "id": "data_mem",
+      "pos": [
+        1665.5996,
+        560.8
+      ],
+      "address_input": {
+        "id": "alu_reg",
+        "field": "register_out"
+      },
+      "data_input": {
+        "id": "data_MEM_reg",
+        "field": "register_out"
+      },
+      "op_input": {
+        "id": "control_unit_3",
+        "field": "mem_mode"
+      },
+      "write_enable_input": {
+        "id": "control_unit_3",
+        "field": "mem_write_enable"
+      },
+      "phys_mem_id": "phys_mem",
+      "regfile_id": "reg_file",
+      "mem_view": {
+        "visible": true,
+        "title": "Data memory view",
+        "id": "data_mem",
+        "row_offset": 512,
+        "max_rows": 1024,
+        "big_endian": true,
+        "format": "ByteAndUtf8",
+        "show_settings": {
+          "symbols": true,
+          "sections": false,
+          "program_counter": false,
+          "registers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        },
+        "register_values": [
+          0,
+          0,
+          4020265517,
+          0,
+          4512,
+          4175,
+          0,
+          0,
+          1478048723,
+          3184185328,
+          56462194,
+          274701634,
+          4176,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2147481728,
+          2147481744,
+          152
+        ],
+        "dynamic_symbols": {
+          "DM_ADRS": [
+            4175,
+            false
+          ]
+        },
+        "break_points": [
+          4172
+        ]
+      }
+    },
+    {
+      "type": "PassThrough",
+      "id": "control_EX_pass",
+      "pos": [
+        944.7983,
+        -39.19998
+      ],
+      "input": {
+        "id": "control_EX_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "RegFile",
+      "id": "reg_file",
+      "pos": [
+        434.4,
+        177.20001
+      ],
+      "rs_address_in": {
+        "id": "instruction_split",
+        "field": "rs_out"
+      },
+      "rt_address_in": {
+        "id": "instruction_split",
+        "field": "rt_out"
+      },
+      "write_address_in": {
+        "id": "reg_addr_reg",
+        "field": "register_out"
+      },
+      "write_data_in": {
+        "id": "result_reg_EX",
+        "field": "register_out"
+      },
+      "write_enable_in": {
+        "id": "control_unit_4",
+        "field": "reg_write_enable"
+      }
+    },
+    {
+      "type": "ControlUnit",
+      "id": "control_unit_2",
+      "pos": [
+        1207.2001,
+        27.199997
+      ],
+      "a_in": {
+        "id": "control_EX_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Mux",
+      "id": "mux_source_b",
+      "pos": [
+        1254.8002,
+        325.60004
+      ],
+      "select": {
+        "id": "control_unit_2",
+        "field": "alu_src_b"
+      },
+      "m_in": [
+        {
+          "id": "operand_b_reg",
+          "field": "register_out"
+        },
+        {
+          "id": "mux_b2_reg",
+          "field": "register_out"
+        },
+        {
+          "id": "mux_b3_reg",
+          "field": "register_out"
+        }
+      ],
+      "scale": 1.0
+    },
+    {
+      "type": "Constant",
+      "id": "0x_1F",
+      "pos": [
+        500.0,
+        510.0
+      ],
+      "value": {
+        "data": {
+          "Data": 31
+        },
+        "fmt": {
+          "Hex": [
+            "_32",
+            false
+          ]
+        }
+      }
+    },
+    {
+      "type": "Mux",
+      "id": "mux_write_addr",
+      "pos": [
+        560.0,
+        500.0
+      ],
+      "select": {
+        "id": "control_unit_1",
+        "field": "reg_dest"
+      },
+      "m_in": [
+        {
+          "id": "instruction_split",
+          "field": "rt_out"
+        },
+        {
+          "id": "instruction_split",
+          "field": "rd_out"
+        },
+        {
+          "id": "0x_1F",
+          "field": "constant_out"
+        }
+      ],
+      "scale": 1.0
+    },
+    {
+      "type": "Mux",
+      "id": "write_back_mux",
+      "pos": [
+        1681.5999,
+        270.00012
+      ],
+      "select": {
+        "id": "control_unit_3",
+        "field": "reg_write_src"
+      },
+      "m_in": [
+        {
+          "id": "alu_reg",
+          "field": "register_out"
+        },
+        {
+          "id": "data_mem",
+          "field": "data_out"
+        }
+      ],
+      "scale": 1.0
+    },
+    {
+      "type": "Equal",
+      "id": "equals_operand_B",
+      "pos": [
+        811.9999,
+        426.39972
+      ],
+      "a_in": {
+        "id": "reg_addr_MEM_reg",
+        "field": "register_out"
+      },
+      "b_in": {
+        "id": "instruction_split",
+        "field": "rt_out"
+      }
+    },
+    {
+      "type": "Mux",
+      "id": "operand_B_mux_1",
+      "pos": [
+        812.79956,
+        323.99988
+      ],
+      "select": {
+        "id": "equals_operand_B",
+        "field": "equals_out"
+      },
+      "m_in": [
+        {
+          "id": "reg_file",
+          "field": "rt_value_out"
+        },
+        {
+          "id": "write_back_mux",
+          "field": "mux_out"
+        }
+      ],
+      "scale": 1.0
+    },
+    {
+      "type": "Equal",
+      "id": "equals_operand_A",
+      "pos": [
+        803.1997,
+        163.99988
+      ],
+      "a_in": {
+        "id": "reg_addr_MEM_reg",
+        "field": "register_out"
+      },
+      "b_in": {
+        "id": "instruction_split",
+        "field": "rs_out"
+      }
+    },
+    {
+      "type": "Mux",
+      "id": "operand_A_mux_1",
+      "pos": [
+        809.6,
+        225.60065
+      ],
+      "select": {
+        "id": "equals_operand_A",
+        "field": "equals_out"
+      },
+      "m_in": [
+        {
+          "id": "reg_file",
+          "field": "rs_value_out"
+        },
+        {
+          "id": "write_back_mux",
+          "field": "mux_out"
+        }
+      ],
+      "scale": 1.0
+    },
+    {
+      "type": "Equal",
+      "id": "equals_operand_B_2",
+      "pos": [
+        974.3968,
+        426.40027
+      ],
+      "a_in": {
+        "id": "reg_addr_EX_reg",
+        "field": "register_out"
+      },
+      "b_in": {
+        "id": "instruction_split",
+        "field": "rt_out"
+      }
+    },
+    {
+      "type": "PassThrough",
+      "id": "reg_addr_MEM_pass",
+      "pos": [
+        1523.5994,
+        802.3993
+      ],
+      "input": {
+        "id": "reg_addr_MEM_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "PassThrough",
+      "id": "control_MEM_pass",
+      "pos": [
+        1498.3997,
+        -80.0
+      ],
+      "input": {
+        "id": "control_MEM_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Constant",
+      "id": "0_a_inp",
+      "pos": [
+        596.00006,
+        48.40001
+      ],
+      "value": {
+        "data": {
+          "Data": 4
+        },
+        "fmt": {
+          "Hex": [
+            "_32",
+            false
+          ]
+        }
+      }
+    },
+    {
+      "type": "Mux",
+      "id": "mux_source_a",
+      "pos": [
+        1252.4003,
+        207.99994
+      ],
+      "select": {
+        "id": "control_unit_2",
+        "field": "alu_src_a"
+      },
+      "m_in": [
+        {
+          "id": "zero_extend_for_shamt",
+          "field": "zero_extend_out"
+        },
+        {
+          "id": "operand_a_reg",
+          "field": "register_out"
+        },
+        {
+          "id": "0_a_inp",
+          "field": "constant_out"
+        }
+      ],
+      "scale": 1.0
+    },
+    {
+      "type": "ALU",
+      "id": "alu",
+      "pos": [
+        1395.9999,
+        214.40002
+      ],
+      "a_in": {
+        "id": "mux_source_a",
+        "field": "mux_out"
+      },
+      "b_in": {
+        "id": "mux_source_b",
+        "field": "mux_out"
+      },
+      "op_in": {
+        "id": "control_unit_2",
+        "field": "alu_op"
+      }
+    },
+    {
+      "type": "Mux",
+      "id": "operand_A_mux_2",
+      "pos": [
+        965.6015,
+        227.99994
+      ],
+      "select": {
+        "id": "equals_operand_A_2",
+        "field": "equals_out"
+      },
+      "m_in": [
+        {
+          "id": "operand_A_mux_1",
+          "field": "mux_out"
+        },
+        {
+          "id": "alu",
+          "field": "alu_out"
+        }
+      ],
+      "scale": 1.0
+    },
+    {
+      "type": "Mux",
+      "id": "operand_B_mux_2",
+      "pos": [
+        966.4005,
+        325.60052
+      ],
+      "select": {
+        "id": "equals_operand_B_2",
+        "field": "equals_out"
+      },
+      "m_in": [
+        {
+          "id": "operand_B_mux_1",
+          "field": "mux_out"
+        },
+        {
+          "id": "alu",
+          "field": "alu_out"
+        }
+      ],
+      "scale": 1.0
+    },
+    {
+      "type": "BranchLogic",
+      "id": "branch",
+      "pos": [
+        1037.0,
+        274.40002
+      ],
+      "op_in": {
+        "id": "instruction_split",
+        "field": "op_out"
+      },
+      "rt_in": {
+        "id": "instruction_split",
+        "field": "rt_out"
+      },
+      "funct_in": {
+        "id": "instruction_split",
+        "field": "funct_out"
+      },
+      "rs_value": {
+        "id": "operand_A_mux_2",
+        "field": "mux_out"
+      },
+      "rt_value": {
+        "id": "operand_B_mux_2",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Mux",
+      "id": "mux_jump_merge",
+      "pos": [
+        -54.399963,
+        380.40002
+      ],
+      "select": {
+        "id": "branch",
+        "field": "branch_out"
+      },
+      "m_in": [
+        {
+          "id": "pc_add_branch",
+          "field": "add_out"
+        },
+        {
+          "id": "reg_file",
+          "field": "rs_value_out"
+        },
+        {
+          "id": "merge_reg",
+          "field": "register_out"
+        },
+        {
+          "id": "pc+4",
+          "field": "add_out"
+        }
+      ],
+      "scale": 1.0
+    },
+    {
+      "type": "PhysicalMem",
+      "id": "phys_mem",
+      "pos": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "Wire",
+      "id": "from operand_A_mux_2:mux_out to operand_a_reg:r_in",
+      "pos": [
+        [
+          975.6015,
+          227.99994
+        ],
+        [
+          1083.1989,
+          216.00018
+        ]
+      ],
+      "input": {
+        "id": "operand_A_mux_2",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from pc+4_pass:pass_through_out to mux_b2_reg:r_in",
+      "pos": [
+        [
+          235.60022,
+          371.99823
+        ],
+        [
+          1081.6001,
+          547.2002
+        ]
+      ],
+      "input": {
+        "id": "pc+4_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instr_mem:instruction to InMem_reg:r_in",
+      "pos": [
+        [
+          138.40002,
+          552.1
+        ],
+        [
+          198.7998,
+          474.4015
+        ]
+      ],
+      "input": {
+        "id": "instr_mem",
+        "field": "instruction"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:shamt_out to zero_extend_reg:r_in",
+      "pos": [
+        [
+          302.19995,
+          77.02221
+        ],
+        [
+          1088.0002,
+          107.20001
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "shamt_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from alu:alu_out to alu_reg:r_in",
+      "pos": [
+        [
+          1415.9999,
+          214.40002
+        ],
+        [
+          1460.4004,
+          252.79993
+        ]
+      ],
+      "input": {
+        "id": "alu",
+        "field": "alu_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from jump_merge:merge_out to merge_reg:r_in",
+      "pos": [
+        [
+          -62.200012,
+          492.80005
+        ],
+        [
+          206.00024,
+          582.40155
+        ]
+      ],
+      "input": {
+        "id": "jump_merge",
+        "field": "merge_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from mux_write_addr:mux_out to reg_addr_EX_reg:r_in",
+      "pos": [
+        [
+          570.0,
+          500.0
+        ],
+        [
+          1113.5989,
+          794.3998
+        ]
+      ],
+      "input": {
+        "id": "mux_write_addr",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_MEM_pass:pass_through_out to control_WB_reg:r_in",
+      "pos": [
+        [
+          1498.3997,
+          -80.0
+        ],
+        [
+          1908.4001,
+          -73.60004
+        ]
+      ],
+      "input": {
+        "id": "control_MEM_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from signzero_extend:sz_out to mux_b3_reg:r_in",
+      "pos": [
+        [
+          368.5,
+          410.0
+        ],
+        [
+          1091.1995,
+          624.7999
+        ]
+      ],
+      "input": {
+        "id": "signzero_extend",
+        "field": "sz_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from operand_B_mux_2:mux_out to operand_b_reg:r_in",
+      "pos": [
+        [
+          976.4005,
+          325.60052
+        ],
+        [
+          1091.1985,
+          324.80035
+        ]
+      ],
+      "input": {
+        "id": "operand_B_mux_2",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from pc+4:add_out to pc+4_reg:r_in",
+      "pos": [
+        [
+          150.40002,
+          380.8
+        ],
+        [
+          191.59985,
+          371.20197
+        ]
+      ],
+      "input": {
+        "id": "pc+4",
+        "field": "add_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from mux_jump_merge:mux_out to pc:r_in",
+      "pos": [
+        [
+          -44.399963,
+          380.40002
+        ],
+        [
+          69.60004,
+          415.60004
+        ]
+      ],
+      "input": {
+        "id": "mux_jump_merge",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_EX_pass:pass_through_out to control_MEM_reg:r_in",
+      "pos": [
+        [
+          944.7983,
+          -39.19998
+        ],
+        [
+          1463.6001,
+          -80.00018
+        ]
+      ],
+      "input": {
+        "id": "control_EX_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from InMem_pass:pass_through_out to control_EX_reg:r_in",
+      "pos": [
+        [
+          232.40002,
+          474.8
+        ],
+        [
+          908.7965,
+          -38.400085
+        ]
+      ],
+      "input": {
+        "id": "InMem_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from operand_b_pass:pass_through_out to data_MEM_reg:r_in",
+      "pos": [
+        [
+          1160.8,
+          360.00006
+        ],
+        [
+          1467.6,
+          566.4001
+        ]
+      ],
+      "input": {
+        "id": "operand_b_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from write_back_mux:mux_out to result_reg_EX:r_in",
+      "pos": [
+        [
+          1691.5999,
+          270.00012
+        ],
+        [
+          1908.3983,
+          268.79993
+        ]
+      ],
+      "input": {
+        "id": "write_back_mux",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_addr_MEM_pass:pass_through_out to reg_addr_reg:r_in",
+      "pos": [
+        [
+          1523.5994,
+          802.3993
+        ],
+        [
+          1937.2009,
+          799.2012
+        ]
+      ],
+      "input": {
+        "id": "reg_addr_MEM_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_addr_EX_pass:pass_through_out to reg_addr_MEM_reg:r_in",
+      "pos": [
+        [
+          1153.9998,
+          794.401
+        ],
+        [
+          1470.0015,
+          802.40173
+        ]
+      ],
+      "input": {
+        "id": "reg_addr_EX_pass",
+        "field": "pass_through_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from zero_extend_reg:register_out to zero_extend_for_shamt:signal_in",
+      "pos": [
+        [
+          1108.0002,
+          107.20001
+        ],
+        [
+          1125.7983,
+          107.600006
+        ]
+      ],
+      "input": {
+        "id": "zero_extend_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_WB_reg:register_out to control_unit_4:control_unit_instr_in",
+      "pos": [
+        [
+          1928.4001,
+          -73.60004
+        ],
+        [
+          2010.0002,
+          23.200073
+        ]
+      ],
+      "input": {
+        "id": "control_WB_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_addr_EX_reg:register_out to reg_addr_EX_pass:pass_through_in",
+      "pos": [
+        [
+          1133.5989,
+          794.3998
+        ],
+        [
+          1153.9998,
+          794.401
+        ]
+      ],
+      "input": {
+        "id": "reg_addr_EX_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from InMem_reg:register_out to InMem_pass:pass_through_in",
+      "pos": [
+        [
+          218.7998,
+          474.4015
+        ],
+        [
+          232.40002,
+          474.8
+        ]
+      ],
+      "input": {
+        "id": "InMem_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from InMem_reg:register_out to control_unit_1:control_unit_instr_in",
+      "pos": [
+        [
+          218.7998,
+          474.4015
+        ],
+        [
+          57.200012,
+          2.4000092
+        ]
+      ],
+      "input": {
+        "id": "InMem_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from operand_b_reg:register_out to operand_b_pass:pass_through_in",
+      "pos": [
+        [
+          1111.1985,
+          324.80035
+        ],
+        [
+          1160.8,
+          360.00006
+        ]
+      ],
+      "input": {
+        "id": "operand_b_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from pc+4_reg:register_out to pc+4_pass:pass_through_in",
+      "pos": [
+        [
+          211.59985,
+          371.20197
+        ],
+        [
+          235.60022,
+          371.99823
+        ]
+      ],
+      "input": {
+        "id": "pc+4_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from pc:register_out to pc+4:a_in",
+      "pos": [
+        [
+          89.60004,
+          415.60004
+        ],
+        [
+          110.400024,
+          360.8
+        ]
+      ],
+      "input": {
+        "id": "pc",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from +4:constant_out to pc+4:b_in",
+      "pos": [
+        [
+          78.80005,
+          382.39996
+        ],
+        [
+          110.400024,
+          400.8
+        ]
+      ],
+      "input": {
+        "id": "+4",
+        "field": "constant_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from pc:register_out to instr_mem:pc",
+      "pos": [
+        [
+          89.60004,
+          415.60004
+        ],
+        [
+          58.400024,
+          552.1
+        ]
+      ],
+      "input": {
+        "id": "pc",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from pc:register_out to jump_merge:merge_instr_addr_in",
+      "pos": [
+        [
+          89.60004,
+          415.60004
+        ],
+        [
+          -62.200012,
+          492.80005
+        ]
+      ],
+      "input": {
+        "id": "pc",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instr_mem:instruction to jump_merge:merge_jump_addr_in",
+      "pos": [
+        [
+          138.40002,
+          552.1
+        ],
+        [
+          -62.200012,
+          492.80005
+        ]
+      ],
+      "input": {
+        "id": "instr_mem",
+        "field": "instruction"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from InMem_reg:register_out to instruction_split:instruction_in",
+      "pos": [
+        [
+          218.7998,
+          474.4015
+        ],
+        [
+          240.19995,
+          154.79999
+        ]
+      ],
+      "input": {
+        "id": "InMem_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_addr_EX_reg:register_out to equals_operand_A_2:a_in",
+      "pos": [
+        [
+          1133.5989,
+          794.3998
+        ],
+        [
+          952.59796,
+          157.20001
+        ]
+      ],
+      "input": {
+        "id": "reg_addr_EX_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:rs_out to equals_operand_A_2:b_in",
+      "pos": [
+        [
+          302.19995,
+          143.68887
+        ],
+        [
+          952.59796,
+          177.20001
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "rs_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:immediate_out to signzero_extend:signzero_signal_in",
+      "pos": [
+        [
+          302.19995,
+          188.13332
+        ],
+        [
+          251.5,
+          410.0
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "immediate_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_unit_1:extend_select to signzero_extend:signzero_ctrl_in",
+      "pos": [
+        [
+          96.53334,
+          15.900009
+        ],
+        [
+          310.0,
+          389.0
+        ]
+      ],
+      "input": {
+        "id": "control_unit_1",
+        "field": "extend_select"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from signzero_extend:sz_out to branch_shift:shift_in",
+      "pos": [
+        [
+          368.5,
+          410.0
+        ],
+        [
+          346.5,
+          460.0
+        ]
+      ],
+      "input": {
+        "id": "signzero_extend",
+        "field": "sz_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from pc+4_reg:register_out to pc_add_branch:a_in",
+      "pos": [
+        [
+          211.59985,
+          371.20197
+        ],
+        [
+          400.0,
+          420.0
+        ]
+      ],
+      "input": {
+        "id": "pc+4_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from branch_shift:shift_left_const_out to pc_add_branch:b_in",
+      "pos": [
+        [
+          413.5,
+          460.0
+        ],
+        [
+          400.0,
+          460.0
+        ]
+      ],
+      "input": {
+        "id": "branch_shift",
+        "field": "shift_left_const_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_MEM_reg:register_out to control_unit_3:control_unit_instr_in",
+      "pos": [
+        [
+          1483.6001,
+          -80.00018
+        ],
+        [
+          1461.2002,
+          27.199997
+        ]
+      ],
+      "input": {
+        "id": "control_MEM_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from alu_reg:register_out to data_mem:data_mem_address_in",
+      "pos": [
+        [
+          1480.4004,
+          252.79993
+        ],
+        [
+          1635.5996,
+          527.3
+        ]
+      ],
+      "input": {
+        "id": "alu_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_unit_3:mem_mode to data_mem:data_mem_op_in",
+      "pos": [
+        [
+          1700.5336,
+          40.699997
+        ],
+        [
+          1695.5996,
+          527.3
+        ]
+      ],
+      "input": {
+        "id": "control_unit_3",
+        "field": "mem_mode"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from data_MEM_reg:register_out to data_mem:data_mem_write_data_in",
+      "pos": [
+        [
+          1487.6,
+          566.4001
+        ],
+        [
+          1599.5996,
+          560.8
+        ]
+      ],
+      "input": {
+        "id": "data_MEM_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_unit_3:mem_write_enable to data_mem:data_mem_write_enable",
+      "pos": [
+        [
+          1667.2002,
+          40.699997
+        ],
+        [
+          1665.5996,
+          527.3
+        ]
+      ],
+      "input": {
+        "id": "control_unit_3",
+        "field": "mem_write_enable"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_EX_reg:register_out to control_EX_pass:pass_through_in",
+      "pos": [
+        [
+          928.7965,
+          -38.400085
+        ],
+        [
+          944.7983,
+          -39.19998
+        ]
+      ],
+      "input": {
+        "id": "control_EX_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:rs_out to reg_file:rs_address_in",
+      "pos": [
+        [
+          302.19995,
+          143.68887
+        ],
+        [
+          434.4,
+          46.200012
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "rs_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:rt_out to reg_file:rt_address_in",
+      "pos": [
+        [
+          302.19995,
+          165.9111
+        ],
+        [
+          434.4,
+          308.2
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "rt_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_addr_reg:register_out to reg_file:write_address_in",
+      "pos": [
+        [
+          1957.2009,
+          799.2012
+        ],
+        [
+          368.4,
+          267.2
+        ]
+      ],
+      "input": {
+        "id": "reg_addr_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from result_reg_EX:register_out to reg_file:write_data_in",
+      "pos": [
+        [
+          1928.3983,
+          268.79993
+        ],
+        [
+          368.4,
+          287.2
+        ]
+      ],
+      "input": {
+        "id": "result_reg_EX",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_unit_4:reg_write_enable to reg_file:write_enable_in",
+      "pos": [
+        [
+          2382.667,
+          36.700073
+        ],
+        [
+          368.4,
+          247.20001
+        ]
+      ],
+      "input": {
+        "id": "control_unit_4",
+        "field": "reg_write_enable"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_EX_reg:register_out to control_unit_2:control_unit_instr_in",
+      "pos": [
+        [
+          928.7965,
+          -38.400085
+        ],
+        [
+          1001.2001,
+          27.199997
+        ]
+      ],
+      "input": {
+        "id": "control_EX_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_unit_2:alu_src_b to mux_source_b:select",
+      "pos": [
+        [
+          1173.8667,
+          40.699997
+        ],
+        [
+          1244.8002,
+          285.60004
+        ]
+      ],
+      "input": {
+        "id": "control_unit_2",
+        "field": "alu_src_b"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from operand_b_reg:register_out to mux_source_b:in0",
+      "pos": [
+        [
+          1111.1985,
+          324.80035
+        ],
+        [
+          1234.8002,
+          305.60004
+        ]
+      ],
+      "input": {
+        "id": "operand_b_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from mux_b2_reg:register_out to mux_source_b:in1",
+      "pos": [
+        [
+          1101.6001,
+          547.2002
+        ],
+        [
+          1234.8002,
+          325.60004
+        ]
+      ],
+      "input": {
+        "id": "mux_b2_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from mux_b3_reg:register_out to mux_source_b:in2",
+      "pos": [
+        [
+          1111.1995,
+          624.7999
+        ],
+        [
+          1234.8002,
+          345.60004
+        ]
+      ],
+      "input": {
+        "id": "mux_b3_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_unit_1:reg_dest to mux_write_addr:select",
+      "pos": [
+        [
+          163.20001,
+          15.900009
+        ],
+        [
+          550.0,
+          460.0
+        ]
+      ],
+      "input": {
+        "id": "control_unit_1",
+        "field": "reg_dest"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:rt_out to mux_write_addr:in0",
+      "pos": [
+        [
+          302.19995,
+          165.9111
+        ],
+        [
+          540.0,
+          480.0
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "rt_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:rd_out to mux_write_addr:in1",
+      "pos": [
+        [
+          302.19995,
+          210.35555
+        ],
+        [
+          540.0,
+          500.0
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "rd_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from 0x_1F:constant_out to mux_write_addr:in2",
+      "pos": [
+        [
+          500.0,
+          510.0
+        ],
+        [
+          540.0,
+          520.0
+        ]
+      ],
+      "input": {
+        "id": "0x_1F",
+        "field": "constant_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_unit_3:reg_write_src to write_back_mux:select",
+      "pos": [
+        [
+          1800.5336,
+          40.699997
+        ],
+        [
+          1671.5999,
+          240.00012
+        ]
+      ],
+      "input": {
+        "id": "control_unit_3",
+        "field": "reg_write_src"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from alu_reg:register_out to write_back_mux:in0",
+      "pos": [
+        [
+          1480.4004,
+          252.79993
+        ],
+        [
+          1661.5999,
+          260.00012
+        ]
+      ],
+      "input": {
+        "id": "alu_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from data_mem:data_out to write_back_mux:in1",
+      "pos": [
+        [
+          1731.5996,
+          560.8
+        ],
+        [
+          1661.5999,
+          280.00012
+        ]
+      ],
+      "input": {
+        "id": "data_mem",
+        "field": "data_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_addr_MEM_reg:register_out to equals_operand_B:a_in",
+      "pos": [
+        [
+          1490.0015,
+          802.40173
+        ],
+        [
+          794.9999,
+          416.39972
+        ]
+      ],
+      "input": {
+        "id": "reg_addr_MEM_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:rt_out to equals_operand_B:b_in",
+      "pos": [
+        [
+          302.19995,
+          165.9111
+        ],
+        [
+          794.9999,
+          436.39972
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "rt_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from equals_operand_B:equals_out to operand_B_mux_1:select",
+      "pos": [
+        [
+          828.9999,
+          426.39972
+        ],
+        [
+          802.79956,
+          293.99988
+        ]
+      ],
+      "input": {
+        "id": "equals_operand_B",
+        "field": "equals_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_file:rt_value_out to operand_B_mux_1:in0",
+      "pos": [
+        [
+          500.4,
+          137.20001
+        ],
+        [
+          792.79956,
+          313.99988
+        ]
+      ],
+      "input": {
+        "id": "reg_file",
+        "field": "rt_value_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from write_back_mux:mux_out to operand_B_mux_1:in1",
+      "pos": [
+        [
+          1691.5999,
+          270.00012
+        ],
+        [
+          792.79956,
+          333.99988
+        ]
+      ],
+      "input": {
+        "id": "write_back_mux",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_addr_MEM_reg:register_out to equals_operand_A:a_in",
+      "pos": [
+        [
+          1490.0015,
+          802.40173
+        ],
+        [
+          786.1997,
+          153.99988
+        ]
+      ],
+      "input": {
+        "id": "reg_addr_MEM_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:rs_out to equals_operand_A:b_in",
+      "pos": [
+        [
+          302.19995,
+          143.68887
+        ],
+        [
+          786.1997,
+          173.99988
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "rs_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from equals_operand_A:equals_out to operand_A_mux_1:select",
+      "pos": [
+        [
+          820.1997,
+          163.99988
+        ],
+        [
+          799.6,
+          195.60065
+        ]
+      ],
+      "input": {
+        "id": "equals_operand_A",
+        "field": "equals_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_file:rs_value_out to operand_A_mux_1:in0",
+      "pos": [
+        [
+          500.4,
+          217.20001
+        ],
+        [
+          789.6,
+          215.60065
+        ]
+      ],
+      "input": {
+        "id": "reg_file",
+        "field": "rs_value_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from write_back_mux:mux_out to operand_A_mux_1:in1",
+      "pos": [
+        [
+          1691.5999,
+          270.00012
+        ],
+        [
+          789.6,
+          235.60065
+        ]
+      ],
+      "input": {
+        "id": "write_back_mux",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_addr_EX_reg:register_out to equals_operand_B_2:a_in",
+      "pos": [
+        [
+          1133.5989,
+          794.3998
+        ],
+        [
+          957.3968,
+          416.40027
+        ]
+      ],
+      "input": {
+        "id": "reg_addr_EX_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:rt_out to equals_operand_B_2:b_in",
+      "pos": [
+        [
+          302.19995,
+          165.9111
+        ],
+        [
+          957.3968,
+          436.40027
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "rt_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_addr_MEM_reg:register_out to reg_addr_MEM_pass:pass_through_in",
+      "pos": [
+        [
+          1490.0015,
+          802.40173
+        ],
+        [
+          1523.5994,
+          802.3993
+        ]
+      ],
+      "input": {
+        "id": "reg_addr_MEM_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_MEM_reg:register_out to control_MEM_pass:pass_through_in",
+      "pos": [
+        [
+          1483.6001,
+          -80.00018
+        ],
+        [
+          1498.3997,
+          -80.0
+        ]
+      ],
+      "input": {
+        "id": "control_MEM_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_unit_2:alu_src_a to mux_source_a:select",
+      "pos": [
+        [
+          1140.5334,
+          40.699997
+        ],
+        [
+          1242.4003,
+          167.99994
+        ]
+      ],
+      "input": {
+        "id": "control_unit_2",
+        "field": "alu_src_a"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from zero_extend_for_shamt:zero_extend_out to mux_source_a:in0",
+      "pos": [
+        [
+          1207.7983,
+          107.600006
+        ],
+        [
+          1232.4003,
+          187.99994
+        ]
+      ],
+      "input": {
+        "id": "zero_extend_for_shamt",
+        "field": "zero_extend_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from operand_a_reg:register_out to mux_source_a:in1",
+      "pos": [
+        [
+          1103.1989,
+          216.00018
+        ],
+        [
+          1232.4003,
+          207.99994
+        ]
+      ],
+      "input": {
+        "id": "operand_a_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from 0_a_inp:constant_out to mux_source_a:in2",
+      "pos": [
+        [
+          596.00006,
+          48.40001
+        ],
+        [
+          1232.4003,
+          227.99994
+        ]
+      ],
+      "input": {
+        "id": "0_a_inp",
+        "field": "constant_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from mux_source_a:mux_out to alu:full_add_a_in",
+      "pos": [
+        [
+          1262.4003,
+          207.99994
+        ],
+        [
+          1375.9999,
+          184.40002
+        ]
+      ],
+      "input": {
+        "id": "mux_source_a",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from mux_source_b:mux_out to alu:full_add_b_in",
+      "pos": [
+        [
+          1264.8002,
+          325.60004
+        ],
+        [
+          1375.9999,
+          244.40002
+        ]
+      ],
+      "input": {
+        "id": "mux_source_b",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from control_unit_2:alu_op to alu:full_add_op_in",
+      "pos": [
+        [
+          1307.2001,
+          40.699997
+        ],
+        [
+          1385.9999,
+          174.40002
+        ]
+      ],
+      "input": {
+        "id": "control_unit_2",
+        "field": "alu_op"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from equals_operand_A_2:equals_out to operand_A_mux_2:select",
+      "pos": [
+        [
+          986.59796,
+          167.20001
+        ],
+        [
+          955.6015,
+          197.99994
+        ]
+      ],
+      "input": {
+        "id": "equals_operand_A_2",
+        "field": "equals_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from operand_A_mux_1:mux_out to operand_A_mux_2:in0",
+      "pos": [
+        [
+          819.6,
+          225.60065
+        ],
+        [
+          945.6015,
+          217.99994
+        ]
+      ],
+      "input": {
+        "id": "operand_A_mux_1",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from alu:alu_out to operand_A_mux_2:in1",
+      "pos": [
+        [
+          1415.9999,
+          214.40002
+        ],
+        [
+          945.6015,
+          237.99994
+        ]
+      ],
+      "input": {
+        "id": "alu",
+        "field": "alu_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from equals_operand_B_2:equals_out to operand_B_mux_2:select",
+      "pos": [
+        [
+          991.3968,
+          426.40027
+        ],
+        [
+          956.4005,
+          295.60052
+        ]
+      ],
+      "input": {
+        "id": "equals_operand_B_2",
+        "field": "equals_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from operand_B_mux_1:mux_out to operand_B_mux_2:in0",
+      "pos": [
+        [
+          822.79956,
+          323.99988
+        ],
+        [
+          946.4005,
+          315.60052
+        ]
+      ],
+      "input": {
+        "id": "operand_B_mux_1",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from alu:alu_out to operand_B_mux_2:in1",
+      "pos": [
+        [
+          1415.9999,
+          214.40002
+        ],
+        [
+          946.4005,
+          335.60052
+        ]
+      ],
+      "input": {
+        "id": "alu",
+        "field": "alu_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:op_out to branch:branch_op_in",
+      "pos": [
+        [
+          302.19995,
+          99.24443
+        ],
+        [
+          1037.0,
+          274.40002
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "op_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:rt_out to branch:branch_rt_in",
+      "pos": [
+        [
+          302.19995,
+          165.9111
+        ],
+        [
+          1037.0,
+          274.40002
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "rt_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from instruction_split:funct_out to branch:branch_funct_in",
+      "pos": [
+        [
+          302.19995,
+          121.46665
+        ],
+        [
+          1037.0,
+          274.40002
+        ]
+      ],
+      "input": {
+        "id": "instruction_split",
+        "field": "funct_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from operand_A_mux_2:mux_out to branch:branch_rs_value_id",
+      "pos": [
+        [
+          975.6015,
+          227.99994
+        ],
+        [
+          1037.0,
+          274.40002
+        ]
+      ],
+      "input": {
+        "id": "operand_A_mux_2",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from operand_B_mux_2:mux_out to branch:branch_rt_value_id",
+      "pos": [
+        [
+          976.4005,
+          325.60052
+        ],
+        [
+          1037.0,
+          274.40002
+        ]
+      ],
+      "input": {
+        "id": "operand_B_mux_2",
+        "field": "mux_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from branch:branch_out to mux_jump_merge:select",
+      "pos": [
+        [
+          1037.0,
+          274.40002
+        ],
+        [
+          -64.39996,
+          330.40002
+        ]
+      ],
+      "input": {
+        "id": "branch",
+        "field": "branch_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from pc_add_branch:add_out to mux_jump_merge:in0",
+      "pos": [
+        [
+          440.0,
+          440.0
+        ],
+        [
+          -74.39996,
+          350.40002
+        ]
+      ],
+      "input": {
+        "id": "pc_add_branch",
+        "field": "add_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from reg_file:rs_value_out to mux_jump_merge:in1",
+      "pos": [
+        [
+          500.4,
+          217.20001
+        ],
+        [
+          -74.39996,
+          370.40002
+        ]
+      ],
+      "input": {
+        "id": "reg_file",
+        "field": "rs_value_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from merge_reg:register_out to mux_jump_merge:in2",
+      "pos": [
+        [
+          226.00024,
+          582.40155
+        ],
+        [
+          -74.39996,
+          390.40002
+        ]
+      ],
+      "input": {
+        "id": "merge_reg",
+        "field": "register_out"
+      }
+    },
+    {
+      "type": "Wire",
+      "id": "from pc+4:add_out to mux_jump_merge:in3",
+      "pos": [
+        [
+          150.40002,
+          380.8
+        ],
+        [
+          -74.39996,
+          410.40002
+        ]
+      ],
+      "input": {
+        "id": "pc+4",
+        "field": "add_out"
+      }
+    }
+  ]
+}
