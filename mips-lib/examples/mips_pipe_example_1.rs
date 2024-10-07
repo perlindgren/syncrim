@@ -143,17 +143,24 @@ fn main() {
             //
             //
             //
-            Equal::rc_new(
+            // Equal::rc_new(
+            //     "equals_operand_A",
+            //     (3200.0, 1700.0),
+            //     Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
+            //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
+            // ),
+            EqualForward::rc_new(
                 "equals_operand_A",
                 (3200.0, 1700.0),
                 Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
+                Input::new("control_unit_2", cntr_field::REG_WRITE_ENABLE_OUT),
             ),
             //
             Mux::rc_new(
                 "operand_A_mux_1",
                 (3200.0, 1800.0),
-                Input::new("equals_operand_A", EQUAL_OUT_ID),
+                Input::new("equals_operand_A", EQUAL_FORWARD_OUT_ID),
                 vec![
                     Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID),
                     Input::new("write_back_mux", MUX_OUT_ID),
@@ -161,17 +168,24 @@ fn main() {
             ),
             //
             //
-            Equal::rc_new(
+            // Equal::rc_new(
+            //     "equals_operand_B",
+            //     (3200.0, 2300.0),
+            //     Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
+            //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
+            // ),
+            EqualForward::rc_new(
                 "equals_operand_B",
                 (3200.0, 2300.0),
                 Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
+                Input::new("control_unit_2", cntr_field::REG_WRITE_ENABLE_OUT),
             ),
             //
             Mux::rc_new(
                 "operand_B_mux_1",
                 (3200.0, 2200.0),
-                Input::new("equals_operand_B", EQUAL_OUT_ID),
+                Input::new("equals_operand_B", EQUAL_FORWARD_OUT_ID),
                 vec![
                     Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
                     Input::new("write_back_mux", MUX_OUT_ID),
@@ -179,17 +193,25 @@ fn main() {
             ),
             //
             //
-            Equal::rc_new(
+            // Equal::rc_new(
+            //     "equals_operand_A_2",
+            //     (3300.0, 1700.0),
+            //     Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
+            //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
+            // ),
+            EqualLoad::rc_new(
                 "equals_operand_A_2",
                 (3300.0, 1700.0),
                 Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
+                Input::new("control_unit_2", cntr_field::REG_WRITE_ENABLE_OUT),
+                Input::new("control_unit_2", cntr_field::MEM_MODE_OUT),
             ),
             //
             Mux::rc_new(
                 "operand_A_mux_2",
                 (3300.0, 1800.0),
-                Input::new("equals_operand_A_2", EQUAL_OUT_ID),
+                Input::new("equals_operand_A_2", EQUAL_LOAD_OUT_ID),
                 vec![
                     Input::new("operand_A_mux_1", MUX_OUT_ID),
                     Input::new("alu", FULL_ADD_OUT_ID),
@@ -197,17 +219,25 @@ fn main() {
             ),
             //
             //
-            Equal::rc_new(
+            // Equal::rc_new(
+            //     "equals_operand_B_2",
+            //     (3300.0, 2300.0),
+            //     Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
+            //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
+            // ),
+            EqualLoad::rc_new(
                 "equals_operand_B_2",
                 (3300.0, 2300.0),
                 Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
+                Input::new("control_unit_2", cntr_field::REG_WRITE_ENABLE_OUT),
+                Input::new("control_unit_2", cntr_field::MEM_MODE_OUT),
             ),
             //
             Mux::rc_new(
                 "operand_B_mux_2",
                 (3300.0, 2200.0),
-                Input::new("equals_operand_B_2", EQUAL_OUT_ID),
+                Input::new("equals_operand_B_2", EQUAL_LOAD_OUT_ID),
                 vec![
                     Input::new("operand_B_mux_1", MUX_OUT_ID),
                     Input::new("alu", FULL_ADD_OUT_ID),
@@ -248,14 +278,14 @@ fn main() {
                 //TODO: fix after adding 4 muxes
                 "operand_a_reg",
                 (3450.0, 1800.0),
-                Input::new("equals_operand_A_2", EQUAL_OUT_ID),
+                Input::new("operand_A_mux_2", MUX_OUT_ID),
             ),
             //
             Register::rc_new(
                 //TODO: fix after muxes
                 "operand_b_reg",
                 (3450.0, 2200.0),
-                Input::new("equals_operand_B_2", EQUAL_OUT_ID),
+                Input::new("operand_B_mux_2", MUX_OUT_ID),
             ),
             PassThrough::rc_new(
                 "operand_b_pass",
