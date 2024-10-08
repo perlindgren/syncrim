@@ -154,7 +154,7 @@ fn main() {
                 (800.0, 160.0),
                 Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
-                Input::new("control_unit_2", cntr_field::REG_WRITE_ENABLE_OUT),
+                Input::new("control_unit_3", cntr_field::REG_WRITE_ENABLE_OUT),
             ),
             //
             Mux::rc_new(
@@ -179,7 +179,7 @@ fn main() {
                 (800.0, 425.0),
                 Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
-                Input::new("control_unit_2", cntr_field::REG_WRITE_ENABLE_OUT),
+                Input::new("control_unit_3", cntr_field::REG_WRITE_ENABLE_OUT),
             ),
             //
             Mux::rc_new(

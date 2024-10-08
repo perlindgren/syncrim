@@ -6,7 +6,7 @@ use syncrim::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
 
-use super::data_op::{LOAD_BYTE, LOAD_BYTE_U, LOAD_HALF, LOAD_HALF_U, LOAD_WORD};
+use super::data_op::NO_OP;
 
 pub const EQUAL_LOAD_A_IN_ID: &str = "a_in";
 pub const EQUAL_LOAD_B_IN_ID: &str = "b_in";
@@ -70,13 +70,9 @@ impl Component for EqualLoad {
         let equal: u32 = (a_in == b_in) as u32;
         let result: u32;
 
-        if we_in == 1
-            && (load_in == LOAD_BYTE
-                || load_in == LOAD_BYTE_U
-                || load_in == LOAD_HALF
-                || load_in == LOAD_HALF_U
-                || load_in == LOAD_WORD)
-        {
+        // if the instruction is write forward
+        // dont forward if its some from adrs calc for lw or sw
+        if we_in == 1 && load_in == NO_OP {
             result = equal;
         } else {
             result = 0;
