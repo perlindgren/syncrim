@@ -56,9 +56,9 @@ fn main() {
                 (-54.0, 390.0),
                 Input::new("branch", BRANCH_OUT_ID),
                 vec![
-                    Input::new("pc_add_branch", ADD_OUT_ID), // describe origin
-                    Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID), // goes to addr, RD2
-                    Input::new("merge_reg", REGISTER_OUT_ID), //
+                    Input::new("pc_add_branch", ADD_OUT_ID),   // describe origin
+                    Input::new("operand_A_mux_2", MUX_OUT_ID), // goes to addr, RD2
+                    Input::new("merge_reg", REGISTER_OUT_ID),  //
                     Input::new("pc+4", ADD_OUT_ID),
                 ],
             ),
