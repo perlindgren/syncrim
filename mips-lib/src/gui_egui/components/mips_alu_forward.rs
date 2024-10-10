@@ -1,6 +1,6 @@
 use crate::components::{
-    EqualLoad, EQUAL_LOAD_A_IN_ID, EQUAL_LOAD_B_IN_ID, EQUAL_LOAD_LOAD_IN_ID, EQUAL_LOAD_OUT_ID,
-    EQUAL_LOAD_WE_IN_ID,
+    AluForward, ALU_FORWARD_A_IN_ID, ALU_FORWARD_B_IN_ID, ALU_FORWARD_LOAD_IN_ID,
+    ALU_FORWARD_OUT_ID, ALU_FORWARD_WE_IN_ID,
 };
 use egui::{pos2, Rect, Response, Ui, Vec2};
 use syncrim::common::{EguiComponent, Id, Input, Ports, Simulator};
@@ -9,7 +9,7 @@ use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::basic_component_gui;
 
 #[typetag::serde]
-impl EguiComponent for EqualLoad {
+impl EguiComponent for AluForward {
     fn render(
         &self,
         ui: &mut Ui,
@@ -21,7 +21,7 @@ impl EguiComponent for EqualLoad {
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
         basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
-            ui.label("Equal_Load");
+            ui.label("=");
         })
     }
 
@@ -78,7 +78,7 @@ impl EguiComponent for EqualLoad {
             Some(loc[2])
         } else if id == self.load_in {
             Some(loc[3])
-        } else if id == Input::new(&self.id, EQUAL_LOAD_OUT_ID) {
+        } else if id == Input::new(&self.id, ALU_FORWARD_OUT_ID) {
             Some(loc[4])
         } else {
             None
@@ -90,14 +90,17 @@ impl EguiComponent for EqualLoad {
         let m = 6f32; // margin
         let pos: Vec2 = self.pos.into();
         vec![
-            (EQUAL_LOAD_A_IN_ID.to_string(), pos2(-11.0 - m, -10.0) + pos),
-            (EQUAL_LOAD_B_IN_ID.to_string(), pos2(-11.0 - m, 10.0) + pos),
-            (EQUAL_LOAD_WE_IN_ID.to_string(), pos2(-11.0 - m, 2.5) + pos),
             (
-                EQUAL_LOAD_LOAD_IN_ID.to_string(),
+                ALU_FORWARD_A_IN_ID.to_string(),
+                pos2(-11.0 - m, -10.0) + pos,
+            ),
+            (ALU_FORWARD_B_IN_ID.to_string(), pos2(-11.0 - m, 10.0) + pos),
+            (ALU_FORWARD_WE_IN_ID.to_string(), pos2(-11.0 - m, 2.5) + pos),
+            (
+                ALU_FORWARD_LOAD_IN_ID.to_string(),
                 pos2(-11.0 - m, 7.5) + pos,
             ),
-            (EQUAL_LOAD_OUT_ID.to_string(), pos2(11.0 + m, 0.0) + pos),
+            (ALU_FORWARD_OUT_ID.to_string(), pos2(11.0 + m, 0.0) + pos),
         ]
     }
 }

@@ -1,6 +1,6 @@
 use crate::components::{
-    EqualForward, EQUAL_FORWARD_A_IN_ID, EQUAL_FORWARD_B_IN_ID, EQUAL_FORWARD_OUT_ID,
-    EQUAL_FORWARD_WE_IN_ID,
+    DataForward, DATA_FORWARD_A_IN_ID, DATA_FORWARD_B_IN_ID, DATA_FORWARD_OUT_ID,
+    DATA_FORWARD_WE_IN_ID,
 };
 use egui::{pos2, Rect, Response, Ui, Vec2};
 use syncrim::common::{EguiComponent, Id, Input, Ports, Simulator};
@@ -9,7 +9,7 @@ use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::basic_component_gui;
 
 #[typetag::serde]
-impl EguiComponent for EqualForward {
+impl EguiComponent for DataForward {
     fn render(
         &self,
         ui: &mut Ui,
@@ -21,7 +21,7 @@ impl EguiComponent for EqualForward {
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
         basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
-            ui.label("Equal_Load");
+            ui.label("=");
         })
     }
 
@@ -76,7 +76,7 @@ impl EguiComponent for EqualForward {
             Some(loc[1])
         } else if id == self.we_in {
             Some(loc[2])
-        } else if id == Input::new(&self.id, EQUAL_FORWARD_OUT_ID) {
+        } else if id == Input::new(&self.id, DATA_FORWARD_OUT_ID) {
             Some(loc[3])
         } else {
             None
@@ -89,18 +89,18 @@ impl EguiComponent for EqualForward {
         let pos: Vec2 = self.pos.into();
         vec![
             (
-                EQUAL_FORWARD_A_IN_ID.to_string(),
+                DATA_FORWARD_A_IN_ID.to_string(),
                 pos2(-11.0 - m, -10.0) + pos,
             ),
             (
-                EQUAL_FORWARD_B_IN_ID.to_string(),
+                DATA_FORWARD_B_IN_ID.to_string(),
                 pos2(-11.0 - m, 10.0) + pos,
             ),
             (
-                EQUAL_FORWARD_WE_IN_ID.to_string(),
+                DATA_FORWARD_WE_IN_ID.to_string(),
                 pos2(-11.0 - m, 0.0) + pos,
             ),
-            (EQUAL_FORWARD_OUT_ID.to_string(), pos2(11.0 + m, 0.0) + pos),
+            (DATA_FORWARD_OUT_ID.to_string(), pos2(11.0 + m, 0.0) + pos),
         ]
     }
 }

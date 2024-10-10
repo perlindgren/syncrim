@@ -56,9 +56,9 @@ fn main() {
                 (-54.0, 390.0),
                 Input::new("branch", BRANCH_OUT_ID),
                 vec![
-                    Input::new("pc_add_branch", ADD_OUT_ID),   // describe origin
-                    Input::new("operand_A_mux_2", MUX_OUT_ID), // goes to addr, RD2
-                    Input::new("merge_reg", REGISTER_OUT_ID),  //
+                    Input::new("pc_add_branch", ADD_OUT_ID), // describe origin
+                    Input::new("alu_forward_A_mux", MUX_OUT_ID), // goes to addr, RD2
+                    Input::new("merge_reg", REGISTER_OUT_ID), //
                     Input::new("pc+4", ADD_OUT_ID),
                 ],
             ),
@@ -144,13 +144,13 @@ fn main() {
             //
             //
             // Equal::rc_new(
-            //     "equals_operand_A",
+            //     "data_forward_A",
             //     (3200.0, 1700.0),
             //     Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
             //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
             // ),
-            EqualForward::rc_new(
-                "equals_operand_A",
+            DataForward::rc_new(
+                "data_forward_A",
                 (800.0, 160.0),
                 Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
@@ -158,9 +158,9 @@ fn main() {
             ),
             //
             Mux::rc_new(
-                "operand_A_mux_1",
+                "data_forward_A_mux",
                 (800.0, 225.0),
-                Input::new("equals_operand_A", EQUAL_FORWARD_OUT_ID),
+                Input::new("data_forward_A", DATA_FORWARD_OUT_ID),
                 vec![
                     Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID),
                     Input::new("write_back_mux", MUX_OUT_ID),
@@ -169,13 +169,13 @@ fn main() {
             //
             //
             // Equal::rc_new(
-            //     "equals_operand_B",
+            //     "data_forward_B",
             //     (3200.0, 2300.0),
             //     Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
             //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
             // ),
-            EqualForward::rc_new(
-                "equals_operand_B",
+            DataForward::rc_new(
+                "data_forward_B",
                 (800.0, 425.0),
                 Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
@@ -183,9 +183,9 @@ fn main() {
             ),
             //
             Mux::rc_new(
-                "operand_B_mux_1",
+                "data_forward_B_mux",
                 (800.0, 325.0),
-                Input::new("equals_operand_B", EQUAL_FORWARD_OUT_ID),
+                Input::new("data_forward_B", DATA_FORWARD_OUT_ID),
                 vec![
                     Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
                     Input::new("write_back_mux", MUX_OUT_ID),
@@ -194,13 +194,13 @@ fn main() {
             //
             //
             // Equal::rc_new(
-            //     "equals_operand_A_2",
+            //     "alu_forward_A",
             //     (3300.0, 1700.0),
             //     Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
             //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
             // ),
-            EqualLoad::rc_new(
-                "equals_operand_A_2",
+            AluForward::rc_new(
+                "alu_forward_A",
                 (970.0, 160.0),
                 Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
@@ -209,11 +209,11 @@ fn main() {
             ),
             //
             Mux::rc_new(
-                "operand_A_mux_2",
+                "alu_forward_A_mux",
                 (970.0, 225.0),
-                Input::new("equals_operand_A_2", EQUAL_LOAD_OUT_ID),
+                Input::new("alu_forward_A", ALU_FORWARD_OUT_ID),
                 vec![
-                    Input::new("operand_A_mux_1", MUX_OUT_ID),
+                    Input::new("data_forward_A_mux", MUX_OUT_ID),
                     Input::new("alu", FULL_ADD_OUT_ID),
                 ],
             ),
@@ -225,7 +225,7 @@ fn main() {
             //     Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
             //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
             // ),
-            EqualLoad::rc_new(
+            AluForward::rc_new(
                 "equals_operand_B_2",
                 (970.0, 425.0),
                 Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
@@ -235,11 +235,11 @@ fn main() {
             ),
             //
             Mux::rc_new(
-                "operand_B_mux_2",
+                "alu_forward_B_mux",
                 (970.0, 325.0),
-                Input::new("equals_operand_B_2", EQUAL_LOAD_OUT_ID),
+                Input::new("equals_operand_B_2", ALU_FORWARD_OUT_ID),
                 vec![
-                    Input::new("operand_B_mux_1", MUX_OUT_ID),
+                    Input::new("data_forward_B_mux", MUX_OUT_ID),
                     Input::new("alu", FULL_ADD_OUT_ID),
                 ],
             ),
@@ -251,8 +251,8 @@ fn main() {
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_OP_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_FUNCT_ID),
-                Input::new("operand_A_mux_2", MUX_OUT_ID),
-                Input::new("operand_B_mux_2", MUX_OUT_ID),
+                Input::new("alu_forward_A_mux", MUX_OUT_ID),
+                Input::new("alu_forward_B_mux", MUX_OUT_ID),
             ),
             //
             //
@@ -278,14 +278,14 @@ fn main() {
                 //TODO: fix after adding 4 muxes
                 "operand_a_reg",
                 (1100.0, 215.0),
-                Input::new("operand_A_mux_2", MUX_OUT_ID),
+                Input::new("alu_forward_A_mux", MUX_OUT_ID),
             ),
             //
             Register::rc_new(
                 //TODO: fix after muxes
                 "operand_b_reg",
                 (1100.0, 325.0),
-                Input::new("operand_B_mux_2", MUX_OUT_ID),
+                Input::new("alu_forward_B_mux", MUX_OUT_ID),
             ),
             PassThrough::rc_new(
                 "operand_b_pass",

@@ -1,9 +1,9 @@
 mod mips_alu;
+mod mips_alu_forward;
 mod mips_branch_logic;
 mod mips_control_unit;
+mod mips_data_forward;
 mod mips_dm;
-mod mips_equals_forward;
-mod mips_equals_load;
 mod mips_im;
 mod mips_instruction_splitter;
 mod mips_jump_merge;
@@ -12,11 +12,11 @@ mod physical_mem;
 mod sz_extend;
 
 pub use mips_alu::*;
+pub use mips_alu_forward::*;
 pub use mips_branch_logic::*;
 pub use mips_control_unit::*;
+pub use mips_data_forward::*;
 pub use mips_dm::*;
-pub use mips_equals_forward::*;
-pub use mips_equals_load::*;
 pub use mips_im::*;
 pub use mips_instruction_splitter::*;
 pub use mips_jump_merge::*;
