@@ -1,4 +1,4 @@
-use crate::common::{Component, EguiComponent, Ports, Simulator};
+use crate::common::{EguiComponent, Ports, Simulator};
 use crate::components::PassThrough;
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;

@@ -58,13 +58,7 @@ impl Component for DataForward {
         let b_in: u32 = simulator.get_input_value(&self.b_in).try_into().unwrap();
         let we_in: u32 = simulator.get_input_value(&self.we_in).try_into().unwrap();
 
-        let equal: u32 = (a_in == b_in) as u32;
-        let result: u32;
-        if we_in == 1 {
-            result = equal;
-        } else {
-            result = 0;
-        }
+        let result: u32 = if we_in == 1 { (a_in == b_in) as u32 } else { 0 };
 
         simulator.set_out_value(&self.id, DATA_FORWARD_OUT_ID, SignalValue::Data(result));
         Ok(())

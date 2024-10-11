@@ -67,16 +67,13 @@ impl Component for AluForward {
         let we_in: u32 = simulator.get_input_value(&self.we_in).try_into().unwrap();
         let load_in: u32 = simulator.get_input_value(&self.load_in).try_into().unwrap();
 
-        let equal: u32 = (a_in == b_in) as u32;
-        let result: u32;
-
-        // if the instruction is write forward
-        // dont forward if its some from adrs calc for lw or sw
-        if we_in == 1 && load_in == NO_OP {
-            result = equal;
+        // if the instruction writes to regfile, forward
+        // don't forward if its some from adrs calc for lw or sw
+        let result: u32 = if we_in == 1 && load_in == NO_OP {
+            (a_in == b_in) as u32
         } else {
-            result = 0;
-        }
+            0
+        };
 
         simulator.set_out_value(&self.id, ALU_FORWARD_OUT_ID, SignalValue::Data(result));
         Ok(())
