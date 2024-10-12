@@ -1,4 +1,7 @@
 use clap::Parser;
+// The trait impls from here are used dynamically when json is loaded, so this is actually used
+#[allow(unused_imports)]
+use mips_lib::*;
 use std::path::PathBuf;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
