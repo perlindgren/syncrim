@@ -6,12 +6,15 @@ use std::path::PathBuf;
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
 use syncrim::{common::ComponentStore, fern::fern_setup};
+// this is actually loaded dynamically, so it is used.
+#[allow(unused_imports)]
+use mips_lib::components::*;
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Path to the model to load on startup
-    #[arg(short, long, default_value = "mips_single_cycle.json")]
+    #[arg(short, long, default_value = "mips_pipe.json")]
     model: String,
 }
 

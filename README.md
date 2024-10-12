@@ -30,11 +30,11 @@ To load and run the created model (`<example>.json`).
 cargo run -- -model <example>.json
 ```
 
-Alternatively, you can run a single cycle `mips` model  from the `mips-lib` folder.
+Alternatively, you can run a pipelined mips model from the mips-lib folder.
 
 ```shell
 cd mips-lib
-cargo run
+cargo run --release
 ```
 
 You can also run the examples correspondingly in `vscode`.

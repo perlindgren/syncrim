@@ -554,6 +554,10 @@ impl Component for ControlUnit {
             }
             OP_ADDIU => {
                 set_i_instr!();
+                set!(
+                    cntr_field::EXTEND_SELECT_OUT,
+                    cntr_unit_signals::EXTEND_SIGNED
+                );
                 set!(cntr_field::ALU_OP_OUT, alu_op::ADDU);
                 Ok(())
             }
