@@ -54,6 +54,7 @@ debug = 1 # faster build, still allows for stack back trace
 opt-level = 3
 
 [profile.release]
+lto = true # equivalent to fat
 incremental = true
 debug = 1          # faster build, still allows for stack back trace
 
