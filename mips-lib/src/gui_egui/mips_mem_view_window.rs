@@ -234,6 +234,10 @@ impl MemViewWindow {
 
                     // add submenu with a button for each symbol, which sets self.go_to_address
                     ui.menu_button("symbol", |ui| {
+                        let because_lifetimes_sad = mem.get_symbol_table();
+                        let mut sections = because_lifetimes_sad.iter().collect::<Vec<_>>();
+                        sections.sort_by(|a, b| a.0.partial_cmp(b.0).unwrap());
+
                         ScrollArea::vertical().show(ui, |ui| {
                             let because_lifetimes_sad = mem.get_symbol_table();
                             let mut symbols = because_lifetimes_sad.iter().collect::<Vec<_>>();
@@ -253,13 +257,26 @@ impl MemViewWindow {
                         let mut sections = because_lifetimes_sad.iter().collect::<Vec<_>>();
                         sections.sort_by(|a, b| a.0.partial_cmp(b.0).unwrap());
 
-                        for (key, v) in sections {
-                            if ui.button(format!("{} {:#0x}", v, key)).clicked() {
-                                self.go_to_address = set_address(&self.go_type, *key);
-                                ui.close_menu();
-                                close_menu = true;
+                        // for (key, v) in sections {
+                        //     if ui.button(format!("{} {:#0x}", v, key)).clicked() {
+                        //         self.go_to_address = set_address(&self.go_type, *key);
+                        //         ui.close_menu();
+                        //         close_menu = true;
+                        //     }
+                        // }
+                        ScrollArea::vertical().show(ui, |ui| {
+                            let because_lifetimes_sad = mem.get_section_table();
+                            let mut section = because_lifetimes_sad.iter().collect::<Vec<_>>();
+                            section.sort_by(|a, b| a.0.partial_cmp(b.0).unwrap());
+
+                            for (key, v) in section {
+                                if ui.button(format!("{} {:#0x}", v, key)).clicked() {
+                                    self.go_to_address = set_address(&self.go_type, *key);
+                                    ui.close_menu();
+                                    close_menu = true;
+                                }
                             }
-                        }
+                        });
                     });
 
                     // Does any PC pointer exists, make them visible in this menu for quick access
@@ -484,7 +501,7 @@ impl MemViewWindow {
             }
             DataFormat::HexAndMips => {
                 format!(
-                    "{:#010x} {:015}",
+                    "{:#010x}   {:015}",
                     data_u32,
                     MIPS_disassembly::get_disassembly_adv(
                         data_u32,
