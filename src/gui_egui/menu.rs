@@ -42,7 +42,7 @@ impl Menu {
                     .prefix("Step: ")
                     .range(0..=u32::MAX),
             );
-            if ui.button("⟳").clicked() {            if ui.button("⟳").clicked() {
+            if ui.button("⟳").clicked() {
                 // TODO dont have simulator here add keymap
                 if let Some(s) = gui.simulator.as_mut() {
                     let _ = s.set_step_to(s.cycle + gui.step_amount);
