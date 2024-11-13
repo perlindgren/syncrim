@@ -37,7 +37,11 @@ impl Menu {
             }
             ui.separator();
 
-            ui.add(DragValue::new(&mut gui.step_amount).prefix("Step: "));
+            ui.add(
+                DragValue::new(&mut gui.step_amount)
+                    .prefix("Step: ")
+                    .range(0..=u32::MAX),
+            );
             if ui.button("⟳").clicked() {
                 // TODO dont have simulator here add keymap
                 if let Some(s) = gui.simulator.as_mut() {
