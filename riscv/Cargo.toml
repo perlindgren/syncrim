@@ -16,15 +16,22 @@ log = "0.4.19"
 num_enum = "0.7.2"
 fern = "0.6.2"
 xmas-elf = "0.9.0"
-egui = "0.28.0"
 asm_riscv = { git = 'https://github.com/onsdagens/wari' }
-gimli = "0.27.3"
-object = "0.31.1"
-memmap2 = "0.7.1"
+#gimli = "0.27.3"
+#object = "0.31.1"
+#memmap2 = "0.7.1"
 riscv_asm_strings = { git = 'https://github.com/perlindgren/riscv_asm_strings' }
 priority-queue = { version = "1.3.2", features = ["serde"] }
 riscv-rt = "0.11.0"
-egui_extras = "0.28.0"
+
+
+[dependencies.egui]
+optional = true
+version = "0.28.0"
+
+[dependencies.egui-extras]
+optional = true
+version = "0.28.0"
 
 [dependencies.syncrim]
 path = "../"
@@ -35,7 +42,7 @@ default = ["headless"]
 
 components = ["syncrim/components"]
 gui-vizia = ["syncrim/gui-vizia", "components"]
-gui-egui = ["syncrim/gui-egui", "components"]
+gui-egui = ["syncrim/gui-egui", "components", "egui", "egui-extras"]
 headless = []
 
 [[example]]
