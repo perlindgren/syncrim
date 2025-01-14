@@ -226,6 +226,12 @@ fn main() {
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(cs, &path);
+    #[cfg(feature = "headless")]
+    {
+        let mut simulator = syncrim::common::Simulator::new(cs).unwrap();
+        simulator.set_running();
+        simulator.run_until_halt();
+    }
 }
 #[allow(unused_imports)]
 use log::LevelFilter;

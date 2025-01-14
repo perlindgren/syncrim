@@ -5,7 +5,8 @@ use std::rc::Rc;
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
 use syncrim::common::{
-    Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
+    Component, Condition, Id, Input, InputPort, OutputType, Ports, RunningState, SignalValue,
+    Simulator,
 };
 use syncrim::components::MemCtrl;
 
@@ -555,6 +556,11 @@ impl Component for Decoder {
                 //mret, basically magic number
                 {
                     mret = SignalValue::from(1);
+                }
+                // ebreak, also magic number
+                // for now, this can put simulator in halted state
+                else if instruction == 1048691 {
+                    simulator.running_state = RunningState::Halt;
                 } else {
                     match funct3 {
                         0b001 => {

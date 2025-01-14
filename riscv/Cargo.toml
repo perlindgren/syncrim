@@ -31,11 +31,12 @@ path = "../"
 default-features = false
 
 [features]
-default = ["gui-egui"]
+default = ["headless"]
 
 components = ["syncrim/components"]
 gui-vizia = ["syncrim/gui-vizia", "components"]
 gui-egui = ["syncrim/gui-egui", "components"]
+headless = []
 
 [[example]]
 name = "riscv"

@@ -442,6 +442,12 @@ impl Simulator {
         trace!("clock per run {}", i)
     }
 
+    pub fn run_until_halt(&mut self) {
+        while self.running_state == RunningState::Running {
+            self.clock();
+        }
+    }
+
     pub fn run_threaded(&mut self) {}
 
     /// stop the simulator from gui or other external reason

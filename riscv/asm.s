@@ -54,6 +54,7 @@ main:
     csrrs   zero, 0xB02, t1     # pend interrupt 2, it should now be dispatched
     #jal ra, helper               # enable interrupts via helper
 stop:
+    ebreak
     j        stop               # finished loop
 
 helper:
