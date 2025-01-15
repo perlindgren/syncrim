@@ -29,7 +29,7 @@ riscv-rt = "0.11.0"
 optional = true
 version = "0.28.0"
 
-[dependencies.egui-extras]
+[dependencies.egui_extras]
 optional = true
 version = "0.28.0"
 
@@ -42,7 +42,7 @@ default = ["headless"]
 
 components = ["syncrim/components"]
 gui-vizia = ["syncrim/gui-vizia", "components"]
-gui-egui = ["syncrim/gui-egui", "components", "egui", "egui-extras"]
+gui-egui = ["syncrim/gui-egui", "components", "egui", "egui_extras"]
 headless = []
 
 [[example]]
