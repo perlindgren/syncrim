@@ -802,12 +802,11 @@ impl CLIC {
                     }
                     if mmio_entry.clicintie != 1 || mmio_entry.clicintip != 1 {
                         //dequeue self if pending or enabled status is 0
-                        println!("addr: {} offset: {}, i: {}", addr, offset, i);
-                        let some_val = (((addr - offset + 4u32 * i as u32).wrapping_sub(0x1000))
+
+                        let entry_idx = (((addr - offset + 4u32 * i as u32).wrapping_sub(0x1000))
                             / 4)
                         .wrapping_sub(0x20);
-                        println!("some_val:{}", some_val);
-                        if queue.remove(&some_val).is_some() {
+                        if queue.remove(&entry_idx).is_some() {
                             history_entry.queue_op.push((
                                 ((addr - offset + 4u32 * i as u32 - 0x1000) / 4),
                                 mmio_entry.clicintctl,
