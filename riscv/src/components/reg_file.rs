@@ -443,7 +443,17 @@ impl Component for RegFile {
 
         if simulator.get_input_value(&self.write_enable) == (true as SignalUnsigned).into() {
             let data = simulator.get_input_value(&self.write_data);
-            trace!("write data {:?}", data);
+            trace!(
+                "write data {:?}",
+                match data {
+                    SignalValue::Data(data) => {
+                        format!("{:x}", data)
+                    }
+                    _ => {
+                        "unknown".to_string()
+                    }
+                }
+            );
             let write_addr = simulator.get_input_value(&self.write_addr);
 
             regop.write_addr2 = Some((

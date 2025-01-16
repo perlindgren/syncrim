@@ -102,7 +102,11 @@ impl Component for ALU {
             .get_input_value(&self.operand_b_i)
             .try_into()
             .unwrap();
-        trace!("ALU operand A: {}, operand B:{}", operand_a_i, operand_b_i);
+        trace!(
+            "ALU operand A: {:x}, operand B:{:x}",
+            operand_a_i,
+            operand_b_i
+        );
         let mut result_o = 0;
         match operator_i {
             1 => {
