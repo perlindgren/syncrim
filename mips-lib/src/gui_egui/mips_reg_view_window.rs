@@ -56,7 +56,7 @@ impl RegViewWindow {
     }
 
     // Updates the content in the window.
-    // If there isn't a window and the "Show regfile window"-button has been pressed: show the window
+    // If there isn't a window and the "Show reg window"-button has been pressed: show the window
     pub fn render(&mut self, ctx: &egui::Context) {
         if !self.visible {
             return;
