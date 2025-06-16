@@ -9,11 +9,8 @@ pub struct RegViewWindow {
     pub visible: bool,
     title: String,
     id: String,
-    row_offset: u32,
-    max_rows: u32,
 
     // used for formatting the view
-    big_endian: bool,
     reg_format: RegFormat,
 
     // used for show register
@@ -45,15 +42,12 @@ impl RegViewWindow {
         self.register_changed = reg_value_has_changed;
     }
 
-    // creates a new memory view window with id string and the given memory
+    // creates a new register file view window with id string and the given memory
     pub fn new(id: String, title: String) -> Self {
         RegViewWindow {
             title,
             id,
             visible: false,
-            row_offset: 0,
-            max_rows: 1024,
-            big_endian: true, // big endian is default on mips
             register_values: [0; 32],
             show_reg_names: true,
             reg_format: RegFormat::Hex,

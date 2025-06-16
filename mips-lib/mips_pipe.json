@@ -1565,52 +1565,9 @@
       },
       "reg_view": {
         "visible": false,
-        "title": "instruction memory view",
-        "id": "instr_mem",
-        "row_offset": 0,
-        "max_rows": 1024,
-        "big_endian": true,
+        "title": "register file view",
+        "id": "reg_file",
         "reg_format": "Hex",
-        "format": "HexAndMips",
-        "show_settings": {
-          "symbols": true,
-          "sections": false,
-          "program_counter": false,
-          "registers": [
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            true
-          ]
-        },
         "register_values": [
           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
           0, 0, 0, 0, 0, 0, 2147483648, 0, 0
@@ -1649,11 +1606,7 @@
           false,
           false,
           false
-        ],
-        "dynamic_symbols": {
-          "PC_IM": [0, true]
-        },
-        "break_points": []
+        ]
       },
       "register_changed": [
         false,
