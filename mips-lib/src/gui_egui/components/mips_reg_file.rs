@@ -1,5 +1,5 @@
 use crate::components::{reg_file_fields, RegFile, RegFormat};
-use egui::{vec2, ComboBox, Pos2, Rect, Response, RichText, ScrollArea, Ui, Vec2};
+use egui::{vec2, Color32, ComboBox, Pos2, Rect, Response, RichText, ScrollArea, Ui, Vec2};
 use syncrim::common::{EguiComponent, Input, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
@@ -24,13 +24,12 @@ impl EguiComponent for RegFile {
         clip_rect: Rect,
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
-        basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
+        let mut reg_view_vis: bool = self.reg_view.borrow().visible;
+
+        let r = basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
             ui.set_width(120f32 * scale);
             ui.set_height(250f32 * scale);
             ui.label("Register File");
-
-            // A toggle button for showing register names
-            ui.toggle_value(&mut self.show_reg_names.borrow_mut(), "Show names");
 
             // showing the display format of the register
             let mut tmp: RegFormat = self.reg_format.borrow().clone();
@@ -46,59 +45,96 @@ impl EguiComponent for RegFile {
                 });
             *self.reg_format.borrow_mut() = tmp;
 
+            match reg_view_vis {
+                false => {
+                    if ui.button("Show reg window").clicked() {
+                        reg_view_vis = true;
+                    }
+                }
+                true => {
+                    ui.toggle_value(&mut reg_view_vis, "Hide reg window");
+                }
+            };
+
             ui.separator();
 
-            // A scroll area with all the registers in one label
-            ScrollArea::vertical().show(ui, |ui| {
-                ui.set_width(ui.available_width());
-                ui.set_height(ui.available_height());
-
+            // A scroll area with all the registers
+            ScrollArea::both().show(ui, |ui| {
                 // for each register format the u32 and pus that formatted sting onto
                 // the string representing all registers
                 let mut str: String = "".into();
+                // Format and display the register values
                 for (i, val) in self.registers.borrow().iter().enumerate() {
-                    // add reg name or reg number to the formatted string
-                    str.push_str(
-                        match *self.show_reg_names.borrow() {
-                            true => format!("{:<4}", REG_NAMES[i]),
-                            false => format!("r{:<3}", i),
-                        }
-                        .as_str(),
-                    );
+                    let name = if *(self.show_reg_names.borrow()) {
+                        format!("{:<4}", REG_NAMES[i])
+                    } else {
+                        format!("r{:<3}", i)
+                    };
+                    let val_str = match *self.reg_format.borrow() {
+                        RegFormat::Hex => format!("{:#010x}", val),
+                        RegFormat::DecSigned => format!("{}", (*val) as i32),
+                        RegFormat::DecUnsigned => format!("{}", val),
+                        RegFormat::Bin => format!("{:#034b}", val),
+                        RegFormat::UTF8BE => String::from_utf8_lossy(&val.to_be_bytes())
+                            .escape_debug()
+                            .to_string(),
+                        RegFormat::UTF8LE => String::from_utf8_lossy(&val.to_le_bytes())
+                            .escape_debug()
+                            .to_string(),
+                    };
+                    let text = format!("{} \t {}", name, val_str);
 
-                    // add a formatted register to the string
-                    // TODO move to separate function
-                    str.push_str(
-                        match *self.reg_format.borrow() {
-                            RegFormat::Hex => format!("{:#010x}", val),
-                            RegFormat::DecSigned => format!("{}", (*val) as i32),
-                            RegFormat::DecUnsigned => format!("{}", val),
-                            RegFormat::Bin => format!("{:#034b}", val),
-                            RegFormat::UTF8BE => String::from_utf8_lossy(&val.to_be_bytes())
-                                .escape_debug()
-                                .to_string(),
-                            RegFormat::UTF8LE => String::from_utf8_lossy(&val.to_le_bytes())
-                                .escape_debug()
-                                .to_string(),
-                        }
-                        .as_str(),
-                    );
-                    str.push('\n')
+                    // Colour the registers that was last changed
+                    let color:Color32;
+                    if (self.register_changed.borrow())[i] {
+                        color = Color32::RED;
+                    } else {
+                        color = Color32::GRAY;
+                    }
+
+                    // Draw the label with monospace font and the chosen color
+                    ui.label(RichText::new(text).monospace().color(color));
+                }
+            });
+        });
+        if let Some(sim) = &simulator {
+            // {} to drop RefMut as early as possible
+            {
+                let mut reg_view = self.reg_view.borrow_mut();
+                reg_view.visible = reg_view_vis;
+                reg_view.render(ui.ctx());
+
+                // Check which registers have been modified.
+                // reg_view_window is notified about those registers.
+                let reg_values = *self.registers.borrow();
+                let previous_reg_values = *self.previous_registers.borrow();
+                let mut reg_value_has_changed: [bool; 32] = [false; 32];
+                for i in 0..reg_values.len() {
+                    if reg_values[i] != previous_reg_values[i] {
+                        reg_value_has_changed[i] = true;
+                        println!("i = {:?}", i);
+                    }
+                }
+                if reg_value_has_changed.contains(&true) {
+                    reg_view.set_reg_values(reg_values, reg_value_has_changed);
+                    *self.previous_registers.borrow_mut() = reg_values;
+                    *self.register_changed.borrow_mut() = reg_value_has_changed;
+                    println!("{:?}",self.previous_registers.borrow());
                 }
 
-                // push the string as monospace to the ui
-                ui.label(RichText::new(str).size(12f32 * scale).monospace())
-            });
-        })
+
+            }
+        }
+        r
     }
     fn render_editor(
         &mut self,
-        ui: &mut egui::Ui,
+        ui: &mut Ui,
         context: &mut EguiExtra,
         simulator: Option<&mut Simulator>,
-        offset: egui::Vec2,
+        offset: Vec2,
         scale: f32,
-        clip_rect: egui::Rect,
+        clip_rect: Rect,
         _id_ports: &[(Id, Ports)],
         _grid: &GridOptions,
         editor_mode: EditorMode,
