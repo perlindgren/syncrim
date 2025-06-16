@@ -60,9 +60,6 @@ impl EguiComponent for RegFile {
 
             // A scroll area with all the registers
             ScrollArea::both().show(ui, |ui| {
-                // for each register format the u32 and pus that formatted sting onto
-                // the string representing all registers
-                let mut str: String = "".into();
                 // Format and display the register values
                 for (i, val) in self.registers.borrow().iter().enumerate() {
                     let name = if *(self.show_reg_names.borrow()) {
@@ -86,7 +83,7 @@ impl EguiComponent for RegFile {
 
                     // Colour the registers that was last changed
                     let color:Color32;
-                    if (self.register_changed.borrow())[i] {
+                    if self.register_changed.borrow()[i] {
                         color = Color32::RED;
                     } else {
                         color = Color32::GRAY;
@@ -97,7 +94,7 @@ impl EguiComponent for RegFile {
                 }
             });
         });
-        if let Some(sim) = &simulator {
+        if let Some(_sim) = &simulator {
             // {} to drop RefMut as early as possible
             {
                 let mut reg_view = self.reg_view.borrow_mut();
