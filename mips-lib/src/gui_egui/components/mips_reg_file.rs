@@ -60,6 +60,7 @@ impl EguiComponent for RegFile {
 
             // A scroll area with all the registers
             ScrollArea::both().show(ui, |ui| {
+                ui.set_width(ui.available_width());
                 // Format and display the register values
                 for (i, val) in self.registers.borrow().iter().enumerate() {
                     let name = if *(self.show_reg_names.borrow()) {
@@ -79,7 +80,7 @@ impl EguiComponent for RegFile {
                             .escape_debug()
                             .to_string(),
                     };
-                    let text = format!("{} \t {}", name, val_str);
+                    let text = format!("{} {}", name, val_str);
 
                     // Colour the registers that was last changed
                     let color:Color32;
@@ -109,14 +110,12 @@ impl EguiComponent for RegFile {
                 for i in 0..reg_values.len() {
                     if reg_values[i] != previous_reg_values[i] {
                         reg_value_has_changed[i] = true;
-                        println!("i = {:?}", i);
                     }
                 }
                 if reg_value_has_changed.contains(&true) {
                     reg_view.set_reg_values(reg_values, reg_value_has_changed);
                     *self.previous_registers.borrow_mut() = reg_values;
                     *self.register_changed.borrow_mut() = reg_value_has_changed;
-                    println!("{:?}",self.previous_registers.borrow());
                 }
 
 

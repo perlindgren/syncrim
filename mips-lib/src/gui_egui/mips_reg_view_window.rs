@@ -129,7 +129,7 @@ impl RegViewWindow {
                             .escape_debug()
                             .to_string(),
                     };
-                    let text = format!("{} \t {}", name, val_str);
+                    let text = format!("{} {}", name, val_str);
 
                     // Colour the registers that was last changed
                     let color:Color32;
