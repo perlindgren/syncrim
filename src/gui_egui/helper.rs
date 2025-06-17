@@ -98,16 +98,8 @@ pub fn id_ports_of_all_components_non_wires(cs: &Components) -> Vec<(crate::comm
 
 pub fn editor_mode_to_sense(editor_mode: EditorMode) -> Sense {
     match editor_mode {
-        EditorMode::Wire => Sense {
-            click: false,
-            drag: false,
-            focusable: false,
-        },
-        _ => Sense {
-            click: true,
-            drag: true,
-            focusable: true,
-        },
+        EditorMode::Wire => Sense::hover(),
+        _ => Sense::all(),
     }
 }
 

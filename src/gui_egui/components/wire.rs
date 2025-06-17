@@ -105,11 +105,7 @@ impl EguiComponent for Wire {
                             ui.with_layer_id(layer, |ui| {
                                 ui.allocate_exact_size(
                                     rect.size(),
-                                    Sense {
-                                        click: true,
-                                        drag: true,
-                                        focusable: true,
-                                    },
+                                    Sense::all(),
                                 )
                             })
                         })
