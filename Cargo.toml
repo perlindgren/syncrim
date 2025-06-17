@@ -9,7 +9,7 @@ edition = "2021"
 members = ["mips-lib", "riscv"]
 
 [dependencies]
-MIPS_disassembly = "=0.1.3"
+MIPS_disassembly = "0.1.7"
 anyhow = "1.0.72"
 clap = { version = "4.3.15", features = ["derive"] }
 elf = "0.7.4"
@@ -31,15 +31,15 @@ optional = true
 
 [dependencies.egui]
 optional = true
-version = "0.28.0"
+version = "0.31.1"
 
 [dependencies.eframe]
 optional = true
-version = "0.28.0"
+version = "0.31.1"
 
 [dependencies.epaint]
 optional = true
-version = "0.28.0"
+version = "0.31.1"
 
 [features]
 default = ["gui-egui"]

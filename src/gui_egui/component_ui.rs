@@ -5,8 +5,7 @@ use crate::gui_egui::helper::{
     editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
 };
 use egui::{
-    containers, Color32, ComboBox, Context, DragValue, Frame, Key, KeyboardShortcut, Margin,
-    Modifiers, PointerButton, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2, Window,
+    containers, Color32, ComboBox, Context, CornerRadius, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers, PointerButton, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2, Window
 };
 use epaint::CircleShape;
 
@@ -53,9 +52,9 @@ pub fn properties_window<P>(
     if *properties_window {
         let resp = Window::new(format!("Properties: {}", id))
             .frame(Frame {
-                inner_margin: Margin::same(10f32),
-                outer_margin: Margin::same(0f32),
-                rounding: Rounding::same(10f32),
+                inner_margin: Margin::same(10i8),
+                outer_margin: Margin::same(0i8),
+                corner_radius: CornerRadius::same(10u8),
                 shadow: helper::shadow_small_dark(),
                 fill: ui.visuals().panel_fill,
                 stroke: ui.visuals().window_stroke,

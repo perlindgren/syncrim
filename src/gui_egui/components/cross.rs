@@ -8,7 +8,7 @@ use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::offset_helper;
 use egui::{Color32, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
-use epaint::{RectShape, Rounding};
+use epaint::{CornerRadius, RectShape};
 
 #[typetag::serde]
 impl EguiComponent for Cross {
@@ -44,12 +44,13 @@ impl EguiComponent for Cross {
 
         ui.painter().add(Shape::Rect(RectShape::new(
             rect,
-            Rounding::ZERO,
+            CornerRadius::ZERO,
             Color32::DARK_BLUE,
             Stroke {
                 width: scale,
                 color: Color32::RED,
             },
+            egui::StrokeKind::Inside // added because off https://github.com/emilk/egui/pull/5648
         )));
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
