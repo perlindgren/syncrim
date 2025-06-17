@@ -83,7 +83,7 @@ impl EguiComponent for RegFile {
                     let text = format!("{} {}", name, val_str);
 
                     // Colour the registers that was last changed
-                    let color:Color32;
+                    let color: Color32;
                     if self.register_changed.borrow()[i] {
                         color = Color32::RED;
                     } else {
@@ -117,8 +117,6 @@ impl EguiComponent for RegFile {
                     *self.previous_registers.borrow_mut() = reg_values;
                     *self.register_changed.borrow_mut() = reg_value_has_changed;
                 }
-
-
             }
         }
         r

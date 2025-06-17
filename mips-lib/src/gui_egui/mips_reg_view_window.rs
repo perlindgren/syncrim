@@ -1,6 +1,4 @@
-use egui::{
-    ComboBox, RichText, ScrollArea, ViewportBuilder, ViewportId,Color32
-};
+use egui::{Color32, ComboBox, RichText, ScrollArea, ViewportBuilder, ViewportId};
 
 use serde::{Deserialize, Serialize};
 
@@ -132,7 +130,7 @@ impl RegViewWindow {
                     let text = format!("{} {}", name, val_str);
 
                     // Colour the registers that was last changed
-                    let color:Color32;
+                    let color: Color32;
                     if self.register_changed[i] {
                         color = Color32::RED;
                     } else {

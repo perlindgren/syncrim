@@ -53,7 +53,7 @@ fn main() {
                 "reg_file".into(),
             )),
             RegFile::rc_new(
-                "reg_file",
+                "reg_file".to_string(),
                 (200.0, 200.0),
                 Input::new("rs_addr", "out"),
                 Input::new("rt_addr", "out"),

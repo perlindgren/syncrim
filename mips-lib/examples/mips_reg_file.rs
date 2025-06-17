@@ -18,7 +18,7 @@ fn main() {
             ProbeEdit::rc_new("write_data", (60.0, 220.0)),
             ProbeEdit::rc_new("write_enable", (60.0, 260.0)),
             RegFile::rc_new(
-                "reg_file",
+                "reg_file".to_string(),
                 (200.0, 200.0),
                 Input::new("rs_addr", "out"),
                 Input::new("rt_addr", "out"),

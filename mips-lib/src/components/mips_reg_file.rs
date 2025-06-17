@@ -29,6 +29,7 @@ pub struct RegFile {
     pub(crate) write_address_in: Input,
     pub(crate) write_data_in: Input,
     pub(crate) write_enable_in: Input,
+    #[cfg(feature = "gui-egui")]
     pub reg_view: RefCell<RegViewWindow>,
 
     #[serde(skip)]
@@ -172,7 +173,7 @@ impl Component for RegFile {
         *self.registers.borrow_mut() = [0; 32];
         self.registers.borrow_mut()[29] = 0x8000_0000;
         *self.history.borrow_mut() = vec![];
-        *self.previous_registers.borrow_mut() = [0;32];
+        *self.previous_registers.borrow_mut() = [0; 32];
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -192,6 +193,7 @@ impl RegFile {
     ) -> Self {
         let mut arr: [u32; 32] = [0; 32];
         arr[29] = 0x8000_0000;
+        #[cfg(feature = "gui-egui")]
         let reg_view = RegViewWindow::new(id.clone(), "register file view".into());
         RegFile {
             id,
@@ -205,8 +207,9 @@ impl RegFile {
             history: RefCell::new(vec![]),
             show_reg_names: RefCell::default(),
             reg_format: RefCell::default(),
+            #[cfg(feature = "gui-egui")]
             reg_view: RefCell::new(reg_view),
-            previous_registers: RefCell::new([0;32]),
+            previous_registers: RefCell::new([0; 32]),
             register_changed: RefCell::new([false; 32]),
         }
     }
