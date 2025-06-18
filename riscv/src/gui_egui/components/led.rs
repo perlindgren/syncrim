@@ -1,6 +1,6 @@
 use crate::components::LED;
 use egui::epaint::RectShape;
-use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2};
+use egui::{Color32, CornerRadius, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -55,12 +55,13 @@ impl EguiComponent for LED {
         };
         ui.painter().add(Shape::Rect(RectShape::new(
             rect,
-            Rounding::ZERO,
+            CornerRadius::ZERO,
             bg_color,
             Stroke {
                 width: scale,
                 color: Color32::BLACK,
             },
+            egui::StrokeKind::Inside
         )));
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {

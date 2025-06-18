@@ -5,7 +5,9 @@ use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapP
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::{basic_on_hover, offset_helper, shadow_small_dark};
 use egui::{
-    Color32, CornerRadius, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers, Order, PointerButton, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Vec2, Window
+    Color32, CornerRadius, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers,
+    PointerButton, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, UiBuilder, Vec2,
+    Window,
 };
 
 /// if the mouse cursor is less than this distance in points away from the wire display tooltip
@@ -98,20 +100,11 @@ impl EguiComponent for Wire {
             match editor_mode {
                 EditorMode::Default => {
                     // why the fuck do i need this much code just to make sure its rendered at the correct layer
-                    let resp = ui
-                        .allocate_ui_at_rect(rect, |ui| {
-                            let mut layer = ui.layer_id();
-                            layer.order = Order::Middle;
-                            ui.with_layer_id(layer, |ui| {
-                                ui.allocate_exact_size(
-                                    rect.size(),
-                                    Sense::all(),
-                                )
-                            })
-                        })
-                        .inner
-                        .inner
-                        .1;
+                    let resp = ui.allocate_new_ui(
+                        UiBuilder::new().layer_id(ui.layer_id()).max_rect(rect),
+                        |ui| ui.allocate_exact_size(rect.size(), Sense::all()),
+                    ).inner.1;
+
                     // log::debug!("{:?}", resp);
                     if resp.contains_pointer() {
                         ui.painter().rect_stroke(
@@ -121,7 +114,7 @@ impl EguiComponent for Wire {
                                 width: scale,
                                 color: Color32::RED,
                             },
-                            StrokeKind::Inside
+                            StrokeKind::Inside,
                         );
                     }
                     r.push(resp);

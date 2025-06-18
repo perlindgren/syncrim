@@ -1,7 +1,7 @@
 use crate::components::InstrMem;
-use egui::FontId;
+use egui::{CornerRadius, FontId};
 use egui::{
-    Color32, Context, Label, Pos2, Rect, Response, RichText, Rounding, Sense, Shape, Stroke, Ui,
+    Color32, Context, Label, Pos2, Rect, Response, RichText, Sense, Shape, Stroke, Ui,
     Vec2, Window,
 };
 use egui_extras::{Column, TableBuilder};
@@ -167,11 +167,12 @@ impl EguiComponent for InstrMem {
         };
         ui.painter().add(Shape::rect_stroke(
             rect,
-            Rounding::ZERO,
+            CornerRadius::ZERO,
             Stroke {
                 width: scale,
                 color: Color32::BLACK,
             },
+            egui::StrokeKind::Inside
         ));
         ui.painter().text(
             o.to_pos2(),

@@ -190,7 +190,7 @@ impl Editor {
     }
 
     pub fn update(ctx: &Context, _frame: &mut Frame, gui: &mut Gui) {
-        let frame = egui::Frame::none().fill(egui::Color32::WHITE);
+        let frame = egui::Frame::new().fill(egui::Color32::WHITE);
 
         if Editor::gui_to_editor(gui).should_area_update(ctx) {
             egui::TopBottomPanel::top("topBarEditor").show(ctx, |ui| {
@@ -391,7 +391,7 @@ impl Editor {
         }
         match e.editor_mode {
             EditorMode::Wire => crate::gui_egui::editor_wire_mode::wire_mode(ctx, e, cpr, layer_id),
-            EditorMode::Input => crate::gui_egui::library::input_mode(ctx, e, cpr, layer_id),
+            EditorMode::Input => crate::gui_egui::library::input_mode(ctx, e, cpr),
             EditorMode::Default | EditorMode::Simulator => {
                 ctx.output_mut(|o| o.cursor_icon = egui::CursorIcon::Default)
             }

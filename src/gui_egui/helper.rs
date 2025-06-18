@@ -238,7 +238,7 @@ pub fn basic_component_gui_with_on_hover(
 
             let mut group = egui::containers::Frame::group(ui.style());
             group.inner_margin *= scale;
-            group.rounding *= scale;
+            group.corner_radius *= scale;
             // group.fill = Color32::LIGHT_RED; // Use this ween component background is implemented, probably when we implement dark mode
             group
                 .show(ui, |ui| {
