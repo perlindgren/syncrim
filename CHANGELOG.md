@@ -2,7 +2,16 @@
 
 Tracking changes per date:
 
+## 250618
+
+- updated mips disassembly version.
+- updated Egui version
+  - changed rounding to corner radius
+  - added stroke kind because
+  - removed allocate ui at rect
+
 ## 240911
+
 - Added so that simulator now tracks what component condition
 - Added simulator running state, such as running, halt or error
 - Added stepping functionality
