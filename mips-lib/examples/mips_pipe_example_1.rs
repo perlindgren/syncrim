@@ -13,7 +13,7 @@ fn main() {
     fern_setup();
 
     let rc_reg_file = RegFile::rc_new(
-        "reg_file",
+        "reg_file".to_string(),
         (585.0, 275.0),
         Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
         Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
