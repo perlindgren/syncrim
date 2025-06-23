@@ -802,12 +802,29 @@ impl CLIC {
                     }
                     if mmio_entry.clicintie != 1 || mmio_entry.clicintip != 1 {
                         //dequeue self if pending or enabled status is 0
+                        // we could be more clever about checking when this should happen, this should
+                        // only really do something whenever we write to config registers
+                        // or dispatch an interrupt, i.e. the wraps will never happen.
                         if queue
-                            .remove(&(((addr - offset + 4u32 * i as u32 - 0x1000) / 4) - 0x20))
+                            .remove(
+                                &((addr
+                                    .wrapping_sub(offset)
+                                    .wrapping_add(4u32)
+                                    .wrapping_mul(i as u32)
+                                    .wrapping_sub(0x1000))
+                                    / 4)
+                                .wrapping_sub(0x20),
+                            )
                             .is_some()
                         {
                             history_entry.queue_op.push((
-                                ((addr - offset + 4u32 * i as u32 - 0x1000) / 4),
+                                (addr
+                                    .wrapping_sub(offset)
+                                    .wrapping_add(4u32)
+                                    .wrapping_mul(i as u32)
+                                    .wrapping_sub(0x1000)
+                                    / 4)
+                                .wrapping_sub(0x20),
                                 mmio_entry.clicintctl,
                                 true,
                             ));
