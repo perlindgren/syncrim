@@ -43,7 +43,7 @@ impl EguiComponent for WBCtl {
                 width: scale,
                 color: Color32::RED,
             },
-            egui::StrokeKind::Inside
+            egui::StrokeKind::Inside,
         ));
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {

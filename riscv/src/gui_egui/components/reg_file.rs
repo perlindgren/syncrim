@@ -1,6 +1,7 @@
 use crate::components::{Reg, RegFile, RegStore};
 use egui::{
-    Color32, Context, CornerRadius, Label, Pos2, Rect, Response, RichText, Shape, Stroke, Ui, Vec2, Window
+    Color32, Context, CornerRadius, Label, Pos2, Rect, Response, RichText, Shape, Stroke, Ui, Vec2,
+    Window,
 };
 use egui_extras::{Column, TableBuilder};
 use syncrim::common::{EguiComponent, Ports, Simulator};
@@ -91,7 +92,7 @@ impl EguiComponent for RegFile {
                 width: scale,
                 color: Color32::BLACK,
             },
-            egui::StrokeKind::Inside
+            egui::StrokeKind::Inside,
         ));
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
             ui.label(format!("Id: {}", self.id.clone()));

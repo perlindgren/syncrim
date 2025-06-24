@@ -100,10 +100,13 @@ impl EguiComponent for Wire {
             match editor_mode {
                 EditorMode::Default => {
                     // why the fuck do i need this much code just to make sure its rendered at the correct layer
-                    let resp = ui.allocate_new_ui(
-                        UiBuilder::new().layer_id(ui.layer_id()).max_rect(rect),
-                        |ui| ui.allocate_exact_size(rect.size(), Sense::all()),
-                    ).inner.1;
+                    let resp = ui
+                        .allocate_new_ui(
+                            UiBuilder::new().layer_id(ui.layer_id()).max_rect(rect),
+                            |ui| ui.allocate_exact_size(rect.size(), Sense::all()),
+                        )
+                        .inner
+                        .1;
 
                     // log::debug!("{:?}", resp);
                     if resp.contains_pointer() {

@@ -1,9 +1,8 @@
 use crate::components::InstrMem;
-use egui::{CornerRadius, FontId};
 use egui::{
-    Color32, Context, Label, Pos2, Rect, Response, RichText, Sense, Shape, Stroke, Ui,
-    Vec2, Window,
+    Color32, Context, Label, Pos2, Rect, Response, RichText, Sense, Shape, Stroke, Ui, Vec2, Window,
 };
+use egui::{CornerRadius, FontId};
 use egui_extras::{Column, TableBuilder};
 use log::trace;
 use riscv_asm_strings;
@@ -172,7 +171,7 @@ impl EguiComponent for InstrMem {
                 width: scale,
                 color: Color32::BLACK,
             },
-            egui::StrokeKind::Inside
+            egui::StrokeKind::Inside,
         ));
         ui.painter().text(
             o.to_pos2(),

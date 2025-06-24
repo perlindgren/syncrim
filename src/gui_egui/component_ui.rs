@@ -5,7 +5,8 @@ use crate::gui_egui::helper::{
     editor_mode_to_sense, offset_helper, out_of_bounds, unique_component_name,
 };
 use egui::{
-    containers, Color32, ComboBox, Context, CornerRadius, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers, PointerButton, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2, Window
+    containers, Color32, ComboBox, Context, CornerRadius, DragValue, Frame, Key, KeyboardShortcut,
+    Margin, Modifiers, PointerButton, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2, Window,
 };
 use epaint::CircleShape;
 

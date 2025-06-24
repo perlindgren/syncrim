@@ -50,7 +50,7 @@ impl EguiComponent for Cross {
                 width: scale,
                 color: Color32::RED,
             },
-            egui::StrokeKind::Inside // added because off https://github.com/emilk/egui/pull/5648
+            egui::StrokeKind::Inside, // added because off https://github.com/emilk/egui/pull/5648
         )));
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {

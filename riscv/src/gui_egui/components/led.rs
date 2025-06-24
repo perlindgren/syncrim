@@ -61,7 +61,7 @@ impl EguiComponent for LED {
                 width: scale,
                 color: Color32::BLACK,
             },
-            egui::StrokeKind::Inside
+            egui::StrokeKind::Inside,
         )));
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {

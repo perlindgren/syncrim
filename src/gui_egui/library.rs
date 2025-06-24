@@ -5,9 +5,7 @@ use crate::gui_egui::{
     editor_wire_mode::get_grid_snap,
     helper::{id_ports_of_all_components, offset_reverse_helper_pos2, unique_component_name},
 };
-use egui::{
-    Context, CursorIcon, PointerButton, Pos2, Rect, Response, Ui, UiBuilder, Vec2
-};
+use egui::{Context, CursorIcon, PointerButton, Pos2, Rect, Response, Ui, UiBuilder, Vec2};
 use std::{collections::HashMap, path::PathBuf, rc::Rc};
 
 pub struct InputMode {
@@ -39,11 +37,10 @@ pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response) {
     let mut ui = Ui::new(
         ctx.to_owned(),
         "input".into(),
-        UiBuilder::new()
-        // layer_id
-        // clip_rect,
-        // Rect::EVERYTHING,
-        // UiStackInfo::new(egui::UiKind::Frame),
+        UiBuilder::new(), // layer_id
+                          // clip_rect,
+                          // Rect::EVERYTHING,
+                          // UiStackInfo::new(egui::UiKind::Frame),
     );
     let pos = if e.grid.enable && e.grid.snap_enable {
         match get_grid_snap(

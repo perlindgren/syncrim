@@ -105,7 +105,7 @@ pub fn editor_mode_to_sense(editor_mode: EditorMode) -> Sense {
 
 pub fn shadow_small_dark() -> Shadow {
     Shadow {
-        offset: [5,5],
+        offset: [5, 5],
         blur: 5,
         spread: 0,
         color: Color32::BLACK,
