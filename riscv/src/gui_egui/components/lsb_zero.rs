@@ -1,5 +1,5 @@
 use crate::components::LSBZero;
-use egui::{Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Ui, Vec2};
+use egui::{Color32, CornerRadius, Pos2, Rect, Response, Shape, Stroke, Ui, Vec2};
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
     drag_logic, input_change_id, input_selector, pos_drag_value, properties_window,
@@ -38,11 +38,12 @@ impl EguiComponent for LSBZero {
         };
         ui.painter().add(Shape::rect_stroke(
             rect,
-            Rounding::ZERO,
+            CornerRadius::ZERO,
             Stroke {
                 width: scale,
                 color: Color32::BLACK,
             },
+            egui::StrokeKind::Inside,
         ));
 
         let r = rect_with_hover(rect, clip_rect, editor_mode, ui, self.id.clone(), |ui| {
