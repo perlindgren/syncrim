@@ -2,9 +2,13 @@
 
 Tracking changes per date:
 
-## 250618
+## 250624
 
-- updated mips disassembly version.
+- updated dependencies which required no code changes
+  - fern
+  - num_enum
+  - petgraph
+  - rfd
 - updated Egui version
   - changed rounding to corner radius
   - added stroke kind because

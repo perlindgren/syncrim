@@ -9,10 +9,8 @@ edition = "2021"
 members = ["mips-lib", "riscv"]
 
 [dependencies]
-MIPS_disassembly = "0.1.7"
 anyhow = "1.0.72"
 clap = { version = "4.3.15", features = ["derive"] }
-elf = "0.8.0"
 fern = "0.7.1"
 log = "0.4.19"
 num_enum = "0.7.4"
