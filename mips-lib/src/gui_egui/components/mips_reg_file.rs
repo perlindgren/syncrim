@@ -82,9 +82,9 @@ impl EguiComponent for RegFile {
                     };
                     let text = format!("{} {}", name, val_str);
 
-                    // Colour the registers that was last changed
+                    // Colour the register that was last changed
                     let color: Color32;
-                    if self.register_changed.borrow()[i] {
+                    if *(self.changed_register.borrow()) == i as u32 {
                         color = Color32::RED;
                     } else {
                         color = Color32::GRAY;
@@ -102,21 +102,8 @@ impl EguiComponent for RegFile {
                 reg_view.visible = reg_view_vis;
                 reg_view.render(ui.ctx());
 
-                // Check which registers have been modified.
-                // reg_view_window is notified about those registers.
-                let reg_values = *self.registers.borrow();
-                let previous_reg_values = *self.previous_registers.borrow();
-                let mut reg_value_has_changed: [bool; 32] = [false; 32];
-                for i in 0..reg_values.len() {
-                    if reg_values[i] != previous_reg_values[i] {
-                        reg_value_has_changed[i] = true;
-                    }
-                }
-                if reg_value_has_changed.contains(&true) {
-                    reg_view.set_reg_values(reg_values, reg_value_has_changed);
-                    *self.previous_registers.borrow_mut() = reg_values;
-                    *self.register_changed.borrow_mut() = reg_value_has_changed;
-                }
+                // Update the register view with the current register values
+                reg_view.set_reg_values(*self.registers.borrow(), *self.changed_register.borrow());
             }
         }
         r

@@ -11,10 +11,9 @@ pub struct RegViewWindow {
     // used for formatting the view
     reg_format: RegFormat,
 
-    // used for show register
-    register_values: [u32; 32],
     show_reg_names: bool,
-    register_changed: [bool; 32],
+    register_values: [u32; 32],
+    changed_register: u32,
 }
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
@@ -35,9 +34,9 @@ const REG_NAMES: [&str; 32] = [
 
 impl RegViewWindow {
     // set register values
-    pub fn set_reg_values(&mut self, reg_values: [u32; 32], reg_value_has_changed: [bool; 32]) {
+    pub fn set_reg_values(&mut self, reg_values: [u32; 32], changed_register: u32) {
         self.register_values = reg_values;
-        self.register_changed = reg_value_has_changed;
+        self.changed_register = changed_register;
     }
 
     // creates a new register file view window with id string and the given memory
@@ -49,7 +48,7 @@ impl RegViewWindow {
             register_values: [0; 32],
             show_reg_names: true,
             reg_format: RegFormat::Hex,
-            register_changed: [false; 32],
+            changed_register: u32::MAX, // placeholder
         }
     }
 
@@ -129,9 +128,9 @@ impl RegViewWindow {
                     };
                     let text = format!("{} {}", name, val_str);
 
-                    // Colour the registers that was last changed
+                    // Colour the register that was last changed
                     let color: Color32;
-                    if self.register_changed[i] {
+                    if self.changed_register == i as u32 {
                         color = Color32::RED;
                     } else {
                         color = Color32::GRAY;

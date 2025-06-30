@@ -29,24 +29,22 @@ pub struct RegFile {
     pub(crate) write_address_in: Input,
     pub(crate) write_data_in: Input,
     pub(crate) write_enable_in: Input,
+
     #[cfg(feature = "gui-egui")]
     pub reg_view: RefCell<RegViewWindow>,
 
     #[serde(skip)]
     pub registers: RefCell<[u32; 32]>, // all 32 registers, in the future, we might save the whole signal
     #[serde(skip)]
-    pub previous_registers: RefCell<[u32; 32]>,
-    #[serde(skip)]
     history: RefCell<Vec<RegOp>>, // contains the value before it was modified used for unclock.
 
     //used for gui
     #[serde(skip)]
     pub show_reg_names: RefCell<bool>,
-
     #[serde(skip)]
     pub reg_format: RefCell<RegFormat>,
-
-    pub register_changed: RefCell<[bool; 32]>,
+    #[serde(skip)]
+    pub changed_register: RefCell<u32>, // the adress of the register that was last changed
 }
 #[derive(Clone, Default, PartialEq, PartialOrd, Debug)]
 pub enum RegFormat {
@@ -152,6 +150,7 @@ impl Component for RegFile {
         // write data
         if w_enable == 1 && w_addr != 0 {
             self.registers.borrow_mut()[w_addr] = w_data;
+            *self.changed_register.borrow_mut() = w_addr as u32;
         };
 
         // update out signals, no {} since self.registers are dropped at end of function
@@ -165,6 +164,9 @@ impl Component for RegFile {
     fn un_clock(&self) {
         if let Some(last_op) = self.history.borrow_mut().pop() {
             let mut regs = self.registers.borrow_mut();
+            if regs[last_op.addr as usize] != last_op.data {
+                *self.changed_register.borrow_mut() = last_op.addr as u32;
+            }
             regs[last_op.addr as usize] = last_op.data;
         }
     }
@@ -172,8 +174,8 @@ impl Component for RegFile {
     fn reset(&self) {
         *self.registers.borrow_mut() = [0; 32];
         self.registers.borrow_mut()[29] = 0x8000_0000;
+        *self.changed_register.borrow_mut() = 29;
         *self.history.borrow_mut() = vec![];
-        *self.previous_registers.borrow_mut() = [0; 32];
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -209,8 +211,7 @@ impl RegFile {
             reg_format: RefCell::default(),
             #[cfg(feature = "gui-egui")]
             reg_view: RefCell::new(reg_view),
-            previous_registers: RefCell::new([0; 32]),
-            register_changed: RefCell::new([false; 32]),
+            changed_register: RefCell::new(29),
         }
     }
 
