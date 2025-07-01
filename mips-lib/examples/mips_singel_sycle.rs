@@ -217,7 +217,7 @@ fn main() {
             //
             //
             RegFile::rc_new(
-                "reg_file",
+                "reg_file".to_string(),
                 (350.0, 225.0),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
                 Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),

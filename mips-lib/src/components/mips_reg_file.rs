@@ -1,3 +1,6 @@
+#[cfg(feature = "gui-egui")]
+use crate::gui_egui::mips_reg_view_window::RegViewWindow;
+
 // use std::fmt::Alignment;
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -17,7 +20,7 @@ pub mod reg_file_fields {
     pub const RS_VALUE_OUT_ID: &str = "rs_value_out";
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize)]
 pub struct RegFile {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -27,17 +30,22 @@ pub struct RegFile {
     pub(crate) write_data_in: Input,
     pub(crate) write_enable_in: Input,
 
+    #[cfg(feature = "gui-egui")]
     #[serde(skip)]
-    pub registers: RefCell<[u32; 32]>, // all 32 registers, in future, we might save the whole signal
+    pub reg_view: RefCell<RegViewWindow>,
+
+    #[serde(skip)]
+    pub registers: RefCell<[u32; 32]>, // all 32 registers, in the future, we might save the whole signal
     #[serde(skip)]
     history: RefCell<Vec<RegOp>>, // contains the value before it was modified used for unclock.
 
     //used for gui
     #[serde(skip)]
     pub show_reg_names: RefCell<bool>,
-
     #[serde(skip)]
     pub reg_format: RefCell<RegFormat>,
+    #[serde(skip)]
+    pub changed_register: RefCell<u32>, // the adress of the register that was last changed
 }
 #[derive(Clone, Default, PartialEq, PartialOrd, Debug)]
 pub enum RegFormat {
@@ -143,6 +151,7 @@ impl Component for RegFile {
         // write data
         if w_enable == 1 && w_addr != 0 {
             self.registers.borrow_mut()[w_addr] = w_data;
+            *self.changed_register.borrow_mut() = w_addr as u32;
         };
 
         // update out signals, no {} since self.registers are dropped at end of function
@@ -156,6 +165,9 @@ impl Component for RegFile {
     fn un_clock(&self) {
         if let Some(last_op) = self.history.borrow_mut().pop() {
             let mut regs = self.registers.borrow_mut();
+            if regs[last_op.addr as usize] != last_op.data {
+                *self.changed_register.borrow_mut() = last_op.addr as u32;
+            }
             regs[last_op.addr as usize] = last_op.data;
         }
     }
@@ -163,6 +175,7 @@ impl Component for RegFile {
     fn reset(&self) {
         *self.registers.borrow_mut() = [0; 32];
         self.registers.borrow_mut()[29] = 0x8000_0000;
+        *self.changed_register.borrow_mut() = 29;
         *self.history.borrow_mut() = vec![];
     }
 
@@ -173,7 +186,7 @@ impl Component for RegFile {
 
 impl RegFile {
     pub fn new(
-        id: &str,
+        id: String,
         pos: (f32, f32),
         rs_address_in: Input,
         rt_address_in: Input,
@@ -183,8 +196,10 @@ impl RegFile {
     ) -> Self {
         let mut arr: [u32; 32] = [0; 32];
         arr[29] = 0x8000_0000;
+        #[cfg(feature = "gui-egui")]
+        let reg_view = RegViewWindow::new(id.clone(), "register file view".into());
         RegFile {
-            id: id.to_string(),
+            id,
             pos,
             rs_address_in,
             rt_address_in,
@@ -195,11 +210,14 @@ impl RegFile {
             history: RefCell::new(vec![]),
             show_reg_names: RefCell::default(),
             reg_format: RefCell::default(),
+            #[cfg(feature = "gui-egui")]
+            reg_view: RefCell::new(reg_view),
+            changed_register: RefCell::new(29),
         }
     }
 
     pub fn rc_new(
-        id: &str,
+        id: String,
         pos: (f32, f32),
         rs_address_in: Input,
         rt_address_in: Input,
