@@ -31,6 +31,9 @@ impl EguiComponent for RegFile {
             ui.set_height(250f32 * scale);
             ui.label("Register File");
 
+            // A toggle button for showing register names
+            ui.toggle_value(&mut self.show_reg_names.borrow_mut(), "Show names");
+
             // showing the display format of the register
             let mut tmp: RegFormat = self.reg_format.borrow().clone();
             ComboBox::from_id_source(&self.id)
