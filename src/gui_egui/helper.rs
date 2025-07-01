@@ -98,24 +98,16 @@ pub fn id_ports_of_all_components_non_wires(cs: &Components) -> Vec<(crate::comm
 
 pub fn editor_mode_to_sense(editor_mode: EditorMode) -> Sense {
     match editor_mode {
-        EditorMode::Wire => Sense {
-            click: false,
-            drag: false,
-            focusable: false,
-        },
-        _ => Sense {
-            click: true,
-            drag: true,
-            focusable: true,
-        },
+        EditorMode::Wire => Sense::hover(),
+        _ => Sense::all(),
     }
 }
 
 pub fn shadow_small_dark() -> Shadow {
     Shadow {
-        offset: Vec2 { x: 5.0, y: 5.0 },
-        blur: 5.0,
-        spread: 0.0,
+        offset: [5, 5],
+        blur: 5,
+        spread: 0,
         color: Color32::BLACK,
     }
 }
@@ -246,7 +238,7 @@ pub fn basic_component_gui_with_on_hover(
 
             let mut group = egui::containers::Frame::group(ui.style());
             group.inner_margin *= scale;
-            group.rounding *= scale;
+            group.corner_radius *= scale;
             // group.fill = Color32::LIGHT_RED; // Use this ween component background is implemented, probably when we implement dark mode
             group
                 .show(ui, |ui| {
