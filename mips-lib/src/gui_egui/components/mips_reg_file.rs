@@ -94,7 +94,12 @@ impl EguiComponent for RegFile {
                     }
 
                     // Draw the label with monospace font and the chosen color
-                    ui.label(RichText::new(text).monospace().color(color));
+                    ui.label(
+                        RichText::new(text)
+                            .size(12f32 * scale)
+                            .monospace()
+                            .color(color),
+                    );
                 }
             });
         });
