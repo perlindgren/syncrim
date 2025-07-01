@@ -1085,18 +1085,6 @@
       "write_enable_in": {
         "id": "reg_we",
         "field": "register_out"
-      },
-      "reg_view": {
-        "visible": false,
-        "title": "register file view",
-        "id": "reg_file",
-        "reg_format": "Hex",
-        "register_values": [
-          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0, 0, 0, 0, 0, 0, 2147483648, 0, 0
-        ],
-        "show_reg_names": false,
-        "changed_register": 29
       }
     },
     {
