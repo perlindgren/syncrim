@@ -95,16 +95,14 @@ impl EguiComponent for RegFile {
                 }
             });
         });
-        if let Some(_sim) = &simulator {
-            // {} to drop RefMut as early as possible
-            {
-                let mut reg_view = self.reg_view.borrow_mut();
-                reg_view.visible = reg_view_vis;
-                reg_view.render(ui.ctx());
+        // {} to drop RefMut as early as possible
+        {
+            let mut reg_view = self.reg_view.borrow_mut();
+            reg_view.visible = reg_view_vis;
+            reg_view.render(ui.ctx());
 
-                // Update the register view with the current register values
-                reg_view.set_reg_values(*self.registers.borrow(), *self.changed_register.borrow());
-            }
+            // Update the register view with the current register values
+            reg_view.set_reg_values(*self.registers.borrow(), *self.changed_register.borrow());
         }
         r
     }
