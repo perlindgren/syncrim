@@ -2,7 +2,7 @@ use egui::{Color32, ComboBox, RichText, ScrollArea, ViewportBuilder, ViewportId}
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, Default)]
 pub struct RegViewWindow {
     pub visible: bool,
     title: String,
@@ -16,8 +16,9 @@ pub struct RegViewWindow {
     changed_register: u32,
 }
 
-#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Clone, Serialize, Deserialize, PartialEq, Debug, Default)]
 enum RegFormat {
+    #[default]
     Hex,
     Bin,
     DecSigned,

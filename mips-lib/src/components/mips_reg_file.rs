@@ -20,7 +20,7 @@ pub mod reg_file_fields {
     pub const RS_VALUE_OUT_ID: &str = "rs_value_out";
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize)]
 pub struct RegFile {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -31,6 +31,7 @@ pub struct RegFile {
     pub(crate) write_enable_in: Input,
 
     #[cfg(feature = "gui-egui")]
+    #[serde(skip)]
     pub reg_view: RefCell<RegViewWindow>,
 
     #[serde(skip)]
