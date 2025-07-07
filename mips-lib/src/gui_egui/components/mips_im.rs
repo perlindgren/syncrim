@@ -26,6 +26,12 @@ impl InstrMem {
             .borrow_mut()
             .set_reg_values(*reg.registers.borrow());
     }
+    fn update_mem_view_dynamic_symbols(&self, sim: &Simulator) {
+        self.mem_view.borrow_mut().set_dynamic_symbol(
+            "PC_IM",
+            std::convert::TryInto::<u32>::try_into((sim).get_input_value(&self.pc)).unwrap(),
+        );
+    }
 }
 
 #[typetag::serde]
@@ -76,8 +82,9 @@ impl EguiComponent for InstrMem {
         });
 
         // handle mem_window and load of new file
-        if let Some(sim) = &simulator {
+        if let Some(ref sim) = simulator {
             self.update_mem_view_register_values(sim);
+            self.update_mem_view_dynamic_symbols(sim);
             #[allow(clippy::expect_fun_call)]
             let phys_mem: &PhysicalMem = find_component_with_type(sim, &self.phys_mem_id).expect(
                 &format!("can't find {} with type PhysicalMem", self.regfile_id),
