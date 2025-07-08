@@ -27,10 +27,24 @@ impl InstrMem {
             .set_reg_values(*reg.registers.borrow());
     }
     fn update_mem_view_dynamic_symbols(&self, sim: &Simulator) {
-        self.mem_view.borrow_mut().set_dynamic_symbol(
-            "PC_IM",
-            std::convert::TryInto::<u32>::try_into((sim).get_input_value(&self.pc)).unwrap(),
-        );
+        let mut mem_view = self.mem_view.borrow_mut();
+        let pc_history = self.pc_history.borrow();
+        if mem_view.get_dynamic_symbol("PC_IM") != None {
+            mem_view.set_dynamic_symbol(
+                "PC_IM",
+                std::convert::TryInto::<u32>::try_into((sim).get_input_value(&self.pc)).unwrap(),
+            );
+        }
+
+        if (pc_history.len() >= 2) && (mem_view.get_dynamic_symbol("PC_DE") != None) {
+            mem_view.set_dynamic_symbol("PC_DE", pc_history[pc_history.len() - 1]);
+            if (pc_history.len() >= 3) && (mem_view.get_dynamic_symbol("PC_EX") != None) {
+                mem_view.set_dynamic_symbol("PC_EX", pc_history[pc_history.len() - 2]);
+                if (pc_history.len() >= 4) && (mem_view.get_dynamic_symbol("PC_DM") != None) {
+                    mem_view.set_dynamic_symbol("PC_DM", pc_history[pc_history.len() - 3]);
+                }
+            }
+        }
     }
 }
 

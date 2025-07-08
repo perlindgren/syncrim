@@ -422,7 +422,10 @@
           0, 0, 0, 0, 0, 0, 2147483648, 0, 0
         ],
         "dynamic_symbols": {
-          "PC_IM": [0, true]
+          "PC_IM": [0, true],
+          "PC_DE": [0, false],
+          "PC_EX": [0, false],
+          "PC_DM": [0, false]
         },
         "break_points": []
       }

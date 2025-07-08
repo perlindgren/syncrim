@@ -26,6 +26,9 @@ pub struct InstrMem {
     pub regfile_id: String,
     #[cfg(feature = "gui-egui")]
     pub mem_view: RefCell<MemViewWindow>,
+
+    #[serde(skip)]
+    pub pc_history: RefCell<Vec<u32>>,
 }
 
 impl InstrMem {
@@ -44,9 +47,10 @@ impl InstrMem {
             pos,
             pc: pc_input,
             phys_mem_id,
+            regfile_id,
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
-            regfile_id,
+            pc_history: RefCell::new(vec![]),
         }
     }
     pub fn rc_new(
@@ -77,9 +81,10 @@ impl Component for InstrMem {
             pos,
             pc: dummy_input,
             phys_mem_id: "dummy".into(),
+            regfile_id: "dummy".into(),
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
-            regfile_id: "dummy".into(),
+            pc_history: RefCell::new(vec![]),
         }))
     }
 
@@ -127,9 +132,14 @@ impl Component for InstrMem {
                 .get(pc, MemOpSize::Word, false, true)
         };
 
-        // update dynamic symbol PC_IM
         #[cfg(feature = "gui-egui")]
-        self.mem_view.borrow_mut().set_dynamic_symbol("PC_IM", pc);
+        self.pc_history
+            .borrow_mut()
+            .push(self.mem_view.borrow().get_dynamic_symbol("PC_IM").unwrap());
+
+        // update dynamic symbol PC_IM
+        //#[cfg(feature = "gui-egui")]
+        //self.mem_view.borrow_mut().set_dynamic_symbol("PC_IM", pc);
 
         // Get a word at PC with the size of 32bits, read as big endian,
         // sign extend doesn't mater since we have 32 bits so extending to 32bits does nothing
@@ -146,6 +156,24 @@ impl Component for InstrMem {
                 Ok(())
             }
             Err(_) => Err(Condition::Error(format!("Unaligned Read, PC = {:#0x}", pc))),
+        }
+    }
+    fn un_clock(&self) {
+        let mut pc_history = self.pc_history.borrow_mut();
+        #[cfg(feature = "gui-egui")]
+        let mut mem_view = self.mem_view.borrow_mut();
+        #[cfg(feature = "gui-egui")]
+        if (pc_history.len() >= 1) && (mem_view.get_dynamic_symbol("PC_IM") != None) {
+            mem_view.set_dynamic_symbol("PC_IM", pc_history.pop().unwrap());
+            if (pc_history.len() >= 1) && (mem_view.get_dynamic_symbol("PC_DE") != None) {
+                mem_view.set_dynamic_symbol("PC_DE", pc_history[pc_history.len() - 1]);
+                if (pc_history.len() >= 2) && (mem_view.get_dynamic_symbol("PC_EX") != None) {
+                    mem_view.set_dynamic_symbol("PC_EX", pc_history[pc_history.len() - 2]);
+                    if (pc_history.len() >= 3) && (mem_view.get_dynamic_symbol("PC_DM") != None) {
+                        mem_view.set_dynamic_symbol("PC_DM", pc_history[pc_history.len() - 3]);
+                    }
+                }
+            }
         }
     }
 }
