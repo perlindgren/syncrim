@@ -31,6 +31,9 @@ impl EguiComponent for RegFile {
             ui.set_height(250f32 * scale);
             ui.label("Register File");
 
+            // A toggle button for showing register names
+            ui.toggle_value(&mut self.show_reg_names.borrow_mut(), "Show names");
+
             // showing the display format of the register
             let mut tmp: RegFormat = self.reg_format.borrow().clone();
             ComboBox::from_id_source(&self.id)
@@ -82,42 +85,32 @@ impl EguiComponent for RegFile {
                     };
                     let text = format!("{} {}", name, val_str);
 
-                    // Colour the registers that was last changed
+                    // Colour the register that was last changed
                     let color: Color32;
-                    if self.register_changed.borrow()[i] {
+                    if *(self.changed_register.borrow()) == i as u32 {
                         color = Color32::RED;
                     } else {
                         color = Color32::GRAY;
                     }
 
                     // Draw the label with monospace font and the chosen color
-                    ui.label(RichText::new(text).monospace().color(color));
+                    ui.label(
+                        RichText::new(text)
+                            .size(12f32 * scale)
+                            .monospace()
+                            .color(color),
+                    );
                 }
             });
         });
-        if let Some(_sim) = &simulator {
-            // {} to drop RefMut as early as possible
-            {
-                let mut reg_view = self.reg_view.borrow_mut();
-                reg_view.visible = reg_view_vis;
-                reg_view.render(ui.ctx());
+        // {} to drop RefMut as early as possible
+        {
+            let mut reg_view = self.reg_view.borrow_mut();
+            reg_view.visible = reg_view_vis;
+            reg_view.render(ui.ctx());
 
-                // Check which registers have been modified.
-                // reg_view_window is notified about those registers.
-                let reg_values = *self.registers.borrow();
-                let previous_reg_values = *self.previous_registers.borrow();
-                let mut reg_value_has_changed: [bool; 32] = [false; 32];
-                for i in 0..reg_values.len() {
-                    if reg_values[i] != previous_reg_values[i] {
-                        reg_value_has_changed[i] = true;
-                    }
-                }
-                if reg_value_has_changed.contains(&true) {
-                    reg_view.set_reg_values(reg_values, reg_value_has_changed);
-                    *self.previous_registers.borrow_mut() = reg_values;
-                    *self.register_changed.borrow_mut() = reg_value_has_changed;
-                }
-            }
+            // Update the register view with the current register values
+            reg_view.set_reg_values(*self.registers.borrow(), *self.changed_register.borrow());
         }
         r
     }
