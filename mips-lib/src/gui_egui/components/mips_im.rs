@@ -76,7 +76,7 @@ impl EguiComponent for InstrMem {
         });
 
         // handle mem_window and load of new file
-        if let Some(ref sim) = simulator {
+        if let Some(sim) = &simulator {
             self.update_mem_view_register_values(sim);
             self.mem_view
                 .borrow_mut()
