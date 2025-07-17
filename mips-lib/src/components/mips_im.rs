@@ -1,4 +1,5 @@
 use core::cell::RefCell;
+use std::collections::HashMap;
 // use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -29,6 +30,8 @@ pub struct InstrMem {
 
     #[serde(skip)]
     pub pc_history: RefCell<Vec<u32>>,
+
+    pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
 }
 
 impl InstrMem {
@@ -51,6 +54,7 @@ impl InstrMem {
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
             pc_history: RefCell::new(vec![]),
+            dynamic_symbols: RefCell::new(HashMap::new()),
         }
     }
     pub fn rc_new(
@@ -61,6 +65,53 @@ impl InstrMem {
         regfile_id: String,
     ) -> Rc<InstrMem> {
         Rc::new(InstrMem::new(id, pos, pc_input, phys_mem_id, regfile_id))
+    }
+    pub fn update_dynamic_symbols(&self, new_pc: u32) {
+        let pc_history = self.pc_history.borrow();
+        let mut new_dynamic_symbols = self.dynamic_symbols.borrow_mut().clone();
+        if new_dynamic_symbols.contains_key("PC_IM") {
+            new_dynamic_symbols.insert(
+                "PC_IM".to_string(),
+                (
+                    new_pc,
+                    new_dynamic_symbols.get_key_value("PC_IM").unwrap().1 .1,
+                ),
+            );
+        }
+        if pc_history.len() > 1 {
+            if new_dynamic_symbols.contains_key("PC_DE") {
+                new_dynamic_symbols.insert(
+                    "PC_DE".to_string(),
+                    (
+                        pc_history[pc_history.len() - 1],
+                        new_dynamic_symbols.get_key_value("PC_DE").unwrap().1 .1,
+                    ),
+                );
+            }
+            if pc_history.len() > 2 {
+                if new_dynamic_symbols.contains_key("PC_EX") {
+                    new_dynamic_symbols.insert(
+                        "PC_EX".to_string(),
+                        (
+                            pc_history[pc_history.len() - 2],
+                            new_dynamic_symbols.get_key_value("PC_EX").unwrap().1 .1,
+                        ),
+                    );
+                }
+                if pc_history.len() > 3 {
+                    if new_dynamic_symbols.contains_key("PC_DM") {
+                        new_dynamic_symbols.insert(
+                            "PC_DM".to_string(),
+                            (
+                                pc_history[pc_history.len() - 3],
+                                new_dynamic_symbols.get_key_value("PC_DM").unwrap().1 .1,
+                            ),
+                        );
+                    }
+                }
+            }
+        }
+        *self.dynamic_symbols.borrow_mut() = new_dynamic_symbols;
     }
 }
 
@@ -85,6 +136,7 @@ impl Component for InstrMem {
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
             pc_history: RefCell::new(vec![]),
+            dynamic_symbols: RefCell::new(HashMap::new()),
         }))
     }
 
@@ -132,14 +184,10 @@ impl Component for InstrMem {
                 .get(pc, MemOpSize::Word, false, true)
         };
 
-        #[cfg(feature = "gui-egui")]
         self.pc_history
             .borrow_mut()
-            .push(self.mem_view.borrow().get_dynamic_symbol("PC_IM").unwrap());
-
-        // update dynamic symbol PC_IM
-        //#[cfg(feature = "gui-egui")]
-        //self.mem_view.borrow_mut().set_dynamic_symbol("PC_IM", pc);
+            .push(self.dynamic_symbols.borrow().get("PC_IM").unwrap().0);
+        self.update_dynamic_symbols(pc);
 
         // Get a word at PC with the size of 32bits, read as big endian,
         // sign extend doesn't mater since we have 32 bits so extending to 32bits does nothing
@@ -159,21 +207,27 @@ impl Component for InstrMem {
         }
     }
     fn un_clock(&self) {
-        let mut pc_history = self.pc_history.borrow_mut();
-        #[cfg(feature = "gui-egui")]
-        let mut mem_view = self.mem_view.borrow_mut();
-        #[cfg(feature = "gui-egui")]
-        if (pc_history.len() >= 1) && (mem_view.get_dynamic_symbol("PC_IM") != None) {
-            mem_view.set_dynamic_symbol("PC_IM", pc_history.pop().unwrap());
-            if (pc_history.len() >= 1) && (mem_view.get_dynamic_symbol("PC_DE") != None) {
-                mem_view.set_dynamic_symbol("PC_DE", pc_history[pc_history.len() - 1]);
-                if (pc_history.len() >= 2) && (mem_view.get_dynamic_symbol("PC_EX") != None) {
-                    mem_view.set_dynamic_symbol("PC_EX", pc_history[pc_history.len() - 2]);
-                    if (pc_history.len() >= 3) && (mem_view.get_dynamic_symbol("PC_DM") != None) {
-                        mem_view.set_dynamic_symbol("PC_DM", pc_history[pc_history.len() - 3]);
-                    }
-                }
+        let previous_pc: u32 = self.pc_history.borrow_mut().pop().unwrap();
+        self.update_dynamic_symbols(previous_pc);
+    }
+    fn reset(&self) {
+        if self.pc_history.borrow().len() >= 1 {
+            let start_pc = self.pc_history.borrow()[0];
+            let current_symbol_keys: Vec<String> =
+                self.dynamic_symbols.borrow().keys().cloned().collect();
+
+            let mut new_symbols: HashMap<String, (u32, bool)> = HashMap::new();
+            for symbol_name in current_symbol_keys {
+                new_symbols.insert(
+                    symbol_name.clone(),
+                    (
+                        start_pc,
+                        self.dynamic_symbols.borrow().get(&symbol_name).unwrap().1,
+                    ),
+                );
             }
+            *self.dynamic_symbols.borrow_mut() = new_symbols;
+            self.pc_history.borrow_mut().clear();
         }
     }
 }

@@ -26,26 +26,6 @@ impl InstrMem {
             .borrow_mut()
             .set_reg_values(*reg.registers.borrow());
     }
-    fn update_mem_view_dynamic_symbols(&self, sim: &Simulator) {
-        let mut mem_view = self.mem_view.borrow_mut();
-        let pc_history = self.pc_history.borrow();
-        if mem_view.get_dynamic_symbol("PC_IM") != None {
-            mem_view.set_dynamic_symbol(
-                "PC_IM",
-                std::convert::TryInto::<u32>::try_into((sim).get_input_value(&self.pc)).unwrap(),
-            );
-        }
-
-        if (pc_history.len() >= 2) && (mem_view.get_dynamic_symbol("PC_DE") != None) {
-            mem_view.set_dynamic_symbol("PC_DE", pc_history[pc_history.len() - 1]);
-            if (pc_history.len() >= 3) && (mem_view.get_dynamic_symbol("PC_EX") != None) {
-                mem_view.set_dynamic_symbol("PC_EX", pc_history[pc_history.len() - 2]);
-                if (pc_history.len() >= 4) && (mem_view.get_dynamic_symbol("PC_DM") != None) {
-                    mem_view.set_dynamic_symbol("PC_DM", pc_history[pc_history.len() - 3]);
-                }
-            }
-        }
-    }
 }
 
 #[typetag::serde]
@@ -98,7 +78,9 @@ impl EguiComponent for InstrMem {
         // handle mem_window and load of new file
         if let Some(ref sim) = simulator {
             self.update_mem_view_register_values(sim);
-            self.update_mem_view_dynamic_symbols(sim);
+            self.mem_view
+                .borrow_mut()
+                .set_all_dynamic_symbols(self.dynamic_symbols.borrow().clone());
             #[allow(clippy::expect_fun_call)]
             let phys_mem: &PhysicalMem = find_component_with_type(sim, &self.phys_mem_id).expect(
                 &format!("can't find {} with type PhysicalMem", self.regfile_id),
