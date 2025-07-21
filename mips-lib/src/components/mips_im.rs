@@ -28,7 +28,7 @@ pub struct InstrMem {
     pub mem_view: RefCell<MemViewWindow>,
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
-    pub load_err: RefCell<Option<MemLoadError>>
+    pub load_err: RefCell<Option<MemLoadError>>,
 }
 
 impl InstrMem {
@@ -51,7 +51,7 @@ impl InstrMem {
             mem_view: RefCell::new(mem_view),
             regfile_id,
             #[cfg(feature = "gui-egui")]
-            load_err: RefCell::new(None)
+            load_err: RefCell::new(None),
         }
     }
     pub fn rc_new(
@@ -84,7 +84,7 @@ impl Component for InstrMem {
             phys_mem_id: "dummy".into(),
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
             regfile_id: "dummy".into(),
-            load_err: RefCell::new(None)
+            load_err: RefCell::new(None),
         }))
     }
 
