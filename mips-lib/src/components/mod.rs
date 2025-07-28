@@ -10,7 +10,9 @@ mod mips_jump_merge;
 mod mips_reg_file;
 mod physical_mem;
 mod sz_extend;
+mod mips_mmu;
 
+pub use mips_mmu::*;
 pub use mips_alu::*;
 pub use mips_alu_forward::*;
 pub use mips_branch_logic::*;
