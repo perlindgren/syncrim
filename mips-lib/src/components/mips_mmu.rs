@@ -48,6 +48,16 @@ impl Component for MipsMmu {
     }
 
     fn clock(&self, _simulator: &mut Simulator) -> Result<(), Condition> {
+        // from lab 3a we have this information for regarding hardware addresses
+        // 
+        // IO component address 0xFFFF_0000
+        // +8 IO out
+        //
+        //
+        // timer address 0xFFFF_0010
+        // +0 Timer Control Register
+        // +4 Timer Count Register
+        // +8 Timer Compare Register  
         warn!("TODO make mmu send out select signal and modified address");
         Ok(())
     }
