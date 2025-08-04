@@ -3,10 +3,7 @@
     {
       "type": "Register",
       "id": "reg_we",
-      "pos": [
-        850.0,
-        50.0
-      ],
+      "pos": [850.0, 50.0],
       "r_in": {
         "id": "control_unit",
         "field": "reg_write_enable"
@@ -15,10 +12,7 @@
     {
       "type": "Register",
       "id": "result_reg",
-      "pos": [
-        850.0,
-        225.0
-      ],
+      "pos": [850.0, 225.0],
       "r_in": {
         "id": "mux_write_back",
         "field": "mux_out"
@@ -27,10 +21,7 @@
     {
       "type": "Register",
       "id": "pc",
-      "pos": [
-        150.0,
-        390.0
-      ],
+      "pos": [150.0, 390.0],
       "r_in": {
         "id": "mux_jump_merge",
         "field": "mux_out"
@@ -39,10 +30,7 @@
     {
       "type": "Register",
       "id": "reg_write_addr",
-      "pos": [
-        850.0,
-        525.0
-      ],
+      "pos": [850.0, 525.0],
       "r_in": {
         "id": "mux_write_addr",
         "field": "mux_out"
@@ -52,30 +40,12 @@
       "type": "Wire",
       "id": "from result_reg:register_out to reg_file:write_data_in",
       "pos": [
-        [
-          860.0,
-          225.0
-        ],
-        [
-          870.0,
-          225.0
-        ],
-        [
-          870.0,
-          373.0
-        ],
-        [
-          278.0,
-          373.0
-        ],
-        [
-          278.0,
-          335.0
-        ],
-        [
-          284.0,
-          335.0
-        ]
+        [860.0, 225.0],
+        [870.0, 225.0],
+        [870.0, 373.0],
+        [278.0, 373.0],
+        [278.0, 335.0],
+        [284.0, 335.0]
       ],
       "input": {
         "id": "result_reg",
@@ -85,19 +55,13 @@
     {
       "type": "Constant",
       "id": "0x_1F",
-      "pos": [
-        350.0,
-        550.0
-      ],
+      "pos": [350.0, 550.0],
       "value": {
         "data": {
           "Data": 31
         },
         "fmt": {
-          "Hex": [
-            "_32",
-            false
-          ]
+          "Hex": ["_32", false]
         }
       }
     },
@@ -105,14 +69,8 @@
       "type": "Wire",
       "id": "from 0x_1F:constant_out to mux_write_addr:in2",
       "pos": [
-        [
-          350.0,
-          550.0
-        ],
-        [
-          388.0,
-          537.0
-        ]
+        [350.0, 550.0],
+        [388.0, 537.0]
       ],
       "input": {
         "id": "0x_1F",
@@ -122,19 +80,13 @@
     {
       "type": "Constant",
       "id": "0_a_inp",
-      "pos": [
-        610.0,
-        220.0
-      ],
+      "pos": [610.0, 220.0],
       "value": {
         "data": {
           "Data": 0
         },
         "fmt": {
-          "Hex": [
-            "_32",
-            false
-          ]
+          "Hex": ["_32", false]
         }
       }
     },
@@ -142,14 +94,8 @@
       "type": "Wire",
       "id": "from 0_a_inp:constant_out to mux_source_a:in2",
       "pos": [
-        [
-          610.0,
-          220.0
-        ],
-        [
-          638.0,
-          207.0
-        ]
+        [610.0, 220.0],
+        [638.0, 207.0]
       ],
       "input": {
         "id": "0_a_inp",
@@ -160,53 +106,27 @@
       "type": "Wire",
       "id": "from reg_we:register_out to reg_file:write_enable_in",
       "pos": [
-        [
-          860.0,
-          50.0
-        ],
-        [
-          870.0,
-          50.0
-        ],
-        [
-          870.0,
-          85.0
-        ],
-        [
-          370.0,
-          85.0
-        ],
-        [
-          370.0,
-          94.0
-        ]
+        [860.0, 50.0],
+        [870.0, 50.0],
+        [870.0, 85.0],
+        [370.0, 85.0],
+        [370.0, 94.0]
       ],
       "input": {
         "id": "reg_we",
         "field": "register_out"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "PhysicalMem",
       "id": "phys_mem",
-      "pos": [
-        425.0,
-        575.0
-      ]
+      "pos": [425.0, 575.0]
     },
     {
       "type": "InstrMem",
       "id": "instr_mem",
-      "pos": [
-        250.0,
-        575.0
-      ],
+      "pos": [250.0, 575.0],
       "pc": {
         "id": "pc",
         "field": "register_out"
@@ -261,44 +181,11 @@
           ]
         },
         "register_values": [
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          2147483648,
-          0,
-          0
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 2147483648, 0, 0
         ],
         "dynamic_symbols": {
-          "PC_IM": [
-            0,
-            true
-          ]
+          "PC_IM": [0, true]
         },
         "break_points": []
       }
@@ -306,10 +193,7 @@
     {
       "type": "JumpMerge",
       "id": "jump_merge",
-      "pos": [
-        125.0,
-        475.0
-      ],
+      "pos": [125.0, 475.0],
       "instr_addr_in": {
         "id": "pc",
         "field": "register_out"
@@ -323,22 +207,10 @@
       "type": "Wire",
       "id": "from jump_merge:merge_out to mux_jump_merge:in2",
       "pos": [
-        [
-          85.0,
-          475.0
-        ],
-        [
-          67.0,
-          475.0
-        ],
-        [
-          67.0,
-          396.0
-        ],
-        [
-          88.0,
-          396.0
-        ]
+        [85.0, 475.0],
+        [67.0, 475.0],
+        [67.0, 396.0],
+        [88.0, 396.0]
       ],
       "input": {
         "id": "jump_merge",
@@ -349,37 +221,20 @@
       "type": "Wire",
       "id": "from instr_mem:instruction to control_unit:control_unit_instr_in",
       "pos": [
-        [
-          245.0,
-          344.0
-        ],
-        [
-          245.0,
-          50.0
-        ],
-        [
-          294.0,
-          50.0
-        ]
+        [245.0, 344.0],
+        [245.0, 50.0],
+        [294.0, 50.0]
       ],
       "input": {
         "id": "instr_mem",
         "field": "instruction"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "InstrSplit",
       "id": "instruction_split",
-      "pos": [
-        200.0,
-        225.0
-      ],
+      "pos": [200.0, 225.0],
       "instruction_in": {
         "id": "instr_mem",
         "field": "instruction"
@@ -389,22 +244,10 @@
       "type": "Wire",
       "id": "from instruction_split:rt_out to mux_write_addr:in0",
       "pos": [
-        [
-          231.0,
-          236.11111
-        ],
-        [
-          255.0,
-          236.11111
-        ],
-        [
-          255.0,
-          512.5
-        ],
-        [
-          388.0,
-          513.0
-        ]
+        [231.0, 236.11111],
+        [255.0, 236.11111],
+        [255.0, 512.5],
+        [388.0, 513.0]
       ],
       "input": {
         "id": "instruction_split",
@@ -415,30 +258,12 @@
       "type": "Wire",
       "id": "from instruction_split:shamt_out to zero_extend_for_chamt:signal_in",
       "pos": [
-        [
-          231.0,
-          147.0
-        ],
-        [
-          250.0,
-          147.0
-        ],
-        [
-          250.0,
-          77.0
-        ],
-        [
-          483.0,
-          77.0
-        ],
-        [
-          483.0,
-          150.0
-        ],
-        [
-          509.0,
-          150.0
-        ]
+        [231.0, 147.0],
+        [250.0, 147.0],
+        [250.0, 77.0],
+        [483.0, 77.0],
+        [483.0, 150.0],
+        [509.0, 150.0]
       ],
       "input": {
         "id": "instruction_split",
@@ -449,22 +274,10 @@
       "type": "Wire",
       "id": "from instruction_split:immediate_out to signzero_extend:signzero_signal_in",
       "pos": [
-        [
-          231.0,
-          258.3333
-        ],
-        [
-          236.0,
-          258.3333
-        ],
-        [
-          236.0,
-          425.0
-        ],
-        [
-          266.5,
-          425.0
-        ]
+        [231.0, 258.3333],
+        [236.0, 258.3333],
+        [236.0, 425.0],
+        [266.5, 425.0]
       ],
       "input": {
         "id": "instruction_split",
@@ -475,26 +288,11 @@
       "type": "Wire",
       "id": "from instruction_split:rs_out to reg_file:rs_address_in",
       "pos": [
-        [
-          231.0,
-          213.88889
-        ],
-        [
-          261.0,
-          213.88889
-        ],
-        [
-          261.0,
-          85.0
-        ],
-        [
-          350.0,
-          85.0
-        ],
-        [
-          350.0,
-          94.0
-        ]
+        [231.0, 213.88889],
+        [261.0, 213.88889],
+        [261.0, 85.0],
+        [350.0, 85.0],
+        [350.0, 94.0]
       ],
       "input": {
         "id": "instruction_split",
@@ -505,22 +303,10 @@
       "type": "Wire",
       "id": "from instruction_split:rd_out to mux_write_addr:in1",
       "pos": [
-        [
-          231.0,
-          280.55554
-        ],
-        [
-          251.0,
-          280.55554
-        ],
-        [
-          251.0,
-          525.0
-        ],
-        [
-          388.0,
-          525.0
-        ]
+        [231.0, 280.55554],
+        [251.0, 280.55554],
+        [251.0, 525.0],
+        [388.0, 525.0]
       ],
       "input": {
         "id": "instruction_split",
@@ -530,10 +316,7 @@
     {
       "type": "ZeroExtend",
       "id": "zero_extend_for_chamt",
-      "pos": [
-        550.0,
-        150.0
-      ],
+      "pos": [550.0, 150.0],
       "signal_in": {
         "id": "instruction_split",
         "field": "shamt_out"
@@ -543,22 +326,10 @@
       "type": "Wire",
       "id": "from zero_extend_for_chamt:zero_extend_out to mux_source_a:in0",
       "pos": [
-        [
-          591.0,
-          150.0
-        ],
-        [
-          607.0,
-          150.0
-        ],
-        [
-          607.0,
-          183.0
-        ],
-        [
-          638.0,
-          183.0
-        ]
+        [591.0, 150.0],
+        [607.0, 150.0],
+        [607.0, 183.0],
+        [638.0, 183.0]
       ],
       "input": {
         "id": "zero_extend_for_chamt",
@@ -569,14 +340,8 @@
       "type": "Wire",
       "id": "from instruction_split:rt_out to reg_file:rt_address_in",
       "pos": [
-        [
-          255.0,
-          261.0
-        ],
-        [
-          284.0,
-          261.0
-        ]
+        [255.0, 261.0],
+        [284.0, 261.0]
       ],
       "input": {
         "id": "instruction_split",
@@ -586,10 +351,7 @@
     {
       "type": "ControlUnit",
       "id": "control_unit",
-      "pos": [
-        500.0,
-        50.0
-      ],
+      "pos": [500.0, 50.0],
       "a_in": {
         "id": "instr_mem",
         "field": "instruction"
@@ -599,89 +361,47 @@
       "type": "Wire",
       "id": "from control_unit:alu_src_a to mux_source_a:select",
       "pos": [
-        [
-          644.0,
-          63.5
-        ],
-        [
-          644.0,
-          171.0
-        ]
+        [644.0, 63.5],
+        [644.0, 171.0]
       ],
       "input": {
         "id": "control_unit",
         "field": "alu_src_a"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "Wire",
       "id": "from control_unit:reg_write_src to mux_write_back:select",
       "pos": [
-        [
-          690.0,
-          63.5
-        ],
-        [
-          690.0,
-          115.0
-        ],
-        [
-          794.0,
-          115.0
-        ],
-        [
-          794.0,
-          207.0
-        ]
+        [690.0, 63.5],
+        [690.0, 115.0],
+        [794.0, 115.0],
+        [794.0, 207.0]
       ],
       "input": {
         "id": "control_unit",
         "field": "reg_write_src"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "Wire",
       "id": "from control_unit:extend_select to signzero_extend:signzero_ctrl_in",
       "pos": [
-        [
-          333.3333,
-          63.5
-        ],
-        [
-          325.0,
-          404.0
-        ]
+        [333.3333, 63.5],
+        [325.0, 404.0]
       ],
       "input": {
         "id": "control_unit",
         "field": "extend_select"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "SignZeroExtend",
       "id": "signzero_extend",
-      "pos": [
-        325.0,
-        425.0
-      ],
+      "pos": [325.0, 425.0],
       "signzero_signal_in": {
         "id": "instruction_split",
         "field": "immediate_out"
@@ -695,30 +415,12 @@
       "type": "Wire",
       "id": "from signzero_extend:sz_out to branch_shift:shift_in",
       "pos": [
-        [
-          384.0,
-          425.0
-        ],
-        [
-          390.0,
-          425.0
-        ],
-        [
-          390.0,
-          448.0
-        ],
-        [
-          280.5,
-          448.0
-        ],
-        [
-          280.5,
-          480.0
-        ],
-        [
-          291.5,
-          480.0
-        ]
+        [384.0, 425.0],
+        [390.0, 425.0],
+        [390.0, 448.0],
+        [280.5, 448.0],
+        [280.5, 480.0],
+        [291.5, 480.0]
       ],
       "input": {
         "id": "signzero_extend",
@@ -728,10 +430,7 @@
     {
       "type": "ShiftConst",
       "id": "branch_shift",
-      "pos": [
-        325.0,
-        480.0
-      ],
+      "pos": [325.0, 480.0],
       "signal_in": {
         "id": "signzero_extend",
         "field": "sz_out"
@@ -741,10 +440,7 @@
     {
       "type": "Mux",
       "id": "mux_write_addr",
-      "pos": [
-        400.0,
-        525.0
-      ],
+      "pos": [400.0, 525.0],
       "select": {
         "id": "control_unit",
         "field": "reg_dest"
@@ -769,14 +465,8 @@
       "type": "Wire",
       "id": "from mux_write_addr:mux_out to reg_write_addr:r_in",
       "pos": [
-        [
-          406.0,
-          525.0
-        ],
-        [
-          840.0,
-          525.0
-        ]
+        [406.0, 525.0],
+        [840.0, 525.0]
       ],
       "input": {
         "id": "mux_write_addr",
@@ -787,74 +477,37 @@
       "type": "Wire",
       "id": "from control_unit:reg_dest to mux_write_addr:select",
       "pos": [
-        [
-          420.0,
-          63.5
-        ],
-        [
-          420.0,
-          501.0
-        ],
-        [
-          394.5,
-          501.0
-        ]
+        [420.0, 63.5],
+        [420.0, 501.0],
+        [394.5, 501.0]
       ],
       "input": {
         "id": "control_unit",
         "field": "reg_dest"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "Wire",
       "id": "from control_unit:alu_op to alu:alu_op_in",
       "pos": [
-        [
-          660.0,
-          63.5
-        ],
-        [
-          660.0,
-          123.0
-        ],
-        [
-          710.0,
-          123.0
-        ],
-        [
-          710.0,
-          185.0
-        ]
+        [660.0, 63.5],
+        [660.0, 123.0],
+        [710.0, 123.0],
+        [710.0, 185.0]
       ],
       "input": {
         "id": "control_unit",
         "field": "alu_op"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "Wire",
       "id": "from pc:register_out to pc+4:b_in",
       "pos": [
-        [
-          176.0,
-          390.0
-        ],
-        [
-          188.0,
-          387.5
-        ]
+        [176.0, 390.0],
+        [188.0, 387.5]
       ],
       "input": {
         "id": "pc",
@@ -865,26 +518,11 @@
       "type": "Wire",
       "id": "from pc:register_out to instr_mem:pc",
       "pos": [
-        [
-          160.0,
-          390.0
-        ],
-        [
-          175.79999,
-          390.0
-        ],
-        [
-          175.79999,
-          520.0
-        ],
-        [
-          210.0,
-          520.0
-        ],
-        [
-          210.0,
-          541.5
-        ]
+        [160.0, 390.0],
+        [175.79999, 390.0],
+        [175.79999, 520.0],
+        [210.0, 520.0],
+        [210.0, 541.5]
       ],
       "input": {
         "id": "pc",
@@ -895,14 +533,8 @@
       "type": "Wire",
       "id": "from branch_shift:shift_left_const_out to pc_add_branch:b_in",
       "pos": [
-        [
-          358.5,
-          480.0
-        ],
-        [
-          388.0,
-          487.0
-        ]
+        [358.5, 480.0],
+        [388.0, 487.0]
       ],
       "input": {
         "id": "branch_shift",
@@ -913,14 +545,8 @@
       "type": "Wire",
       "id": "from pc:register_out to jump_merge:merge_instr_addr_in",
       "pos": [
-        [
-          175.5,
-          471.0
-        ],
-        [
-          165.0,
-          471.0
-        ]
+        [175.5, 471.0],
+        [165.0, 471.0]
       ],
       "input": {
         "id": "pc",
@@ -931,18 +557,9 @@
       "type": "Wire",
       "id": "from instr_mem:instruction to jump_merge:merge_jump_addr_in",
       "pos": [
-        [
-          245.0,
-          541.5
-        ],
-        [
-          245.0,
-          483.0
-        ],
-        [
-          165.0,
-          483.0
-        ]
+        [245.0, 541.5],
+        [245.0, 483.0],
+        [165.0, 483.0]
       ],
       "input": {
         "id": "instr_mem",
@@ -953,106 +570,52 @@
       "type": "Wire",
       "id": "from control_unit:mem_mode to data_mem:data_mem_op_in",
       "pos": [
-        [
-          630.0,
-          63.5
-        ],
-        [
-          630.0,
-          541.5
-        ]
+        [630.0, 63.5],
+        [630.0, 541.5]
       ],
       "input": {
         "id": "control_unit",
         "field": "mem_mode"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "Wire",
       "id": "from control_unit:reg_write_enable to reg_we:r_in",
       "pos": [
-        [
-          706.0,
-          50.0
-        ],
-        [
-          840.0,
-          50.0
-        ]
+        [706.0, 50.0],
+        [840.0, 50.0]
       ],
       "input": {
         "id": "control_unit",
         "field": "reg_write_enable"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "Wire",
       "id": "from control_unit:alu_src_b to mux_source_b:select",
       "pos": [
-        [
-          678.0,
-          63.5
-        ],
-        [
-          678.0,
-          212.0
-        ],
-        [
-          644.0,
-          231.0
-        ]
+        [678.0, 63.5],
+        [678.0, 212.0],
+        [644.0, 231.0]
       ],
       "input": {
         "id": "control_unit",
         "field": "alu_src_b"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "Wire",
       "id": "from reg_write_addr:register_out to reg_file:write_address_in",
       "pos": [
-        [
-          860.0,
-          525.0
-        ],
-        [
-          870.0,
-          525.0
-        ],
-        [
-          870.0,
-          390.0
-        ],
-        [
-          273.0,
-          390.0
-        ],
-        [
-          273.0,
-          315.0
-        ],
-        [
-          285.0,
-          315.0
-        ]
+        [860.0, 525.0],
+        [870.0, 525.0],
+        [870.0, 390.0],
+        [273.0, 390.0],
+        [273.0, 315.0],
+        [285.0, 315.0]
       ],
       "input": {
         "id": "reg_write_addr",
@@ -1062,10 +625,7 @@
     {
       "type": "RegFile",
       "id": "reg_file",
-      "pos": [
-        350.0,
-        225.0
-      ],
+      "pos": [350.0, 225.0],
       "rs_address_in": {
         "id": "instruction_split",
         "field": "rs_out"
@@ -1091,14 +651,8 @@
       "type": "Wire",
       "id": "from reg_file:rs_value_out to mux_source_a:in1",
       "pos": [
-        [
-          436.0,
-          195.0
-        ],
-        [
-          638.0,
-          195.0
-        ]
+        [436.0, 195.0],
+        [638.0, 195.0]
       ],
       "input": {
         "id": "reg_file",
@@ -1109,14 +663,8 @@
       "type": "Wire",
       "id": "from reg_file:rt_value_out to branch:branch_rt_value_id",
       "pos": [
-        [
-          448.5,
-          195.0
-        ],
-        [
-          448.5,
-          211.0
-        ]
+        [448.5, 195.0],
+        [448.5, 211.0]
       ],
       "input": {
         "id": "reg_file",
@@ -1127,30 +675,12 @@
       "type": "Wire",
       "id": "from reg_file:rs_value_out to mux_jump_merge:in1",
       "pos": [
-        [
-          416.0,
-          195.0
-        ],
-        [
-          436.0,
-          195.0
-        ],
-        [
-          436.0,
-          72.0
-        ],
-        [
-          67.0,
-          72.0
-        ],
-        [
-          67.0,
-          384.0
-        ],
-        [
-          88.0,
-          384.0
-        ]
+        [416.0, 195.0],
+        [436.0, 195.0],
+        [436.0, 72.0],
+        [67.0, 72.0],
+        [67.0, 384.0],
+        [88.0, 384.0]
       ],
       "input": {
         "id": "reg_file",
@@ -1160,10 +690,7 @@
     {
       "type": "BranchLogic",
       "id": "branch",
-      "pos": [
-        475.0,
-        225.0
-      ],
+      "pos": [475.0, 225.0],
       "op_in": {
         "id": "instruction_split",
         "field": "op_out"
@@ -1189,41 +716,21 @@
       "type": "Wire",
       "id": "from branch:branch_out to mux_jump_merge:select",
       "pos": [
-        [
-          475.0,
-          211.0
-        ],
-        [
-          475.0,
-          90.0
-        ],
-        [
-          94.0,
-          90.0
-        ],
-        [
-          94.0,
-          360.0
-        ]
+        [475.0, 211.0],
+        [475.0, 90.0],
+        [94.0, 90.0],
+        [94.0, 360.0]
       ],
       "input": {
         "id": "branch",
         "field": "branch_out"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "Mux",
       "id": "mux_source_a",
-      "pos": [
-        650.0,
-        195.0
-      ],
+      "pos": [650.0, 195.0],
       "select": {
         "id": "control_unit",
         "field": "alu_src_a"
@@ -1248,14 +755,8 @@
       "type": "Wire",
       "id": "from mux_source_a:mux_out to alu:alu_a_in",
       "pos": [
-        [
-          656.0,
-          195.0
-        ],
-        [
-          700.0,
-          195.0
-        ]
+        [656.0, 195.0],
+        [700.0, 195.0]
       ],
       "input": {
         "id": "mux_source_a",
@@ -1266,22 +767,10 @@
       "type": "Wire",
       "id": "from reg_file:rt_value_out to mux_source_b:in0",
       "pos": [
-        [
-          416.0,
-          265.0
-        ],
-        [
-          448.5,
-          265.0
-        ],
-        [
-          448.5,
-          243.0
-        ],
-        [
-          638.0,
-          243.0
-        ]
+        [416.0, 265.0],
+        [448.5, 265.0],
+        [448.5, 243.0],
+        [638.0, 243.0]
       ],
       "input": {
         "id": "reg_file",
@@ -1292,18 +781,9 @@
       "type": "Wire",
       "id": "from reg_file:rt_value_out to data_mem:data_mem_write_data_in",
       "pos": [
-        [
-          520.0,
-          244.0
-        ],
-        [
-          520.0,
-          575.0
-        ],
-        [
-          534.0,
-          575.0
-        ]
+        [520.0, 244.0],
+        [520.0, 575.0],
+        [534.0, 575.0]
       ],
       "input": {
         "id": "reg_file",
@@ -1314,14 +794,8 @@
       "type": "Wire",
       "id": "from reg_file:rs_value_out to branch:branch_rs_value_id",
       "pos": [
-        [
-          448.5,
-          245.0
-        ],
-        [
-          448.5,
-          238.0
-        ]
+        [448.5, 245.0],
+        [448.5, 238.0]
       ],
       "input": {
         "id": "reg_file",
@@ -1331,19 +805,13 @@
     {
       "type": "Constant",
       "id": "+4",
-      "pos": [
-        150.0,
-        440.0
-      ],
+      "pos": [150.0, 440.0],
       "value": {
         "data": {
           "Data": 4
         },
         "fmt": {
-          "Hex": [
-            "_32",
-            false
-          ]
+          "Hex": ["_32", false]
         }
       }
     },
@@ -1351,14 +819,8 @@
       "type": "Wire",
       "id": "from +4:constant_out to pc+4:a_in",
       "pos": [
-        [
-          150.0,
-          440.0
-        ],
-        [
-          188.0,
-          412.0
-        ]
+        [150.0, 440.0],
+        [188.0, 412.0]
       ],
       "input": {
         "id": "+4",
@@ -1368,10 +830,7 @@
     {
       "type": "Add",
       "id": "pc+4",
-      "pos": [
-        200.0,
-        400.0
-      ],
+      "pos": [200.0, 400.0],
       "a_in": {
         "id": "+4",
         "field": "constant_out"
@@ -1385,10 +844,7 @@
     {
       "type": "Add",
       "id": "pc_add_branch",
-      "pos": [
-        400.0,
-        475.0
-      ],
+      "pos": [400.0, 475.0],
       "a_in": {
         "id": "pc+4",
         "field": "add_out"
@@ -1403,38 +859,14 @@
       "type": "Wire",
       "id": "from pc_add_branch:add_out to mux_jump_merge:in0",
       "pos": [
-        [
-          412.0,
-          475.0
-        ],
-        [
-          422.5,
-          475.0
-        ],
-        [
-          422.5,
-          365.0
-        ],
-        [
-          213.0,
-          365.0
-        ],
-        [
-          213.0,
-          356.0
-        ],
-        [
-          75.0,
-          356.0
-        ],
-        [
-          75.0,
-          372.0
-        ],
-        [
-          88.0,
-          372.0
-        ]
+        [412.0, 475.0],
+        [422.5, 475.0],
+        [422.5, 365.0],
+        [213.0, 365.0],
+        [213.0, 356.0],
+        [75.0, 356.0],
+        [75.0, 372.0],
+        [88.0, 372.0]
       ],
       "input": {
         "id": "pc_add_branch",
@@ -1444,10 +876,7 @@
     {
       "type": "Mux",
       "id": "mux_jump_merge",
-      "pos": [
-        100.0,
-        390.0
-      ],
+      "pos": [100.0, 390.0],
       "select": {
         "id": "branch",
         "field": "branch_out"
@@ -1476,14 +905,8 @@
       "type": "Wire",
       "id": "from mux_jump_merge:mux_out to pc:r_in",
       "pos": [
-        [
-          106.0,
-          390.0
-        ],
-        [
-          140.0,
-          390.0
-        ]
+        [106.0, 390.0],
+        [140.0, 390.0]
       ],
       "input": {
         "id": "mux_jump_merge",
@@ -1494,30 +917,12 @@
       "type": "Wire",
       "id": "from pc+4:add_out to mux_jump_merge:in3",
       "pos": [
-        [
-          212.0,
-          400.0
-        ],
-        [
-          225.0,
-          400.0
-        ],
-        [
-          225.0,
-          437.0
-        ],
-        [
-          77.0,
-          437.0
-        ],
-        [
-          77.0,
-          408.0
-        ],
-        [
-          88.0,
-          408.0
-        ]
+        [212.0, 400.0],
+        [225.0, 400.0],
+        [225.0, 437.0],
+        [77.0, 437.0],
+        [77.0, 408.0],
+        [88.0, 408.0]
       ],
       "input": {
         "id": "pc+4",
@@ -1527,10 +932,7 @@
     {
       "type": "Mux",
       "id": "mux_source_b",
-      "pos": [
-        650.0,
-        255.0
-      ],
+      "pos": [650.0, 255.0],
       "select": {
         "id": "control_unit",
         "field": "alu_src_b"
@@ -1555,14 +957,8 @@
       "type": "Wire",
       "id": "from mux_source_b:mux_out to alu:alu_b_in",
       "pos": [
-        [
-          656.0,
-          255.0
-        ],
-        [
-          700.0,
-          255.0
-        ]
+        [656.0, 255.0],
+        [700.0, 255.0]
       ],
       "input": {
         "id": "mux_source_b",
@@ -1572,10 +968,7 @@
     {
       "type": "ALU",
       "id": "alu",
-      "pos": [
-        720.0,
-        225.0
-      ],
+      "pos": [720.0, 225.0],
       "a_in": {
         "id": "mux_source_a",
         "field": "mux_out"
@@ -1593,22 +986,10 @@
       "type": "Wire",
       "id": "from alu:alu_out to mux_write_back:in0",
       "pos": [
-        [
-          750.0,
-          225.0
-        ],
-        [
-          764.0,
-          225.0
-        ],
-        [
-          764.0,
-          219.0
-        ],
-        [
-          788.0,
-          219.0
-        ]
+        [750.0, 225.0],
+        [764.0, 225.0],
+        [764.0, 219.0],
+        [788.0, 219.0]
       ],
       "input": {
         "id": "alu",
@@ -1619,26 +1000,11 @@
       "type": "Wire",
       "id": "from alu:alu_out to data_mem:data_mem_address_in",
       "pos": [
-        [
-          740.0,
-          225.0
-        ],
-        [
-          750.0,
-          225.0
-        ],
-        [
-          750.0,
-          450.0
-        ],
-        [
-          570.0,
-          450.0
-        ],
-        [
-          570.0,
-          541.5
-        ]
+        [740.0, 225.0],
+        [750.0, 225.0],
+        [750.0, 450.0],
+        [570.0, 450.0],
+        [570.0, 541.5]
       ],
       "input": {
         "id": "alu",
@@ -1648,10 +1014,7 @@
     {
       "type": "DataMem",
       "id": "data_mem",
-      "pos": [
-        600.0,
-        575.0
-      ],
+      "pos": [600.0, 575.0],
       "address_input": {
         "id": "alu",
         "field": "alu_out"
@@ -1718,44 +1081,11 @@
           ]
         },
         "register_values": [
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          2147483648,
-          0,
-          0
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 2147483648, 0, 0
         ],
         "dynamic_symbols": {
-          "DM_ADRS": [
-            0,
-            false
-          ]
+          "DM_ADRS": [0, false]
         },
         "break_points": []
       }
@@ -1764,22 +1094,10 @@
       "type": "Wire",
       "id": "from data_mem:data_out to mux_write_back:in1",
       "pos": [
-        [
-          666.0,
-          575.0
-        ],
-        [
-          775.0,
-          575.0
-        ],
-        [
-          775.0,
-          231.0
-        ],
-        [
-          788.0,
-          231.0
-        ]
+        [666.0, 575.0],
+        [775.0, 575.0],
+        [775.0, 231.0],
+        [788.0, 231.0]
       ],
       "input": {
         "id": "data_mem",
@@ -1789,10 +1107,7 @@
     {
       "type": "Mux",
       "id": "mux_write_back",
-      "pos": [
-        800.0,
-        225.0
-      ],
+      "pos": [800.0, 225.0],
       "select": {
         "id": "control_unit",
         "field": "reg_write_src"
@@ -1813,14 +1128,8 @@
       "type": "Wire",
       "id": "from mux_write_back:mux_out to result_reg:r_in",
       "pos": [
-        [
-          806.0,
-          225.0
-        ],
-        [
-          840.0,
-          225.0
-        ]
+        [806.0, 225.0],
+        [840.0, 225.0]
       ],
       "input": {
         "id": "mux_write_back",
@@ -1831,18 +1140,9 @@
       "type": "Wire",
       "id": "from pc+4:add_out to pc_add_branch:a_in",
       "pos": [
-        [
-          225.0,
-          436.5
-        ],
-        [
-          225.0,
-          463.0
-        ],
-        [
-          388.0,
-          463.0
-        ]
+        [225.0, 436.5],
+        [225.0, 463.0],
+        [388.0, 463.0]
       ],
       "input": {
         "id": "pc+4",
@@ -1853,22 +1153,10 @@
       "type": "Wire",
       "id": "from pc+4:add_out to mux_source_b:in1",
       "pos": [
-        [
-          225.0,
-          400.0
-        ],
-        [
-          477.0,
-          400.0
-        ],
-        [
-          477.0,
-          256.0
-        ],
-        [
-          638.0,
-          255.0
-        ]
+        [225.0, 400.0],
+        [477.0, 400.0],
+        [477.0, 256.0],
+        [638.0, 255.0]
       ],
       "input": {
         "id": "pc+4",
@@ -1879,46 +1167,23 @@
       "type": "Wire",
       "id": "from control_unit:mem_write_enable to data_mem:data_mem_write_enable",
       "pos": [
-        [
-          600.0,
-          63.5
-        ],
-        [
-          600.0,
-          541.5
-        ]
+        [600.0, 63.5],
+        [600.0, 541.5]
       ],
       "input": {
         "id": "control_unit",
         "field": "mem_write_enable"
       },
-      "color_rgba": [
-        0,
-        0,
-        0,
-        20
-      ]
+      "color_rgba": [0, 0, 0, 20]
     },
     {
       "type": "Wire",
       "id": "from signzero_extend:sz_out to mux_source_b:in2",
       "pos": [
-        [
-          390.0,
-          425.0
-        ],
-        [
-          541.0,
-          425.0
-        ],
-        [
-          541.0,
-          268.0
-        ],
-        [
-          638.0,
-          267.0
-        ]
+        [390.0, 425.0],
+        [541.0, 425.0],
+        [541.0, 268.0],
+        [638.0, 267.0]
       ],
       "input": {
         "id": "signzero_extend",
@@ -1929,22 +1194,10 @@
       "type": "Wire",
       "id": "from instr_mem:instruction to instruction_split:instruction_in",
       "pos": [
-        [
-          245.0,
-          483.0
-        ],
-        [
-          245.0,
-          343.5
-        ],
-        [
-          200.0,
-          343.5
-        ],
-        [
-          200.0,
-          330.5
-        ]
+        [245.0, 483.0],
+        [245.0, 343.5],
+        [200.0, 343.5],
+        [200.0, 330.5]
       ],
       "input": {
         "id": "instr_mem",

@@ -8,11 +8,11 @@ use syncrim::common::{
     Component, Condition, Id, Input, InputPort, OutputType, Ports, SignalValue, Simulator,
 };
 
-pub const FULL_ADD_A_IN_ID: &str = "full_add_a_in";
-pub const FULL_ADD_B_IN_ID: &str = "full_add_b_in";
-pub const FULL_ADD_OP_IN_ID: &str = "full_add_op_in";
-pub const FULL_ADD_OUT_ID: &str = "alu_out";
-pub const FULL_ADD_OVERFLOW_OUT_ID: &str = "alu_overflow_out";
+pub const ALU_A_IN_ID: &str = "alu_a_in";
+pub const ALU_B_IN_ID: &str = "alu_b_in";
+pub const ALU_OP_IN_ID: &str = "alu_op_in";
+pub const ALU_OUT_ID: &str = "alu_out";
+pub const ALU_OVERFLOW_OUT_ID: &str = "alu_overflow_out";
 
 pub mod alu_op {
     pub const ADD: u32 = 0;
@@ -43,7 +43,7 @@ pub struct ALU {
 #[typetag::serde]
 impl Component for ALU {
     fn to_(&self) {
-        trace!("full_adder");
+        trace!("alu");
     }
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, _id: &str, _pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
@@ -62,29 +62,29 @@ impl Component for ALU {
             Ports::new(
                 vec![
                     &InputPort {
-                        port_id: FULL_ADD_A_IN_ID.to_string(),
+                        port_id: ALU_OUT_ID.to_string(),
                         input: self.a_in.clone(),
                     },
                     &InputPort {
-                        port_id: FULL_ADD_B_IN_ID.to_string(),
+                        port_id: ALU_B_IN_ID.to_string(),
                         input: self.b_in.clone(),
                     },
                     &InputPort {
-                        port_id: FULL_ADD_OP_IN_ID.to_string(),
+                        port_id: ALU_OP_IN_ID.to_string(),
                         input: self.op_in.clone(),
                     },
                 ],
                 OutputType::Combinatorial,
-                vec![FULL_ADD_OUT_ID, FULL_ADD_OVERFLOW_OUT_ID],
+                vec![ALU_OUT_ID, ALU_OVERFLOW_OUT_ID],
             ),
         )
     }
 
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
-            FULL_ADD_A_IN_ID => self.a_in = new_input,
-            FULL_ADD_B_IN_ID => self.b_in = new_input,
-            FULL_ADD_OP_IN_ID => self.op_in = new_input,
+            ALU_OUT_ID => self.a_in = new_input,
+            ALU_B_IN_ID => self.b_in = new_input,
+            ALU_OP_IN_ID => self.op_in = new_input,
             _ => {}
         }
     }
@@ -169,12 +169,8 @@ impl Component for ALU {
                 ));
             }
         }
-        simulator.set_out_value(&self.id, FULL_ADD_OUT_ID, SignalValue::Data(output));
-        simulator.set_out_value(
-            &self.id,
-            FULL_ADD_OVERFLOW_OUT_ID,
-            SignalValue::Data(overflow),
-        );
+        simulator.set_out_value(&self.id, ALU_OUT_ID, SignalValue::Data(output));
+        simulator.set_out_value(&self.id, ALU_OVERFLOW_OUT_ID, SignalValue::Data(overflow));
         Ok(())
     }
 
@@ -231,7 +227,7 @@ mod test {
         assert_eq!(simulator.cycle, 1);
 
         // outputs
-        let alu_val = &Input::new("ALU", FULL_ADD_OUT_ID);
+        let alu_val = &Input::new("ALU", ALU_OUT_ID);
 
         // reset
         assert_eq!(simulator.get_input_value(alu_val), (0 + 0).into());

@@ -27,7 +27,7 @@ pub mod cntr_field {
     /// const WRITE_REG_SRC_MEM:u32 = 1;
     pub const REG_WRITE_SRC_OUT: &str = "reg_write_src";
 
-    /// se module full_adder:alu_op
+    /// se module alu:alu_op
     pub const ALU_OP_OUT: &str = "alu_op";
 
     /// const ALU_SRC_A_OP:u32 = 0;

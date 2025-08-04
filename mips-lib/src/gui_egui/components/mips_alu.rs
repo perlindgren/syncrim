@@ -1,6 +1,5 @@
 use crate::components::{
-    alu_op, ALU, FULL_ADD_A_IN_ID, FULL_ADD_B_IN_ID, FULL_ADD_OP_IN_ID, FULL_ADD_OUT_ID,
-    FULL_ADD_OVERFLOW_OUT_ID,
+    alu_op, ALU, ALU_A_IN_ID, ALU_B_IN_ID, ALU_OP_IN_ID, ALU_OUT_ID, ALU_OVERFLOW_OUT_ID,
 };
 use egui::{
     pos2, vec2, Align2, Area, Color32, Order, Pos2, Rect, Response, RichText, Shape, Stroke,
@@ -153,21 +152,21 @@ impl EguiComponent for ALU {
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.a_in,
-                    crate::components::FULL_ADD_A_IN_ID.to_string(),
+                    crate::components::ALU_A_IN_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.b_in,
-                    crate::components::FULL_ADD_B_IN_ID.to_string(),
+                    crate::components::ALU_B_IN_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
                 clicked_dropdown |= input_selector(
                     ui,
                     &mut self.op_in,
-                    crate::components::FULL_ADD_OP_IN_ID.to_string(),
+                    crate::components::ALU_OP_IN_ID.to_string(),
                     id_ports,
                     self.id.clone(),
                 );
@@ -185,9 +184,9 @@ impl EguiComponent for ALU {
             Some((Pos2::from(self.pos) + vec2(-20.0, -30.0)).into())
         } else if id == self.b_in {
             Some((Pos2::from(self.pos) + vec2(-20.0, 30.0)).into())
-        } else if id == Input::new(&self.id, FULL_ADD_OUT_ID) {
+        } else if id == Input::new(&self.id, ALU_OUT_ID) {
             Some((Pos2::from(self.pos) + vec2(20.0, 0.0)).into())
-        } else if id == Input::new(&self.id, FULL_ADD_OVERFLOW_OUT_ID) {
+        } else if id == Input::new(&self.id, ALU_OVERFLOW_OUT_ID) {
             Some((Pos2::from(self.pos) + vec2(20.0, 5.0)).into())
         } else if id == self.op_in {
             Some((Pos2::from(self.pos) + vec2(-10.0, -40.0)).into())
@@ -199,14 +198,11 @@ impl EguiComponent for ALU {
     fn ports_location(&self) -> Vec<(Id, egui::Pos2)> {
         let own_pos: Vec2 = self.pos.into();
         vec![
-            (FULL_ADD_A_IN_ID.to_string(), pos2(-20.0, -30.0) + own_pos),
-            (FULL_ADD_B_IN_ID.to_string(), pos2(-20.0, 30.0) + own_pos),
-            (FULL_ADD_OP_IN_ID.to_string(), pos2(-10.0, -40.0) + own_pos),
-            (FULL_ADD_OUT_ID.to_string(), pos2(20.0, 0.0) + own_pos),
-            (
-                FULL_ADD_OVERFLOW_OUT_ID.to_string(),
-                pos2(-20.0, 5.0) + own_pos,
-            ),
+            (ALU_A_IN_ID.to_string(), pos2(-20.0, -30.0) + own_pos),
+            (ALU_B_IN_ID.to_string(), pos2(-20.0, 30.0) + own_pos),
+            (ALU_OP_IN_ID.to_string(), pos2(-10.0, -40.0) + own_pos),
+            (ALU_OUT_ID.to_string(), pos2(20.0, 0.0) + own_pos),
+            (ALU_OVERFLOW_OUT_ID.to_string(), pos2(-20.0, 5.0) + own_pos),
         ]
     }
 
