@@ -1,12 +1,12 @@
 use crate::components::{MipsTimer, TIMER_DATA_OUT_ID, TIMER_INTERRUPT_OUT_ID};
-use egui::{pos2, Pos2, Rect, Response, RichText, Ui, Vec2};
+use egui::{pos2, Pos2, ProgressBar, Rect, Response, RichText, Ui, Vec2};
 use syncrim::common::{EguiComponent, Id, Input, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
-use syncrim::gui_egui::helper::basic_component_gui;
+use syncrim::gui_egui::helper::{basic_component_gui_with_on_hover, basic_on_hover};
 
-const WIDTH: f32 = 105.0;
-const HEIGHT: f32 = 30.0;
+const WIDTH: f32 = 70.0;
+const HEIGHT: f32 = 45.0;
 
 #[typetag::serde]
 impl EguiComponent for MipsTimer {
@@ -20,11 +20,38 @@ impl EguiComponent for MipsTimer {
         clip_rect: Rect,
         _editor_mode: EditorMode,
     ) -> Option<Vec<Response>> {
-        basic_component_gui(self, &simulator, ui.ctx(), offset, scale, clip_rect, |ui| {
-            ui.set_height(HEIGHT * scale);
-            ui.set_width(WIDTH * scale);
-            ui.label(RichText::new("mips mmu").size(12f32 * scale));
-        })
+        basic_component_gui_with_on_hover(
+            self,
+            ui.ctx(),
+            offset,
+            scale,
+            clip_rect,
+            |ui| {
+                ui.set_height(HEIGHT * scale);
+                ui.set_width(WIDTH * scale);
+                ui.label(RichText::new("Timer").size(12f32 * scale));
+                let data = self.data.borrow();
+                ui.add(
+                    ProgressBar::new(data.div_counter as f32 / data.divider as f32)
+                        .desired_height(4.0 * scale)
+                        .desired_width(WIDTH * scale),
+                );
+                ui.add(
+                    ProgressBar::new(data.counter as f32 / data.compare as f32)
+                        .text(format!("{}/{}", data.counter, data.compare))
+                        .corner_radius(5.0 * scale)
+                        .desired_width(WIDTH * scale),
+                );
+            },
+            |ui| {
+                let data = self.data.borrow();
+                ui.label(format!("Flags {:#08b}\nCounter {:#010x}\nCompare {:#010x}\nDivider {:#010x}\nDiv counter {:#010x}",
+                    data.flags, data.counter, data.compare, data.divider, data.div_counter
+                ));
+                ui.separator();
+                basic_on_hover(ui, self, &simulator);
+            },
+        )
     }
 
     fn render_editor(
@@ -87,11 +114,10 @@ impl EguiComponent for MipsTimer {
                 crate::components::TIMER_DATA_OUT_ID.to_string(),
                 pos2(WIDTH / 2.0 + M, -4.0) + own_pos,
             ),
-                        (
+            (
                 crate::components::TIMER_INTERRUPT_OUT_ID.to_string(),
                 pos2(WIDTH / 2.0 + M, 4.0) + own_pos,
             ),
-
         ]
     }
 
