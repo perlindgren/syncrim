@@ -21,7 +21,7 @@ const COMPARE1_IE: u8 = 0b0000_1000;
 const COMPARE1_FG: u8 = 0b0001_0000;
 const COMPARE1_CR: u8 = 0b0010_0000;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone,Debug)]
 pub struct MipsTimer {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -33,7 +33,7 @@ pub struct MipsTimer {
     pub data: RefCell<MipsTimerData>,
 }
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct MipsTimerData {
     // 1 = counter enabled, 2 = overflow_ie = 2, 4 overflow_FG,
     // 8 = compare1_IE, 16 = compare1_FG, 32 = compare1_CR
