@@ -11,3 +11,4 @@ mod mips_reg_file;
 mod physical_mem;
 mod sz_extend;
 mod mips_mmu;
+mod mips_timer;

@@ -355,13 +355,20 @@ fn main() {
             ),
             //
             // Memory mangmt unit, switches the selected component, timer, io or memory
-            Rc::new(
-                MipsMmu::new(
-                    "mmu".into(),
-                    (1660.0, 405.0),
-                    Input::new("alu_reg", REGISTER_OUT_ID), // calculated from rs and imm
-                )
-            ),
+            // TODO more inputs
+            Rc::new(MipsMmu::new(
+                "mmu".into(),
+                (1660.0, 405.0),
+                Input::new("alu_reg", REGISTER_OUT_ID), // calculated from rs and imm
+            )),
+            // TODO hook up timer to actual inputs
+            Rc::new(MipsTimer::new(
+                "timer",
+                (1660.0, 445.0),
+                Input::new("mmu", MMU_ADDRESS_OUT_ID),
+                Input::new("mmu", MMU_ADDRESS_OUT_ID),
+                Input::new("mmu", MMU_ADDRESS_OUT_ID),
+            )),
             //
             //
             Rc::new(DataMem::new(

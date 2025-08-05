@@ -11,7 +11,9 @@ mod mips_reg_file;
 mod physical_mem;
 mod sz_extend;
 mod mips_mmu;
+mod mips_timer;
 
+pub use mips_timer::*;
 pub use mips_mmu::*;
 pub use mips_alu::*;
 pub use mips_alu_forward::*;
