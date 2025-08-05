@@ -1764,6 +1764,12 @@
           ]
         },
         "break_points": []
+      },
+      "dynamic_symbols": {
+        "DM_ADRS": [
+          0,
+          false
+        ]
       }
     },
     {

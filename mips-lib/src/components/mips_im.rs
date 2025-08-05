@@ -53,6 +53,7 @@ impl InstrMem {
             regfile_id,
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
+
             pc_history: RefCell::new(vec![]),
             dynamic_symbols: RefCell::new(HashMap::new()),
         }

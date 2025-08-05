@@ -2051,6 +2051,12 @@
       },
       "phys_mem_id": "phys_mem",
       "regfile_id": "reg_file",
+      "dynamic_symbols": {
+        "DM_ADRS": [
+          0,
+          false
+        ]
+      },
       "mem_view": {
         "visible": false,
         "title": "Data memory view",
