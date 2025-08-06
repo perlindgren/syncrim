@@ -243,13 +243,6 @@ impl Component for DataMem {
             .get_input_value(&self.data_input)
             .try_into()
             .unwrap();
-
-        /*
-        #[cfg(feature = "gui-egui")]
-        self.mem_view
-            .borrow_mut()
-            .set_dynamic_symbol("DM_ADRS", address);
-        */
         self.input_adress_history
             .borrow_mut()
             .push(self.dynamic_symbols.borrow().get("DM_ADRS").unwrap().0);
@@ -408,10 +401,13 @@ impl Component for DataMem {
             Err(_) => ret,
         }
     }
+    // set input_adress to what it was the previous cycle
     fn un_clock(&self) {
         let previous_adress: u32 = self.input_adress_history.borrow_mut().pop().unwrap();
         self.update_dynamic_symbols(previous_adress);
     }
+    // if the simulator is reset and input_adress_history isn't empty: move over dynamic_symbol settings
+    // while resetting values and adresses
     fn reset(&self) {
         if self.input_adress_history.borrow().len() > 0 {
             let start_adress = self.input_adress_history.borrow()[0];
