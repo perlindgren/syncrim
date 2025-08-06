@@ -142,7 +142,7 @@ impl MemViewWindow {
     }
     // replaces all dynamic symbols with the given new_dynamic_symbols
     pub fn set_all_dynamic_symbols(&mut self, new_dynamic_symbols: HashMap<String, (u32, bool)>) {
-        for (name, (adress, bool)) in new_dynamic_symbols {
+        for (name, (adress, _bool)) in new_dynamic_symbols {
             self.set_dynamic_symbol(name.as_str(), adress);
         }
     }
