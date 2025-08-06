@@ -21,7 +21,7 @@ const COMPARE1_IE: u8 = 0b0000_1000;
 const COMPARE1_FG: u8 = 0b0001_0000;
 const COMPARE1_CR: u8 = 0b0010_0000;
 
-#[derive(Serialize, Deserialize, Clone,Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MipsTimer {
     pub(crate) id: Id,
     pub(crate) pos: (f32, f32),
@@ -33,7 +33,7 @@ pub struct MipsTimer {
     pub data: RefCell<MipsTimerData>,
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct MipsTimerData {
     // 1 = counter enabled, 2 = overflow_ie = 2, 4 overflow_FG,
     // 8 = compare1_IE, 16 = compare1_FG, 32 = compare1_CR
@@ -139,23 +139,8 @@ impl Component for MipsTimer {
 
         // Read write enable, if 0x1 write data, if 0x0 read data, other dont do anything
         match simulator.get_input_value(&self.we_in) {
-            // write enable write data
-            SignalValue::Data(0x1) => {
-                // if data is valid, aka not undefined or unset
-                if let SignalValue::Data(in_data) = simulator.get_input_value(&self.data_in) {
-                    // set data according to address
-                    match simulator.get_input_value(&self.address_in) {
-                        SignalValue::Data(0xFFFF_0010) => data.flags = in_data as u8,
-                        SignalValue::Data(0xFFFF_0014) => data.counter = in_data,
-                        SignalValue::Data(0xFFFF_0018) => data.compare = in_data,
-                        _ => ret = Err(Condition::Warning("invalid write address".to_string())),
-                    }
-                } else {
-                    ret = Err(Condition::Error("not valid data to write".to_string()));
-                };
-            }
-            // no write enable but WE line is still defined, read
-            SignalValue::Data(_) => match simulator.get_input_value(&self.address_in) {
+            // write line is zero
+            SignalValue::Data(0x0) => match simulator.get_input_value(&self.address_in) {
                 SignalValue::Data(0xFFFF_0010) => {
                     simulator.set_out_value(&self.id, TIMER_DATA_OUT_ID, data.flags as u32)
                 }
@@ -167,9 +152,25 @@ impl Component for MipsTimer {
                 }
                 _ => {}
             },
+            // write enable write data
+            SignalValue::Data(_) => {
+                // if data is valid, aka not undefined or unset
+                if let SignalValue::Data(in_data) = simulator.get_input_value(&self.data_in) {
+                    // set data according to address
+                    match simulator.get_input_value(&self.address_in) {
+                        SignalValue::Data(0xFFFF_0010) => data.flags = in_data as u8,
+                        SignalValue::Data(0xFFFF_0014) => data.counter = in_data,
+                        SignalValue::Data(0xFFFF_0018) => data.compare = in_data,
+                        SignalValue::Data(_) => ret = Err(Condition::Warning("Write address out of range".to_string())),
+                        SignalValue::DontCare => {},
+                        _ => {ret = Err(Condition::Error("Address is uninitialized or unknown".to_string()))}
+                    }
+                } else {
+                    ret = Err(Condition::Error("Not valid data to write, SignalValue is not data".to_string()));
+                };
+            }
             _ => {}
         };
-
 
         // if flag overflow_ie is set and overflow occurred according to overflow_fg flag
         // or
@@ -207,7 +208,7 @@ impl MipsTimer {
             id: id.to_string(),
             pos,
             address_in,
-            data_in: data_in,
+            data_in,
             we_in: write_enable_in,
             data: RefCell::new(MipsTimerData {
                 flags: 0,
@@ -217,5 +218,170 @@ impl MipsTimer {
                 div_counter: 0,
             }),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use std::rc::Rc;
+    use syncrim::{
+        common::{ComponentStore, Input, RunningState, Simulator},
+        components::ProbeOut,
+    };
+
+    fn create_test_sim() -> Simulator {
+        let cs = ComponentStore {
+            store: vec![
+                Rc::new(ProbeOut::new("adrs")),
+                Rc::new(ProbeOut::new("data")),
+                Rc::new(ProbeOut::new("we")),
+                Rc::new(MipsTimer::new(
+                    "timer",
+                    (0.0, 0.0),
+                    Input::new("adrs", "out"),
+                    Input::new("data", "out"),
+                    Input::new("we", "out"),
+                )),
+            ],
+        };
+        let simulator = Simulator::new(cs).unwrap();
+
+        assert_eq!(simulator.cycle, 1);
+
+        simulator
+    }
+
+    #[test]
+    fn test_read_write() {
+        let mut s = create_test_sim();
+        let out_data = Input::new("timer", TIMER_DATA_OUT_ID);
+
+        // Set address to 0xffff_0014, address of count register
+        s.set_out_value("adrs", "out", 0xffff_0014);
+        // set data to something
+        s.set_out_value("data", "out", 42);
+        // set we to true
+        s.set_out_value("we", "out", 1);
+
+        // clock the simulation
+        s.clock();
+
+        // set address to 0xffff_0018, compare register, and data to 420
+        s.set_out_value("adrs", "out", 0xffff_0018);
+        s.set_out_value("data", "out", 1337);
+        s.clock();
+
+        s.set_out_value("adrs", "out", 0xffff_0010);
+        s.set_out_value("data", "out", 63);
+        s.clock();
+
+        // test if write was successful
+        {
+            let timer: &MipsTimer = s.ordered_components[3].as_any().downcast_ref().unwrap();
+            assert_eq!(timer.data.borrow().counter, 42);
+            assert_eq!(timer.data.borrow().compare, 1337);
+            assert_eq!(timer.data.borrow().flags, 63);
+        }
+
+        // test reads, address 0xffff_0018: flags already set, set we to false
+        s.set_out_value("we", "out", 0);
+        s.clock();
+
+        // see if out put is same as flags
+        assert_eq!(s.get_input_value(&out_data), SignalValue::Data(63));
+
+        // set address to 0xffff_0014, count register
+        s.set_out_value("adrs", "out", 0xffff_0014);
+        s.clock();
+        // since it haven't passed 16 cycles since timer enable, count wont have increased
+        assert_eq!(s.get_input_value(&out_data), SignalValue::Data(42));
+
+        // set address to 0xffff_0018, compare register
+        s.set_out_value("adrs", "out", 0xffff_0018);
+        s.clock();
+        // since it haven't passed 16 cycles since timer enable, count wont have increased
+        assert_eq!(s.get_input_value(&out_data), SignalValue::Data(1337));
+    }
+
+    #[test]
+    fn test_interrupt() {
+        let mut s = create_test_sim();
+        let out_data = Input::new("timer", TIMER_DATA_OUT_ID);
+        let out_interrupt = Input::new("timer", TIMER_INTERRUPT_OUT_ID);
+
+        // set we to true
+        s.set_out_value("we", "out", 1);
+
+        // set address to 0xffff_0018, compare register, and data to 420
+        s.set_out_value("adrs", "out", 0xffff_0018);
+        s.set_out_value("data", "out", 10);
+        s.clock();
+        assert!(s.component_condition.is_empty());
+
+        // Enable timer(1) and compare interrupt(8) as well as the compare reset flag(32)
+        s.set_out_value("adrs", "out", 0xffff_0010);
+        s.set_out_value("data", "out", 0b101001);
+        s.clock();
+
+        // disable write, and set address to count register
+        s.set_out_value("we", "out", 0);
+        s.set_out_value("adrs", "out", 0xffff_0014);
+
+        // incresa our count 10 times
+        for i in 1..10 {
+            // divider defaults to 16, which means that for each step of count we ned 16 clock cycles
+            for _ in 0..16 {
+                s.clock();
+            }
+            // read if count is correct, and there is interrupt
+            assert_eq!(s.get_input_value(&out_data), SignalValue::Data(i));
+            assert_eq!(s.get_input_value(&out_interrupt), SignalValue::Data(0),);
+        }
+
+        for _ in 0..16 {
+            s.clock();
+        }
+        // read if count is correct
+        // test if interrupt signal is active
+        assert_eq!(s.get_input_value(&out_data), SignalValue::Data(10));
+        assert_eq!(s.get_input_value(&out_interrupt), SignalValue::Data(1));
+
+        // test if reset flag works
+        for _ in 0..16 {
+            s.clock();
+        }
+        assert_eq!(s.get_input_value(&out_data), SignalValue::Data(0));
+    }
+
+    #[test]
+    fn test_return_condition() {
+        let mut s = create_test_sim();
+
+        // set address to 0xffff_abcd,
+        s.set_out_value("we", "out", 1);
+        s.set_out_value("adrs", "out", 0xffff_abcd);
+        s.clock();
+
+        assert!(s.component_condition.iter().any(|(id, cond)| id == "timer"
+            && cond == &Condition::Warning("Write address out of range".to_string())));
+
+
+        // test if Address of is not Data or Don't care
+        s.set_out_value("adrs", "out", SignalValue::Uninitialized);
+        s.clock();
+
+        assert!(s.component_condition.iter().any(|(id, cond)| id == "timer"
+            && cond == &Condition::Error("Address is uninitialized or unknown".to_string())));
+
+        // set running state to stopped, so we can ignore that we had an error (this took 2h to debug)
+        s.running_state = RunningState::Stopped;
+
+        s.set_out_value("adrs", "out", SignalValue::Data(0xFFFF_0014));
+        s.set_out_value("data", "out", SignalValue::Unknown);
+
+        s.clock();
+        assert_eq!(s.component_condition.iter().find(|(id, _)| id == "timer"), Some(&("timer".to_string(), Condition::Error("Not valid data to write, SignalValue is not data".to_string()))));
     }
 }
