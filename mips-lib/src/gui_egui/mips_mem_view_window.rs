@@ -6,8 +6,9 @@ use MIPS_disassembly;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Deserialize, Serialize, Default)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct MemViewWindow {
+    #[serde(skip)]
     pub visible: bool,
     title: String,
     id: String,
@@ -26,13 +27,16 @@ pub struct MemViewWindow {
     custom_address: u32,
 
     // used for formatting the view
+    #[serde(skip)]
     big_endian: bool,
     format: DataFormat,
 
     // used to determine if section, symbols and other markers should be shown
+    #[serde(skip)]
     show_settings: ShowSettings,
 
     // used for show register
+    #[serde(skip)]
     register_values: Option<[u32; 32]>,
 
     // used to show pc and jump to pc
@@ -40,6 +44,7 @@ pub struct MemViewWindow {
     dynamic_symbols: HashMap<String, (u32, bool)>,
 
     // Added when user clicks a row, and removed when clicked again
+    #[serde(skip)]
     break_points: HashSet<u32>,
 }
 
@@ -51,9 +56,8 @@ enum GoAddress {
     #[default]
     None,
 }
-#[derive(PartialEq, Clone, Serialize, Deserialize, Default)]
+#[derive(PartialEq, Clone, Serialize, Deserialize)]
 enum DataFormat {
-    #[default]
     Hex,
     HexAndMips,
     Bin,
