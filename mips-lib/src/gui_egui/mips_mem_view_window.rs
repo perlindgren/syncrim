@@ -6,7 +6,7 @@ use MIPS_disassembly;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, Default)]
 pub struct MemViewWindow {
     pub visible: bool,
     title: String,
@@ -51,8 +51,9 @@ enum GoAddress {
     #[default]
     None,
 }
-#[derive(PartialEq, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Clone, Serialize, Deserialize, Default)]
 enum DataFormat {
+    #[default]
     Hex,
     HexAndMips,
     Bin,
@@ -67,6 +68,16 @@ struct ShowSettings {
     sections: bool,
     program_counter: bool,
     registers: [bool; 32],
+}
+impl Default for ShowSettings {
+    fn default() -> Self {
+        Self {
+            symbols: true,
+            sections: false,
+            program_counter: false,
+            registers: [false; 32],
+        }
+    }
 }
 
 const REG_NAMES: [&str; 32] = [
