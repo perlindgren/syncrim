@@ -142,6 +142,8 @@ impl DataMem {
         let cycle = sim.cycle;
         let _ = self.get_phys_mem(sim).cycle.replace(cycle);
     }
+
+    // update DM_ADRS to the given new_adress
     fn update_dynamic_symbols(&self, new_adress: u32) {
         let mut new_dynamic_symbols = self.dynamic_symbols.borrow_mut().clone();
         if new_dynamic_symbols.contains_key("DM_ADRS") {
@@ -163,9 +165,7 @@ impl Component for DataMem {
         self
     }
 
-    fn to_(&self) {
-        //println!("InstrMem");
-    }
+    fn to_(&self) {}
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy_input = Input::new("dummy", "out");
