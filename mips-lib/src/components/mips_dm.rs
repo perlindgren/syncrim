@@ -51,7 +51,7 @@ pub struct DataMem {
     pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
 
     #[serde(skip)]
-    pub input_adress_history: RefCell<Vec<u32>>,
+    pub input_address_history: RefCell<Vec<u32>>,
 }
 
 impl DataMem {
@@ -82,7 +82,7 @@ impl DataMem {
 
             regfile_id,
             dynamic_symbols: RefCell::new(HashMap::new()),
-            input_adress_history: RefCell::new(vec![]),
+            input_address_history: RefCell::new(vec![]),
         }
     }
     #[allow(clippy::too_many_arguments)]
@@ -243,7 +243,7 @@ impl Component for DataMem {
             .get_input_value(&self.data_input)
             .try_into()
             .unwrap();
-        self.input_adress_history
+        self.input_address_history
             .borrow_mut()
             .push(self.dynamic_symbols.borrow().get("DM_ADRS").unwrap().0);
         self.update_dynamic_symbols(address);
@@ -403,14 +403,14 @@ impl Component for DataMem {
     }
     // set input_adress to what it was the previous cycle
     fn un_clock(&self) {
-        let previous_adress: u32 = self.input_adress_history.borrow_mut().pop().unwrap();
+        let previous_adress: u32 = self.input_address_history.borrow_mut().pop().unwrap();
         self.update_dynamic_symbols(previous_adress);
     }
     // if the simulator is reset and input_adress_history isn't empty: move over dynamic_symbol settings
     // while resetting values and adresses
     fn reset(&self) {
-        if self.input_adress_history.borrow().len() > 0 {
-            let start_adress = self.input_adress_history.borrow()[0];
+        if self.input_address_history.borrow().len() > 0 {
+            let start_adress = self.input_address_history.borrow()[0];
             let current_symbol_keys: Vec<String> =
                 self.dynamic_symbols.borrow().keys().cloned().collect();
 
@@ -425,7 +425,7 @@ impl Component for DataMem {
                 );
             }
             *self.dynamic_symbols.borrow_mut() = new_symbols;
-            self.input_adress_history.borrow_mut().clear();
+            self.input_address_history.borrow_mut().clear();
         }
     }
 }
