@@ -71,6 +71,9 @@ impl EguiComponent for DataMem {
             self.mem_view
                 .borrow_mut()
                 .set_reg_values(*regfile.registers.borrow());
+            self.mem_view
+                .borrow_mut()
+                .set_all_dynamic_symbols(self.dynamic_symbols.borrow().clone());
         }
 
         if let Some(sim) = &simulator {

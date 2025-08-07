@@ -4,6 +4,7 @@ use core::cell::RefCell;
 use std::cell::RefMut;
 // use log::*;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::rc::Rc;
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
@@ -43,8 +44,14 @@ pub struct DataMem {
     pub write_enable_input: Input,
     pub phys_mem_id: String,
     pub regfile_id: String,
+
     #[cfg(feature = "gui-egui")]
     pub mem_view: RefCell<MemViewWindow>,
+
+    pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
+
+    #[serde(skip)]
+    pub input_address_history: RefCell<Vec<u32>>,
 }
 
 impl DataMem {
@@ -72,7 +79,10 @@ impl DataMem {
             write_enable_input,
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
+
             regfile_id,
+            dynamic_symbols: RefCell::new(HashMap::new()),
+            input_address_history: RefCell::new(vec![]),
         }
     }
     #[allow(clippy::too_many_arguments)]
@@ -132,6 +142,21 @@ impl DataMem {
         let cycle = sim.cycle;
         let _ = self.get_phys_mem(sim).cycle.replace(cycle);
     }
+
+    // update DM_ADRS to the given new_adress
+    fn update_dynamic_symbols(&self, new_adress: u32) {
+        let mut new_dynamic_symbols = self.dynamic_symbols.borrow_mut().clone();
+        if new_dynamic_symbols.contains_key("DM_ADRS") {
+            new_dynamic_symbols.insert(
+                "DM_ADRS".to_string(),
+                (
+                    new_adress,
+                    new_dynamic_symbols.get_key_value("DM_ADRS").unwrap().1 .1,
+                ),
+            );
+        }
+        *self.dynamic_symbols.borrow_mut() = new_dynamic_symbols;
+    }
 }
 
 #[typetag::serde()]
@@ -140,9 +165,7 @@ impl Component for DataMem {
         self
     }
 
-    fn to_(&self) {
-        //println!("InstrMem");
-    }
+    fn to_(&self) {}
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, id: &str, pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy_input = Input::new("dummy", "out");
@@ -220,12 +243,10 @@ impl Component for DataMem {
             .get_input_value(&self.data_input)
             .try_into()
             .unwrap();
-
-        // update dynamic symbol PC_IM
-        #[cfg(feature = "gui-egui")]
-        self.mem_view
+        self.input_address_history
             .borrow_mut()
-            .set_dynamic_symbol("DM_ADRS", address);
+            .push(self.dynamic_symbols.borrow().get("DM_ADRS").unwrap().0);
+        self.update_dynamic_symbols(address);
 
         // check if write enable and mem op match
         let is_write_enable_valid = match mem_op {
@@ -378,6 +399,33 @@ impl Component for DataMem {
                 }
             },
             Err(_) => ret,
+        }
+    }
+    // set input_adress to what it was the previous cycle
+    fn un_clock(&self) {
+        let previous_adress: u32 = self.input_address_history.borrow_mut().pop().unwrap();
+        self.update_dynamic_symbols(previous_adress);
+    }
+    // if the simulator is reset and input_adress_history isn't empty: move over dynamic_symbol settings
+    // while resetting values and adresses
+    fn reset(&self) {
+        if self.input_address_history.borrow().len() > 0 {
+            let start_adress = self.input_address_history.borrow()[0];
+            let current_symbol_keys: Vec<String> =
+                self.dynamic_symbols.borrow().keys().cloned().collect();
+
+            let mut new_symbols: HashMap<String, (u32, bool)> = HashMap::new();
+            for symbol_name in current_symbol_keys {
+                new_symbols.insert(
+                    symbol_name.clone(),
+                    (
+                        start_adress,
+                        self.dynamic_symbols.borrow().get(&symbol_name).unwrap().1,
+                    ),
+                );
+            }
+            *self.dynamic_symbols.borrow_mut() = new_symbols;
+            self.input_address_history.borrow_mut().clear();
         }
     }
 }
