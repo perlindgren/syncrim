@@ -12,7 +12,9 @@ mod physical_mem;
 mod sz_extend;
 mod mips_mmu;
 mod mips_timer;
+mod mips_io;
 
+pub use mips_io::*;
 pub use mips_timer::*;
 pub use mips_mmu::*;
 pub use mips_alu::*;
