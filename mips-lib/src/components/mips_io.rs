@@ -1,6 +1,6 @@
 use log::*;
 use serde::{Deserialize, Serialize};
-use std::{any::Any, cell::RefCell, collections::VecDeque};
+use std::{any::Any, cell::RefCell, collections::VecDeque, default};
 use syncrim::{
     common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
     signal::SignalValue,
@@ -8,8 +8,8 @@ use syncrim::{
 
 pub const IO_ADDRESS_IN_ID: &str = "io_address_in";
 pub const IO_DATA_IN_ID: &str = "io_data_in";
-pub const IO_WRITE_ENABLE: &str = "io_write_enable_in";
-pub const IO_READ_ENABLE: &str = "io_read_enable_in";
+pub const IO_WRITE_ENABLE_IN: &str = "io_write_enable_in";
+pub const IO_READ_ENABLE_IN: &str = "io_read_enable_in";
 
 pub const IO_DATA_OUT_ID: &str = "io_data_out";
 pub const IO_INTERRUPT_OUT_ID: &str = "io_interrupt_out";
@@ -25,6 +25,11 @@ pub struct MipsIO {
 
     #[serde(skip)]
     pub data: RefCell<MipsIOData>,
+
+    // used in egui to determine if the input/output window should show
+    #[cfg(feature = "gui-egui")]
+    #[serde(skip)]
+    pub gui_show: RefCell<bool>,
 }
 
 #[derive(Debug, Clone)]
@@ -67,11 +72,11 @@ impl Component for MipsIO {
                         input: self.data_in.clone(),
                     },
                     &InputPort {
-                        port_id: IO_WRITE_ENABLE.to_string(),
+                        port_id: IO_WRITE_ENABLE_IN.to_string(),
                         input: self.we_in.clone(),
                     },
                     &InputPort {
-                        port_id: IO_READ_ENABLE.to_string(),
+                        port_id: IO_READ_ENABLE_IN.to_string(),
                         input: self.re_in.clone(),
                     },
                 ],
@@ -85,8 +90,8 @@ impl Component for MipsIO {
         match target_port_id.as_str() {
             IO_ADDRESS_IN_ID => self.address_in = new_input,
             IO_DATA_IN_ID => self.data_in = new_input,
-            IO_WRITE_ENABLE => self.we_in = new_input,
-            IO_READ_ENABLE => self.we_in = new_input,
+            IO_WRITE_ENABLE_IN => self.we_in = new_input,
+            IO_READ_ENABLE_IN => self.we_in = new_input,
             _ => {}
         }
     }
@@ -104,7 +109,7 @@ impl Component for MipsIO {
                         data.input_control = in_data & 0xFFFF_FFFE | data.input_control & 0x1
                     }
                     SignalValue::Data(2) => {
-                        data.out_buff.push(in_data as u8); 
+                        data.out_buff.push(in_data as u8);
                     }
                     // if the address dont exist in our IO part
                     SignalValue::Data(_) => todo!("bad address warning condition"),
@@ -119,8 +124,8 @@ impl Component for MipsIO {
 
         // if read enable
         if simulator.get_input_value(&self.re_in) == SignalValue::Data(0x1) {
-            // get component data ref 
-            let mut data  =self.data.borrow_mut();
+            // get component data ref
+            let mut data = self.data.borrow_mut();
             // the register/address to read at
             match simulator.get_input_value(&self.address_in) {
                 SignalValue::Data(0x0) => {
@@ -130,7 +135,7 @@ impl Component for MipsIO {
                     if let Some(key) = data.key_buff.pop_front() {
                         //set the output to the key
                         simulator.set_out_value(&self.id, IO_DATA_OUT_ID, key as u32);
-                        
+
                         //clear interrupt
                         data.interrupt = false;
 
@@ -142,7 +147,6 @@ impl Component for MipsIO {
                 }
                 _ => {}
             }
-
         }
 
         // set the interrupt signal
@@ -153,5 +157,28 @@ impl Component for MipsIO {
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+}
+
+impl MipsIO {
+    pub fn new(
+        id: &str,
+        pos: (f32, f32),
+        address_in: Input,
+        data_in: Input,
+        write_enable_in: Input,
+        read_enable_in: Input,
+    ) -> Self {
+        MipsIO {
+            id: id.to_string(),
+            pos,
+            address_in,
+            data_in,
+            we_in: write_enable_in,
+            re_in: read_enable_in,
+            data: Default::default(),
+            #[cfg(feature = "gui-egui")]
+            gui_show: RefCell::new(false),
+        }
     }
 }
