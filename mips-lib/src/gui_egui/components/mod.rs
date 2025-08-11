@@ -12,3 +12,4 @@ mod physical_mem;
 mod sz_extend;
 mod mips_mmu;
 mod mips_timer;
+mod mips_io;
