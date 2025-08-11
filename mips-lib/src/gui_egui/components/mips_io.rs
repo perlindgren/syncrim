@@ -1,10 +1,5 @@
-use crate::components::{
-    MipsIO, MipsTimer, IO_DATA_OUT_ID, IO_INTERRUPT_OUT_ID, TIMER_DATA_OUT_ID,
-    TIMER_INTERRUPT_OUT_ID,
-};
-use egui::{
-    pos2, Event, Pos2, ProgressBar, Rect, Response, RichText, Ui, Vec2, ViewportBuilder, ViewportId,
-};
+use crate::components::{MipsIO, IO_DATA_OUT_ID, IO_INTERRUPT_OUT_ID};
+use egui::{pos2, Event, Pos2, Rect, Response, Ui, Vec2, ViewportBuilder, ViewportId};
 use syncrim::common::{EguiComponent, Id, Input, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
@@ -12,6 +7,49 @@ use syncrim::gui_egui::helper::{basic_component_gui_with_on_hover, basic_on_hove
 
 const WIDTH: f32 = 70.0;
 const HEIGHT: f32 = 45.0;
+
+impl MipsIO {
+    fn render_window(&self, ui: &mut Ui) {
+        ui.ctx().show_viewport_immediate(
+            ViewportId::from_hash_of(&self.id),
+            ViewportBuilder::default().with_title("IO component"),
+            |ctx, _class| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    // render our outbuf as a string
+                    // TODO care about carriage return, backspace and other advance utf8/ "ascii" codes
+                    ui.label(String::from_utf8_lossy(&self.data.borrow().out_buff));
+
+                    // get events and loop over them
+                    // events such as keys and text input
+                    for text_in in ui.input(|ev| {
+                        ev.events
+                            .iter()
+                            .filter_map(|e| match e {
+                                Event::Text(s) => Some(s.clone()),
+                                Event::Key { .. } => None, // TODO handle special keys, enter, arrows, backspace. maybe as ansi codes
+                                _ => None,
+                            })
+                            .collect::<Vec<_>>()
+                    }) {
+                        // for each event
+
+                        let mut data = self.data.borrow_mut();
+                        // we have data, set appropriate flag
+                        data.input_control |= 0b1;
+                        // if interrupt flag is set, cause an interrupt
+                        if data.input_control & 0b10 == 0b10 {
+                            data.interrupt = true;
+                        }
+                        // write data to our key buff
+                        for b in text_in.as_bytes() {
+                            data.key_buff.push_back(*b);
+                        }
+                    }
+                })
+            },
+        );
+    }
+}
 
 #[typetag::serde]
 impl EguiComponent for MipsIO {
@@ -32,43 +70,27 @@ impl EguiComponent for MipsIO {
             scale,
             clip_rect,
             |ui| {
-                // ===================================================
-                //
-                //               WARNING UGLY CODE AHEAD
-                //
-                // ===================================================
-                //
-                // this works for now, but will require change close to a complete
-                // rewrite if any more then minimum functionally is required 
                 ui.label("IO component");
                 ui.toggle_value(&mut self.gui_show.borrow_mut(), "show io window");
                 if *self.gui_show.borrow() {
-                    ui.ctx().show_viewport_immediate(
-                        ViewportId::from_hash_of(&self.id),
-                        ViewportBuilder::default().with_title("IO component"),
-                        |ctx, _class| {
-                            egui::CentralPanel::default().show(ctx, |ui| {
-                                // TODO care about carriage return, backspace and other advance utf8/ascii codes
-                                ui.label(String::from_utf8_lossy(&self.data.borrow().out_buff));
-                                // TODO this is ugly, get all keypresses 
-                                for key in ui.input(|ev| {
-                                    ev.events
-                                        .iter()
-                                        .filter_map(|e| match e {
-                                            Event::Key { key, .. } => Some(key.clone()),
-                                            _ => None,
-                                        })
-                                        .collect::<Vec<_>>()
-                                }) {
-                                    // TODO actually write to input_buffer
-                                    println!("{:?}", key.symbol_or_name())
-                                }
-                            })
-                        },
-                    );
+                    self.render_window(ui);
                 }
             },
-            |ui| basic_on_hover(ui, self, &simulator),
+            |ui| {
+                let data = self.data.borrow();
+                let next_byte = data.key_buff.front();
+                ui.label(format!(
+                    "Flags {:#04b}\nNextData {}",
+                    data.input_control,
+                    if let Some(byte) = next_byte {
+                        format!("{:#02x} ({})", byte, String::from_utf8_lossy(&[*byte]))
+                    } else {
+                        "none".to_string()
+                    }
+                ));
+                ui.separator();
+                basic_on_hover(ui, self, &simulator)
+            },
         )
     }
 
@@ -117,7 +139,7 @@ impl EguiComponent for MipsIO {
         const M: f32 = 6.0;
         vec![
             (
-                crate::components::IO_ADDRESS_IN_ID.to_string(),
+                crate::components::IO_REGISTER_SELECT_IN_ID.to_string(),
                 pos2(-WIDTH / 2.0 - M, -4.0) + own_pos,
             ),
             (

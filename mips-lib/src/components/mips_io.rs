@@ -1,12 +1,12 @@
 use log::*;
 use serde::{Deserialize, Serialize};
-use std::{any::Any, cell::RefCell, collections::VecDeque, default};
+use std::{any::Any, cell::RefCell, collections::VecDeque};
 use syncrim::{
     common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
     signal::SignalValue,
 };
 
-pub const IO_ADDRESS_IN_ID: &str = "io_address_in";
+pub const IO_REGISTER_SELECT_IN_ID: &str = "io_reg_select_in";
 pub const IO_DATA_IN_ID: &str = "io_data_in";
 pub const IO_WRITE_ENABLE_IN: &str = "io_write_enable_in";
 pub const IO_READ_ENABLE_IN: &str = "io_read_enable_in";
@@ -14,6 +14,18 @@ pub const IO_READ_ENABLE_IN: &str = "io_read_enable_in";
 pub const IO_DATA_OUT_ID: &str = "io_data_out";
 pub const IO_INTERRUPT_OUT_ID: &str = "io_interrupt_out";
 
+/// # IO component
+/// This compote provides IO functionality with output buffer and input buffer.
+/// At reg select 0, the input control register is available, this register contains the following flags 
+/// - 0b01 this register denotes if there is input data available to be read *
+/// - 0b10, interrupt control bit, when set and input is received the interrupt line will be set to 0x1
+/// 
+/// \* this bit is read only \
+/// Reg select 1, is the input buffer, when read this will return the first u8 available,
+/// it will also set input bit to 0 and interrupt to zero when the buffer becomes empty.
+/// If empty the line output stays the same as before  \
+/// Reg select 2, is the output buffer, data written to this ins truncated to a u8,
+/// when using egui this is rendered as an utf8 string
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MipsIO {
     pub(crate) id: Id,
@@ -55,7 +67,7 @@ impl Default for MipsIOData {
 #[typetag::serde]
 impl Component for MipsIO {
     fn to_(&self) {
-        trace!("mips_timer");
+        trace!("mips_io");
     }
 
     fn get_id_ports(&self) -> (Id, Ports) {
@@ -64,7 +76,7 @@ impl Component for MipsIO {
             Ports::new(
                 vec![
                     &InputPort {
-                        port_id: IO_ADDRESS_IN_ID.to_string(),
+                        port_id: IO_REGISTER_SELECT_IN_ID.to_string(),
                         input: self.address_in.clone(),
                     },
                     &InputPort {
@@ -88,7 +100,7 @@ impl Component for MipsIO {
 
     fn set_id_port(&mut self, target_port_id: Id, new_input: Input) {
         match target_port_id.as_str() {
-            IO_ADDRESS_IN_ID => self.address_in = new_input,
+            IO_REGISTER_SELECT_IN_ID => self.address_in = new_input,
             IO_DATA_IN_ID => self.data_in = new_input,
             IO_WRITE_ENABLE_IN => self.we_in = new_input,
             IO_READ_ENABLE_IN => self.we_in = new_input,
