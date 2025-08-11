@@ -5,50 +5,52 @@ use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::{basic_component_gui_with_on_hover, basic_on_hover};
 
-const WIDTH: f32 = 70.0;
-const HEIGHT: f32 = 45.0;
+const WIDTH: f32 = 45.0;
+const HEIGHT: f32 = 40.0;
 
-impl MipsIO {
-    fn render_window(&self, ui: &mut Ui) {
-        ui.ctx().show_viewport_immediate(
-            ViewportId::from_hash_of(&self.id),
-            ViewportBuilder::default().with_title("IO component"),
-            |ctx, _class| {
-                egui::CentralPanel::default().show(ctx, |ui| {
-                    // render our outbuf as a string
-                    // TODO care about carriage return, backspace and other advance utf8/ "ascii" codes
-                    ui.label(String::from_utf8_lossy(&self.data.borrow().out_buff));
+fn render_window(mips_io: &MipsIO, ui: &mut Ui) {
+    ui.ctx().show_viewport_immediate(
+        ViewportId::from_hash_of(&mips_io.id),
+        ViewportBuilder::default().with_title("IO component"),
+        |ctx, _class| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                // render our outbuf as a string
+                // TODO care about carriage return, backspace and other advance utf8/ "ascii" codes
+                ui.label(String::from_utf8_lossy(&mips_io.data.borrow().out_buff));
 
-                    // get events and loop over them
-                    // events such as keys and text input
-                    for text_in in ui.input(|ev| {
-                        ev.events
-                            .iter()
-                            .filter_map(|e| match e {
-                                Event::Text(s) => Some(s.clone()),
-                                Event::Key { .. } => None, // TODO handle special keys, enter, arrows, backspace. maybe as ansi codes
-                                _ => None,
-                            })
-                            .collect::<Vec<_>>()
-                    }) {
-                        // for each event
+                // get events and loop over them
+                // events such as keys and text input
+                for text_in in ui.input(|ev| {
+                    ev.events
+                        .iter()
+                        .filter_map(|e| match e {
+                            Event::Text(s) => Some(s.clone()),
+                            Event::Key { .. } => None, // TODO handle special keys, enter, arrows, backspace. maybe as ansi codes https://en.wikipedia.org/wiki/ANSI_escape_code#Terminal_input_sequences
+                            _ => None,
+                        })
+                        .collect::<Vec<_>>()
+                }) {
+                    // for each event
 
-                        let mut data = self.data.borrow_mut();
-                        // we have data, set appropriate flag
-                        data.input_control |= 0b1;
-                        // if interrupt flag is set, cause an interrupt
-                        if data.input_control & 0b10 == 0b10 {
-                            data.interrupt = true;
-                        }
-                        // write data to our key buff
-                        for b in text_in.as_bytes() {
-                            data.key_buff.push_back(*b);
-                        }
+                    let mut data = mips_io.data.borrow_mut();
+                    // we have data, set appropriate flag
+                    data.input_control |= 0b1;
+                    // if interrupt flag is set, cause an interrupt
+                    if data.input_control & 0b10 == 0b10 {
+                        data.interrupt = true;
                     }
-                })
-            },
-        );
-    }
+                    // write data to our key buff
+                    for b in text_in.as_bytes() {
+                        data.key_buff.push_back(*b);
+                    }
+                }
+            });
+            if ctx.input(|i| i.viewport().close_requested()) {
+                *mips_io.gui_show.borrow_mut() = false;
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            };
+        },
+    );
 }
 
 #[typetag::serde]
@@ -70,17 +72,26 @@ impl EguiComponent for MipsIO {
             scale,
             clip_rect,
             |ui| {
-                ui.label("IO component");
-                ui.toggle_value(&mut self.gui_show.borrow_mut(), "show io window");
+                ui.set_height(HEIGHT * scale);
+                ui.set_width(WIDTH * scale);
+
+                // because borrow of gui show happens later
+                let show = *self.gui_show.borrow();
+
+                ui.label("I/O");
+                ui.toggle_value(
+                    &mut self.gui_show.borrow_mut(),
+                    if show { "Close" } else { "Show" },
+                );
                 if *self.gui_show.borrow() {
-                    self.render_window(ui);
+                    render_window(self, ui);
                 }
             },
             |ui| {
                 let data = self.data.borrow();
                 let next_byte = data.key_buff.front();
                 ui.label(format!(
-                    "Flags {:#04b}\nNextData {}",
+                    "Flags {:#04b}\nNext data {}",
                     data.input_control,
                     if let Some(byte) = next_byte {
                         format!("{:#02x} ({})", byte, String::from_utf8_lossy(&[*byte]))
@@ -179,11 +190,11 @@ impl EguiComponent for MipsIO {
         } else if id == self.we_in {
             Some(loc[2])
         } else if id == self.re_in {
-            Some(loc[2])
-        } else if id == Input::new(&self.id, IO_DATA_OUT_ID) {
             Some(loc[3])
-        } else if id == Input::new(&self.id, IO_INTERRUPT_OUT_ID) {
+        } else if id == Input::new(&self.id, IO_DATA_OUT_ID) {
             Some(loc[4])
+        } else if id == Input::new(&self.id, IO_INTERRUPT_OUT_ID) {
+            Some(loc[5])
         } else {
             None
         }
