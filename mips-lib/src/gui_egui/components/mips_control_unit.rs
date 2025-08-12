@@ -78,7 +78,7 @@ impl EguiComponent for ControlUnit {
         const M: f32 = 6.0;
         fn out_pos(i: u32) -> Pos2 {
             pos2(
-                -WIDTH / 2.0 + (i as f32 + 1.0) * WIDTH / 12.0,
+                -WIDTH / 2.0 + (i as f32 + 1.0) * WIDTH / 13.0, // twelve out signals
                 HEIGHT / 2.0 + M,
             )
         }
@@ -112,28 +112,32 @@ impl EguiComponent for ControlUnit {
                 out_pos(5) + own_pos,
             ),
             (
-                crate::components::cntr_field::MEM_MODE_OUT.to_string(),
+                crate::components::cntr_field::MEM_READ_ENABLE_OUT.to_string(),
                 out_pos(6) + own_pos,
             ),
             (
-                crate::components::cntr_field::MMU_OUT.to_string(),
+                crate::components::cntr_field::MEM_MODE_OUT.to_string(),
                 out_pos(7) + own_pos,
             ),
             (
-                crate::components::cntr_field::ALU_OP_OUT.to_string(),
+                crate::components::cntr_field::MMU_OUT.to_string(),
                 out_pos(8) + own_pos,
             ),
             (
-                crate::components::cntr_field::REG_WRITE_SRC_OUT.to_string(),
+                crate::components::cntr_field::ALU_OP_OUT.to_string(),
                 out_pos(9) + own_pos,
             ),
             (
-                crate::components::cntr_field::REG_WRITE_ENABLE_OUT.to_string(),
+                crate::components::cntr_field::REG_WRITE_SRC_OUT.to_string(),
                 out_pos(10) + own_pos,
             ),
             (
-                crate::components::cntr_field::CP0_OUT.to_string(),
+                crate::components::cntr_field::REG_WRITE_ENABLE_OUT.to_string(),
                 out_pos(11) + own_pos,
+            ),
+            (
+                crate::components::cntr_field::CP0_OUT.to_string(),
+                out_pos(12) + own_pos,
             ),
         ]
     }
@@ -159,6 +163,8 @@ impl EguiComponent for ControlUnit {
             Some(loc[5])
         } else if id == Input::new(&self.id, cntr_field::MEM_WRITE_ENABLE_OUT) {
             Some(loc[6])
+        } else if id == Input::new(&self.id, cntr_field::MEM_READ_ENABLE_OUT) {
+            Some(loc[7])
         } else if id == Input::new(&self.id, cntr_field::MEM_MODE_OUT) {
             Some(loc[7])
         } else if id == Input::new(&self.id, cntr_field::MMU_OUT) {

@@ -5,8 +5,8 @@ use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::basic_component_gui;
 
-const WIDTH: f32 = 105.0;
-const HEIGHT: f32 = 30.0;
+const WIDTH: f32 = 150.0;
+const HEIGHT: f32 = 15.0;
 
 #[typetag::serde]
 impl EguiComponent for MipsMmu {
@@ -72,7 +72,7 @@ impl EguiComponent for MipsMmu {
         // helper function to place the output ports
         fn out_pos(i: u32) -> Pos2 {
             pos2(
-                -WIDTH / 2.0 + (i as f32 + 1.0) * WIDTH / 12.0, // there are twelve component ports, re, we, adrs for 4 components, 3*4=12
+                -WIDTH / 2.0 + (i as f32 + 1.0) * WIDTH / 13.0, // there are twelve component ports, re, we, adrs for 4 components, 3*4=12
                 HEIGHT / 2.0 + M,
             )
         }
@@ -81,15 +81,15 @@ impl EguiComponent for MipsMmu {
         vec![
             (
                 MMU_ADDRESS_IN_ID.to_string(),
-                pos2(- WIDTH / 3.0, -HEIGHT-M) + own_pos,
+                pos2(- WIDTH / 3.0, -HEIGHT/2.0-M) + own_pos,
             ),
             (
                 MMU_READ_ENABLE_IN.to_string(),
-                pos2(0.0, 0.0-HEIGHT - M) + own_pos,
+                pos2(0.0, 0.0-HEIGHT/2.0 - M) + own_pos,
             ),
             (
                 MMU_WRITE_ENABLE_IN.to_string(),
-                pos2(WIDTH / 3.0, -HEIGHT+WIDTH) + own_pos,
+                pos2(WIDTH / 3.0, -HEIGHT/2.0 -M) + own_pos,
             ),
             // TODO CP0 ports
             (
