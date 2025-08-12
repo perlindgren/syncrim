@@ -81,7 +81,7 @@ impl Component for MipsMmu {
                     
                     MMU_IO_REG_SEL_OUT,
                     MMU_IO_WE_OUT,
-                    MMU_TIMER_RE_OUT,
+                    MMU_IO_RE_OUT,
 
                     MMU_COMPONENT_SELECT_OUT_ID,
                 ],

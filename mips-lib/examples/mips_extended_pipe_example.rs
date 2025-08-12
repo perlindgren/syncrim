@@ -355,29 +355,40 @@ fn main() {
             ),
             //
             // Memory mangmt unit, switches the selected component, timer, io or memory
-            // TODO more inputs
+            // TODO cp0 stuff
             Rc::new(MipsMmu::new(
                 "mmu".into(),
-                (1660.0, 405.0),
+                (1660.0, 205.0),
                 Input::new("alu_reg", REGISTER_OUT_ID), // calculated from rs and imm
+                Input::new("control_unit_3", cntr_field::MEM_WRITE_ENABLE_OUT), // calculated from rs and imm
+                Input::new("control_unit_3", cntr_field::MEM_READ_ENABLE_OUT)
+            )),
+            Rc::new(MipsIO::new(
+                "IO",
+                (1660.0, 305.0),
+                Input::new("mmu", MMU_IO_REG_SEL_OUT),
+                Input::new("data_MEM_reg", REGISTER_OUT_ID),
+                Input::new("mmu", MMU_IO_WE_OUT),
+                Input::new("mmu", MMU_IO_RE_OUT)
             )),
             // TODO hook up timer to actual inputs
             Rc::new(MipsTimer::new(
                 "timer",
                 (1660.0, 445.0),
-                Input::new("mmu", MMU_ADDRESS_OUT_ID),
-                Input::new("mmu", MMU_ADDRESS_OUT_ID),
-                Input::new("mmu", MMU_ADDRESS_OUT_ID),
+                Input::new("mmu", MMU_TIMER_ADDRESS_OUT),
+                Input::new("data_MEM_reg", REGISTER_OUT_ID),
+                Input::new("mmu", MMU_TIMER_WE_OUT),
             )),
             //
             //
             Rc::new(DataMem::new(
                 "data_mem".into(),
                 (1660.0, 585.0),
-                Input::new("alu_reg", REGISTER_OUT_ID), // calculated from rs and imm
+                Input::new("mmu", MMU_MEM_ADDRESS_OUT_ID), // calculated from rs and imm
                 Input::new("data_MEM_reg", REGISTER_OUT_ID),
                 Input::new("control_unit_3", cntr_field::MEM_MODE_OUT),
                 Input::new("control_unit_3", cntr_field::MEM_WRITE_ENABLE_OUT),
+                // TODO READ ENABLE
                 "phys_mem".into(),
                 "reg_file".into(),
             )),
