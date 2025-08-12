@@ -46,6 +46,8 @@ pub mod cntr_field {
 
     // 0 or 1
     pub const MEM_WRITE_ENABLE_OUT: &str = "mem_write_enable";
+    // 0 or 1
+    pub const MEM_READ_ENABLE_OUT: &str = "mem_read_enable";
 
     // 0 or 1, used for co-processor address stuff
     pub const BRANCH_INTERRUPT_OUT: &str = "branch_interrupt";
@@ -143,6 +145,9 @@ pub mod cntr_unit_signals {
     pub const MEM_WRITE_DISABLE: u32 = 0;
     pub const MEM_WRITE_ENABLE: u32 = 1;
 
+    pub const MEM_READ_DISABLE: u32 = 0;
+    pub const MEM_READ_ENABLE: u32 = 1;
+
     pub const ALU_SRC_A_SHAMT: u32 = 0;
     pub const ALU_SRC_A_RS: u32 = 1;
     pub const ALU_SRC_A_ZERO: u32 = 2;
@@ -211,6 +216,7 @@ impl Component for ControlUnit {
                     cntr_field::ALU_SRC_B_OUT,
                     cntr_field::EXTEND_SELECT_OUT,
                     cntr_field::MEM_WRITE_ENABLE_OUT,
+                    cntr_field::MEM_READ_ENABLE_OUT,
                     cntr_field::BRANCH_INTERRUPT_OUT,
                     cntr_field::CP0_OUT,
                     cntr_field::MMU_OUT,
@@ -288,6 +294,12 @@ impl Component for ControlUnit {
                     cntr_field::EXTEND_SELECT_OUT,
                     cntr_unit_signals::EXTEND_SIGNED
                 );
+
+                // set read enable to true
+                set!(
+                    cntr_field::MEM_READ_ENABLE_OUT,
+                    cntr_unit_signals::MEM_READ_ENABLE
+                )
             };
         }
         macro_rules! set_store_instr {
@@ -313,6 +325,7 @@ impl Component for ControlUnit {
             };
         }
 
+        // set default signals
         set!(
             cntr_field::REG_WRITE_ENABLE_OUT,
             cntr_unit_signals::REG_WRITE_DISABLE
@@ -322,10 +335,15 @@ impl Component for ControlUnit {
             cntr_unit_signals::MEM_WRITE_DISABLE
         );
         set!(
+            cntr_field::MEM_READ_ENABLE_OUT,
+            cntr_unit_signals::MEM_READ_DISABLE
+        );
+        set!(
             cntr_field::BRANCH_INTERRUPT_OUT,
             cntr_unit_signals::NO_BRANCH_INTERRUPT
         );
         set!(cntr_field::MEM_MODE_OUT, data_op::NO_OP);
+
         //TODO an idea would be to init all variables
         // let alu_src_a : Signal;
         // this would make the compiler force us to populate all paths so to not let any signal be undefined
