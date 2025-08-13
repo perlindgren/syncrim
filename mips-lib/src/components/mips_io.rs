@@ -16,10 +16,10 @@ pub const IO_INTERRUPT_OUT_ID: &str = "io_interrupt_out";
 
 /// # IO component
 /// This compote provides IO functionality with output buffer and input buffer.
-/// At reg select 0, the input control register is available, this register contains the following flags 
+/// At reg select 0, the input control register is available, this register contains the following flags
 /// - 0b01 this register denotes if there is input data available to be read *
 /// - 0b10, interrupt control bit, when set and input is received the interrupt line will be set to 0x1
-/// 
+///
 /// \* this bit is read only \
 /// Reg select 1, is the input buffer, when read this will return the first u8 available,
 /// it will also set input bit to 0 and interrupt to zero when the buffer becomes empty.
@@ -165,6 +165,15 @@ impl Component for MipsIO {
         simulator.set_out_value(&self.id, IO_INTERRUPT_OUT_ID, self.data.borrow().interrupt);
 
         Ok(())
+    }
+
+    fn reset(&self) {
+        *self.data.borrow_mut() = MipsIOData {
+            interrupt: false,
+            input_control: 0,
+            key_buff: VecDeque::default(),
+            out_buff: vec![],
+        }
     }
 
     fn as_any(&self) -> &dyn Any {
