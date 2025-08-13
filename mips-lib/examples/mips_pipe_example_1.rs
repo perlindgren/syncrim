@@ -210,7 +210,7 @@ fn main() {
                 Input::new("alu_forward_A", ALU_FORWARD_OUT_ID),
                 vec![
                     Input::new("data_forward_A_mux", MUX_OUT_ID),
-                    Input::new("alu", FULL_ADD_OUT_ID),
+                    Input::new("alu", ALU_OUT_ID),
                 ],
             ),
             //
@@ -236,7 +236,7 @@ fn main() {
                 Input::new("alu_forward_B", ALU_FORWARD_OUT_ID),
                 vec![
                     Input::new("data_forward_B_mux", MUX_OUT_ID),
-                    Input::new("alu", FULL_ADD_OUT_ID),
+                    Input::new("alu", ALU_OUT_ID),
                 ],
             ),
             //
@@ -378,11 +378,7 @@ fn main() {
                 Input::new("control_MEM_reg", REGISTER_OUT_ID),
             ),
             //
-            Register::rc_new(
-                "alu_reg",
-                (1470.0, 250.0),
-                Input::new("alu", FULL_ADD_OUT_ID),
-            ),
+            Register::rc_new("alu_reg", (1470.0, 250.0), Input::new("alu", ALU_OUT_ID)),
             //
             Register::rc_new(
                 "data_MEM_reg",
