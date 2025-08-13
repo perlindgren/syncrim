@@ -1,4 +1,4 @@
-mod full_adder;
+mod mips_alu;
 mod mips_alu_forward;
 mod mips_branch_logic;
 mod mips_control_unit;
