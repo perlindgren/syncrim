@@ -2,6 +2,7 @@ mod full_adder;
 mod mips_alu_forward;
 mod mips_branch_logic;
 mod mips_control_unit;
+mod mips_coprocessor;
 mod mips_data_forward;
 mod mips_dm;
 mod mips_im;
