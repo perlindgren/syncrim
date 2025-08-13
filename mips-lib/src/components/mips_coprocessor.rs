@@ -192,10 +192,10 @@ impl Component for CP0 {
 
             // set current state and interrupt
             let mut regs = self.registers.borrow_mut();
-            let tmp = regs[SR] & 0xF;
-            tmp << 2;
+            let tmp = (regs[SR] & 0xF) << 2;
+            
             regs[SR] &= 0xFFFFFFC0;
-            regs[SR] = regs[SR] | tmp;
+            regs[SR] |= tmp;
 
             // Set bits in ECR according to the interrupt type
             if timer_interrupt == 1 && ((regs[SR] & 0x401) == 0x401) {
@@ -303,7 +303,7 @@ impl CP0 {
             history: RefCell::new(vec![]),
         }
     }
-
+    #[allow(clippy::too_many_arguments)]
     pub fn rc_new(
         id: &str,
         pos: (f32, f32),
