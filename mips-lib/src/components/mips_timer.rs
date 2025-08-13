@@ -161,12 +161,20 @@ impl Component for MipsTimer {
                         SignalValue::Data(0xFFFF_0010) => data.flags = in_data as u8,
                         SignalValue::Data(0xFFFF_0014) => data.counter = in_data,
                         SignalValue::Data(0xFFFF_0018) => data.compare = in_data,
-                        SignalValue::Data(_) => ret = Err(Condition::Warning("Write address out of range".to_string())),
-                        SignalValue::DontCare => {},
-                        _ => {ret = Err(Condition::Error("Address is uninitialized or unknown".to_string()))}
+                        SignalValue::Data(_) => {
+                            ret = Err(Condition::Warning("Write address out of range".to_string()))
+                        }
+                        SignalValue::DontCare => {}
+                        _ => {
+                            ret = Err(Condition::Error(
+                                "Address is uninitialized or unknown".to_string(),
+                            ))
+                        }
                     }
                 } else {
-                    ret = Err(Condition::Error("Not valid data to write, SignalValue is not data".to_string()));
+                    ret = Err(Condition::Error(
+                        "Not valid data to write, SignalValue is not data".to_string(),
+                    ));
                 };
             }
             _ => {}
@@ -189,6 +197,15 @@ impl Component for MipsTimer {
         );
 
         ret
+    }
+    fn reset(&self) {
+        *self.data.borrow_mut() = MipsTimerData {
+            flags: 0,
+            counter: 0,
+            compare: 0,
+            divider: 16,
+            div_counter: 0,
+        }
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -367,7 +384,6 @@ mod test {
         assert!(s.component_condition.iter().any(|(id, cond)| id == "timer"
             && cond == &Condition::Warning("Write address out of range".to_string())));
 
-
         // test if Address of is not Data or Don't care
         s.set_out_value("adrs", "out", SignalValue::Uninitialized);
         s.clock();
@@ -382,6 +398,12 @@ mod test {
         s.set_out_value("data", "out", SignalValue::Unknown);
 
         s.clock();
-        assert_eq!(s.component_condition.iter().find(|(id, _)| id == "timer"), Some(&("timer".to_string(), Condition::Error("Not valid data to write, SignalValue is not data".to_string()))));
+        assert_eq!(
+            s.component_condition.iter().find(|(id, _)| id == "timer"),
+            Some(&(
+                "timer".to_string(),
+                Condition::Error("Not valid data to write, SignalValue is not data".to_string())
+            ))
+        );
     }
 }
