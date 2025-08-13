@@ -22,7 +22,7 @@ fn main() {
         Input::new("control_unit_4", cntr_field::REG_WRITE_ENABLE_OUT),
     );
 
-    let cs = ComponentStore {
+    let mut cs = ComponentStore {
         store: vec![
             Rc::new(PhysicalMem::new("phys_mem", (800.0, 600.0))),
             // register that holds instr addr
@@ -319,7 +319,7 @@ fn main() {
             ),
             //
             //
-            Constant::rc_new("0_a_inp", (1190.0, 210.0), 4),
+            Constant::rc_new("0_a_inp", (1190.0, 230.0), 4),
             Mux::rc_new(
                 "mux_source_a",
                 (1250.0, 210.0),
@@ -361,7 +361,7 @@ fn main() {
                 (1660.0, 205.0),
                 Input::new("alu_reg", REGISTER_OUT_ID), // calculated from rs and imm
                 Input::new("control_unit_3", cntr_field::MEM_WRITE_ENABLE_OUT), // calculated from rs and imm
-                Input::new("control_unit_3", cntr_field::MEM_READ_ENABLE_OUT)
+                Input::new("control_unit_3", cntr_field::MEM_READ_ENABLE_OUT),
             )),
             Rc::new(MipsIO::new(
                 "io",
@@ -369,7 +369,7 @@ fn main() {
                 Input::new("mmu", MMU_IO_REG_SEL_OUT),
                 Input::new("data_MEM_reg", REGISTER_OUT_ID),
                 Input::new("mmu", MMU_IO_WE_OUT),
-                Input::new("mmu", MMU_IO_RE_OUT)
+                Input::new("mmu", MMU_IO_RE_OUT),
             )),
             // TODO hook up timer to actual inputs
             Rc::new(MipsTimer::new(
@@ -396,14 +396,14 @@ fn main() {
             // data mux, controlled by the mmu send data back
             Mux::rc_new(
                 "mmu_data_mux",
-                (1730.0,350.0),
+                (1730.0, 350.0),
                 Input::new("mmu", MMU_COMPONENT_SELECT_OUT_ID),
                 vec![
                     Input::new("io", IO_DATA_OUT_ID),
                     Input::new("timer", TIMER_DATA_OUT_ID),
                     Input::new("data_mem", DATA_MEM_READ_DATA_OUT_ID), // TODO change to cp0
-                    Input::new("data_mem", DATA_MEM_READ_DATA_OUT_ID), 
-                ]
+                    Input::new("data_mem", DATA_MEM_READ_DATA_OUT_ID),
+                ],
             ),
             //
             //
@@ -482,16 +482,16 @@ fn main() {
             //
             Add::rc_new(
                 "pc_add_branch",
-                (585.0, 565.0),
+                (530.0, 565.0),
                 Input::new("pc+4_reg", REGISTER_OUT_ID),
                 Input::new("branch_shift", SHIFT_OUT_ID),
             ),
             //
             //
-            Constant::rc_new("0x_1F", (500.0, 510.0), 0x_1F),
+            Constant::rc_new("0x_1F", (670.0, 540.0), 0x_1F),
             Mux::rc_new(
                 "mux_write_addr",
-                (970.0, 520.0),
+                (720.0, 520.0),
                 Input::new("control_unit_1", cntr_field::REG_DEST_OUT),
                 vec![
                     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
@@ -508,9 +508,47 @@ fn main() {
 
     #[cfg(feature = "gui-egui")]
     {
+        // auto wire the model
         use syncrim::autowire::autowire;
-        let cs = autowire(cs);
-        cs.save_file(&path);
+
+        // since we dont have clone, convert to joson and back
+        let mut auto_w = autowire(
+            serde_json::from_str::<ComponentStore>(&serde_json::to_string(&cs).unwrap()).unwrap(),
+        ); // nice laid out wires and other from mips_pipe.json
+        
+        let wire_store: ComponentStore = serde_json::from_str(include_str!("../mips_pipe.json")).unwrap();
+        
+        // for each wire in our component store
+        for comp in auto_w.store.iter_mut() {
+            // find our source wire
+            if let Some(source) = wire_store.store.iter().find_map(|c| {
+                if c.get_id_ports().0 == comp.get_id_ports().0 {
+                    c.as_any().downcast_ref::<Wire>()
+                } else {
+                    None
+                }
+            }) {
+                if let Some(target_wire) = comp.as_any().downcast_ref::<Wire>() {
+                    use syncrim::common::Component;
+                    cs.store.push(Wire::rc_new(
+                        &source.get_id_ports().0,
+                        source.pos.clone(),
+                        target_wire.get_id_ports().1.inputs[0].input.clone(),
+                    ));
+                }
+            } else {
+                if let Some(target_wire) = comp.as_any().downcast_ref::<Wire>() {
+                    use syncrim::common::Component;
+                    cs.store.push(Wire::rc_new(
+                        &target_wire.get_id_ports().0,
+                        target_wire.pos.clone(),
+                        target_wire.get_id_ports().1.inputs[0].input.clone(),
+                    ));
+                }
+            }
+        }
+
+        // let mut cs std::mem::take(dest)
         syncrim::gui_egui::gui(cs, &path, Library::default()).ok();
     }
 
