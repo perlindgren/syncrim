@@ -150,7 +150,7 @@ fn main() {
             Rc::new(DataMem::new(
                 "data_mem".into(),
                 (600.0, 575.0),
-                Input::new("alu", FULL_ADD_OUT_ID), // calculated from rs and imm
+                Input::new("alu", ALU_OUT_ID), // calculated from rs and imm
                 Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
                 Input::new("control_unit", cntr_field::MEM_MODE_OUT),
                 Input::new("control_unit", cntr_field::MEM_WRITE_ENABLE_OUT),
@@ -164,7 +164,7 @@ fn main() {
                 (800.0, 225.0),
                 Input::new("control_unit", cntr_field::REG_WRITE_SRC_OUT),
                 vec![
-                    Input::new("alu", FULL_ADD_OUT_ID),
+                    Input::new("alu", ALU_OUT_ID),
                     Input::new("data_mem", DATA_MEM_READ_DATA_OUT_ID), //TODO: data meme output
                 ],
                 0.6,
