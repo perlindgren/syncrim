@@ -364,7 +364,7 @@ fn main() {
                 Input::new("control_unit_3", cntr_field::MEM_READ_ENABLE_OUT)
             )),
             Rc::new(MipsIO::new(
-                "IO",
+                "io",
                 (1660.0, 305.0),
                 Input::new("mmu", MMU_IO_REG_SEL_OUT),
                 Input::new("data_MEM_reg", REGISTER_OUT_ID),
@@ -387,11 +387,24 @@ fn main() {
                 Input::new("mmu", MMU_MEM_ADDRESS_OUT_ID), // calculated from rs and imm
                 Input::new("data_MEM_reg", REGISTER_OUT_ID),
                 Input::new("control_unit_3", cntr_field::MEM_MODE_OUT),
-                Input::new("control_unit_3", cntr_field::MEM_WRITE_ENABLE_OUT),
-                // TODO READ ENABLE
+                Input::new("mmu", MMU_MEM_WE_OUT),
+                Input::new("mmu", MMU_MEM_RE_OUT),
                 "phys_mem".into(),
                 "reg_file".into(),
             )),
+            //
+            // data mux, controlled by the mmu send data back
+            Mux::rc_new(
+                "mmu_data_mux",
+                (1730.0,350.0),
+                Input::new("mmu", MMU_COMPONENT_SELECT_OUT_ID),
+                vec![
+                    Input::new("io", IO_DATA_OUT_ID),
+                    Input::new("timer", TIMER_DATA_OUT_ID),
+                    Input::new("data_mem", DATA_MEM_READ_DATA_OUT_ID), // TODO change to cp0
+                    Input::new("data_mem", DATA_MEM_READ_DATA_OUT_ID), 
+                ]
+            ),
             //
             //
             Register::rc_new(
@@ -435,7 +448,7 @@ fn main() {
                 Input::new("control_unit_3", cntr_field::REG_WRITE_SRC_OUT),
                 vec![
                     Input::new("alu_reg", REGISTER_OUT_ID),
-                    Input::new("data_mem", DATA_MEM_READ_DATA_OUT_ID),
+                    Input::new("mmu_data_mux", MUX_OUT_ID),
                 ],
             ),
             //

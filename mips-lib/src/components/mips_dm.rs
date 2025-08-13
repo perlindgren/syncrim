@@ -7,7 +7,10 @@ use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 #[cfg(feature = "gui-egui")]
 use syncrim::common::EguiComponent;
-use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
+use syncrim::{
+    common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
+    signal::SignalValue,
+};
 
 use crate::components::physical_mem::{MemOpSize, MemWriteReturn, MipsMem};
 
@@ -41,6 +44,7 @@ pub struct DataMem {
     pub data_input: Input,
     pub op_input: Input,
     pub write_enable_input: Input,
+    pub read_enable_input: Input,
     pub phys_mem_id: String,
     pub regfile_id: String,
     #[cfg(feature = "gui-egui")]
@@ -56,6 +60,7 @@ impl DataMem {
         data_input: Input,
         op_input: Input,
         write_enable_input: Input,
+        read_enable_input: Input,
         phys_mem_id: String,
         regfile_id: String,
     ) -> Self {
@@ -70,6 +75,7 @@ impl DataMem {
             data_input,
             op_input,
             write_enable_input,
+            read_enable_input,
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
             regfile_id,
@@ -83,6 +89,7 @@ impl DataMem {
         data_input: Input,
         op_input: Input,
         write_enable_input: Input,
+        read_enable_input: Input,
         phys_mem_id: String,
         regfile_id: String,
     ) -> Rc<Self> {
@@ -93,6 +100,7 @@ impl DataMem {
             data_input,
             op_input,
             write_enable_input,
+            read_enable_input,
             phys_mem_id,
             regfile_id,
         ))
@@ -152,6 +160,7 @@ impl Component for DataMem {
             dummy_input.clone(),
             dummy_input.clone(),
             dummy_input.clone(),
+            dummy_input.clone(),
             dummy_input,
             "dummy".into(),
             "dummy".into(),
@@ -200,6 +209,26 @@ impl Component for DataMem {
         let cycle = simulator.cycle;
         self.up_cycle(simulator);
         // get instr at pc/4s
+
+        // TODO clean this check upp and have it part of value assignments
+        const ON: SignalValue = SignalValue::Data(1);
+        const OFF: SignalValue = SignalValue::Data(0);
+        match (
+            simulator.get_input_value(&self.write_enable_input),
+            simulator.get_input_value(&self.read_enable_input),
+        ) {
+            // (WE,RE)
+            (ON, OFF) => {}
+            (OFF, ON) => {}
+            (OFF, OFF) => {return Ok(());}
+            (we, re) => {
+                return Err(Condition::Error(format!(
+                    "wrong combination of read and write signals read:{:?} write{:?}",
+                    we, re
+                )))
+            }
+        }
+
         let address: u32 = simulator
             .get_input_value(&self.address_input)
             .try_into()

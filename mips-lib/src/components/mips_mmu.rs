@@ -136,7 +136,7 @@ impl Component for MipsMmu {
                     },
                 );
                 // passthrough the read enable signal and the write enable signal
-                pass_signal!(&self.we_in, MMU_IO_RE_OUT);
+                pass_signal!(&self.we_in, MMU_IO_WE_OUT);
                 pass_signal!(&self.re_in, MMU_IO_RE_OUT);
 
                 // set mux to IO component
