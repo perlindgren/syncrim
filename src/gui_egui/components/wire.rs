@@ -5,8 +5,9 @@ use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapP
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::{basic_on_hover, offset_helper, shadow_small_dark};
 use egui::{
-    Color32, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers, Order, PointerButton,
-    Pos2, Rect, Response, Rounding, Sense, Shape, Stroke, Ui, Vec2, Window,
+    Color32, CornerRadius, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers,
+    PointerButton, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, UiBuilder, Vec2,
+    Window,
 };
 
 /// if the mouse cursor is less than this distance in points away from the wire display tooltip
@@ -100,32 +101,23 @@ impl EguiComponent for Wire {
                 EditorMode::Default => {
                     // why the fuck do i need this much code just to make sure its rendered at the correct layer
                     let resp = ui
-                        .allocate_ui_at_rect(rect, |ui| {
-                            let mut layer = ui.layer_id();
-                            layer.order = Order::Middle;
-                            ui.with_layer_id(layer, |ui| {
-                                ui.allocate_exact_size(
-                                    rect.size(),
-                                    Sense {
-                                        click: true,
-                                        drag: true,
-                                        focusable: true,
-                                    },
-                                )
-                            })
-                        })
-                        .inner
+                        .allocate_new_ui(
+                            UiBuilder::new().layer_id(ui.layer_id()).max_rect(rect),
+                            |ui| ui.allocate_exact_size(rect.size(), Sense::all()),
+                        )
                         .inner
                         .1;
+
                     // log::debug!("{:?}", resp);
                     if resp.contains_pointer() {
                         ui.painter().rect_stroke(
                             resp.interact_rect,
-                            Rounding::same(0.0),
+                            CornerRadius::same(0),
                             Stroke {
                                 width: scale,
                                 color: Color32::RED,
                             },
+                            StrokeKind::Inside,
                         );
                     }
                     r.push(resp);
@@ -246,9 +238,9 @@ impl EguiComponent for Wire {
         if properties_window_open || context.properties_window {
             let resp = Window::new(format!("Properties: {}", self.id))
                 .frame(Frame {
-                    inner_margin: Margin::same(10f32),
-                    outer_margin: Margin::same(0f32),
-                    rounding: Rounding::same(10f32),
+                    inner_margin: Margin::same(10),
+                    outer_margin: Margin::same(0),
+                    corner_radius: CornerRadius::same(10),
                     shadow: shadow_small_dark(),
                     fill: ui.visuals().panel_fill,
                     stroke: ui.visuals().window_stroke,

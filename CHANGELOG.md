@@ -2,7 +2,20 @@
 
 Tracking changes per date:
 
+## 250624
+
+- updated dependencies which required no code changes
+  - fern
+  - num_enum
+  - petgraph
+  - rfd
+- updated Egui version
+  - changed rounding to corner radius
+  - added stroke kind because
+  - removed allocate ui at rect
+
 ## 240911
+
 - Added so that simulator now tracks what component condition
 - Added simulator running state, such as running, halt or error
 - Added stepping functionality

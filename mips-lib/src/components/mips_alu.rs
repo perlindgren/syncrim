@@ -196,8 +196,6 @@ impl ALU {
 }
 #[cfg(test)]
 mod test {
-    use crate::components::cntr_field::ALU_OP_OUT;
-
     use super::*;
 
     use std::rc::Rc;

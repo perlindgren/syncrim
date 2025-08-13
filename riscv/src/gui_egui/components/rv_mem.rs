@@ -1,9 +1,8 @@
 use crate::components::RVMem;
-use egui::FontId;
 use egui::{
-    Color32, Context, Label, Pos2, Rect, Response, Rounding, Shape, Slider, Stroke, Ui, Vec2,
-    Window,
+    Color32, Context, Label, Pos2, Rect, Response, Shape, Slider, Stroke, Ui, Vec2, Window,
 };
+use egui::{CornerRadius, FontId};
 use egui_extras::{Column, TableBuilder};
 use syncrim::common::{EguiComponent, Ports, Simulator};
 use syncrim::gui_egui::component_ui::{
@@ -109,11 +108,12 @@ impl EguiComponent for RVMem {
         };
         ui.painter().add(Shape::rect_stroke(
             rect,
-            Rounding::ZERO,
+            CornerRadius::ZERO,
             Stroke {
                 width: scale,
                 color: Color32::BLACK,
             },
+            egui::StrokeKind::Inside,
         ));
         ui.painter().text(
             o.to_pos2(),
