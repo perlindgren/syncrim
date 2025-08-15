@@ -8,8 +8,12 @@ use syncrim::{
 };
 
 pub const MMU_ADDRESS_IN_ID: &str = "mmu_address_signal_in";
-pub const MMU_READ_ENABLE_IN: &str = "mmu_re_in"; //TODO make control unit emit read enable signal
+pub const MMU_READ_ENABLE_IN: &str = "mmu_re_in";
 pub const MMU_WRITE_ENABLE_IN: &str = "mmu_we_in";
+pub const MMU_CP0_MV_INSTR_IN: &str = "mmu_cp0_mv_instr";
+
+pub const MMU_CP0_WE_OUT: &str = "mmu_cp0_we_out";
+pub const MMU_CP0_RE_OUT: &str = "mmu_cp0_re_out";
 
 pub const MMU_MEM_WE_OUT: &str = "mmu_mem_we_out";
 pub const MMU_MEM_RE_OUT: &str = "mmu_mem_re_out";
@@ -24,7 +28,7 @@ pub const MMU_TIMER_ADDRESS_OUT: &str = "mmu_timer_address_out";
 
 pub const MMU_IO_REG_SEL_OUT: &str = "mmu_io_reg_select_out";
 
-// TODO CP0 STUFF
+pub const MMU_CP0_ADDRESS_OUT: &str = "mmu_cp0_address_out";
 
 pub const MMU_COMPONENT_SELECT_OUT_ID: &str = "component_select_out";
 
@@ -43,6 +47,8 @@ pub struct MipsMmu {
     pub(crate) we_in: Input,
     pub(crate) re_in: Input,
     pub(crate) address_in: Input,
+
+    pub(crate) is_cp0_instr_in: Input,
 }
 
 #[typetag::serde]
@@ -68,21 +74,25 @@ impl Component for MipsMmu {
                         port_id: MMU_WRITE_ENABLE_IN.to_string(),
                         input: self.re_in.clone(),
                     },
+                    &InputPort {
+                        port_id: MMU_CP0_MV_INSTR_IN.to_string(),
+                        input: self.is_cp0_instr_in.clone(),
+                    }
                 ],
                 OutputType::Combinatorial,
                 vec![
                     MMU_MEM_ADDRESS_OUT_ID,
                     MMU_MEM_WE_OUT,
                     MMU_MEM_RE_OUT,
-
                     MMU_TIMER_ADDRESS_OUT,
                     MMU_TIMER_WE_OUT,
                     MMU_TIMER_RE_OUT,
-                    
                     MMU_IO_REG_SEL_OUT,
                     MMU_IO_WE_OUT,
                     MMU_IO_RE_OUT,
-
+                    MMU_CP0_ADDRESS_OUT,
+                    MMU_CP0_WE_OUT,
+                    MMU_CP0_RE_OUT,
                     MMU_COMPONENT_SELECT_OUT_ID,
                 ],
             ),
@@ -99,13 +109,20 @@ impl Component for MipsMmu {
     }
 
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
+        const ON: SignalValue = SignalValue::Data(1);
+        const OFF: SignalValue = SignalValue::Data(0);
+
         // set default output values
-        // No reads or writes to any component 
-        simulator.set_out_value(&self.id, MMU_MEM_WE_OUT, SignalValue::Data(0));
-        simulator.set_out_value(&self.id, MMU_MEM_RE_OUT, SignalValue::Data(0));
-        simulator.set_out_value(&self.id, MMU_TIMER_WE_OUT, SignalValue::Data(0));
-        simulator.set_out_value(&self.id, MMU_IO_WE_OUT, SignalValue::Data(0));
-        simulator.set_out_value(&self.id, MMU_IO_RE_OUT, SignalValue::Data(0));
+        // No reads or writes to any component
+        simulator.set_out_value(&self.id, MMU_MEM_WE_OUT, OFF);
+        simulator.set_out_value(&self.id, MMU_MEM_RE_OUT, OFF);
+        simulator.set_out_value(&self.id, MMU_TIMER_WE_OUT, OFF);
+        simulator.set_out_value(&self.id, MMU_TIMER_RE_OUT, OFF);
+        simulator.set_out_value(&self.id, MMU_IO_WE_OUT, OFF);
+        simulator.set_out_value(&self.id, MMU_IO_RE_OUT, OFF);
+        simulator.set_out_value(&self.id, MMU_CP0_WE_OUT, OFF);
+        simulator.set_out_value(&self.id, MMU_CP0_RE_OUT, OFF);
+        
         // as well as no specific addresses
         simulator.set_out_value(&self.id, MMU_MEM_ADDRESS_OUT_ID, SignalValue::DontCare);
         simulator.set_out_value(&self.id, MMU_TIMER_ADDRESS_OUT, SignalValue::DontCare);
@@ -118,7 +135,16 @@ impl Component for MipsMmu {
             };
         }
 
-
+        // is this a cp0 instr (mfc0,mtc0)
+        if matches!(simulator.get_input_value(&self.is_cp0_instr_in), ON) {
+            pass_signal!(&self.address_in, MMU_CP0_ADDRESS_OUT);
+            pass_signal!(&self.re_in, MMU_CP0_RE_OUT);
+            pass_signal!(&self.we_in, MMU_CP0_WE_OUT);
+            
+            simulator.set_out_value(&self.id, MMU_COMPONENT_SELECT_OUT_ID, mmu_signals::MMU_SELECT_CP0_SRC);
+            // return dont do normal mmu stuff
+            return Ok(());
+        }
         // handle different addresses
         match simulator.get_input_value(&self.address_in) {
             // in range of the IO component
@@ -187,6 +213,7 @@ impl MipsMmu {
         address_in: Input,
         write_enable_in: Input,
         read_enable_in: Input,
+        is_cp0_instr_in: Input,
     ) -> Self {
         MipsMmu {
             id: id.to_string(),
@@ -194,6 +221,7 @@ impl MipsMmu {
             address_in,
             we_in: write_enable_in,
             re_in: read_enable_in,
+            is_cp0_instr_in,
         }
     }
 }

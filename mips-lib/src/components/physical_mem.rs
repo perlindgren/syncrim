@@ -182,8 +182,9 @@ impl MipsMem {
             if sect.sh_flags & 0x2 == 0x2 && sect.sh_size != 0 {
                 let v_address = sect.sh_addr as u32;
 
-                // if type is prog bits write the data to memory
-                if sect.sh_type == 0x1 {
+                // if the section has flag alloc(0x2), aka lives in memory
+                // if the section has a size larger than zero
+                if true {
                     let elf_address = sect.sh_offset; // offset into elf file where data is stored (note inside of elf Segment)
                     let elf_end_address = elf_address + sect.sh_size; // end address of data
                     let sect_data = &elf_bytes[elf_address as usize..elf_end_address as usize];

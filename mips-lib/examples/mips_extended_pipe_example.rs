@@ -26,7 +26,7 @@ fn main() {
         store: vec![
             Rc::new(PhysicalMem::new("phys_mem", (800.0, 600.0))),
             // register that holds instr addr
-            Register::rc_new("pc", (0.0, 390.0), Input::new("mux_jump_merge", MUX_OUT_ID)),
+            Register::rc_new("pc", (0.0, 390.0), Input::new("interrupt_mux", MUX_OUT_ID)),
             // step addr from reg by 4
             Constant::rc_new("+4", (80.0, 400.0), 4),
             Add::rc_new(
@@ -58,6 +58,15 @@ fn main() {
                     Input::new("pc+4", ADD_OUT_ID),
                 ],
             ),
+            Mux::rc_new(
+                "interrupt_mux",
+                (-24.0, 390.0),
+                Input::new("cp0", CP0_ISINT_OUT_ID),
+                vec![
+                    Input::new("mux_jump_merge", MUX_OUT_ID),
+                    Input::new("cp0", CP0_INTADDR_OUT_ID),
+                ],
+            ),
             //
             // merges to find out jump location
             JumpMerge::rc_new(
@@ -78,7 +87,17 @@ fn main() {
             Register::rc_new(
                 "InMem_reg",
                 (240.0, 475.0),
-                Input::new("instr_mem", INSTR_MEM_INSTRUCTION_ID),
+                Input::new("abort_instr_mux", MUX_OUT_ID),
+            ),
+            Constant::rc_new("nop_constant", (200.0, 485.0), 0x0),
+            Mux::rc_new(
+                "abort_instr_mux",
+                (220.0, 475.0),
+                Input::new("nop_constant", CONSTANT_OUT_ID), // TODO actually have an input here to abort instruction when interrupt in branch delay slot
+                vec![
+                    Input::new("instr_mem", INSTR_MEM_INSTRUCTION_ID),
+                    Input::new("nop_constant", CONSTANT_OUT_ID),
+                ],
             ),
             PassThrough::rc_new(
                 "InMem_pass",
@@ -97,6 +116,14 @@ fn main() {
                 "instruction_split",
                 (400.0, 275.0),
                 Input::new("InMem_reg", REGISTER_OUT_ID),
+            ),
+            // control unit zero
+            // responsible for signaling if the instruction is an rfe / syscall
+            // or other instruction that requires control to be surrendered to cp0
+            ControlUnit::rc_new(
+                "control_unit_0",
+                (45.0, 0.0),
+                Input::new("instr_mem", INSTR_MEM_INSTRUCTION_ID),
             ),
             //
             // First CU, handles, select for sign/zero_extend and mux_write_addr
@@ -136,15 +163,8 @@ fn main() {
                 Input::new("control_unit_1", cntr_field::EXTEND_SELECT_OUT), // cu tells it to either sing- or zero- extend
             ),
             //
+            // ------------------------ DATA FORWARD ------------------------
             //
-            //
-            //
-            // Equal::rc_new(
-            //     "data_forward_A",
-            //     (3200.0, 1700.0),
-            //     Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
-            //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
-            // ),
             DataForward::rc_new(
                 "data_forward_A",
                 (800.0, 155.0),
@@ -164,12 +184,6 @@ fn main() {
             ),
             //
             //
-            // Equal::rc_new(
-            //     "data_forward_B",
-            //     (3200.0, 2300.0),
-            //     Input::new("reg_addr_MEM_reg", REGISTER_OUT_ID),
-            //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
-            // ),
             DataForward::rc_new(
                 "data_forward_B",
                 (800.0, 395.0),
@@ -189,12 +203,6 @@ fn main() {
             ),
             //
             //
-            // Equal::rc_new(
-            //     "alu_forward_A",
-            //     (3300.0, 1700.0),
-            //     Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
-            //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RS_ID),
-            // ),
             AluForward::rc_new(
                 "alu_forward_A",
                 (970.0, 155.0),
@@ -215,12 +223,6 @@ fn main() {
             ),
             //
             //
-            // Equal::rc_new(
-            //     "alu_forward_B",
-            //     (3300.0, 2300.0),
-            //     Input::new("reg_addr_EX_reg", REGISTER_OUT_ID),
-            //     Input::new("instruction_split", INSTRUCTION_SPLITTER_RT_ID),
-            // ),
             AluForward::rc_new(
                 "alu_forward_B",
                 (970.0, 395.0),
@@ -355,14 +357,49 @@ fn main() {
             ),
             //
             // Memory mangmt unit, switches the selected component, timer, io or memory
-            // TODO cp0 stuff
             Rc::new(MipsMmu::new(
                 "mmu".into(),
                 (1660.0, 205.0),
                 Input::new("alu_reg", REGISTER_OUT_ID), // calculated from rs and imm
-                Input::new("control_unit_3", cntr_field::MEM_WRITE_ENABLE_OUT), // calculated from rs and imm
+                Input::new("control_unit_3", cntr_field::MEM_WRITE_ENABLE_OUT),
                 Input::new("control_unit_3", cntr_field::MEM_READ_ENABLE_OUT),
+                Input::new("control_unit_3", cntr_field::CP0_MV_OP_OUT),
             )),
+            //
+            PassThrough::rc_new(
+                "pc_pass_trough",
+                (1320.0, 575.0),
+                Input::new("pc", REGISTER_OUT_ID),
+            ),
+            Register::rc_new(
+                "pervius_pc",
+                (1350.0, 595.0),
+                Input::new("pc_pass_trough", PASS_THROUGH_OUT_ID),
+            ),
+            //
+            Mux::rc_new(
+                "is_int_branch_delay",
+                (1400.0, 585.0),
+                Input::new("nop_constant", CONSTANT_OUT_ID), //TODO is jump
+                vec![
+                    Input::new("pc_pass_trough", PASS_THROUGH_OUT_ID),
+                    Input::new("pervius_pc", REGISTER_OUT_ID), // pc delay register
+                ],
+            ),
+            //
+            CP0::rc_new(
+                "cp0",
+                (1460.0, 585.0),
+                Input::new("mmu", MMU_CP0_WE_OUT),
+                Input::new("mmu", MMU_CP0_ADDRESS_OUT),
+                Input::new("data_MEM_reg", REGISTER_OUT_ID),
+                Input::new("control_unit_0", cntr_field::IS_RFE), // RFE
+                Input::new("timer", TIMER_INTERRUPT_OUT_ID),
+                Input::new("io", IO_INTERRUPT_OUT_ID),
+                Input::new("control_unit_0", cntr_field::IS_SYSCALL), // IS SYSCALL
+                Input::new("is_int_branch_delay", MUX_OUT_ID),        // EPC
+            ),
+            //
             Rc::new(MipsIO::new(
                 "io",
                 (1660.0, 305.0),
@@ -401,7 +438,7 @@ fn main() {
                 vec![
                     Input::new("io", IO_DATA_OUT_ID),
                     Input::new("timer", TIMER_DATA_OUT_ID),
-                    Input::new("data_mem", DATA_MEM_READ_DATA_OUT_ID), // TODO change to cp0
+                    Input::new("cp0", CP0_REGISTER_OUT_ID),
                     Input::new("data_mem", DATA_MEM_READ_DATA_OUT_ID),
                 ],
             ),
@@ -515,9 +552,10 @@ fn main() {
         let mut auto_w = autowire(
             serde_json::from_str::<ComponentStore>(&serde_json::to_string(&cs).unwrap()).unwrap(),
         ); // nice laid out wires and other from mips_pipe.json
-        
-        let wire_store: ComponentStore = serde_json::from_str(include_str!("../mips_pipe.json")).unwrap();
-        
+
+        let wire_store: ComponentStore =
+            serde_json::from_str(include_str!("../mips_pipe.json")).unwrap();
+
         // for each wire in our component store
         for comp in auto_w.store.iter_mut() {
             // find our source wire
