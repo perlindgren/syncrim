@@ -178,33 +178,53 @@ impl Component for CP0 {
         let mut interrupt_occurd: u32 = 0;
 
         //save value to history before write, no need for {} as borrows is dropped after operation?
-        self.history.borrow_mut().push(RegOp {
-            addr: register_address as u8,
-            data: *self.registers.borrow().get(register_address).unwrap(),
-        });
 
-        if syscall == 1 || io_interrupt == 1 || timer_interrupt == 1 {
-            interrupt_occurd = 1;
+        // FIXME @salon64 register address is no longer an 5 bit value
+        // its an u32 with represent sel and register 15..10 rd, 10..2 zero, 2..0 sel
+        // commented out
+
+        // self.history.borrow_mut().push(RegOp {
+        //     addr: register_address as u8,
+        //     data: *self.registers.borrow().get(register_address).unwrap(),
+        // });
+
+        if (syscall == 1 || io_interrupt == 1 || timer_interrupt == 1)
+            && self.registers.borrow()[SR] & 1 == 1
+        {
             let mut regs = self.registers.borrow_mut();
-
-            // Save the instruction address that caused the exception
-            regs[EPC] = interupt_address_in;
-
-            // set current state and interrupt
-            let mut regs = self.registers.borrow_mut();
-            let tmp = (regs[SR] & 0xF) << 2;
-            
-            regs[SR] &= 0xFFFFFFC0;
-            regs[SR] |= tmp;
 
             // Set bits in ECR according to the interrupt type
             if timer_interrupt == 1 && ((regs[SR] & 0x401) == 0x401) {
+                // Save the instruction address that caused the exception
+                regs[EPC] = interupt_address_in;
+                // set current state and interrupt
+                let tmp = (regs[SR] & 0xF) << 2;
+                regs[SR] &= 0xFFFF_FFC0;
+                regs[SR] |= tmp;
+                // enable interrupt
+                interrupt_occurd = 1;
                 regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x400;
             }
             if io_interrupt == 1 && ((regs[SR] & 0x801) == 0x801) {
+                // Save the instruction address that caused the exception
+                regs[EPC] = interupt_address_in;
+                // set current state and interrupt
+                let tmp = (regs[SR] & 0xF) << 2;
+                regs[SR] &= 0xFFFF_FFC0;
+                regs[SR] |= tmp;
+                // enable interrupt
+                interrupt_occurd = 1;
                 regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x800;
             }
             if syscall == 1 {
+                // Save the instruction address that caused the exception
+                regs[EPC] = interupt_address_in;
+                // set current state and interrupt
+                let tmp = (regs[SR] & 0xF) << 2;
+                regs[SR] &= 0xFFFF_FFC0;
+                regs[SR] |= tmp;
+                // enable interrupt
+                interrupt_occurd = 1;
                 regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x120;
             }
         }
@@ -213,8 +233,8 @@ impl Component for CP0 {
             let mut regs = self.registers.borrow_mut();
             let mut status = regs[SR] & 0x3c;
             status >>= 2;
-            let tmp = (status & 0x30) | status;
-            regs[SR] = (status & 0xFFFFFFC0) | tmp;
+            let tmp = (regs[SR] & 0x30) | status;
+            regs[SR] = (regs[SR] & 0xFFFF_FFC0) | tmp;
         }
 
         //bad code, follows same structure as syncsim
@@ -222,6 +242,7 @@ impl Component for CP0 {
         if write_enable_in == 1 {
             let mut regs = self.registers.borrow_mut();
             if register_address == 0x6000 {
+                //
                 regs[SR] = input_data;
             } else if register_address == 6800 {
                 regs[ECR] = input_data;
@@ -233,16 +254,16 @@ impl Component for CP0 {
         let mut read_register = 0;
         if register_address == 0x6000 {
             read_register = SR;
-        } else if register_address == 6800 {
+        } else if register_address == 0x6800 {
             read_register = ECR;
-        } else if register_address == 7000 {
+        } else if register_address == 0x7000 {
             read_register = EPC;
         }
 
         // out 0: intaddr 0x80001000
         // out 1: readout
         // out 2: isInt
-        simulator.set_out_value(&self.id, CP0_INTADDR_OUT_ID, 0x80001000);
+        simulator.set_out_value(&self.id, CP0_INTADDR_OUT_ID, 0x80000080);
         simulator.set_out_value(
             &self.id,
             CP0_REGISTER_OUT_ID,
@@ -253,13 +274,14 @@ impl Component for CP0 {
     }
 
     fn un_clock(&self) {
-        if let Some(last_op) = self.history.borrow_mut().pop() {
-            let mut regs = self.registers.borrow_mut();
-            // if regs[last_op.addr as usize] != last_op.data {
-            //     *self.changed_register.borrow_mut() = last_op.addr as u32;
-            // }
-            regs[last_op.addr as usize] = last_op.data;
-        }
+        // FIXME Se fixme in clock about history
+        // if let Some(last_op) = self.history.borrow_mut().pop() {
+        //     let mut regs = self.registers.borrow_mut();
+        //     // if regs[last_op.addr as usize] != last_op.data {
+        //     //     *self.changed_register.borrow_mut() = last_op.addr as u32;
+        //     // }
+        //     regs[last_op.addr as usize] = last_op.data;
+        // }
     }
 
     fn reset(&self) {

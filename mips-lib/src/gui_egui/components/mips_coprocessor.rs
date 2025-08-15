@@ -122,17 +122,17 @@ impl EguiComponent for CP0 {
         } else if id == self.register_address_in {
             Some(loc[1])
         } else if id == self.data_in {
-            Some(loc[3])
+            Some(loc[2])
         } else if id == self.rfe_in {
-            Some(loc[4])
+            Some(loc[3])
         } else if id == self.timer_interrupt_in {
-            Some(loc[5])
+            Some(loc[4])
         } else if id == self.io_interrupt_in {
-            Some(loc[6])
+            Some(loc[5])
         } else if id == self.syscall_in {
-            Some(loc[7])
+            Some(loc[6])
         } else if id == self.instruction_address_in {
-            Some(loc[8])
+            Some(loc[7])
         } else {
             None
         }

@@ -78,7 +78,7 @@ impl EguiComponent for ControlUnit {
         const M: f32 = 6.0;
         fn out_pos(i: u32) -> Pos2 {
             pos2(
-                -WIDTH / 2.0 + (i as f32 + 1.0) * WIDTH / 13.0, // twelve out signals
+                -WIDTH / 2.0 + (i as f32 + 1.0) * WIDTH / (13.0 + 1.0), // thirteen out signals
                 HEIGHT / 2.0 + M,
             )
         }
@@ -120,24 +120,28 @@ impl EguiComponent for ControlUnit {
                 out_pos(7) + own_pos,
             ),
             (
-                crate::components::cntr_field::MMU_OUT.to_string(),
+                crate::components::cntr_field::ALU_OP_OUT.to_string(),
                 out_pos(8) + own_pos,
             ),
             (
-                crate::components::cntr_field::ALU_OP_OUT.to_string(),
+                crate::components::cntr_field::REG_WRITE_SRC_OUT.to_string(),
                 out_pos(9) + own_pos,
             ),
             (
-                crate::components::cntr_field::REG_WRITE_SRC_OUT.to_string(),
+                crate::components::cntr_field::REG_WRITE_ENABLE_OUT.to_string(),
                 out_pos(10) + own_pos,
             ),
             (
-                crate::components::cntr_field::REG_WRITE_ENABLE_OUT.to_string(),
+                crate::components::cntr_field::CP0_MV_OP_OUT.to_string(),
                 out_pos(11) + own_pos,
             ),
             (
-                crate::components::cntr_field::CP0_OUT.to_string(),
+                crate::components::cntr_field::IS_SYSCALL.to_string(),
                 out_pos(12) + own_pos,
+            ),
+            (
+                crate::components::cntr_field::IS_RFE.to_string(),
+                out_pos(13) + own_pos,
             ),
         ]
     }
@@ -167,16 +171,14 @@ impl EguiComponent for ControlUnit {
             Some(loc[7])
         } else if id == Input::new(&self.id, cntr_field::MEM_MODE_OUT) {
             Some(loc[7])
-        } else if id == Input::new(&self.id, cntr_field::MMU_OUT) {
-            Some(loc[8])
         } else if id == Input::new(&self.id, cntr_field::ALU_OP_OUT) {
-            Some(loc[9])
+            Some(loc[8])
         } else if id == Input::new(&self.id, cntr_field::REG_WRITE_SRC_OUT) {
-            Some(loc[10])
+            Some(loc[9])
         } else if id == Input::new(&self.id, cntr_field::REG_WRITE_ENABLE_OUT) {
+            Some(loc[10])
+        } else if id == Input::new(&self.id, cntr_field::CP0_MV_OP_OUT) {
             Some(loc[11])
-        } else if id == Input::new(&self.id, cntr_field::CP0_OUT) {
-            Some(loc[12])
         } else {
             None
         }
