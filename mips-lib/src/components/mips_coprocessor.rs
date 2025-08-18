@@ -33,9 +33,9 @@ pub const CP0_INSTRUCTIO_ADDRESS_IN: &str = "cp0_instruction_address_in";
 // out 0: intaddr 0x80001000
 // out 1: readout
 // out 2: isInt
-pub const CP0_INTADDR_OUT_ID: &str = "cp0_intaddr_out_id";
+pub const CP0_INT_ADDR_OUT_ID: &str = "cp0_int_addr_out_id";
 pub const CP0_REGISTER_OUT_ID: &str = "cp0_register_out_id";
-pub const CP0_ISINT_OUT_ID: &str = "cp0_isint_out_id";
+pub const CP0_IS_INT_OUT_ID: &str = "cp0_is_int_out_id";
 
 #[derive(Serialize, Deserialize, Clone)]
 struct RegOp {
@@ -125,7 +125,7 @@ impl Component for CP0 {
                     },
                 ],
                 OutputType::Combinatorial,
-                vec![CP0_INTADDR_OUT_ID, CP0_REGISTER_OUT_ID, CP0_ISINT_OUT_ID],
+                vec![CP0_INT_ADDR_OUT_ID, CP0_REGISTER_OUT_ID, CP0_IS_INT_OUT_ID],
             ),
         )
     }
@@ -187,48 +187,31 @@ impl Component for CP0 {
         //     addr: register_address as u8,
         //     data: *self.registers.borrow().get(register_address).unwrap(),
         // });
-
+        
         if (syscall == 1 || io_interrupt == 1 || timer_interrupt == 1)
-            && self.registers.borrow()[SR] & 1 == 1
+        && self.registers.borrow()[SR] & 1 == 1
         {
             let mut regs = self.registers.borrow_mut();
 
+            regs[EPC] = interupt_address_in;
+            // set current state and interrupt
+            let tmp = (regs[SR] & 0xF) << 2;
+            regs[SR] &= 0xFFFF_FFC0;
+            regs[SR] |= tmp;
+            // enable interrupt
+            interrupt_occurd = 1;
             // Set bits in ECR according to the interrupt type
-            if timer_interrupt == 1 && ((regs[SR] & 0x401) == 0x401) {
-                // Save the instruction address that caused the exception
-                regs[EPC] = interupt_address_in;
-                // set current state and interrupt
-                let tmp = (regs[SR] & 0xF) << 2;
-                regs[SR] &= 0xFFFF_FFC0;
-                regs[SR] |= tmp;
-                // enable interrupt
-                interrupt_occurd = 1;
+            if timer_interrupt == 1 && ((regs[SR] & 0x400) == 0x400) {
                 regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x400;
             }
-            if io_interrupt == 1 && ((regs[SR] & 0x801) == 0x801) {
-                // Save the instruction address that caused the exception
-                regs[EPC] = interupt_address_in;
-                // set current state and interrupt
-                let tmp = (regs[SR] & 0xF) << 2;
-                regs[SR] &= 0xFFFF_FFC0;
-                regs[SR] |= tmp;
-                // enable interrupt
-                interrupt_occurd = 1;
+            else if io_interrupt == 1 && ((regs[SR] & 0x800) == 0x800) {
                 regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x800;
             }
-            if syscall == 1 {
-                // Save the instruction address that caused the exception
-                regs[EPC] = interupt_address_in;
-                // set current state and interrupt
-                let tmp = (regs[SR] & 0xF) << 2;
-                regs[SR] &= 0xFFFF_FFC0;
-                regs[SR] |= tmp;
-                // enable interrupt
-                interrupt_occurd = 1;
+            else if syscall == 1 {
                 regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x120;
             }
         }
-
+        
         if rfe == 1 {
             let mut regs = self.registers.borrow_mut();
             let mut status = regs[SR] & 0x3c;
@@ -236,7 +219,7 @@ impl Component for CP0 {
             let tmp = (regs[SR] & 0x30) | status;
             regs[SR] = (regs[SR] & 0xFFFF_FFC0) | tmp;
         }
-
+        
         //bad code, follows same structure as syncsim
         // TODO: update so that it allows writing to all registers
         if write_enable_in == 1 {
@@ -263,13 +246,13 @@ impl Component for CP0 {
         // out 0: intaddr 0x80001000
         // out 1: readout
         // out 2: isInt
-        simulator.set_out_value(&self.id, CP0_INTADDR_OUT_ID, 0x80000080);
+        simulator.set_out_value(&self.id, CP0_INT_ADDR_OUT_ID, 0x80000080);
         simulator.set_out_value(
             &self.id,
             CP0_REGISTER_OUT_ID,
             self.registers.borrow()[read_register],
         );
-        simulator.set_out_value(&self.id, CP0_ISINT_OUT_ID, interrupt_occurd);
+        simulator.set_out_value(&self.id, CP0_IS_INT_OUT_ID, interrupt_occurd);
         Ok(())
     }
 
