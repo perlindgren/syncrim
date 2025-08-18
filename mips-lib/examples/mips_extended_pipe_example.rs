@@ -61,10 +61,10 @@ fn main() {
             Mux::rc_new(
                 "interrupt_mux",
                 (-24.0, 390.0),
-                Input::new("cp0", CP0_ISINT_OUT_ID),
+                Input::new("cp0", CP0_IS_INT_OUT_ID),
                 vec![
                     Input::new("mux_jump_merge", MUX_OUT_ID),
-                    Input::new("cp0", CP0_INTADDR_OUT_ID),
+                    Input::new("cp0", CP0_INT_ADDR_OUT_ID),
                 ],
             ),
             //
@@ -93,7 +93,7 @@ fn main() {
             Mux::rc_new(
                 "abort_instr_mux",
                 (220.0, 475.0),
-                Input::new("nop_constant", CONSTANT_OUT_ID), // TODO actually have an input here to abort instruction when interrupt in branch delay slot
+                Input::new("cp0", CP0_IS_INT_OUT_ID),
                 vec![
                     Input::new("instr_mem", INSTR_MEM_INSTRUCTION_ID),
                     Input::new("nop_constant", CONSTANT_OUT_ID),
@@ -380,7 +380,7 @@ fn main() {
             Mux::rc_new(
                 "is_int_branch_delay",
                 (1400.0, 585.0),
-                Input::new("nop_constant", CONSTANT_OUT_ID), //TODO is jump
+                Input::new("control_unit_1", cntr_field::BRANCH_INTERRUPT_OUT),
                 vec![
                     Input::new("pc_pass_trough", PASS_THROUGH_OUT_ID),
                     Input::new("pervius_pc", REGISTER_OUT_ID), // pc delay register
