@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 use clap::Parser;
 // The trait impls from here are used dynamically when json is loaded, so this is actually used
 #[allow(unused_imports)]
@@ -23,7 +24,8 @@ fn main() {
     let args = Args::parse();
     let path = PathBuf::from(args.model);
 
-    let cs = ComponentStore::load_file(&path);
+    // let cs = ComponentStore::load_file(&path);
+    let cs = ComponentStore { store: vec![] };
 
     #[cfg(feature = "gui-egui")]
     syncrim::gui_egui::gui(cs, &path, Library::default()).ok();
