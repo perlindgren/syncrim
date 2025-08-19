@@ -4,7 +4,7 @@ use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
 use crate::gui_egui::EguiExtra;
 use egui::{
     Align2, Area, Color32, Context, InnerResponse, Order, Pos2, Rect, Response, Sense,
-    TextWrapMode, Ui, Vec2, WidgetInfo, Window,
+    TextWrapMode, Ui, Vec2, Window,
 };
 use epaint::Shadow;
 
@@ -390,7 +390,7 @@ pub fn basic_editor_popup(
         };
     }
     EditorRenderReturn {
-        delete: delete,
+        delete,
         resp: Some(vec![activator_resp]),
     }
 }
