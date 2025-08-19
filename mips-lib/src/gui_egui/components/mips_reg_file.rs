@@ -3,7 +3,7 @@ use egui::{vec2, Color32, ComboBox, Pos2, Rect, Response, RichText, ScrollArea, 
 use syncrim::common::{EguiComponent, Input, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
-use syncrim::gui_egui::helper::basic_component_gui;
+use syncrim::gui_egui::helper::{basic_component_gui, basic_editor_popup};
 use syncrim::signal::Id;
 
 const REG_NAMES: [&str; 32] = [
@@ -122,11 +122,11 @@ impl EguiComponent for RegFile {
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
-        _id_ports: &[(Id, Ports)],
+        id_ports: &[(Id, Ports)],
         _grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        self.render(
+        let res = self.render(
             ui,
             context,
             simulator,
@@ -134,11 +134,9 @@ impl EguiComponent for RegFile {
             scale,
             clip_rect,
             editor_mode,
-        );
-        EditorRenderReturn {
-            delete: false,
-            resp: None,
-        }
+        ).unwrap().remove(0);
+        basic_editor_popup(self, ui, context, id_ports, res, |_|{})
+
     }
 
     fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {

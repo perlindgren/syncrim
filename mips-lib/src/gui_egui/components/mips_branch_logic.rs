@@ -3,7 +3,7 @@ use egui::{Rect, Response, Ui, Vec2};
 use syncrim::common::{EguiComponent, Id, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
-use syncrim::gui_egui::helper::basic_component_gui;
+use syncrim::gui_egui::helper::{basic_component_gui, basic_editor_popup};
 
 #[typetag::serde]
 impl EguiComponent for BranchLogic {
@@ -30,11 +30,11 @@ impl EguiComponent for BranchLogic {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
-        _id_ports: &[(Id, Ports)],
+        id_ports: &[(Id, Ports)],
         _grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        self.render(
+        let res = self.render(
             ui,
             context,
             simulator,
@@ -42,11 +42,8 @@ impl EguiComponent for BranchLogic {
             scale,
             clip_rect,
             editor_mode,
-        );
-        EditorRenderReturn {
-            delete: false,
-            resp: None,
-        }
+        ).unwrap().remove(0);
+        basic_editor_popup(self, ui, context, id_ports, res, |_|{})
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {
