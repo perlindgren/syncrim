@@ -59,17 +59,19 @@ impl EguiComponent for SignZeroExtend {
         _grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let res = self.render(
-            ui,
-            context,
-            simulator,
-            offset,
-            scale,
-            clip_rect,
-            editor_mode,
-        ).unwrap().remove(0);
-        basic_editor_popup(self, ui, context, id_ports, res, |_|{})
-
+        let res = self
+            .render(
+                ui,
+                context,
+                simulator,
+                offset,
+                scale,
+                clip_rect,
+                editor_mode,
+            )
+            .unwrap()
+            .remove(0);
+        basic_editor_popup(self, ui, context, id_ports, res, |_| {})
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {

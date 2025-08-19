@@ -37,15 +37,18 @@ impl EguiComponent for DataForward {
         _grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let res = self.render(
-            ui,
-            context,
-            simulator,
-            offset,
-            scale,
-            clip_rect,
-            editor_mode,
-        ).unwrap().remove(0);
+        let res = self
+            .render(
+                ui,
+                context,
+                simulator,
+                offset,
+                scale,
+                clip_rect,
+                editor_mode,
+            )
+            .unwrap()
+            .remove(0);
         basic_editor_popup(self, ui, context, id_ports, res, |_| {})
     }
 

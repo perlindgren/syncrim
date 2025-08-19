@@ -3,7 +3,8 @@ use crate::gui_egui::component_ui::input_selector;
 use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
 use crate::gui_egui::EguiExtra;
 use egui::{
-    Align2, Area, Color32, Context, InnerResponse, Order, Pos2, Rect, Response, Sense, TextWrapMode, Ui, Vec2, WidgetInfo, Window
+    Align2, Area, Color32, Context, InnerResponse, Order, Pos2, Rect, Response, Sense,
+    TextWrapMode, Ui, Vec2, WidgetInfo, Window,
 };
 use epaint::Shadow;
 

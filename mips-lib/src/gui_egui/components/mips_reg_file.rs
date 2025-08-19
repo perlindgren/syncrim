@@ -126,17 +126,19 @@ impl EguiComponent for RegFile {
         _grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let res = self.render(
-            ui,
-            context,
-            simulator,
-            offset,
-            scale,
-            clip_rect,
-            editor_mode,
-        ).unwrap().remove(0);
-        basic_editor_popup(self, ui, context, id_ports, res, |_|{})
-
+        let res = self
+            .render(
+                ui,
+                context,
+                simulator,
+                offset,
+                scale,
+                clip_rect,
+                editor_mode,
+            )
+            .unwrap()
+            .remove(0);
+        basic_editor_popup(self, ui, context, id_ports, res, |_| {})
     }
 
     fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {
