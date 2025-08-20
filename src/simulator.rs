@@ -197,7 +197,7 @@ impl Simulator {
         };
 
         trace!("sim_state {:?}", simulator.sim_state);
-        simulator.clock();
+        simulator.reset();
         Ok(simulator)
     }
 
