@@ -139,27 +139,33 @@ impl MipsMem {
         let str_tab = sect_head_str_tab.1.unwrap();
         // for each section in elf
         for sect in sections {
-            // if section is PROG BITS and size is none zero
-            if sect.sh_type == 0x1 && sect.sh_size != 0 {
+            // if the section has flag alloc(0x2), aka lives in memory
+            // if the section has a size larger than zero
+            if sect.sh_flags & 0x2 == 0x2 && sect.sh_size != 0 {
                 let v_address = sect.sh_addr as u32;
 
-                // if the section has flag alloc(0x2), aka lives in memory
-                // if the section has a size larger than zero
-                if sect.sh_flags & 0x2 == 0x2 && sect.sh_size != 0 {
+                // if type is prog bits write the data to memory
+                if sect.sh_type == 0x1 {
                     let elf_address = sect.sh_offset; // offset into elf file where data is stored (note inside of elf Segment)
                     let elf_end_address = elf_address + sect.sh_size; // end address of data
                     let sect_data = &elf_bytes[elf_address as usize..elf_end_address as usize];
                     for (i, byte) in sect_data.iter().enumerate() {
                         mem.data.insert(v_address + i as u32, byte.to_owned());
                     }
-                };
+                }
 
                 // add section to section hashmap
                 mem.sections.insert(
                     v_address,
-                    str_tab.get(sect.sh_name as usize).unwrap().to_string(),
+                    // try to demangle the section name if possible
+                    match str_tab.get(sect.sh_name as usize).unwrap().rsplit_once(".") {
+                        Some((a, b)) => {
+                            format!("{}.{:#}", a, rustc_demangle::demangle(b)).to_string()
+                        }
+                        None => str_tab.get(sect.sh_name as usize).unwrap().to_string(),
+                    },
                 );
-            }
+            };
         }
         mem.get_symbols(&file);
         Ok(mem)
@@ -337,11 +343,11 @@ impl MipsMem {
                 let sym_name = string_table.get(sym_entry.st_name as usize).unwrap();
 
                 // if the symbol type is NOTYPE, bind is LOCAL and has a string add it
-                if sym_entry.st_symtype() == 0x0
-                    && sym_entry.st_bind() == 0x0
-                    && !sym_name.is_empty()
-                {
-                    sym_hash_map.insert(sym_entry.st_value as u32, sym_name.to_string());
+                if sym_entry.st_shndx != 0x0 && !sym_name.is_empty() {
+                    sym_hash_map.insert(
+                        sym_entry.st_value as u32,
+                        format!("{:#}", rustc_demangle::demangle(sym_name)),
+                    );
                 }
             }
             self.symbols = sym_hash_map
