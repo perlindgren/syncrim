@@ -1,7 +1,6 @@
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
-#[cfg(feature = "gui-egui")]
 use std::cell::RefCell;
 use std::rc::Rc;
 #[cfg(feature = "gui-egui")]
