@@ -7,7 +7,7 @@ use std::{
     path::PathBuf,
 };
 use syncrim::{
-    common::{Component, Ports},
+    common::{Component, Ports, Simulator},
     signal::Id,
 };
 
@@ -60,7 +60,7 @@ impl Component for PhysicalMem {
         self
     }
 
-    fn un_clock(&self) {
+    fn un_clock(&self, _: &Simulator) {
         *self.cycle.borrow_mut() -= 1;
         if let Some(op) = self.history.borrow_mut().remove(&*self.cycle.borrow()) {
             self.mem.borrow_mut().revert(op);

@@ -471,7 +471,7 @@ impl Component for RegFile {
         Ok(())
     }
 
-    fn un_clock(&self) {
+    fn un_clock(&self, _: &Simulator) {
         //println!("unclock");
         let regop = self.history.0.borrow_mut().pop().unwrap();
         let mut regstore = self.registers.borrow_mut();

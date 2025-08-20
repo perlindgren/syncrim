@@ -162,7 +162,7 @@ impl Component for RegFile {
         Ok(())
     }
 
-    fn un_clock(&self) {
+    fn un_clock(&self, _: &Simulator) {
         if let Some(last_op) = self.history.borrow_mut().pop() {
             let mut regs = self.registers.borrow_mut();
             if regs[last_op.addr as usize] != last_op.data {
