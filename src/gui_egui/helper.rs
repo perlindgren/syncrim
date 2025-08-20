@@ -1,8 +1,10 @@
 use crate::common::{Components, EguiComponent, Input, Ports, SignalValue, Simulator};
-use crate::gui_egui::editor::{EditorMode, SnapPriority};
+use crate::gui_egui::component_ui::input_selector;
+use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, SnapPriority};
+use crate::gui_egui::EguiExtra;
 use egui::{
     Align2, Area, Color32, Context, InnerResponse, Order, Pos2, Rect, Response, Sense,
-    TextWrapMode, Ui, Vec2,
+    TextWrapMode, Ui, Vec2, Window,
 };
 use epaint::Shadow;
 
@@ -123,7 +125,8 @@ pub fn component_area<R>(
         .current_pos(pos)
         .movable(false)
         .enabled(true)
-        .interactable(false)
+        .interactable(true)
+        .sense(Sense::all())
         .pivot(Align2::CENTER_CENTER)
         .constrain(false)
         .show(ctx, content)
@@ -137,7 +140,7 @@ pub fn component_area<R>(
 /// # Arguments
 /// - size: if size is (0f32,0f32) the component will be as large as its content
 /// - content: Note the function don't size the components,
-/// that is the responsibility of the content closure
+///   that is the responsibility of the content closure
 /// - on_hover: if this is some this overides the on hover function and displays that instead
 ///
 /// # Example
@@ -247,7 +250,7 @@ pub fn basic_component_gui_with_on_hover(
                 .response
         },
     )
-    .inner;
+    .response;
 
     r.clone().on_hover_ui(on_hover);
     Some(vec![r])
@@ -308,4 +311,86 @@ pub fn basic_on_hover(
             ));
         }
     };
+}
+
+/// basic editor popup
+/// TODO test me and write documentation
+pub fn basic_editor_popup(
+    component: &mut dyn EguiComponent,
+    ui: &mut Ui,
+    context: &mut EguiExtra,
+    id_ports: &[(crate::common::Id, Ports)],
+    activator_resp: Response,
+    extra_properties_window_stuff: impl FnOnce(&mut Ui), // TODO rename to something better
+) -> EditorRenderReturn {
+    // if we clicked the activator response and sould open a properties window
+    let properties_window = activator_resp.clicked_by(egui::PointerButton::Secondary);
+    // shul component be deleted
+    let mut delete = false;
+
+    // either clicked or windows was open last frame (from egui extra)
+    if properties_window || context.properties_window {
+        // dont close properties when dropdown is active
+        let mut clicked_dropdown = false;
+
+        // crete a window for our properties
+        let resp = Window::new(format!("Properties: {}", component.get_id_ports().0))
+            .frame(
+                egui::containers::Frame::new()
+                    .inner_margin(10)
+                    .corner_radius(10)
+                    .shadow(shadow_small_dark())
+                    .fill(ui.visuals().panel_fill)
+                    .stroke(ui.visuals().window_stroke),
+            )
+            .default_pos(Pos2::from(component.get_pos()))
+            .show(ui.ctx(), |ui| {
+                // TODO make it possible to change id
+                // currently this is not possible as EguiComponent don't implements a way to do this
+
+                // show user properties window stuff
+                extra_properties_window_stuff(ui);
+
+                // Change position
+                let (mut x, mut y) = component.get_pos();
+                ui.horizontal(|ui| {
+                    ui.label("pos x");
+                    ui.add(egui::DragValue::new(&mut x).speed(0.5));
+                    ui.label("pos y");
+                    ui.add(egui::DragValue::new(&mut y).speed(0.5));
+                });
+                component.set_pos((x, y));
+
+                // get inputs to the component and lop over them to create a select input
+                for port in component.get_id_ports().1.inputs {
+                    // for this port create input selector and up date our port
+                    ui.horizontal(|ui| {
+                        let mut new_input = port.input.clone();
+                        clicked_dropdown |= input_selector(
+                            ui,
+                            &mut new_input,
+                            port.port_id.clone(),
+                            id_ports,
+                            component.get_id_ports().0,
+                        );
+                        component.set_id_port(port.port_id.clone(), new_input);
+                    });
+                }
+
+                delete = ui.button("Delete Component").clicked()
+            });
+
+        // if context haven't set properties window on this obj
+        // set it to true so it stays up next frame
+        if !context.properties_window {
+            context.properties_window = true;
+        // im scared of this unwrap, can we grantee that the window is open?
+        } else if !clicked_dropdown && resp.unwrap().response.clicked_elsewhere() {
+            context.properties_window = false;
+        };
+    }
+    EditorRenderReturn {
+        delete,
+        resp: Some(vec![activator_resp]),
+    }
 }

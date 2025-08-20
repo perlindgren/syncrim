@@ -5,9 +5,9 @@ use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapP
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::{basic_on_hover, offset_helper, shadow_small_dark};
 use egui::{
-    Color32, CornerRadius, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers,
-    PointerButton, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, UiBuilder, Vec2,
-    Window,
+    Align2, Area, Color32, CornerRadius, DragValue, Frame, Key, KeyboardShortcut, Margin,
+    Modifiers, Order, PointerButton, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui,
+    Vec2, Window,
 };
 
 /// if the mouse cursor is less than this distance in points away from the wire display tooltip
@@ -99,14 +99,22 @@ impl EguiComponent for Wire {
             #[allow(clippy::single_match)]
             match editor_mode {
                 EditorMode::Default => {
-                    // why the fuck do i need this much code just to make sure its rendered at the correct layer
-                    let resp = ui
-                        .allocate_new_ui(
-                            UiBuilder::new().layer_id(ui.layer_id()).max_rect(rect),
-                            |ui| ui.allocate_exact_size(rect.size(), Sense::all()),
-                        )
-                        .inner
-                        .1;
+                    // why the fuck do i need this much code just to make sure its rendered at the correct layer (Middle)
+                    // instead of background, that current ui is at
+                    let resp = {
+                        Area::new(format!("{}{:#?}", self.id, rect).into())
+                            .order(Order::Middle)
+                            .sense(Sense::all())
+                            .current_pos(rect.center())
+                            .movable(false)
+                            .enabled(true)
+                            .pivot(Align2::CENTER_CENTER)
+                            .constrain(false)
+                            .show(ui.ctx(), |ui: &mut Ui| {
+                                ui.set_min_size(rect.size());
+                            })
+                    }
+                    .response;
 
                     // log::debug!("{:?}", resp);
                     if resp.contains_pointer() {
