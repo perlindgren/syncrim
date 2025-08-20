@@ -12,7 +12,7 @@ fern = "0.7.1"
 log = "0.4.19"
 num_enum = "0.7.4"
 petgraph = "0.8.2"
-rfd = "0.15.3"
+rfd = {version = "0.15.3", optional = true}
 serde = { version = "1.0.171", features = ["rc"] }
 serde_derive = "1.0.171"
 serde_json = "1.0.103"
@@ -28,4 +28,4 @@ default = ["gui-egui"]
 
 components = ["syncrim/components"]
 gui-vizia = ["syncrim/gui-vizia"]
-gui-egui = ["syncrim/gui-egui"]
+gui-egui = ["syncrim/gui-egui", "rfd"]
