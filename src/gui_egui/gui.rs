@@ -13,6 +13,7 @@ use egui::{
 };
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::time::Duration;
 
 pub struct Gui {
     pub simulator: Option<Simulator>,
@@ -106,7 +107,7 @@ impl eframe::App for Gui {
             if self.simulator.is_some() {
                 // self.side_panel(ctx);
                 if self.simulator.as_ref().unwrap().is_running() {
-                    self.simulator.as_mut().unwrap().run();
+                    self.simulator.as_mut().unwrap().run_for_duration(&Duration::from_millis(1000/30));
 
                     // This makes the ui run agin as to not stop the simulation
                     // when no ui events are happening

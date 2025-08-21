@@ -8,7 +8,7 @@ use petgraph::{
     dot::{Config, Dot},
     Graph,
 };
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, time::Duration};
 use std::{fs::File, io::prelude::*, path::PathBuf};
 
 pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
@@ -416,13 +416,13 @@ impl Simulator {
         self.active.contains(id)
     }
 
-    /// free running mode until Halt condition or target cycle, breaks after 1/30 sec
-    pub fn run(&mut self) {
+    /// free running mode until Halt condition or target cycle defined by state
+    /// returns true for time out;
+    pub fn run_for_duration(&mut self, duration: &Duration) -> bool {
         use std::time::Instant;
         let now = Instant::now();
         let mut i: u32 = 0; // used to quickly and inaccurately test performance
-        while now.elapsed().as_millis() < 1000 / 30 {
-            //30Hz
+        while now.elapsed() <  *duration{
             i += 1;
             match self.running_state {
                 RunningState::Running => self.clock(),
@@ -431,15 +431,16 @@ impl Simulator {
                         self.clock();
                     } else {
                         self.running_state = RunningState::Stopped;
-                        break;
+                        return false;
                     }
                 }
                 _ => {
-                    break;
+                    return false;
                 }
             }
         }
-        trace!("clock per run {}", i)
+        trace!("clock per run duration{}", i);
+        true
     }
 
     pub fn run_threaded(&mut self) {}
