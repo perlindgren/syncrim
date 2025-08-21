@@ -44,6 +44,36 @@ impl PhysicalMem {
         self.history.borrow_mut().clear();
         Ok(())
     }
+
+    pub fn get_data(&self, start: u32, array: &mut [u8]) {
+        let mem = &self.mem.borrow().data;
+        for (i, b) in array.iter_mut().enumerate() {
+            *b = *mem.get(&(i as u32 + start)).unwrap_or(&0)
+        }
+    }
+
+    pub fn get_str_at_symbol(&self, symbol: &str) -> String {
+        let sym_indx = &self.mem.borrow().symbols.iter().find_map(|(idx, sym)| {
+            if sym == symbol {
+                Some(*idx)
+            } else {
+                None
+            }
+        }).unwrap();
+        let mem = &self.mem.borrow().data;
+        // this is ugly
+        let mut byte_vec: Vec<u8> = Vec::new();
+        let mut i = 0;
+        loop {
+            let b =  *mem.get(&(sym_indx + i)).unwrap_or(&0);
+            byte_vec.push(b);
+            if b == 0 {
+                break;
+            }
+        };
+
+        String::from_utf8_lossy(&byte_vec).to_string()
+    }
 }
 
 #[typetag::serde]
