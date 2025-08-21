@@ -70,6 +70,7 @@ impl PhysicalMem {
             if b == 0 {
                 break;
             }
+            i += 1;
         };
 
         String::from_utf8_lossy(&byte_vec).to_string()
