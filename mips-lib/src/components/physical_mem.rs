@@ -53,28 +53,47 @@ impl PhysicalMem {
     }
 
     pub fn get_str_at_symbol(&self, symbol: &str) -> String {
-        let sym_indx = &self.mem.borrow().symbols.iter().find_map(|(idx, sym)| {
-            if sym == symbol {
-                Some(*idx)
-            } else {
-                None
-            }
-        }).unwrap();
+        let sym_indx = &self
+            .mem
+            .borrow()
+            .symbols
+            .iter()
+            .find_map(|(idx, sym)| if sym == symbol { Some(*idx) } else { None })
+            .unwrap();
         let mem = &self.mem.borrow().data;
         // this is ugly
         let mut byte_vec: Vec<u8> = Vec::new();
         let mut i = 0;
         loop {
-            let b =  *mem.get(&(sym_indx + i)).unwrap_or(&0);
+            let b = *mem.get(&(sym_indx + i)).unwrap_or(&0);
             byte_vec.push(b);
             if b == 0 {
                 break;
             }
             i += 1;
-        };
+        }
 
         String::from_utf8_lossy(&byte_vec).to_string()
     }
+
+    pub fn get_address_of_sym(&self, sym: &str) -> Option<u32> {
+        self.mem
+            .borrow()
+            .symbols
+            .iter()
+            .find_map(|(id, internal_sym)| if sym == internal_sym { Some(*id) } else { None })
+    }
+    /// Warning this is not ment to be used for the simulator
+    /// the purpose is debugging and testing
+    /// when this is used unclock becomes unpredictable
+    pub fn hard_set(&self, address: u32, data: u8) {
+        self.mem.borrow_mut().data.insert(address, data);
+    }
+
+    pub fn read(&self, address: u32) -> u8 {
+        *self.mem.borrow().data.get(&address).unwrap_or(&0)
+    }
+
 }
 
 #[typetag::serde]
