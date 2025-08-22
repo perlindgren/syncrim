@@ -192,21 +192,38 @@ impl Component for CP0 {
         {
             let mut regs = self.registers.borrow_mut();
 
-            regs[EPC] = interupt_address_in;
-            // set current state and interrupt
-            let tmp = (regs[SR] & 0xF) << 2;
-            regs[SR] &= 0xFFFF_FFC0;
-            regs[SR] |= tmp;
-            // enable interrupt
-            interrupt_occurd = 1;
             // Set bits in ECR according to the interrupt type
             if timer_interrupt == 1 && ((regs[SR] & 0x400) == 0x400) {
+                regs[EPC] = interupt_address_in;
+                // set current state and interrupt
+                let tmp = (regs[SR] & 0xF) << 2;
+                regs[SR] &= 0xFFFF_FFC0;
+                regs[SR] |= tmp;
+                // enable interrupt
+                interrupt_occurd = 1;
+                // Set bits in ECR according to the interrupt type
                 regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x400;
             }
             else if io_interrupt == 1 && ((regs[SR] & 0x800) == 0x800) {
+                regs[EPC] = interupt_address_in;
+                // set current state and interrupt
+                let tmp = (regs[SR] & 0xF) << 2;
+                regs[SR] &= 0xFFFF_FFC0;
+                regs[SR] |= tmp;
+                // enable interrupt
+                interrupt_occurd = 1;
+                // Set bits in ECR according to the interrupt type
                 regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x800;
             }
             else if syscall == 1 {
+                regs[EPC] = interupt_address_in;
+                // set current state and interrupt
+                let tmp = (regs[SR] & 0xF) << 2;
+                regs[SR] &= 0xFFFF_FFC0;
+                regs[SR] |= tmp;
+                // enable interrupt
+                interrupt_occurd = 1;
+                // Set bits in ECR according to the interrupt type
                 regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x120;
             }
         }

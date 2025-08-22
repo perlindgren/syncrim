@@ -3473,12 +3473,12 @@
         "field": "register_out"
       },
       "op_input": {
-        "id": "data_MEM_reg",
-        "field": "register_out"
+        "id": "control_unit_3",
+        "field": "mem_mode"
       },
       "write_enable_input": {
-        "id": "data_MEM_reg",
-        "field": "register_out"
+        "id": "mmu",
+        "field": "mmu_mem_we_out"
       },
       "read_enable_input": {
         "id": "mmu",
