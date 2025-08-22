@@ -31,6 +31,7 @@ pub mod data_op {
 
 pub const DATA_MEM_A_IN_ID: &str = "data_mem_address_in";
 pub const DATA_MEM_OP_IN_ID: &str = "data_mem_op_in";
+pub const DATA_MEM_READ_ENABLE_ID: &str = "data_mem_read_enable";
 pub const DATA_MEM_WRITE_ENABLE_ID: &str = "data_mem_write_enable";
 pub const DATA_MEM_WD_IN_ID: &str = "data_mem_write_data_in";
 
@@ -197,6 +198,10 @@ impl Component for DataMem {
                     &InputPort {
                         port_id: DATA_MEM_WRITE_ENABLE_ID.to_string(),
                         input: self.write_enable_input.clone(),
+                    },
+                    &InputPort {
+                        port_id: DATA_MEM_READ_ENABLE_ID.to_string(),
+                        input: self.read_enable_input.clone(),
                     },
                 ],
                 OutputType::Combinatorial,
