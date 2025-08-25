@@ -5,9 +5,7 @@ use crate::gui_egui::{
     editor_wire_mode::get_grid_snap,
     helper::{id_ports_of_all_components, offset_reverse_helper_pos2, unique_component_name},
 };
-use egui::{
-    Context, CursorIcon, LayerId, PointerButton, Pos2, Rect, Response, Ui, UiStackInfo, Vec2,
-};
+use egui::{Context, CursorIcon, PointerButton, Pos2, Rect, Response, Ui, UiBuilder, Vec2};
 use std::{collections::HashMap, path::PathBuf, rc::Rc};
 
 pub struct InputMode {
@@ -16,8 +14,7 @@ pub struct InputMode {
     pub library_contexts: HashMap<crate::common::Id, EguiExtra>,
 }
 
-pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option<LayerId>) {
-    let layer_id = layer_id.unwrap();
+pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response) {
     if cpr.drag_started_by(PointerButton::Secondary) {
         e.editor_mode = EditorMode::Default;
         reset_input_mode(&mut e.im);
@@ -39,11 +36,11 @@ pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response, layer_id: Option
     };
     let mut ui = Ui::new(
         ctx.to_owned(),
-        layer_id,
         "input".into(),
-        clip_rect,
-        Rect::EVERYTHING,
-        UiStackInfo::new(egui::UiKind::Frame),
+        UiBuilder::new(), // layer_id
+                          // clip_rect,
+                          // Rect::EVERYTHING,
+                          // UiStackInfo::new(egui::UiKind::Frame),
     );
     let pos = if e.grid.enable && e.grid.snap_enable {
         match get_grid_snap(
