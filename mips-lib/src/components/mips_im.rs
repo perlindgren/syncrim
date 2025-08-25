@@ -68,50 +68,27 @@ impl InstrMem {
     }
     pub fn update_dynamic_symbols(&self, new_pc: u32) {
         let pc_history = self.pc_history.borrow();
-        let mut new_dynamic_symbols = self.dynamic_symbols.borrow_mut().clone();
-        if new_dynamic_symbols.contains_key("PC_IM") {
-            new_dynamic_symbols.insert(
-                "PC_IM".to_string(),
-                (
-                    new_pc,
-                    new_dynamic_symbols.get_key_value("PC_IM").unwrap().1 .1,
-                ),
-            );
+        let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
+
+        if dynamic_symbols.contains_key("PC_IM") {
+            dynamic_symbols.get_mut("PC_IM").unwrap().0 = new_pc;
         }
         if pc_history.len() > 1 {
-            if new_dynamic_symbols.contains_key("PC_DE") {
-                new_dynamic_symbols.insert(
-                    "PC_DE".to_string(),
-                    (
-                        pc_history[pc_history.len() - 1],
-                        new_dynamic_symbols.get_key_value("PC_DE").unwrap().1 .1,
-                    ),
-                );
+            if dynamic_symbols.contains_key("PC_DE") {
+                dynamic_symbols.get_mut("PC_DE").unwrap().0 = pc_history[pc_history.len() - 1];
             }
             if pc_history.len() > 2 {
-                if new_dynamic_symbols.contains_key("PC_EX") {
-                    new_dynamic_symbols.insert(
-                        "PC_EX".to_string(),
-                        (
-                            pc_history[pc_history.len() - 2],
-                            new_dynamic_symbols.get_key_value("PC_EX").unwrap().1 .1,
-                        ),
-                    );
+                if dynamic_symbols.contains_key("PC_EX") {
+                    dynamic_symbols.get_mut("PC_EX").unwrap().0 = pc_history[pc_history.len() - 2];
                 }
                 if pc_history.len() > 3 {
-                    if new_dynamic_symbols.contains_key("PC_DM") {
-                        new_dynamic_symbols.insert(
-                            "PC_DM".to_string(),
-                            (
-                                pc_history[pc_history.len() - 3],
-                                new_dynamic_symbols.get_key_value("PC_DM").unwrap().1 .1,
-                            ),
-                        );
+                    if dynamic_symbols.contains_key("PC_DM") {
+                        dynamic_symbols.get_mut("PC_DM").unwrap().0 =
+                            pc_history[pc_history.len() - 3];
                     }
                 }
             }
         }
-        *self.dynamic_symbols.borrow_mut() = new_dynamic_symbols;
     }
 }
 
