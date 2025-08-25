@@ -3,7 +3,7 @@ use egui::{vec2, Color32, ComboBox, Pos2, Rect, Response, RichText, ScrollArea, 
 use syncrim::common::{EguiComponent, Input, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
-use syncrim::gui_egui::helper::basic_component_gui;
+use syncrim::gui_egui::helper::{basic_component_gui, basic_editor_popup};
 use syncrim::signal::Id;
 
 const REG_NAMES: [&str; 32] = [
@@ -36,7 +36,7 @@ impl EguiComponent for RegFile {
 
             // showing the display format of the register
             let mut tmp: RegFormat = self.reg_format.borrow().clone();
-            ComboBox::from_id_source(&self.id)
+            ComboBox::from_id_salt(&self.id)
                 .selected_text(format!("{:?}", tmp))
                 .show_ui(ui, |ui| {
                     ui.selectable_value(&mut tmp, RegFormat::Hex, "Hex");
@@ -122,23 +122,23 @@ impl EguiComponent for RegFile {
         offset: Vec2,
         scale: f32,
         clip_rect: Rect,
-        _id_ports: &[(Id, Ports)],
+        id_ports: &[(Id, Ports)],
         _grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        self.render(
-            ui,
-            context,
-            simulator,
-            offset,
-            scale,
-            clip_rect,
-            editor_mode,
-        );
-        EditorRenderReturn {
-            delete: false,
-            resp: None,
-        }
+        let res = self
+            .render(
+                ui,
+                context,
+                simulator,
+                offset,
+                scale,
+                clip_rect,
+                editor_mode,
+            )
+            .unwrap()
+            .remove(0);
+        basic_editor_popup(self, ui, context, id_ports, res, |_| {})
     }
 
     fn get_input_location(&self, id: Input) -> Option<(f32, f32)> {
@@ -147,20 +147,20 @@ impl EguiComponent for RegFile {
 
         // inputs
         if id == self.rs_address_in {
-            Some((Pos2::from(self.pos) + vec2(0f32, -125.0 - margin.top)).into())
+            Some((Pos2::from(self.pos) + vec2(0f32, -125.0 - margin.top as f32)).into())
         } else if id == self.rt_address_in {
-            Some((Pos2::from(self.pos) + vec2(0f32, 125.0 + margin.bottom)).into())
+            Some((Pos2::from(self.pos) + vec2(0f32, 125.0 + margin.bottom as f32)).into())
         } else if id == self.write_enable_in {
-            Some((Pos2::from(self.pos) + vec2(-60.0 - margin.left, 70.0)).into())
+            Some((Pos2::from(self.pos) + vec2(-60.0 - margin.left as f32, 70.0)).into())
         } else if id == self.write_address_in {
-            Some((Pos2::from(self.pos) + vec2(-60.0 - margin.left, 90.0)).into())
+            Some((Pos2::from(self.pos) + vec2(-60.0 - margin.left as f32, 90.0)).into())
         } else if id == self.write_data_in {
-            Some((Pos2::from(self.pos) + vec2(-60.0 - margin.left, 110.0)).into())
+            Some((Pos2::from(self.pos) + vec2(-60.0 - margin.left as f32, 110.0)).into())
         // outputs
         } else if id == Input::new(&self.id, reg_file_fields::RS_VALUE_OUT_ID) {
-            Some((Pos2::from(self.pos) + vec2(60.0 + margin.right, 40.0)).into())
+            Some((Pos2::from(self.pos) + vec2(60.0 + margin.right as f32, 40.0)).into())
         } else if id == Input::new(&self.id, reg_file_fields::RT_VALUE_OUT_ID) {
-            Some((Pos2::from(self.pos) + vec2(60.0 + margin.right, -40.0)).into())
+            Some((Pos2::from(self.pos) + vec2(60.0 + margin.right as f32, -40.0)).into())
         // no match
         } else {
             None

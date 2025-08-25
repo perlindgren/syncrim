@@ -75,7 +75,7 @@ impl eframe::App for Gui {
             crate::gui_egui::editor::Editor::update(ctx, frame, self);
             return;
         }
-        let frame = egui::Frame::none().fill(Color32::WHITE);
+        let frame = egui::Frame::new().fill(Color32::WHITE);
         //let frame = egui::Frame::canvas(&(*ctx.style()).clone());
 
         // For getting the correct offset for our drawing we need to get the top bar

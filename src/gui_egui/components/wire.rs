@@ -5,8 +5,9 @@ use crate::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions, SnapP
 use crate::gui_egui::gui::EguiExtra;
 use crate::gui_egui::helper::{basic_on_hover, offset_helper, shadow_small_dark};
 use egui::{
-    Color32, DragValue, Frame, Key, KeyboardShortcut, Margin, Modifiers, Order, PointerButton,
-    Pos2, Rect, Response, Rounding, Sense, Shape, Stroke, Ui, Vec2, Window,
+    Align2, Area, Color32, CornerRadius, DragValue, Frame, Key, KeyboardShortcut, Margin,
+    Modifiers, Order, PointerButton, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui,
+    Vec2, Window,
 };
 
 /// if the mouse cursor is less than this distance in points away from the wire display tooltip
@@ -98,34 +99,33 @@ impl EguiComponent for Wire {
             #[allow(clippy::single_match)]
             match editor_mode {
                 EditorMode::Default => {
-                    // why the fuck do i need this much code just to make sure its rendered at the correct layer
-                    let resp = ui
-                        .allocate_ui_at_rect(rect, |ui| {
-                            let mut layer = ui.layer_id();
-                            layer.order = Order::Middle;
-                            ui.with_layer_id(layer, |ui| {
-                                ui.allocate_exact_size(
-                                    rect.size(),
-                                    Sense {
-                                        click: true,
-                                        drag: true,
-                                        focusable: true,
-                                    },
-                                )
+                    // why the fuck do i need this much code just to make sure its rendered at the correct layer (Middle)
+                    // instead of background, that current ui is at
+                    let resp = {
+                        Area::new(format!("{}{:#?}", self.id, rect).into())
+                            .order(Order::Middle)
+                            .sense(Sense::all())
+                            .current_pos(rect.center())
+                            .movable(false)
+                            .enabled(true)
+                            .pivot(Align2::CENTER_CENTER)
+                            .constrain(false)
+                            .show(ui.ctx(), |ui: &mut Ui| {
+                                ui.set_min_size(rect.size());
                             })
-                        })
-                        .inner
-                        .inner
-                        .1;
+                    }
+                    .response;
+
                     // log::debug!("{:?}", resp);
                     if resp.contains_pointer() {
                         ui.painter().rect_stroke(
                             resp.interact_rect,
-                            Rounding::same(0.0),
+                            CornerRadius::same(0),
                             Stroke {
                                 width: scale,
                                 color: Color32::RED,
                             },
+                            StrokeKind::Inside,
                         );
                     }
                     r.push(resp);
@@ -246,9 +246,9 @@ impl EguiComponent for Wire {
         if properties_window_open || context.properties_window {
             let resp = Window::new(format!("Properties: {}", self.id))
                 .frame(Frame {
-                    inner_margin: Margin::same(10f32),
-                    outer_margin: Margin::same(0f32),
-                    rounding: Rounding::same(10f32),
+                    inner_margin: Margin::same(10),
+                    outer_margin: Margin::same(0),
+                    corner_radius: CornerRadius::same(10),
                     shadow: shadow_small_dark(),
                     fill: ui.visuals().panel_fill,
                     stroke: ui.visuals().window_stroke,
