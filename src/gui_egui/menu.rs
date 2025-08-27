@@ -145,7 +145,7 @@ fn shared_buttons_file(gui: &mut Gui, ui: &mut Ui) {
             keymap::file_new_fn(gui);
         }
         if btn(ui, "Open", gui.shortcuts.file_open).clicked() {
-            keymap::file_open_fn(gui);
+            let _ = keymap::file_open_fn(gui);
         }
         ui.menu_button("Open Recent", |_ui| {
             // Recent here
