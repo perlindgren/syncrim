@@ -20,7 +20,7 @@ struct Args {
 
 fn main() {
     let path = PathBuf::from("riscv.json");
-    let cs = ComponentStore::load_file(&path);
+    let cs = ComponentStore::load_file(&path).unwrap();
     #[cfg(feature = "gui-egui")]
     {
         use riscv::components::*;
