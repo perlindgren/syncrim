@@ -461,7 +461,7 @@ impl Component for RVMem {
         Ok(())
     }
 
-    fn un_clock(&self) {
+    fn un_clock(&self, _: &Simulator) {
         let entry = self.history.borrow_mut().pop().unwrap();
         if let Some(d) = entry.data {
             self.memory.write(

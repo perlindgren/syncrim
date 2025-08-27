@@ -108,7 +108,7 @@ pub trait Component {
         Ok(())
     }
     /// update component internal state
-    fn un_clock(&self) {}
+    fn un_clock(&self, _simulator: &Simulator) {}
     /// reset component internal state to initial value
     fn reset(&self) {}
 
