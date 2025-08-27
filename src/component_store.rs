@@ -7,13 +7,17 @@ use log::*;
 #[derive(Debug)]
 pub enum ComponentStoreLoadError {
     Json(serde_json::Error),
-    Io(std::io::Error, PathBuf)
+    Io(std::io::Error, PathBuf),
 }
 impl Display for ComponentStoreLoadError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ComponentStoreLoadError::Json(error) => write!(f,"Error while decoding json: {}",error),
-            ComponentStoreLoadError::Io(error,path) => write!(f,"Error while reading file {:?} : {}",path,error),
+            ComponentStoreLoadError::Json(error) => {
+                write!(f, "Error while decoding json: {}", error)
+            }
+            ComponentStoreLoadError::Io(error, path) => {
+                write!(f, "Error while reading file {:?} : {}", path, error)
+            }
         }
     }
 }
@@ -38,10 +42,12 @@ impl ComponentStore {
         serde_json::from_str(json)
     }
 
-    pub fn load_file(path: &PathBuf) -> Result<Self,ComponentStoreLoadError> {
-        let mut file = File::open(path).map_err(|err| ComponentStoreLoadError::Io(err, path.clone()))?;
+    pub fn load_file(path: &PathBuf) -> Result<Self, ComponentStoreLoadError> {
+        let mut file =
+            File::open(path).map_err(|err| ComponentStoreLoadError::Io(err, path.clone()))?;
         let mut json = String::new();
-        file.read_to_string(&mut json).map_err(|err| ComponentStoreLoadError::Io(err, path.clone()))?;
+        file.read_to_string(&mut json)
+            .map_err(|err| ComponentStoreLoadError::Io(err, path.clone()))?;
 
         let cs = ComponentStore::load(&json)?;
         Ok(cs)
