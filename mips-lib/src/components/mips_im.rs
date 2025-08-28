@@ -7,7 +7,7 @@ use std::rc::Rc;
 use syncrim::common::EguiComponent;
 use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 
-use crate::components::physical_mem::MemOpSize;
+use crate::components::{physical_mem::MemOpSize, MemLoadError};
 #[cfg(feature = "gui-egui")]
 use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 
@@ -17,7 +17,7 @@ pub const INSTR_MEM_PC_ID: &str = "pc";
 
 pub const INSTR_MEM_INSTRUCTION_ID: &str = "instruction";
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize)]
 pub struct InstrMem {
     pub id: String,
     pub pos: (f32, f32),
@@ -28,10 +28,16 @@ pub struct InstrMem {
     #[cfg(feature = "gui-egui")]
     pub mem_view: RefCell<MemViewWindow>,
 
+    #[cfg(feature = "gui-egui")]
+    #[serde(skip)]
+    pub load_err: RefCell<Option<MemLoadError>>,
+
+
     #[serde(skip)]
     pub pc_history: RefCell<Vec<u32>>,
 
     pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
+
 }
 
 impl InstrMem {
@@ -53,8 +59,14 @@ impl InstrMem {
             regfile_id,
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
+
+            regfile_id,
+            #[cfg(feature = "gui-egui")]
+            load_err: RefCell::new(None),
+
             pc_history: RefCell::new(vec![]),
             dynamic_symbols: RefCell::new(HashMap::new()),
+
         }
     }
     pub fn rc_new(
@@ -109,11 +121,17 @@ impl Component for InstrMem {
             pos,
             pc: dummy_input,
             phys_mem_id: "dummy".into(),
+
+            mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
+            regfile_id: "dummy".into(),
+            load_err: RefCell::new(None),
+
             regfile_id: "dummy".into(),
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
             pc_history: RefCell::new(vec![]),
             dynamic_symbols: RefCell::new(HashMap::new()),
+
         }))
     }
 

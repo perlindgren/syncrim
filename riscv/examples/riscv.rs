@@ -78,7 +78,7 @@ fn main() {
         }
     }
     let path = PathBuf::from("riscv.json");
-    let mut cs = ComponentStore::load_file(&path);
+    let mut cs = ComponentStore::load_file(&path).unwrap();
     let mut i = 0;
     let mut store = cs.store.clone();
     for component in store.clone() {
