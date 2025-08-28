@@ -1,4 +1,4 @@
-use elf::{endian::AnyEndian, ElfBytes};
+use elf::{abi::SHT_PROGBITS, endian::AnyEndian, ElfBytes};
 use std::{
     any::Any,
     cell::RefCell,
@@ -229,7 +229,10 @@ impl MipsMem {
         for sect in sections {
             // if the section has flag alloc(0x2), aka lives in memory
             // if the section has a size larger than zero
-            if sect.sh_flags & 0x2 == 0x2 && sect.sh_size != 0 {
+            // FIXME currently the sde assembler fails to apply section directives such as "wa" or "ex"
+            // for some reason it adds the xa flag to ktxet, regardless of directives
+            // but i haven't manged to get sde to add the flag to kdata, so here is an ugly quick fix
+            if str_tab.get(sect.sh_name as usize)? == ".kdata" || sect.sh_flags & 0x2 == 0x2 && sect.sh_size != 0 {
                 let v_address = sect.sh_addr as u32;
 
                 // if the section has flag alloc(0x2), aka lives in memory
