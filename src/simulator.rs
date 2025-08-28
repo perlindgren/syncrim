@@ -458,6 +458,11 @@ impl Simulator {
     /// reverse simulation using history if clock > 1
     pub fn un_clock(&mut self) {
         if self.cycle > 1 {
+            // reverse eval order before uncloak
+            for component in self.ordered_components.clone().into_iter().rev() {
+                component.un_clock(self);
+            }
+
             let (state, active) = self.history.pop().unwrap();
             // set old state
             self.sim_state = state;
@@ -473,11 +478,6 @@ impl Simulator {
                 RunningState::Err => self.running_state = RunningState::Err,
                 _ => self.running_state = RunningState::Stopped,
             };
-
-            // reverse eval order before uncloak
-            for component in self.ordered_components.clone().into_iter().rev() {
-                component.un_clock(self);
-            }
         }
     }
 

@@ -109,7 +109,8 @@
     "kdata",
     "ktxet",
     "rsplit",
-    "rustc"
+    "rustc",
+    "bitvec"
   ],
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer",

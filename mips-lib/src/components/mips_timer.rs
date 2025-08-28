@@ -1,3 +1,4 @@
+use bitvec::vec::BitVec;
 // use std::fmt::Alignment;
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -21,6 +22,9 @@ const COMPARE1_IE: u8 = 0b0000_1000;
 const COMPARE1_FG: u8 = 0b0001_0000;
 const COMPARE1_CR: u8 = 0b0010_0000;
 
+const RESET_OVERFLOW: bool = false;
+const RESET_COMPARE: bool = true;
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MipsTimer {
     pub(crate) id: Id,
@@ -42,6 +46,11 @@ pub struct MipsTimerData {
     pub compare: u32,
     pub divider: u32,
     pub div_counter: u32,
+    // since we do data.flag |= x, we cant reverse the operation
+    // so we need to keep track of their history
+    overflow_fg_history: BitVec,
+    compare1_fg_history: BitVec,
+    reset_cause_history: BitVec,
 }
 impl Default for MipsTimerData {
     fn default() -> Self {
@@ -51,6 +60,9 @@ impl Default for MipsTimerData {
             compare: 0,
             divider: 16,
             div_counter: 0,
+            overflow_fg_history: BitVec::default(),
+            compare1_fg_history: BitVec::default(),
+            reset_cause_history: BitVec::default(),
         }
     }
 }
@@ -117,17 +129,34 @@ impl Component for MipsTimer {
 
                 // if overflow set the overflow_fg flag
                 if data.counter == 0 {
+                    // push old OVERFLOW_FG
+                    let old = data.flags & OVERFLOW_FG == OVERFLOW_FG;
+                    data.reset_cause_history.push(RESET_OVERFLOW);
+                    data.overflow_fg_history.push(old);
                     data.flags |= OVERFLOW_FG
                 }
-                // if our compare matches
-                if data.counter == data.compare {
-                    data.flags |= COMPARE1_FG
-                }
-
                 // reset timer when compare is reached
                 // +1 for syncsim compatibility
-                if (data.counter == data.compare + 1) && data.flags & COMPARE1_CR == COMPARE1_CR {
+                else if (data.counter == data.compare + 1)
+                    && data.flags & COMPARE1_CR == COMPARE1_CR
+                {
+                    // push old OVERFLOW_FG
+                    // this is because unclock don't know how we got to counter = 0
+                    // could have been by overflow OR by counter reset
+                    // also why we have this in else clause
+                    // so it don't push old state twice
+                    let old = data.flags & OVERFLOW_FG == OVERFLOW_FG;
+                    data.overflow_fg_history.push(old);
+                    data.reset_cause_history.push(RESET_COMPARE);
                     data.counter = 0
+                }
+
+                // if our compare matches
+                if data.counter == data.compare {
+                    // push old COMPARE1_FG
+                    let old = data.flags & COMPARE1_FG == COMPARE1_FG;
+                    data.compare1_fg_history.push(old);
+                    data.flags |= COMPARE1_FG
                 }
             }
         }
@@ -157,10 +186,20 @@ impl Component for MipsTimer {
                 // if data is valid, aka not undefined or unset
                 if let SignalValue::Data(in_data) = simulator.get_input_value(&self.data_in) {
                     // set data according to address
+                    // write old value to out, used for unclock
                     match simulator.get_input_value(&self.address_in) {
-                        SignalValue::Data(0xFFFF_0010) => data.flags = in_data as u8,
-                        SignalValue::Data(0xFFFF_0014) => data.counter = in_data,
-                        SignalValue::Data(0xFFFF_0018) => data.compare = in_data,
+                        SignalValue::Data(0xFFFF_0010) => {
+                            simulator.set_out_value(&self.id, TIMER_DATA_OUT_ID, data.flags as u32);
+                            data.flags = in_data as u8
+                        }
+                        SignalValue::Data(0xFFFF_0014) => {
+                            simulator.set_out_value(&self.id, TIMER_DATA_OUT_ID, data.counter);
+                            data.counter = in_data
+                        }
+                        SignalValue::Data(0xFFFF_0018) => {
+                            simulator.set_out_value(&self.id, TIMER_DATA_OUT_ID, data.compare);
+                            data.compare = in_data
+                        }
                         SignalValue::Data(_) => {
                             ret = Err(Condition::Warning("Write address out of range".to_string()))
                         }
@@ -198,6 +237,79 @@ impl Component for MipsTimer {
 
         ret
     }
+
+    fn un_clock(&self, sim: &Simulator) {
+        let mut data = self.data.borrow_mut();
+
+        let data_out = Input::new(&self.id, TIMER_DATA_OUT_ID);
+        // undo write
+        // Read write enable, if 0x1 write data, if 0x0 read data, other dont do anything
+        match sim.get_input_value(&self.we_in) {
+            // write line is zero
+            SignalValue::Data(0x0) => {}
+            // write enable write data
+            SignalValue::Data(_) => {
+                // get the old value (is written to out when we is high)
+                if let SignalValue::Data(out_data) = sim.get_input_value(&data_out) {
+                    // set data according to address
+                    // write old value to out, used for unclock
+                    match sim.get_input_value(&self.address_in) {
+                        SignalValue::Data(0xFFFF_0010) => data.flags = out_data as u8,
+                        SignalValue::Data(0xFFFF_0014) => data.counter = out_data,
+                        SignalValue::Data(0xFFFF_0018) => data.compare = out_data,
+                        _ => {}
+                    }
+                }
+            }
+            _ => {}
+        }
+        
+        // undo timer clocking
+        if (data.flags & COUNTER_ENABLE) == COUNTER_ENABLE {
+            // if we try to decrease a divider which is at zero
+            let (previous_divider, overflow) = data.div_counter.overflowing_sub(1);
+            data.div_counter = previous_divider;
+
+            if overflow {
+                // -1 since never are at data.divider since its set to 0 if so
+                data.div_counter = data.divider - 1;
+
+                let (previous_counter, overflow) = data.counter.overflowing_sub(1);
+                data.counter = previous_counter;
+
+                if overflow {
+                    // if we had an overflow on previous cycle we know that history is not empty so unwrap is safe
+                    let previous_overflow = data.overflow_fg_history.pop().unwrap();
+                    // clear overflow bit
+                    data.flags &= !OVERFLOW_FG;
+                    // set bit if the previous state was set
+                    if previous_overflow {
+                        data.flags |= OVERFLOW_FG;
+                    }
+
+                    // if the cause for counter being zero
+                    // unwrap is safe since we push when we reset to zero
+                    if data.reset_cause_history.pop().unwrap() == RESET_COMPARE {
+                        data.counter = data.compare
+                    }
+                }
+                // if we unclock to before compare sets the bit
+                // set our old bit
+                if data.counter == data.compare - 1 {
+                    let previous_compare = data.compare1_fg_history.pop().unwrap();
+                    // clear overflow bit
+                    data.flags &= !COMPARE1_FG;
+                    // set bit if the previous state was set
+                    if previous_compare {
+                        data.flags |= COMPARE1_FG;
+                    }
+                }
+
+                // no need to deal with compare, since it only matters when going forward
+            }
+        }
+    }
+
     fn reset(&self) {
         *self.data.borrow_mut() = MipsTimerData {
             flags: 0,
@@ -205,6 +317,9 @@ impl Component for MipsTimer {
             compare: 0,
             divider: 16,
             div_counter: 0,
+            overflow_fg_history: BitVec::default(),
+            compare1_fg_history: BitVec::default(),
+            reset_cause_history: BitVec::default(),
         }
     }
 
@@ -233,6 +348,9 @@ impl MipsTimer {
                 compare: 0,
                 divider: 16,
                 div_counter: 0,
+                overflow_fg_history: BitVec::default(),
+                compare1_fg_history: BitVec::default(),
+                reset_cause_history: BitVec::default(),
             }),
         }
     }

@@ -19,6 +19,7 @@ serde_json = "1.0.103"
 typetag = "0.2.10"
 egui = {version = "0.31.1"}
 rustc-demangle = "0.1.25"
+bitvec = "1.0.1"
 [dependencies.syncrim]
 path = "../"
 default-features = false
