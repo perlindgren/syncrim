@@ -32,9 +32,6 @@ pub struct InstrMem {
     #[serde(skip)]
     pub load_err: RefCell<Option<MemLoadError>>,
 
-    #[serde(skip)]
-    pub pc_history: RefCell<Vec<u32>>,
-
     pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
 }
 
@@ -60,7 +57,6 @@ impl InstrMem {
             #[cfg(feature = "gui-egui")]
             load_err: RefCell::new(None),
 
-            pc_history: RefCell::new(vec![]),
             dynamic_symbols: RefCell::new(HashMap::new()),
         }
     }
@@ -113,8 +109,6 @@ impl Component for InstrMem {
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
             regfile_id: "dummy".into(),
             load_err: RefCell::new(None),
-            #[cfg(feature = "gui-egui")]
-            pc_history: RefCell::new(vec![]),
             dynamic_symbols: RefCell::new(HashMap::new()),
         }))
     }
@@ -163,9 +157,6 @@ impl Component for InstrMem {
                 .get(pc, MemOpSize::Word, false, true)
         };
 
-        self.pc_history
-            .borrow_mut()
-            .push(self.dynamic_symbols.borrow().get("PC_IM").unwrap().0);
         self.clock_dynamic_symbols(pc);
 
         // Get a word at PC with the size of 32bits, read as big endian,
@@ -187,12 +178,13 @@ impl Component for InstrMem {
     }
     // set PC to what it was the previous cycle
     fn un_clock(&self, simulator: &Simulator) {
-        let previous_pc: u32 = self.pc_history.borrow_mut().pop().unwrap();
-        self.unclock_dynamic_symbols(previous_pc);
+        let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
+        self.unclock_dynamic_symbols(pc);
     }
     // if the simulator is reset and pc_history isn't empty: move over dynamic_symbol settings
     // while resetting values and adresses
     fn reset(&self) {
+        /*
         if self.pc_history.borrow().len() > 0 {
             let start_pc = self.pc_history.borrow()[0];
             let current_symbol_keys: Vec<String> =
@@ -210,6 +202,6 @@ impl Component for InstrMem {
             }
             *self.dynamic_symbols.borrow_mut() = new_symbols;
             self.pc_history.borrow_mut().clear();
-        }
+        }*/
     }
 }
