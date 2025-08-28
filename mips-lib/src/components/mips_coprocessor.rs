@@ -27,19 +27,34 @@ pub const CP0_RFE_IN_ID: &str = "cp0_RFE_in";
 pub const CP0_TIMER_INTERRUPT_IN_ID: &str = "cp0_timer_interrupt_in"; // update to timer and io
 pub const CP0_IO_INTERRUPT_IN_ID: &str = "cp0_io_interrupt_in";
 pub const CP0_SYSCALL_IN_ID: &str = "cp0_syscall_in";
-pub const CP0_INSTRUCTIO_ADDRESS_IN: &str = "cp0_instruction_address_in";
+pub const CP0_INSTRUCTION_ADDRESS_IN: &str = "cp0_instruction_address_in";
 
-// out 0: intaddr 0x80001000
+// out 0: int addr 0x80001000
 // out 1: readout
 // out 2: isInt
 pub const CP0_INT_ADDR_OUT_ID: &str = "cp0_int_addr_out_id";
 pub const CP0_REGISTER_OUT_ID: &str = "cp0_register_out_id";
 pub const CP0_IS_INT_OUT_ID: &str = "cp0_is_int_out_id";
 
-#[derive(Serialize, Deserialize, Clone)]
-struct RegOp {
-    pub addr: u8,
-    pub data: u32, // might save whole signal in future
+struct RegChangeFrom {
+    cycle: usize,
+    regs: Regs,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Regs {
+    pub sr: u32,
+    pub ecr: u32,
+    pub epc: u32,
+}
+impl Default for Regs {
+    fn default() -> Self {
+        Self {
+            sr: 0x0000_0010,
+            ecr: 0,
+            epc: 0,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -56,9 +71,10 @@ pub struct CP0 {
     pub(crate) instruction_address_in: Input,
 
     #[serde(skip)]
-    pub registers: RefCell<[u32; 32]>, // all 32 registers, in the future, we might save the whole signal
+    // SR, ECR, EPC
+    pub registers: RefCell<Regs>, // all 32 registers, in the future, we might save the whole signal
     #[serde(skip)]
-    history: RefCell<Vec<RegOp>>, // contains the value before it was modified used for unclock.
+    history: RefCell<Vec<RegChangeFrom>>, // contains the value before it was modified used for unclock.
 }
 
 #[typetag::serde]
@@ -69,7 +85,6 @@ impl Component for CP0 {
     #[cfg(feature = "gui-egui")]
     fn dummy(&self, _id: &str, _pos: (f32, f32)) -> Box<Rc<dyn EguiComponent>> {
         let dummy_input = Input::new("dummy", "out");
-        let arr: [u32; 32] = [0; 32];
         Box::new(Rc::new(CP0 {
             id: "dummy".to_string(),
             pos: (0.0, 0.0),
@@ -81,7 +96,11 @@ impl Component for CP0 {
             io_interrupt_in: dummy_input.clone(),
             syscall_in: dummy_input.clone(),
             instruction_address_in: dummy_input.clone(),
-            registers: RefCell::new(arr),
+            registers: RefCell::new(Regs {
+                sr: 0,
+                ecr: 0,
+                epc: 0,
+            }),
             history: RefCell::new(vec![]),
         }))
     }
@@ -119,7 +138,7 @@ impl Component for CP0 {
                         input: self.syscall_in.clone(),
                     },
                     &InputPort {
-                        port_id: CP0_INSTRUCTIO_ADDRESS_IN.to_string(),
+                        port_id: CP0_INSTRUCTION_ADDRESS_IN.to_string(),
                         input: self.instruction_address_in.clone(),
                     },
                 ],
@@ -138,7 +157,7 @@ impl Component for CP0 {
             CP0_TIMER_INTERRUPT_IN_ID => self.timer_interrupt_in = new_input,
             CP0_IO_INTERRUPT_IN_ID => self.io_interrupt_in = new_input,
             CP0_SYSCALL_IN_ID => self.syscall_in = new_input,
-            CP0_INSTRUCTIO_ADDRESS_IN => self.instruction_address_in = new_input,
+            CP0_INSTRUCTION_ADDRESS_IN => self.instruction_address_in = new_input,
             _ => {}
         }
     }
@@ -169,123 +188,114 @@ impl Component for CP0 {
             .get_input_value(&self.syscall_in)
             .try_into()
             .unwrap();
-        let interupt_address_in: u32 = simulator
+        let interrupt_address_in: u32 = simulator
             .get_input_value(&self.instruction_address_in)
             .try_into()
             .unwrap();
 
-        let mut interrupt_occurd: u32 = 0;
+        let mut interrupt_occurred: u32 = 0;
 
-        //save value to history before write, no need for {} as borrows is dropped after operation?
+        let regs_before = self.registers.borrow().clone();
 
-        // FIXME @salon64 register address is no longer an 5 bit value
-        // its an u32 with represent sel and register 15..10 rd, 10..2 zero, 2..0 sel
-        // commented out
-
-        // self.history.borrow_mut().push(RegOp {
-        //     addr: register_address as u8,
-        //     data: *self.registers.borrow().get(register_address).unwrap(),
-        // });
-        
         if (syscall == 1 || io_interrupt == 1 || timer_interrupt == 1)
-        && self.registers.borrow()[SR] & 1 == 1
+            && self.registers.borrow().sr & 1 == 1
         {
             let mut regs = self.registers.borrow_mut();
 
             // Set bits in ECR according to the interrupt type
-            if timer_interrupt == 1 && ((regs[SR] & 0x400) == 0x400) {
-                regs[EPC] = interupt_address_in;
+            if timer_interrupt == 1 && ((regs.sr & 0x400) == 0x400) {
+                regs.epc = interrupt_address_in;
                 // set current state and interrupt
-                let tmp = (regs[SR] & 0xF) << 2;
-                regs[SR] &= 0xFFFF_FFC0;
-                regs[SR] |= tmp;
+                let tmp = (regs.sr & 0xF) << 2;
+                regs.sr &= 0xFFFF_FFC0;
+                regs.sr |= tmp;
                 // enable interrupt
-                interrupt_occurd = 1;
+                interrupt_occurred = 1;
                 // Set bits in ECR according to the interrupt type
-                regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x400;
-            }
-            else if io_interrupt == 1 && ((regs[SR] & 0x800) == 0x800) {
-                regs[EPC] = interupt_address_in;
+                regs.ecr = regs.ecr & 0xFFFF0003 | 0x400;
+            } else if io_interrupt == 1 && ((regs.sr & 0x800) == 0x800) {
+                regs.epc = interrupt_address_in;
                 // set current state and interrupt
-                let tmp = (regs[SR] & 0xF) << 2;
-                regs[SR] &= 0xFFFF_FFC0;
-                regs[SR] |= tmp;
+                let tmp = (regs.sr & 0xF) << 2;
+                regs.sr &= 0xFFFF_FFC0;
+                regs.sr |= tmp;
                 // enable interrupt
-                interrupt_occurd = 1;
+                interrupt_occurred = 1;
                 // Set bits in ECR according to the interrupt type
-                regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x800;
-            }
-            else if syscall == 1 {
-                regs[EPC] = interupt_address_in;
+                regs.ecr = regs.ecr & 0xFFFF0003 | 0x800;
+            } else if syscall == 1 {
+                regs.epc = interrupt_address_in;
                 // set current state and interrupt
-                let tmp = (regs[SR] & 0xF) << 2;
-                regs[SR] &= 0xFFFF_FFC0;
-                regs[SR] |= tmp;
+                let tmp = (regs.sr & 0xF) << 2;
+                regs.sr &= 0xFFFF_FFC0;
+                regs.sr |= tmp;
                 // enable interrupt
-                interrupt_occurd = 1;
+                interrupt_occurred = 1;
                 // Set bits in ECR according to the interrupt type
-                regs[ECR] = regs[ECR] & 0xFFFF0003 | 0x120;
+                regs.ecr = regs.ecr & 0xFFFF0003 | 0x120;
             }
         }
-        
+
         if rfe == 1 {
             let mut regs = self.registers.borrow_mut();
-            let mut status = regs[SR] & 0x3c;
+            let mut status = regs.sr & 0x3c;
             status >>= 2;
-            let tmp = (regs[SR] & 0x30) | status;
-            regs[SR] = (regs[SR] & 0xFFFF_FFC0) | tmp;
+            let tmp = (regs.sr & 0x30) | status;
+            regs.sr = (regs.sr & 0xFFFF_FFC0) | tmp;
         }
-        
+
         //bad code, follows same structure as syncsim
         // TODO: update so that it allows writing to all registers
-        if write_enable_in == 1 {
+        let mut out_data: u32 = 0;
+        {
             let mut regs = self.registers.borrow_mut();
             if register_address == 0x6000 {
-                //
-                regs[SR] = input_data;
-            } else if register_address == 6800 {
-                regs[ECR] = input_data;
-            } else if register_address == 7000 {
-                regs[EPC] = input_data;
+                out_data = regs.sr;
+            } else if register_address == 0x6800 {
+                out_data = regs.ecr;
+            } else if register_address == 0x7000 {
+                out_data = regs.epc;
+            }
+
+            if write_enable_in == 1 {
+                if register_address == 0x6000 {
+                    //
+                    regs.sr = input_data;
+                } else if register_address == 6800 {
+                    regs.ecr = input_data;
+                } else if register_address == 7000 {
+                    regs.epc = input_data;
+                }
             }
         }
 
-        let mut read_register = 0;
-        if register_address == 0x6000 {
-            read_register = SR;
-        } else if register_address == 0x6800 {
-            read_register = ECR;
-        } else if register_address == 0x7000 {
-            read_register = EPC;
+        // if we changed any of the registers this cycle, add the change the before values
+        if *self.registers.borrow() != regs_before {
+            let reg_change = RegChangeFrom {
+                cycle: simulator.cycle,
+                regs: regs_before,
+            };
+            self.history.borrow_mut().push(reg_change);
         }
 
-        // out 0: intaddr 0x80001000
+        // out 0: int addr 0x80001000
         // out 1: readout
         // out 2: isInt
         simulator.set_out_value(&self.id, CP0_INT_ADDR_OUT_ID, 0x80000080);
-        simulator.set_out_value(
-            &self.id,
-            CP0_REGISTER_OUT_ID,
-            self.registers.borrow()[read_register],
-        );
-        simulator.set_out_value(&self.id, CP0_IS_INT_OUT_ID, interrupt_occurd);
+        simulator.set_out_value(&self.id, CP0_REGISTER_OUT_ID, out_data);
+        simulator.set_out_value(&self.id, CP0_IS_INT_OUT_ID, interrupt_occurred);
         Ok(())
     }
 
-    fn un_clock(&self) {
-        // FIXME Se fixme in clock about history
-        // if let Some(last_op) = self.history.borrow_mut().pop() {
-        //     let mut regs = self.registers.borrow_mut();
-        //     // if regs[last_op.addr as usize] != last_op.data {
-        //     //     *self.changed_register.borrow_mut() = last_op.addr as u32;
-        //     // }
-        //     regs[last_op.addr as usize] = last_op.data;
-        // }
+    fn un_clock(&self, sim: &Simulator) {
+        let mut history = self.history.borrow_mut();
+        if let Some(last) = history.pop_if(|r| r.cycle == sim.cycle) {
+            *self.registers.borrow_mut() = last.regs
+        }
     }
 
     fn reset(&self) {
-        *self.registers.borrow_mut() = [0; 32];
-        self.registers.borrow_mut()[SR] = 0x0000_0010;
+        *self.registers.borrow_mut() = Regs::default();
         *self.history.borrow_mut() = vec![];
     }
 
@@ -307,8 +317,6 @@ impl CP0 {
         syscall_in: Input,
         instruction_address_in: Input,
     ) -> Self {
-        let mut arr: [u32; 32] = [0; 32];
-        arr[SR] = 0x0000_0010;
         CP0 {
             id: id.to_string(),
             pos,
@@ -320,7 +328,7 @@ impl CP0 {
             io_interrupt_in,
             syscall_in,
             instruction_address_in,
-            registers: RefCell::new(arr), // create 32 zeros
+            registers: RefCell::new(Regs::default()), // create 32 zeros
             history: RefCell::new(vec![]),
         }
     }
@@ -349,9 +357,5 @@ impl CP0 {
             syscall_in,
             instruction_address_in,
         ))
-    }
-
-    pub fn get_cp0_register(&self, i: usize) -> u32 {
-        self.registers.borrow()[i]
     }
 }

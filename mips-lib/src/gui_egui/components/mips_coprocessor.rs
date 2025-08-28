@@ -24,9 +24,9 @@ impl EguiComponent for CP0 {
             ui.label("CP0");
             ui.label(format!(
                 "SR: {:#010x} \nECR: {:#010x} \nEPC: {:#010x}",
-                self.registers.borrow()[12],
-                self.registers.borrow()[13],
-                self.registers.borrow()[14]
+                self.registers.borrow().sr,
+                self.registers.borrow().ecr,
+                self.registers.borrow().epc
             ));
         })
     }
@@ -101,7 +101,7 @@ impl EguiComponent for CP0 {
                 pos2(WIDTH / 2.0 + M, 4.0) + own_pos,
             ),
             (
-                crate::components::CP0_INSTRUCTIO_ADDRESS_IN.to_string(),
+                crate::components::CP0_INSTRUCTION_ADDRESS_IN.to_string(),
                 pos2(WIDTH / 2.0 + M, 4.0) + own_pos,
             ),
         ]
