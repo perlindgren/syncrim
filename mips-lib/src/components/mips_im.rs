@@ -32,12 +32,10 @@ pub struct InstrMem {
     #[serde(skip)]
     pub load_err: RefCell<Option<MemLoadError>>,
 
-
     #[serde(skip)]
     pub pc_history: RefCell<Vec<u32>>,
 
     pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
-
 }
 
 impl InstrMem {
@@ -59,14 +57,11 @@ impl InstrMem {
             regfile_id,
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
-
-            regfile_id,
             #[cfg(feature = "gui-egui")]
             load_err: RefCell::new(None),
 
             pc_history: RefCell::new(vec![]),
             dynamic_symbols: RefCell::new(HashMap::new()),
-
         }
     }
     pub fn rc_new(
@@ -78,29 +73,22 @@ impl InstrMem {
     ) -> Rc<InstrMem> {
         Rc::new(InstrMem::new(id, pos, pc_input, phys_mem_id, regfile_id))
     }
-    pub fn update_dynamic_symbols(&self, new_pc: u32) {
-        let pc_history = self.pc_history.borrow();
+    pub fn clock_dynamic_symbols(&self, new_pc: u32) {
         let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
 
-        if dynamic_symbols.contains_key("PC_IM") {
-            dynamic_symbols.get_mut("PC_IM").unwrap().0 = new_pc;
-        }
-        if pc_history.len() > 1 {
-            if dynamic_symbols.contains_key("PC_DE") {
-                dynamic_symbols.get_mut("PC_DE").unwrap().0 = pc_history[pc_history.len() - 1];
-            }
-            if pc_history.len() > 2 {
-                if dynamic_symbols.contains_key("PC_EX") {
-                    dynamic_symbols.get_mut("PC_EX").unwrap().0 = pc_history[pc_history.len() - 2];
-                }
-                if pc_history.len() > 3 {
-                    if dynamic_symbols.contains_key("PC_DM") {
-                        dynamic_symbols.get_mut("PC_DM").unwrap().0 =
-                            pc_history[pc_history.len() - 3];
-                    }
-                }
-            }
-        }
+        dynamic_symbols.get_mut("PC_DM").unwrap().0 = dynamic_symbols.get("PC_EX").unwrap().0;
+        dynamic_symbols.get_mut("PC_EX").unwrap().0 = dynamic_symbols.get("PC_DE").unwrap().0;
+        dynamic_symbols.get_mut("PC_DE").unwrap().0 = dynamic_symbols.get("PC_IM").unwrap().0;
+        dynamic_symbols.get_mut("PC_IM").unwrap().0 = new_pc;
+    }
+
+    pub fn unclock_dynamic_symbols(&self, new_pc: u32) {
+        let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
+
+        dynamic_symbols.get_mut("PC_IM").unwrap().0 = dynamic_symbols.get("PC_DE").unwrap().0;
+        dynamic_symbols.get_mut("PC_DE").unwrap().0 = dynamic_symbols.get("PC_EX").unwrap().0;
+        dynamic_symbols.get_mut("PC_EX").unwrap().0 = dynamic_symbols.get("PC_DM").unwrap().0;
+        dynamic_symbols.get_mut("PC_DM").unwrap().0 = new_pc;
     }
 }
 
@@ -125,13 +113,9 @@ impl Component for InstrMem {
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
             regfile_id: "dummy".into(),
             load_err: RefCell::new(None),
-
-            regfile_id: "dummy".into(),
             #[cfg(feature = "gui-egui")]
-            mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
             pc_history: RefCell::new(vec![]),
             dynamic_symbols: RefCell::new(HashMap::new()),
-
         }))
     }
 
@@ -182,7 +166,7 @@ impl Component for InstrMem {
         self.pc_history
             .borrow_mut()
             .push(self.dynamic_symbols.borrow().get("PC_IM").unwrap().0);
-        self.update_dynamic_symbols(pc);
+        self.clock_dynamic_symbols(pc);
 
         // Get a word at PC with the size of 32bits, read as big endian,
         // sign extend doesn't mater since we have 32 bits so extending to 32bits does nothing
@@ -202,9 +186,9 @@ impl Component for InstrMem {
         }
     }
     // set PC to what it was the previous cycle
-    fn un_clock(&self) {
+    fn un_clock(&self, simulator: &Simulator) {
         let previous_pc: u32 = self.pc_history.borrow_mut().pop().unwrap();
-        self.update_dynamic_symbols(previous_pc);
+        self.unclock_dynamic_symbols(previous_pc);
     }
     // if the simulator is reset and pc_history isn't empty: move over dynamic_symbol settings
     // while resetting values and adresses
