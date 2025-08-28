@@ -188,6 +188,12 @@
           "PC_IM": [0, true]
         },
         "break_points": []
+      },
+      "dynamic_symbols": {
+        "PC_IM": [
+          0,
+          true
+        ]
       }
     },
     {

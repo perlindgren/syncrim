@@ -129,6 +129,22 @@ impl MemViewWindow {
             }
         }
     }
+    // replaces all dynamic symbols with the given new_dynamic_symbols
+    pub fn set_all_dynamic_symbols(&mut self, new_dynamic_symbols: HashMap<String, (u32, bool)>) {
+        for symbol in new_dynamic_symbols {
+            self.dynamic_symbols.insert(
+                symbol.0.clone(),
+                (
+                    symbol.1 .0,
+                    self.dynamic_symbols
+                        .get_key_value((symbol.0).as_str())
+                        .unwrap()
+                        .1
+                         .1,
+                ),
+            );
+        }
+    }
     /// Get the address of a symbol, if no such symbol exist return None
     pub fn get_dynamic_symbol(&self, symbol: &str) -> Option<u32> {
         self.dynamic_symbols.get(symbol).map(|(adrs, _)| *adrs)
