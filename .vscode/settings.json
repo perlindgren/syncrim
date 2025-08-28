@@ -96,7 +96,20 @@
     "winapi",
     "winuser",
     "XORI",
-    "ZEROEXTEND"
+    "ZEROEXTEND",
+    "BDAM",
+    "BPCM",
+    "DCIC",
+    "PRID",
+    "unclock",
+    "impls",
+    "repush",
+    "wbctl",
+    "demangle",
+    "kdata",
+    "ktxet",
+    "rsplit",
+    "rustc"
   ],
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer",
