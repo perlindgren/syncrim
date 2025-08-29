@@ -1,6 +1,7 @@
+use bitvec::vec::BitVec;
 use log::*;
 use serde::{Deserialize, Serialize};
-use std::{any::Any, cell::RefCell, collections::VecDeque};
+use std::{any::Any, cell::RefCell};
 use syncrim::{
     common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator},
     signal::SignalValue,
@@ -44,22 +45,33 @@ pub struct MipsIO {
     pub gui_show: RefCell<bool>,
 }
 
+
+const NO_DATA_READ: bool= false;
+const DATA_READ: bool= true;
 #[derive(Debug, Clone)]
 pub struct MipsIOData {
     pub interrupt: bool,
     pub input_control: u32,
-    pub key_buff: VecDeque<u8>,
+    // vec of (cycle, amount_data_written)
+    pub key_buff_write_history: Vec<(usize, usize)>,
+    pub read_pos: usize,
+    pub end_pos: usize,
+    read_eq_end_cause: BitVec,
+    pub key_buff: Vec<u8>,
     pub out_buff: Vec<u8>,
-    // pub history: TODO
 }
 
 impl Default for MipsIOData {
     fn default() -> Self {
         Self {
             interrupt: false,
-            key_buff: Default::default(),
             input_control: 0,
-            out_buff: Default::default(),
+            read_pos: 0,
+            end_pos: 0,
+            key_buff_write_history: Vec::default(),
+            read_eq_end_cause: BitVec::default(),
+            key_buff: Vec::default(),
+            out_buff: Vec::default(),
         }
     }
 }
@@ -109,10 +121,38 @@ impl Component for MipsIO {
     }
 
     fn clock(&self, simulator: &mut Simulator) -> Result<(), Condition> {
+        // check if read and write is high, return error
+        if matches!(
+            (
+                simulator.get_input_value(&self.we_in),
+                simulator.get_input_value(&self.re_in)
+            ),
+            (SignalValue::Data(1), SignalValue::Data(1))
+        ) {
+            return Err(Condition::Error(
+                "can't have read and write signal at the same time".to_string(),
+            ));
+        };
+
+        let mut data = self.data.borrow_mut();
+        // if we have new data
+        if let Some((_, new_data_amount)) = data
+            .key_buff_write_history
+            .iter()
+            .find(|(cycle, _)| *cycle == simulator.cycle)
+            .cloned()
+        {
+            data.end_pos += new_data_amount;
+            data.input_control |= 0b1;
+            // if interrupt flag is set, cause an interrupt
+            if data.input_control & 0b10 == 0b10 {
+                data.interrupt = true;
+            }
+        }
+
         // if write enable
         if simulator.get_input_value(&self.we_in) == SignalValue::Data(0x1) {
             // get the data component data ref
-            let mut data = self.data.borrow_mut();
             // if data is valid
             if let SignalValue::Data(in_data) = simulator.get_input_value(&self.data_in) {
                 // the register/address to write data at
@@ -136,25 +176,29 @@ impl Component for MipsIO {
 
         // if read enable
         if simulator.get_input_value(&self.re_in) == SignalValue::Data(0x1) {
-            // get component data ref
-            let mut data = self.data.borrow_mut();
             // the register/address to read at
             match simulator.get_input_value(&self.address_in) {
                 SignalValue::Data(0x0) => {
                     simulator.set_out_value(&self.id, IO_DATA_OUT_ID, data.input_control);
                 }
                 SignalValue::Data(0x1) => {
-                    if let Some(key) = data.key_buff.pop_front() {
-                        //set the output to the key
-                        simulator.set_out_value(&self.id, IO_DATA_OUT_ID, key as u32);
+                    if data.read_pos < data.end_pos {
+                        simulator.set_out_value(
+                            &self.id,
+                            IO_DATA_OUT_ID,
+                            data.key_buff[data.read_pos] as u32,
+                        );
+                        data.read_pos += 1;
 
-                        //clear interrupt
-                        data.interrupt = false;
-
-                        // if we have read all the data clear the data bit
-                        if data.key_buff.is_empty() {
+                        // if we have read all the data
+                        if data.read_pos == data.end_pos {
+                            data.read_eq_end_cause.push(DATA_READ);
+                            data.interrupt = false;
+                            // clear data available flag
                             data.input_control &= 0xFFFF_FFFE
                         }
+                    } else {
+                        data.read_eq_end_cause.push(NO_DATA_READ);
                     }
                 }
                 _ => {}
@@ -162,17 +206,58 @@ impl Component for MipsIO {
         }
 
         // set the interrupt signal
-        simulator.set_out_value(&self.id, IO_INTERRUPT_OUT_ID, self.data.borrow().interrupt);
+        simulator.set_out_value(&self.id, IO_INTERRUPT_OUT_ID, data.interrupt);
 
         Ok(())
+    }
+
+    fn un_clock(&self, sim: &Simulator) {
+        let mut data = self.data.borrow_mut();
+
+        
+        
+        // if we wrote information during the clock we are trying to undo
+        if matches!(sim.get_input_value(&self.we_in), SignalValue::Data(1)) {
+            let mut data = self.data.borrow_mut();
+            let _ = data.out_buff.pop();
+            
+            // if we read data and data was available
+        } else if matches!(sim.get_input_value(&self.re_in), SignalValue::Data(1)) {
+            if data.read_pos < data.end_pos {
+                // revert the read, aka move read pointer back
+                data.read_pos -= 1;
+            } else if data.read_pos == data.end_pos {
+                if data.read_eq_end_cause.pop().unwrap() == DATA_READ{
+                    data.read_pos -= 1;
+                }
+            } else {
+                panic!("read pos is greater than end pos")
+            }
+        }
+        
+        // revert end pos increase
+        if let Some((_,write_amount)) = data.key_buff_write_history.iter().find(|(cycle,_)| *cycle == sim.cycle -1).cloned() { // -1 since cycle increased after eval, but not decreased before unclock
+            data.end_pos -= write_amount
+        }
+        // set available data bit
+        if data.read_pos < data.end_pos {
+            data.input_control |= 0b1
+        } else {
+            data.input_control &= !0b1
+        }
+
     }
 
     fn reset(&self) {
         *self.data.borrow_mut() = MipsIOData {
             interrupt: false,
             input_control: 0,
-            key_buff: VecDeque::default(),
-            out_buff: vec![],
+            read_pos: 0,
+            end_pos: 0,
+            read_eq_end_cause: BitVec::default(),
+            key_buff: Vec::default(),
+            out_buff: Vec::default(),
+            key_buff_write_history: Vec::default(),
         }
     }
 

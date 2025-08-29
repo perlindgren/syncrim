@@ -1,48 +1,132 @@
 use crate::components::{MipsIO, IO_DATA_OUT_ID, IO_INTERRUPT_OUT_ID};
-use egui::{pos2, Event, Pos2, Rect, Response, Ui, Vec2, ViewportBuilder, ViewportId};
+use egui::{
+    pos2, Button, Color32, Event, Pos2, Rect, Response, RichText, Ui, Vec2, ViewportBuilder,
+    ViewportId,
+};
 use syncrim::common::{EguiComponent, Id, Input, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
-use syncrim::gui_egui::helper::{basic_component_gui_with_on_hover, basic_editor_popup, basic_on_hover};
+use syncrim::gui_egui::helper::{
+    basic_component_gui_with_on_hover, basic_editor_popup, basic_on_hover,
+};
 
 const WIDTH: f32 = 45.0;
 const HEIGHT: f32 = 40.0;
 
-fn render_window(mips_io: &MipsIO, ui: &mut Ui) {
+// this will break if the simulator is asynchronous
+// as we cant assume cycle is the same as when this function was invoked
+// when we are writing data
+// to fix this we would need to pass along simulator
+// lock mips_io.data  get simulator cycle
+// this can also fail, hmm
+// we need a chanel, that io reads during its clock so that data is clearly related to that evaluation
+// why am i thinking about this
+// its not relevant yet, if ever
+fn render_window(mips_io: &MipsIO, ui: &mut Ui, cycle: usize) {
     ui.ctx().show_viewport_immediate(
         ViewportId::from_hash_of(&mips_io.id),
         ViewportBuilder::default().with_title("IO component"),
         |ctx, _class| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let mut data = mips_io.data.borrow_mut();
+
+                // for debug purpose
+                // show when data will be available
+                ui.monospace(format!(
+                    "input data:\n{}",
+                    data.key_buff_write_history
+                        .iter()
+                        .fold((0usize, String::new()), |mut acc, (cycle, count)| {
+                            let written = data.key_buff.get(acc.0..acc.0 + count).unwrap();
+                            acc.1 = format!(
+                                "{} cycle {}: {}\n",
+                                acc.1,
+                                cycle + 1,
+                                String::from_utf8_lossy(written).escape_default()
+                            );
+                            acc.0 += count;
+                            acc
+                        })
+                        .1
+                ));
+                let future_data_exist = data.key_buff_write_history.iter().any(|(c, _)| *c > cycle);
+                let upcoming_data_exist =
+                    data.key_buff_write_history.iter().any(|(c, _)| *c == cycle);
+
+                if future_data_exist {
+                    ui.label(
+                        RichText::new(
+                            "Future data exist input is disabled. To enable clear future data",
+                        )
+                        .color(Color32::RED),
+                    );
+                    let btn = Button::new("Clear future data");
+                    if ui.add(btn).clicked() {
+                        data.key_buff_write_history = data
+                            .key_buff_write_history
+                            .iter()
+                            .filter(|(c, _)| *c <= cycle)
+                            .map(|i| i.clone())
+                            .collect();
+                        let end =
+                            data.end_pos + data.key_buff_write_history.last().unwrap_or(&(0, 0)).1;
+                        data.key_buff.truncate(end);
+                    }
+                } else if upcoming_data_exist {
+                    if ui.button("clear upcoming data").clicked() {
+                        data.key_buff_write_history = data
+                            .key_buff_write_history
+                            .iter()
+                            .filter(|(c, _)| *c < cycle)
+                            .map(|i| i.clone())
+                            .collect();
+                        let end = data.end_pos;
+                        data.key_buff.truncate(end);
+                    }
+                }
+
+                ui.separator();
                 // render our outbuf as a string
                 // TODO care about carriage return, backspace and other advance utf8/ "ascii" codes
-                ui.label(String::from_utf8_lossy(&mips_io.data.borrow().out_buff));
+                ui.monospace(String::from_utf8_lossy(&data.out_buff));
+                if !future_data_exist {
+                    let mut write_count = 0;
 
-                // get events and loop over them
-                // events such as keys and text input
-                for text_in in ui.input(|ev| {
-                    ev.events
-                        .iter()
-                        .filter_map(|e| match e {
-                            Event::Text(s) => Some(s.clone()),
-                            Event::Key { .. } => None, // TODO handle special keys, enter, arrows, backspace. maybe as ansi codes https://en.wikipedia.org/wiki/ANSI_escape_code#Terminal_input_sequences
-                            _ => None,
-                        })
-                        .collect::<Vec<_>>()
-                }) {
-                    // for each event
+                    // get events and loop over them
+                    // events such as keys and text input
+                    for text_in in ui.input(|ev| {
+                        ev.events
+                            .iter()
+                            .filter_map(|e| match e {
+                                Event::Text(s) => Some(s.clone()),
+                                Event::Key { .. } => None, // TODO handle special keys, enter, arrows, backspace. maybe as ansi codes https://en.wikipedia.org/wiki/ANSI_escape_code#Terminal_input_sequences
+                                _ => None,
+                            })
+                            .collect::<Vec<_>>()
+                    }) {
+                        // for each event
 
-                    let mut data = mips_io.data.borrow_mut();
-                    // we have data, set appropriate flag
-                    data.input_control |= 0b1;
-                    // if interrupt flag is set, cause an interrupt
-                    if data.input_control & 0b10 == 0b10 {
-                        data.interrupt = true;
+                        // write data to our key buff
+                        for b in text_in.as_bytes() {
+                            write_count += 1;
+                            data.key_buff.push(*b);
+                        }
                     }
-                    // write data to our key buff
-                    for b in text_in.as_bytes() {
-                        data.key_buff.push_back(*b);
-                    }
+
+                    // update how many bytes were written this cycle
+                    if let Some(count) = data
+                        .key_buff_write_history
+                        .last_mut()
+                        .and_then(|(c, count)| if *c == cycle { Some(count) } else { None })
+                    {
+                        *count += write_count
+                    } else {
+                        // if we dont have an entry on how much we have written this cycle create one
+                        // only if we acutely did write something
+                        if write_count > 0 {
+                            data.key_buff_write_history.push((cycle, write_count));
+                        }
+                    };
                 }
             });
             if ctx.input(|i| i.viewport().close_requested()) {
@@ -84,12 +168,12 @@ impl EguiComponent for MipsIO {
                     if show { "Close" } else { "Show" },
                 );
                 if *self.gui_show.borrow() {
-                    render_window(self, ui);
+                    render_window(self, ui, simulator.as_ref().map_or(0, |sim| sim.cycle));
                 }
             },
             |ui| {
                 let data = self.data.borrow();
-                let next_byte = data.key_buff.front();
+                let next_byte = data.key_buff.get(data.read_pos);
                 ui.label(format!(
                     "Flags {:#04b}\nNext data {}",
                     data.input_control,
@@ -117,18 +201,20 @@ impl EguiComponent for MipsIO {
         _grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let res = self.render(
-            ui,
-            context,
-            simulator,
-            offset,
-            scale,
-            clip_rect,
-            editor_mode,
-        ).unwrap().remove(0); // no panic since we know basic_component_gui returns Some([area_response])
-        basic_editor_popup(self, ui, context, id_ports, res, |_|{})
+        let res = self
+            .render(
+                ui,
+                context,
+                simulator,
+                offset,
+                scale,
+                clip_rect,
+                editor_mode,
+            )
+            .unwrap()
+            .remove(0); // no panic since we know basic_component_gui returns Some([area_response])
+        basic_editor_popup(self, ui, context, id_ports, res, |_| {})
     }
-
 
     fn set_pos(&mut self, pos: (f32, f32)) {
         self.pos = pos;
