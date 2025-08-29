@@ -1031,6 +1031,10 @@
         "id": "control_unit",
         "field": "mem_write_enable"
       },
+      "read_enable_input" : {
+        "id": "control_unit",
+        "field": "mem_read_enable"
+      },
       "phys_mem_id": "phys_mem",
       "regfile_id": "reg_file",
       "mem_view": {
