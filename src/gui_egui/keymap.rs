@@ -246,6 +246,35 @@ impl Shortcuts {
 }
 
 pub fn file_new_fn(_gui: &mut Gui) {}
+pub fn open_from_str(gui: &mut Gui, model: &str) -> Result<(), ComponentStoreLoadError> {
+let cs = ComponentStore::load(model)?;
+    let contexts = create_contexts(&cs.store);
+    match gui.editor_use {
+        true => {
+            if let Some(e) = gui.editor.as_mut() {
+                // Clear all references
+                reset_wire_mode(&mut e.wm);
+                reset_input_mode(&mut e.im);
+                e.components = cs.store;
+                e.contexts = contexts;
+            }
+        }
+        false => {
+            let simulator = Simulator::new(cs);
+            gui.contexts = contexts;
+            match simulator {
+                Err(e) => {
+                    println!("couldn't open file with simulator: {}", e);
+                }
+                Ok(s) => {
+                    let _ = gui.simulator.take();
+                    gui.simulator = Some(s);
+                }
+            }
+        }
+    }
+    Ok(())
+}
 pub fn file_open_fn(gui: &mut Gui) -> Result<(), ComponentStoreLoadError> {
     let files = FileDialog::new().add_filter("json", &["json"]).pick_file();
     if let Some(path_buf) = files {

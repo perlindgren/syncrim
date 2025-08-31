@@ -12,6 +12,7 @@ use egui::{
     Vec2,
 };
 use std::collections::HashMap;
+use std::error::Error;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -30,6 +31,7 @@ pub struct Gui {
     pub step_amount: usize, //TODO change this to be a menu struct, and maybe move pause and other here
     pub editor: Option<Editor>,
     pub editor_use: bool,
+    pub in_built_models: Vec<(String, String)>,
     pub contexts: HashMap<crate::common::Id, EguiExtra>,
     pub library: Library,
 }
@@ -47,7 +49,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<(), e
     let simulator = Simulator::new(cs).unwrap();
     let options = eframe::NativeOptions::default();
     let path = path.to_owned();
-    simulator.save_dot(&path);
+    // simulator.save_dot(&path);
 
     let gui = Gui {
         path,
@@ -64,9 +66,51 @@ pub fn gui(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<(), e
         editor_use: false,
         contexts,
         library,
+        in_built_models: Vec::default(),
     };
 
     eframe::run_native("SyncRim", options, Box::new(|_cc| Ok(Box::new(gui))))
+}
+
+impl Gui {
+    pub fn new(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<Self, Box<dyn Error>> {
+        let contexts = create_contexts(&cs.store);
+        let simulator = Simulator::new(cs)?;
+        let path = path.to_owned();
+        // simulator.save_dot(&path);
+        
+        Ok(Gui {
+            path,
+            simulator: Some(simulator),
+            scale: 1.0f32,
+            ui_change: true,
+            offset: Vec2 { x: 0f32, y: 0f32 },
+            pan: Vec2 { x: 0f32, y: 0f32 },
+            clip_rect: Rect::NOTHING,
+            shortcuts: Shortcuts::new(),
+            pause: true,
+            step_amount: 10,
+            editor: None,
+            editor_use: false,
+            contexts,
+            library,
+            in_built_models: Vec::default(),
+        })
+    }
+
+    pub fn run(self) -> Result<(), eframe::Error> {
+        let options = eframe::NativeOptions::default();
+        eframe::run_native("SyncRim", options, Box::new(|_cc| Ok(Box::new(self))))
+    }
+
+    pub fn with_inbuilt(mut self, in_built_models: &[(&str, &str)]) -> Self {
+        self.in_built_models = Vec::from_iter(
+            in_built_models
+                .iter()
+                .map(|(a, b)| (a.to_string(), b.to_string())),
+        );
+        self
+    }
 }
 
 impl eframe::App for Gui {
@@ -107,7 +151,10 @@ impl eframe::App for Gui {
             if self.simulator.is_some() {
                 // self.side_panel(ctx);
                 if self.simulator.as_ref().unwrap().is_running() {
-                    self.simulator.as_mut().unwrap().run_for_duration(&Duration::from_millis(1000/30));
+                    self.simulator
+                        .as_mut()
+                        .unwrap()
+                        .run_for_duration(&Duration::from_millis(1000 / 30));
 
                     // This makes the ui run agin as to not stop the simulation
                     // when no ui events are happening

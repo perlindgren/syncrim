@@ -153,6 +153,18 @@ fn shared_buttons_file(gui: &mut Gui, ui: &mut Ui) {
             //    // Open file
             //}
         });
+        // because borrow checker
+        let inbuilt_models = std::mem::take(&mut gui.in_built_models);
+        if !inbuilt_models.is_empty() {
+            ui.menu_button("Load inbuilt", |ui|{
+                for (name, json) in &inbuilt_models {
+                    if ui.button(name).clicked() {
+                        let _ = keymap::open_from_str(gui,json);
+                    }
+                };
+            });
+        }
+        gui.in_built_models = inbuilt_models;
         ui.separator();
         if btn(ui, "Save", gui.shortcuts.file_save).clicked() {
             keymap::file_save_fn(gui);

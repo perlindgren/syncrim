@@ -84,7 +84,7 @@ fn main() {
     }
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::gui(cs, &PathBuf::from_str("./new_file.json").unwrap(), Library::default()).unwrap();
+    syncrim::gui_egui::Gui::new(cs, &PathBuf::from_str("./new_file.json").unwrap(), Library::default()).unwrap().with_inbuilt(&BUILT_IN_MODELS).run().unwrap();
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(cs, &path);
