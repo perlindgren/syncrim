@@ -1,4 +1,5 @@
 use core::cell::RefCell;
+use elf::symbol::{self, Symbol};
 use std::collections::HashMap;
 // use log::*;
 use serde::{Deserialize, Serialize};
@@ -191,6 +192,15 @@ impl Component for InstrMem {
     // if the simulator is reset and pc_history isn't empty: move over dynamic_symbol settings
     // while resetting values and adresses
     fn reset(&self) {
+        if self.pc_dm_history.borrow().len() > 0 {
+            let start_pc = self.pc_dm_history.borrow()[0];
+            let symbol_keys: Vec<String> = self.dynamic_symbols.borrow().keys().cloned().collect();
+
+            let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
+            for symbol_name in symbol_keys {
+                dynamic_symbols.get_mut(&symbol_name).unwrap().0 = start_pc;
+            }
+        }
         /*
         if self.pc_history.borrow().len() > 0 {
             let start_pc = self.pc_history.borrow()[0];
