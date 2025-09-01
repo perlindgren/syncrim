@@ -32,6 +32,9 @@ pub struct InstrMem {
     #[serde(skip)]
     pub load_err: RefCell<Option<MemLoadError>>,
 
+    #[serde(skip)]
+    pub pc_dm_history: RefCell<Vec<u32>>,
+
     pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
 }
 
@@ -56,6 +59,7 @@ impl InstrMem {
             mem_view: RefCell::new(mem_view),
             #[cfg(feature = "gui-egui")]
             load_err: RefCell::new(None),
+            pc_dm_history: RefCell::new(vec![]),
 
             dynamic_symbols: RefCell::new(HashMap::new()),
         }
@@ -71,6 +75,9 @@ impl InstrMem {
     }
     pub fn clock_dynamic_symbols(&self, new_pc: u32) {
         let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
+        let mut pc_dm_history = self.pc_dm_history.borrow_mut();
+        // Store previous PC_DM, because unclocking doesn't provide info about PC_DM-stage
+        pc_dm_history.push(dynamic_symbols.get_mut("PC_DM").unwrap().0);
 
         dynamic_symbols.get_mut("PC_DM").unwrap().0 = dynamic_symbols.get("PC_EX").unwrap().0;
         dynamic_symbols.get_mut("PC_EX").unwrap().0 = dynamic_symbols.get("PC_DE").unwrap().0;
@@ -78,13 +85,13 @@ impl InstrMem {
         dynamic_symbols.get_mut("PC_IM").unwrap().0 = new_pc;
     }
 
-    pub fn unclock_dynamic_symbols(&self, new_pc: u32) {
+    pub fn unclock_dynamic_symbols(&self) {
         let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
-
         dynamic_symbols.get_mut("PC_IM").unwrap().0 = dynamic_symbols.get("PC_DE").unwrap().0;
         dynamic_symbols.get_mut("PC_DE").unwrap().0 = dynamic_symbols.get("PC_EX").unwrap().0;
         dynamic_symbols.get_mut("PC_EX").unwrap().0 = dynamic_symbols.get("PC_DM").unwrap().0;
-        dynamic_symbols.get_mut("PC_DM").unwrap().0 = new_pc;
+        dynamic_symbols.get_mut("PC_DM").unwrap().0 =
+            self.pc_dm_history.borrow_mut().pop().unwrap();
     }
 }
 
@@ -109,6 +116,7 @@ impl Component for InstrMem {
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
             regfile_id: "dummy".into(),
             load_err: RefCell::new(None),
+            pc_dm_history: RefCell::new(vec![]),
             dynamic_symbols: RefCell::new(HashMap::new()),
         }))
     }
@@ -178,8 +186,7 @@ impl Component for InstrMem {
     }
     // set PC to what it was the previous cycle
     fn un_clock(&self, simulator: &Simulator) {
-        let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
-        self.unclock_dynamic_symbols(pc);
+        self.unclock_dynamic_symbols();
     }
     // if the simulator is reset and pc_history isn't empty: move over dynamic_symbol settings
     // while resetting values and adresses
