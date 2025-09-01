@@ -1,5 +1,4 @@
 use core::cell::RefCell;
-use elf::symbol::{self, Symbol};
 use std::collections::HashMap;
 // use log::*;
 use serde::{Deserialize, Serialize};
@@ -186,7 +185,7 @@ impl Component for InstrMem {
         }
     }
     // set PC to what it was the previous cycle
-    fn un_clock(&self, simulator: &Simulator) {
+    fn un_clock(&self, _simulator: &Simulator) {
         self.unclock_dynamic_symbols();
     }
     // if the simulator is reset and pc_history isn't empty: move over dynamic_symbol settings
@@ -201,24 +200,5 @@ impl Component for InstrMem {
                 dynamic_symbols.get_mut(&symbol_name).unwrap().0 = start_pc;
             }
         }
-        /*
-        if self.pc_history.borrow().len() > 0 {
-            let start_pc = self.pc_history.borrow()[0];
-            let current_symbol_keys: Vec<String> =
-                self.dynamic_symbols.borrow().keys().cloned().collect();
-
-            let mut new_symbols: HashMap<String, (u32, bool)> = HashMap::new();
-            for symbol_name in current_symbol_keys {
-                new_symbols.insert(
-                    symbol_name.clone(),
-                    (
-                        start_pc,
-                        self.dynamic_symbols.borrow().get(&symbol_name).unwrap().1,
-                    ),
-                );
-            }
-            *self.dynamic_symbols.borrow_mut() = new_symbols;
-            self.pc_history.borrow_mut().clear();
-        }*/
     }
 }
