@@ -27,14 +27,11 @@ pub struct InstrMem {
     pub regfile_id: String,
     #[cfg(feature = "gui-egui")]
     pub mem_view: RefCell<MemViewWindow>,
-
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
     pub load_err: RefCell<Option<MemLoadError>>,
-
     #[serde(skip)]
     pub pc_dm_history: RefCell<Vec<u32>>,
-
     pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
 }
 
