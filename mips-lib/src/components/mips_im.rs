@@ -184,11 +184,11 @@ impl Component for InstrMem {
             Err(_) => Err(Condition::Error(format!("Unaligned Read, PC = {:#0x}", pc))),
         }
     }
-    // set PC to what it was the previous cycle
+    // set component to what it was the previous cycle
     fn un_clock(&self, _simulator: &Simulator) {
         self.unclock_dynamic_symbols();
     }
-    // if the simulator is reset and pc_history isn't empty: move over dynamic_symbol settings
+    // if the simulator is reset and pc_dm_history isn't empty: move over dynamic_symbol settings
     // while resetting values and adresses
     fn reset(&self) {
         if self.pc_dm_history.borrow().len() > 0 {
