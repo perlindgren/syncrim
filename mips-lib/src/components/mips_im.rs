@@ -196,7 +196,7 @@ impl Component for InstrMem {
         self.unclock_dynamic_symbols(pc);
     }
     // if the simulator is reset and pc_dm_history isn't empty: move over dynamic_symbol settings
-    // while resetting values and adresses
+    // while resetting adresses
     fn reset(&self) {
         if self.pc_dm_history.borrow().len() > 0 {
             let start_pc = self.pc_dm_history.borrow()[0];
