@@ -57,7 +57,6 @@ impl InstrMem {
             #[cfg(feature = "gui-egui")]
             load_err: RefCell::new(None),
             pc_dm_history: RefCell::new(vec![]),
-
             dynamic_symbols: RefCell::new(HashMap::new()),
         }
     }
