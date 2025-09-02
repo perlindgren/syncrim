@@ -27,14 +27,11 @@ pub struct InstrMem {
     pub regfile_id: String,
     #[cfg(feature = "gui-egui")]
     pub mem_view: RefCell<MemViewWindow>,
-
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
     pub load_err: RefCell<Option<MemLoadError>>,
-
     #[serde(skip)]
     pub pc_dm_history: RefCell<Vec<u32>>,
-
     pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
 }
 
@@ -60,7 +57,6 @@ impl InstrMem {
             #[cfg(feature = "gui-egui")]
             load_err: RefCell::new(None),
             pc_dm_history: RefCell::new(vec![]),
-
             dynamic_symbols: RefCell::new(HashMap::new()),
         }
     }
@@ -123,7 +119,6 @@ impl Component for InstrMem {
             pos,
             pc: dummy_input,
             phys_mem_id: "dummy".into(),
-
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
             regfile_id: "dummy".into(),
             load_err: RefCell::new(None),
@@ -201,7 +196,7 @@ impl Component for InstrMem {
         self.unclock_dynamic_symbols(pc);
     }
     // if the simulator is reset and pc_dm_history isn't empty: move over dynamic_symbol settings
-    // while resetting values and adresses
+    // while resetting adresses
     fn reset(&self) {
         if self.pc_dm_history.borrow().len() > 0 {
             let start_pc = self.pc_dm_history.borrow()[0];
