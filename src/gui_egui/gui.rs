@@ -34,6 +34,24 @@ pub struct Gui {
     pub in_built_models: Vec<(String, String)>,
     pub contexts: HashMap<crate::common::Id, EguiExtra>,
     pub library: Library,
+
+    pub gui_options: GuiOptions,
+}
+
+#[derive(Clone, Debug)]
+pub struct GuiOptions {
+    // This is added/subtracted to/from the view scale when zoomed.
+    pub view_scaling_val: f32,
+    pub window_visible: bool,
+}
+
+impl Default for GuiOptions {
+    fn default() -> GuiOptions {
+        GuiOptions {
+            view_scaling_val: 0.03,
+            window_visible: false,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -67,6 +85,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<(), e
         contexts,
         library,
         in_built_models: Vec::default(),
+        gui_options: GuiOptions::default(),
     };
 
     eframe::run_native("SyncRim", options, Box::new(|_cc| Ok(Box::new(gui))))
@@ -95,6 +114,7 @@ impl Gui {
             contexts,
             library,
             in_built_models: Vec::default(),
+            gui_options: GuiOptions::default(),
         })
     }
 
@@ -116,6 +136,9 @@ impl Gui {
 impl eframe::App for Gui {
     fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
         self.shortcuts.inputs(ctx, self);
+        if self.gui_options.window_visible {
+            self.gui_options.render(ctx);
+        }
         if self.editor_use {
             crate::gui_egui::editor::Editor::update(ctx, frame, self);
             return;
@@ -232,4 +255,31 @@ pub fn create_contexts(components: &Components) -> HashMap<crate::common::Id, Eg
         );
     }
     contexts
+}
+
+
+use egui::{ViewportBuilder, ViewportId};
+/// This should be somewhere else but put it here for experiments
+// It makes more sense to have a GuiOptionsWindow having render but let's see how this works
+impl GuiOptions {
+    pub fn render(&mut self, ctx: &egui::Context) {
+        ctx.show_viewport_immediate(
+            ViewportId::from_hash_of("Preferences"),
+            ViewportBuilder {
+                title: Some("Preferences".to_string()),
+                position: Some(Pos2::new(ctx.screen_rect().max.x/2.0, ctx.screen_rect().max.y/2.0)),
+                inner_size: Some((500.0, 200.0).into()),
+                ..ViewportBuilder::default()
+            },
+            |ctx, _class| {
+                if ctx.input(|i| i.viewport().close_requested()) {
+                    self.window_visible = false
+                }
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    ui.label("Zoom Scaling");
+                    let response = ui.add(egui::Slider::new(&mut self.view_scaling_val, 0.0..=0.1));
+                    response.on_hover_text("Adjusts the step size by which zooming zooms.");
+                });
+        });
+    }
 }
