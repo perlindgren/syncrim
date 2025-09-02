@@ -119,7 +119,6 @@ impl Component for InstrMem {
             pos,
             pc: dummy_input,
             phys_mem_id: "dummy".into(),
-
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
             regfile_id: "dummy".into(),
             load_err: RefCell::new(None),
