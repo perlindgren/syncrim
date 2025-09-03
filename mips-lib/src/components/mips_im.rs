@@ -206,6 +206,7 @@ impl Component for InstrMem {
             for symbol_name in symbol_keys {
                 dynamic_symbols.get_mut(&symbol_name).unwrap().0 = start_pc;
             }
+            self.pc_dm_history.borrow_mut().clear();
         }
     }
 }
