@@ -364,7 +364,10 @@ pub fn file_editor_toggle_fn(gui: &mut Gui) {
         }
     }
 }
-pub fn file_preferences_fn(_gui: &mut Gui) {}
+
+pub fn file_preferences_fn(gui: &mut Gui) {
+    gui.gui_options.window_visible = true;
+}
 pub fn file_quit_fn(_gui: &mut Gui) {}
 pub fn edit_cut_fn(_gui: &mut Gui) {}
 pub fn edit_copy_fn(_gui: &mut Gui) {}
@@ -374,13 +377,8 @@ pub fn view_zoom_in_fn(gui: &mut Gui) {
         true => &mut gui.editor.as_mut().unwrap().scale,
         false => &mut gui.scale,
     };
-    match *scale {
-        x if (0.0f32..0.2f32).contains(&x) => *scale = 0.25f32,
-        x if (0.2f32..0.4f32).contains(&x) => *scale = 0.5f32,
-        x if (0.4f32..0.6f32).contains(&x) => *scale = 1f32,
-        x if (0.9f32..1.1f32).contains(&x) => *scale = 1.5f32,
-        x if (1.4f32..1.6f32).contains(&x) => *scale = 2f32,
-        _ => *scale = 2f32,
+    if *scale < 2f32 {
+        *scale += gui.gui_options.view_scaling_val;
     }
 }
 pub fn view_zoom_out_fn(gui: &mut Gui) {
@@ -388,13 +386,8 @@ pub fn view_zoom_out_fn(gui: &mut Gui) {
         true => &mut gui.editor.as_mut().unwrap().scale,
         false => &mut gui.scale,
     };
-    match *scale {
-        x if (0.2f32..0.4f32).contains(&x) => *scale = 0.1f32,
-        x if (0.4f32..0.6f32).contains(&x) => *scale = 0.25f32,
-        x if (0.9f32..1.1f32).contains(&x) => *scale = 0.5f32,
-        x if (1.4f32..1.6f32).contains(&x) => *scale = 1f32,
-        x if (1.9f32..2.1f32).contains(&x) => *scale = 1.5f32,
-        _ => *scale = 0.1f32,
+    if *scale > 0.1 {
+        *scale -= gui.gui_options.view_scaling_val;
     }
 }
 pub fn view_grid_toggle_fn(gui: &mut Gui) {
