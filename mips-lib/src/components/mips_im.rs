@@ -1,4 +1,5 @@
 use core::cell::RefCell;
+use std::collections::HashMap;
 // use log::*;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -29,6 +30,9 @@ pub struct InstrMem {
     #[cfg(feature = "gui-egui")]
     #[serde(skip)]
     pub load_err: RefCell<Option<MemLoadError>>,
+    #[serde(skip)]
+    pub pc_dm_history: RefCell<Vec<u32>>,
+    pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
 }
 
 impl InstrMem {
@@ -47,11 +51,13 @@ impl InstrMem {
             pos,
             pc: pc_input,
             phys_mem_id,
-            #[cfg(feature = "gui-egui")]
-            mem_view: RefCell::new(mem_view),
             regfile_id,
             #[cfg(feature = "gui-egui")]
+            mem_view: RefCell::new(mem_view),
+            #[cfg(feature = "gui-egui")]
             load_err: RefCell::new(None),
+            pc_dm_history: RefCell::new(vec![]),
+            dynamic_symbols: RefCell::new(HashMap::new()),
         }
     }
     pub fn rc_new(
@@ -62,6 +68,37 @@ impl InstrMem {
         regfile_id: String,
     ) -> Rc<InstrMem> {
         Rc::new(InstrMem::new(id, pos, pc_input, phys_mem_id, regfile_id))
+    }
+    pub fn clock_dynamic_symbols(&self, new_pc: u32) {
+        let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
+        let mut pc_dm_history = self.pc_dm_history.borrow_mut();
+
+        if dynamic_symbols.contains_key("PC_DM")
+            && dynamic_symbols.contains_key("PC_EX")
+            && dynamic_symbols.contains_key("PC_DE")
+        {
+            // Store previous PC_DM, because unclocking doesn't provide info about PC_DM-stage
+            pc_dm_history.push(dynamic_symbols.get_mut("PC_DM").unwrap().0);
+
+            dynamic_symbols.get_mut("PC_DM").unwrap().0 = dynamic_symbols.get("PC_EX").unwrap().0;
+            dynamic_symbols.get_mut("PC_EX").unwrap().0 = dynamic_symbols.get("PC_DE").unwrap().0;
+            dynamic_symbols.get_mut("PC_DE").unwrap().0 = dynamic_symbols.get("PC_IM").unwrap().0;
+        }
+        dynamic_symbols.get_mut("PC_IM").unwrap().0 = new_pc;
+    }
+
+    pub fn unclock_dynamic_symbols(&self, new_pc: u32) {
+        let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
+        dynamic_symbols.get_mut("PC_IM").unwrap().0 = new_pc;
+        if dynamic_symbols.contains_key("PC_DM")
+            && dynamic_symbols.contains_key("PC_EX")
+            && dynamic_symbols.contains_key("PC_DE")
+        {
+            dynamic_symbols.get_mut("PC_DE").unwrap().0 = dynamic_symbols.get("PC_EX").unwrap().0;
+            dynamic_symbols.get_mut("PC_EX").unwrap().0 = dynamic_symbols.get("PC_DM").unwrap().0;
+            dynamic_symbols.get_mut("PC_DM").unwrap().0 =
+                self.pc_dm_history.borrow_mut().pop().unwrap();
+        }
     }
 }
 
@@ -85,6 +122,8 @@ impl Component for InstrMem {
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
             regfile_id: "dummy".into(),
             load_err: RefCell::new(None),
+            pc_dm_history: RefCell::new(vec![]),
+            dynamic_symbols: RefCell::new(HashMap::new()),
         }))
     }
 
@@ -132,9 +171,7 @@ impl Component for InstrMem {
                 .get(pc, MemOpSize::Word, false, true)
         };
 
-        // update dynamic symbol PC_IM
-        #[cfg(feature = "gui-egui")]
-        self.mem_view.borrow_mut().set_dynamic_symbol("PC_IM", pc);
+        self.clock_dynamic_symbols(pc);
 
         // Get a word at PC with the size of 32bits, read as big endian,
         // sign extend doesn't mater since we have 32 bits so extending to 32bits does nothing
@@ -151,6 +188,25 @@ impl Component for InstrMem {
                 Ok(())
             }
             Err(_) => Err(Condition::Error(format!("Unaligned Read, PC = {:#0x}", pc))),
+        }
+    }
+    // set component to what it was the previous cycle
+    fn un_clock(&self, simulator: &Simulator) {
+        let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
+        self.unclock_dynamic_symbols(pc);
+    }
+    // if the simulator is reset and pc_dm_history isn't empty: move over dynamic_symbol settings
+    // while resetting adresses
+    fn reset(&self) {
+        if self.pc_dm_history.borrow().len() > 0 {
+            let start_pc = self.pc_dm_history.borrow()[0];
+            let symbol_keys: Vec<String> = self.dynamic_symbols.borrow().keys().cloned().collect();
+
+            let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
+            for symbol_name in symbol_keys {
+                dynamic_symbols.get_mut(&symbol_name).unwrap().0 = start_pc;
+            }
+            self.pc_dm_history.borrow_mut().clear();
         }
     }
 }
