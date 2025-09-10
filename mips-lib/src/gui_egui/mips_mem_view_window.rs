@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct MemViewWindow {
+    #[serde(skip)]
     pub visible: bool,
     title: String,
     id: String,
@@ -26,13 +27,16 @@ pub struct MemViewWindow {
     custom_address: u32,
 
     // used for formatting the view
+    #[serde(skip)]
     big_endian: bool,
     format: DataFormat,
 
     // used to determine if section, symbols and other markers should be shown
+    #[serde(skip)]
     show_settings: ShowSettings,
 
     // used for show register
+    #[serde(skip)]
     register_values: Option<[u32; 32]>,
 
     // used to show pc and jump to pc
@@ -40,6 +44,7 @@ pub struct MemViewWindow {
     dynamic_symbols: HashMap<String, (u32, bool)>,
 
     // Added when user clicks a row, and removed when clicked again
+    #[serde(skip)]
     break_points: HashSet<u32>,
 }
 
@@ -67,6 +72,16 @@ struct ShowSettings {
     sections: bool,
     program_counter: bool,
     registers: [bool; 32],
+}
+impl Default for ShowSettings {
+    fn default() -> Self {
+        Self {
+            symbols: true,
+            sections: false,
+            program_counter: false,
+            registers: [false; 32],
+        }
+    }
 }
 
 const REG_NAMES: [&str; 32] = [
@@ -131,18 +146,8 @@ impl MemViewWindow {
     }
     // replaces all dynamic symbols with the given new_dynamic_symbols
     pub fn set_all_dynamic_symbols(&mut self, new_dynamic_symbols: HashMap<String, (u32, bool)>) {
-        for symbol in new_dynamic_symbols {
-            self.dynamic_symbols.insert(
-                symbol.0.clone(),
-                (
-                    symbol.1 .0,
-                    self.dynamic_symbols
-                        .get_key_value((symbol.0).as_str())
-                        .unwrap()
-                        .1
-                         .1,
-                ),
-            );
+        for (name, (adress, _bool)) in new_dynamic_symbols {
+            self.set_dynamic_symbol(name.as_str(), adress);
         }
     }
     /// Get the address of a symbol, if no such symbol exist return None
