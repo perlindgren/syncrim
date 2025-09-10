@@ -402,7 +402,7 @@ impl Component for DataMem {
         }
     }
     // set input_adress to what it was the previous cycle
-    fn un_clock(&self) {
+    fn un_clock(&self, _simulator: &Simulator) {
         let previous_adress: u32 = self.input_address_history.borrow_mut().pop().unwrap();
         self.update_dynamic_symbols(previous_adress);
     }
