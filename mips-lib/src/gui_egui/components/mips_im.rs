@@ -6,13 +6,17 @@ use crate::components::RegFile;
 use crate::components::INSTR_MEM_INSTRUCTION_ID;
 use crate::helpers::find_component_with_type;
 use egui::pos2;
+use egui::Context;
 use egui::Pos2;
+use egui::ViewportBuilder;
+use egui::ViewportId;
 use egui::{Rect, Response, RichText, Ui, Vec2};
 use syncrim::common::Input;
 use syncrim::common::{EguiComponent, Id, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
 use syncrim::gui_egui::helper::basic_component_gui;
+use syncrim::gui_egui::helper::basic_editor_popup;
 
 const WIDTH: f32 = 120.0;
 const HEIGHT: f32 = 55.0;
@@ -25,6 +29,32 @@ impl InstrMem {
         self.mem_view
             .borrow_mut()
             .set_reg_values(*reg.registers.borrow());
+    }
+
+    /// Shows a new viewport/window with the error stored in self.load_err as large text
+    /// when the window is closed self.load_err is set to none
+    fn render_err_window(&self, ctx: &Context) {
+        ctx.show_viewport_immediate(
+            ViewportId::from_hash_of("load_err"),
+            // The new window should be displayed att the top and be the active one
+            ViewportBuilder::default()
+                .with_active(true)
+                .with_always_on_top()
+                .with_drag_and_drop(false),
+            |ctx: &Context, _| {
+                // render the text
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    ui.label(
+                        RichText::new(self.load_err.borrow().as_ref().unwrap().to_string())
+                            .size(48.0),
+                    );
+                });
+                // if the close button is pressed set load_err to None and close the window
+                if ctx.input(|i| i.viewport().close_requested()) {
+                    *(self.load_err.borrow_mut()) = None;
+                };
+            },
+        );
     }
 }
 
@@ -87,12 +117,18 @@ impl EguiComponent for InstrMem {
             );
 
             if let Some(path) = &path_option {
-                phys_mem.load_file(path);
-                mem_view_vis = true;
+                let res = phys_mem.load_file(path);
+                match res {
+                    Ok(_) => mem_view_vis = true,
+                    Err(err) => *(self.load_err.borrow_mut()) = Some(err),
+                };
             };
 
             let mut mem_view = self.mem_view.borrow_mut();
             mem_view.visible = mem_view_vis;
+            if self.load_err.borrow().is_some() {
+                self.render_err_window(ui.ctx());
+            }
             mem_view.render(ui.ctx(), &phys_mem.mem.borrow());
         }
 
@@ -115,23 +151,23 @@ impl EguiComponent for InstrMem {
         offset: egui::Vec2,
         scale: f32,
         clip_rect: egui::Rect,
-        _id_ports: &[(Id, Ports)],
+        id_ports: &[(Id, Ports)],
         _grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        self.render(
-            ui,
-            context,
-            simulator,
-            offset,
-            scale,
-            clip_rect,
-            editor_mode,
-        );
-        EditorRenderReturn {
-            delete: false,
-            resp: None,
-        }
+        let res = self
+            .render(
+                ui,
+                context,
+                simulator,
+                offset,
+                scale,
+                clip_rect,
+                editor_mode,
+            )
+            .unwrap()
+            .remove(0);
+        basic_editor_popup(self, ui, context, id_ports, res, |_| {})
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {

@@ -7,7 +7,7 @@ use std::rc::Rc;
 use syncrim::common::EguiComponent;
 use syncrim::common::{Component, Condition, Id, Input, InputPort, OutputType, Ports, Simulator};
 
-use crate::components::physical_mem::MemOpSize;
+use crate::components::{physical_mem::MemOpSize, MemLoadError};
 #[cfg(feature = "gui-egui")]
 use crate::gui_egui::mips_mem_view_window::MemViewWindow;
 
@@ -17,7 +17,7 @@ pub const INSTR_MEM_PC_ID: &str = "pc";
 
 pub const INSTR_MEM_INSTRUCTION_ID: &str = "instruction";
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize)]
 pub struct InstrMem {
     pub id: String,
     pub pos: (f32, f32),
@@ -27,10 +27,11 @@ pub struct InstrMem {
     pub regfile_id: String,
     #[cfg(feature = "gui-egui")]
     pub mem_view: RefCell<MemViewWindow>,
-
+    #[cfg(feature = "gui-egui")]
     #[serde(skip)]
-    pub pc_history: RefCell<Vec<u32>>,
-
+    pub load_err: RefCell<Option<MemLoadError>>,
+    #[serde(skip)]
+    pub pc_dm_history: RefCell<Vec<u32>>,
     pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
 }
 
@@ -53,8 +54,9 @@ impl InstrMem {
             regfile_id,
             #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(mem_view),
-
-            pc_history: RefCell::new(vec![]),
+            #[cfg(feature = "gui-egui")]
+            load_err: RefCell::new(None),
+            pc_dm_history: RefCell::new(vec![]),
             dynamic_symbols: RefCell::new(HashMap::new()),
         }
     }
@@ -67,52 +69,36 @@ impl InstrMem {
     ) -> Rc<InstrMem> {
         Rc::new(InstrMem::new(id, pos, pc_input, phys_mem_id, regfile_id))
     }
-    pub fn update_dynamic_symbols(&self, new_pc: u32) {
-        let pc_history = self.pc_history.borrow();
-        let mut new_dynamic_symbols = self.dynamic_symbols.borrow_mut().clone();
-        if new_dynamic_symbols.contains_key("PC_IM") {
-            new_dynamic_symbols.insert(
-                "PC_IM".to_string(),
-                (
-                    new_pc,
-                    new_dynamic_symbols.get_key_value("PC_IM").unwrap().1 .1,
-                ),
-            );
+    pub fn clock_dynamic_symbols(&self, new_pc: u32) {
+        let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
+        let mut pc_dm_history = self.pc_dm_history.borrow_mut();
+
+        if dynamic_symbols.contains_key("PC_DM")
+            && dynamic_symbols.contains_key("PC_EX")
+            && dynamic_symbols.contains_key("PC_DE")
+        {
+            // Store previous PC_DM, because unclocking doesn't provide info about PC_DM-stage
+            pc_dm_history.push(dynamic_symbols.get_mut("PC_DM").unwrap().0);
+
+            dynamic_symbols.get_mut("PC_DM").unwrap().0 = dynamic_symbols.get("PC_EX").unwrap().0;
+            dynamic_symbols.get_mut("PC_EX").unwrap().0 = dynamic_symbols.get("PC_DE").unwrap().0;
+            dynamic_symbols.get_mut("PC_DE").unwrap().0 = dynamic_symbols.get("PC_IM").unwrap().0;
         }
-        if pc_history.len() > 1 {
-            if new_dynamic_symbols.contains_key("PC_DE") {
-                new_dynamic_symbols.insert(
-                    "PC_DE".to_string(),
-                    (
-                        pc_history[pc_history.len() - 1],
-                        new_dynamic_symbols.get_key_value("PC_DE").unwrap().1 .1,
-                    ),
-                );
-            }
-            if pc_history.len() > 2 {
-                if new_dynamic_symbols.contains_key("PC_EX") {
-                    new_dynamic_symbols.insert(
-                        "PC_EX".to_string(),
-                        (
-                            pc_history[pc_history.len() - 2],
-                            new_dynamic_symbols.get_key_value("PC_EX").unwrap().1 .1,
-                        ),
-                    );
-                }
-                if pc_history.len() > 3 {
-                    if new_dynamic_symbols.contains_key("PC_DM") {
-                        new_dynamic_symbols.insert(
-                            "PC_DM".to_string(),
-                            (
-                                pc_history[pc_history.len() - 3],
-                                new_dynamic_symbols.get_key_value("PC_DM").unwrap().1 .1,
-                            ),
-                        );
-                    }
-                }
-            }
+        dynamic_symbols.get_mut("PC_IM").unwrap().0 = new_pc;
+    }
+
+    pub fn unclock_dynamic_symbols(&self, new_pc: u32) {
+        let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
+        dynamic_symbols.get_mut("PC_IM").unwrap().0 = new_pc;
+        if dynamic_symbols.contains_key("PC_DM")
+            && dynamic_symbols.contains_key("PC_EX")
+            && dynamic_symbols.contains_key("PC_DE")
+        {
+            dynamic_symbols.get_mut("PC_DE").unwrap().0 = dynamic_symbols.get("PC_EX").unwrap().0;
+            dynamic_symbols.get_mut("PC_EX").unwrap().0 = dynamic_symbols.get("PC_DM").unwrap().0;
+            dynamic_symbols.get_mut("PC_DM").unwrap().0 =
+                self.pc_dm_history.borrow_mut().pop().unwrap();
         }
-        *self.dynamic_symbols.borrow_mut() = new_dynamic_symbols;
     }
 }
 
@@ -133,10 +119,10 @@ impl Component for InstrMem {
             pos,
             pc: dummy_input,
             phys_mem_id: "dummy".into(),
-            regfile_id: "dummy".into(),
-            #[cfg(feature = "gui-egui")]
             mem_view: RefCell::new(MemViewWindow::new("dummy".into(), "IM dummy".into())),
-            pc_history: RefCell::new(vec![]),
+            regfile_id: "dummy".into(),
+            load_err: RefCell::new(None),
+            pc_dm_history: RefCell::new(vec![]),
             dynamic_symbols: RefCell::new(HashMap::new()),
         }))
     }
@@ -185,10 +171,7 @@ impl Component for InstrMem {
                 .get(pc, MemOpSize::Word, false, true)
         };
 
-        self.pc_history
-            .borrow_mut()
-            .push(self.dynamic_symbols.borrow().get("PC_IM").unwrap().0);
-        self.update_dynamic_symbols(pc);
+        self.clock_dynamic_symbols(pc);
 
         // Get a word at PC with the size of 32bits, read as big endian,
         // sign extend doesn't mater since we have 32 bits so extending to 32bits does nothing
@@ -207,31 +190,23 @@ impl Component for InstrMem {
             Err(_) => Err(Condition::Error(format!("Unaligned Read, PC = {:#0x}", pc))),
         }
     }
-    // set PC to what it was the previous cycle
-    fn un_clock(&self) {
-        let previous_pc: u32 = self.pc_history.borrow_mut().pop().unwrap();
-        self.update_dynamic_symbols(previous_pc);
+    // set component to what it was the previous cycle
+    fn un_clock(&self, simulator: &Simulator) {
+        let pc: u32 = simulator.get_input_value(&self.pc).try_into().unwrap();
+        self.unclock_dynamic_symbols(pc);
     }
-    // if the simulator is reset and pc_history isn't empty: move over dynamic_symbol settings
-    // while resetting values and adresses
+    // if the simulator is reset and pc_dm_history isn't empty: move over dynamic_symbol settings
+    // while resetting adresses
     fn reset(&self) {
-        if self.pc_history.borrow().len() > 0 {
-            let start_pc = self.pc_history.borrow()[0];
-            let current_symbol_keys: Vec<String> =
-                self.dynamic_symbols.borrow().keys().cloned().collect();
+        if self.pc_dm_history.borrow().len() > 0 {
+            let start_pc = self.pc_dm_history.borrow()[0];
+            let symbol_keys: Vec<String> = self.dynamic_symbols.borrow().keys().cloned().collect();
 
-            let mut new_symbols: HashMap<String, (u32, bool)> = HashMap::new();
-            for symbol_name in current_symbol_keys {
-                new_symbols.insert(
-                    symbol_name.clone(),
-                    (
-                        start_pc,
-                        self.dynamic_symbols.borrow().get(&symbol_name).unwrap().1,
-                    ),
-                );
+            let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
+            for symbol_name in symbol_keys {
+                dynamic_symbols.get_mut(&symbol_name).unwrap().0 = start_pc;
             }
-            *self.dynamic_symbols.borrow_mut() = new_symbols;
-            self.pc_history.borrow_mut().clear();
+            self.pc_dm_history.borrow_mut().clear();
         }
     }
 }

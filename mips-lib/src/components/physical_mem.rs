@@ -7,7 +7,7 @@ use std::{
     path::PathBuf,
 };
 use syncrim::{
-    common::{Component, Ports},
+    common::{Component, Ports, Simulator},
     signal::Id,
 };
 
@@ -38,10 +38,11 @@ impl PhysicalMem {
         }
     }
 
-    pub fn load_file(&self, path: &PathBuf) {
-        let data = fs::read(path).unwrap();
-        self.mem.replace(MipsMem::from_sections(&data).unwrap());
+    pub fn load_file(&self, path: &PathBuf) -> Result<(), MemLoadError> {
+        let data = fs::read(path)?;
+        self.mem.replace(MipsMem::from_sections(&data)?);
         self.history.borrow_mut().clear();
+        Ok(())
     }
 }
 
@@ -60,7 +61,7 @@ impl Component for PhysicalMem {
         self
     }
 
-    fn un_clock(&self) {
+    fn un_clock(&self, _: &Simulator) {
         *self.cycle.borrow_mut() -= 1;
         if let Some(op) = self.history.borrow_mut().remove(&*self.cycle.borrow()) {
             self.mem.borrow_mut().revert(op);
@@ -95,6 +96,45 @@ pub enum MemOpSize {
     Half,
     Word,
 }
+
+/// An error type which describes different error that can occur while load a file
+#[derive(Debug)]
+pub enum MemLoadError {
+    ParseError(elf::ParseError),
+    FileReadError(std::io::Error),
+    NoSections(),
+    NoStrTab(),
+}
+
+impl std::fmt::Display for MemLoadError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MemLoadError::ParseError(parse_error) => write!(
+                f,
+                "An error occurred while parsing the efl file: {}",
+                parse_error
+            ),
+            MemLoadError::NoSections() => write!(f, "Can't find any sections in this elf file"),
+            MemLoadError::NoStrTab() => write!(f, "Can't find the String table"),
+            MemLoadError::FileReadError(error) => {
+                write!(f, "Error while reading the file: {}", error)
+            }
+        }
+    }
+}
+
+impl From<elf::ParseError> for MemLoadError {
+    fn from(value: elf::ParseError) -> Self {
+        MemLoadError::ParseError(value)
+    }
+}
+
+impl From<std::io::Error> for MemLoadError {
+    fn from(value: std::io::Error) -> Self {
+        MemLoadError::FileReadError(value)
+    }
+}
+
 /// This struct is not ment to be cloned
 #[derive(Clone)]
 pub struct MemWriteReturn {
@@ -124,44 +164,48 @@ impl MipsMem {
     /// This function constructs a Mem struct using the elf sections to load the data.
     /// This may be un-reliable as the Elf might not always contain the sections,
     /// or contain un-relevant sections and no relevant ones
-    /// # TODO fix result error. currently panics
-    pub fn from_sections(elf_bytes: &[u8]) -> Result<MipsMem, ()> {
+    pub fn from_sections(elf_bytes: &[u8]) -> Result<MipsMem, MemLoadError> {
         let mut mem: MipsMem = MipsMem {
             symbols: HashMap::new(),
             data: BTreeMap::new(),
             sections: HashMap::new(),
         };
 
-        let file = ElfBytes::<AnyEndian>::minimal_parse(elf_bytes).unwrap();
-        // will crash if three is no str table
-        let sect_head_str_tab = file.section_headers_with_strtab().unwrap();
-        let sections = sect_head_str_tab.0.unwrap();
-        let str_tab = sect_head_str_tab.1.unwrap();
+        let file = ElfBytes::<AnyEndian>::minimal_parse(elf_bytes)?;
+        let sect_head_str_tab = file.section_headers_with_strtab()?;
+        let sections = sect_head_str_tab.0.ok_or(MemLoadError::NoSections())?;
+        let str_tab = sect_head_str_tab.1.ok_or(MemLoadError::NoStrTab())?;
         // for each section in elf
         for sect in sections {
-            // if section is PROG BITS and size is none zero
-            if sect.sh_type == 0x1 && sect.sh_size != 0 {
+            // if the section has flag alloc(0x2), aka lives in memory
+            // if the section has a size larger than zero
+            if sect.sh_flags & 0x2 == 0x2 && sect.sh_size != 0 {
                 let v_address = sect.sh_addr as u32;
 
-                // if the section has flag alloc(0x2), aka lives in memory
-                // if the section has a size larger than zero
-                if sect.sh_flags & 0x2 == 0x2 && sect.sh_size != 0 {
+                // if type is prog bits write the data to memory
+                if sect.sh_type == 0x1 {
                     let elf_address = sect.sh_offset; // offset into elf file where data is stored (note inside of elf Segment)
                     let elf_end_address = elf_address + sect.sh_size; // end address of data
                     let sect_data = &elf_bytes[elf_address as usize..elf_end_address as usize];
                     for (i, byte) in sect_data.iter().enumerate() {
                         mem.data.insert(v_address + i as u32, byte.to_owned());
                     }
-                };
+                }
 
                 // add section to section hashmap
                 mem.sections.insert(
                     v_address,
-                    str_tab.get(sect.sh_name as usize).unwrap().to_string(),
+                    // try to demangle the section name if possible
+                    match str_tab.get(sect.sh_name as usize)?.rsplit_once(".") {
+                        Some((a, b)) => {
+                            format!("{}.{:#}", a, rustc_demangle::demangle(b)).to_string()
+                        }
+                        None => str_tab.get(sect.sh_name as usize).unwrap().to_string(),
+                    },
                 );
-            }
+            };
         }
-        mem.get_symbols(&file);
+        mem.get_symbols(&file)?;
         Ok(mem)
     }
 
@@ -327,25 +371,25 @@ impl MipsMem {
     }
 
     /// Gets the elf symbol table, and set the self hashmap
-    fn get_symbols(&mut self, elf_file: &ElfBytes<AnyEndian>) {
-        if let Some((sym_table, string_table)) = elf_file.symbol_table().unwrap() {
+    fn get_symbols(&mut self, elf_file: &ElfBytes<AnyEndian>) -> Result<(), MemLoadError> {
+        if let Some((sym_table, string_table)) = elf_file.symbol_table()? {
             let mut sym_hash_map: HashMap<u32, String> = HashMap::new();
-            let mut _hash_map: HashMap<u32, String> = HashMap::new();
 
             // for each symbol entry
             for sym_entry in sym_table {
-                let sym_name = string_table.get(sym_entry.st_name as usize).unwrap();
+                let sym_name = string_table.get(sym_entry.st_name as usize)?;
 
                 // if the symbol type is NOTYPE, bind is LOCAL and has a string add it
-                if sym_entry.st_symtype() == 0x0
-                    && sym_entry.st_bind() == 0x0
-                    && !sym_name.is_empty()
-                {
-                    sym_hash_map.insert(sym_entry.st_value as u32, sym_name.to_string());
+                if sym_entry.st_shndx != 0x0 && !sym_name.is_empty() {
+                    sym_hash_map.insert(
+                        sym_entry.st_value as u32,
+                        format!("{:#}", rustc_demangle::demangle(sym_name)),
+                    );
                 }
             }
-            self.symbols = sym_hash_map
+            self.symbols = sym_hash_map;
         }
+        Ok(())
     }
     /// consumes undo the passed related mem write operation
     pub fn revert(&mut self, op: MemWriteReturn) {

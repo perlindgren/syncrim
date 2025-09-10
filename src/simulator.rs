@@ -197,7 +197,7 @@ impl Simulator {
         };
 
         trace!("sim_state {:?}", simulator.sim_state);
-        simulator.clock();
+        simulator.reset();
         Ok(simulator)
     }
 
@@ -473,8 +473,9 @@ impl Simulator {
                 _ => self.running_state = RunningState::Stopped,
             };
 
-            for component in self.ordered_components.clone() {
-                component.un_clock();
+            // reverse eval order before uncloak
+            for component in self.ordered_components.clone().into_iter().rev() {
+                component.un_clock(self);
             }
         }
     }

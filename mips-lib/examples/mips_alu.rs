@@ -13,7 +13,7 @@ fn main() {
     let cs = ComponentStore {
         store: vec![
             ALU::rc_new(
-                "full_adder",
+                "alu",
                 (200.0, 120.0),
                 Input::new("c0", "out"),
                 Input::new("c1", "out"),
@@ -22,11 +22,7 @@ fn main() {
             ProbeEdit::rc_new("c0", (60.0, 100.0)),
             ProbeEdit::rc_new("c1", (60.0, 140.0)),
             ProbeEdit::rc_new("c2", (60.0, 180.0)),
-            Probe::rc_new(
-                "p1",
-                (270.0, 120.0),
-                Input::new("full_adder", FULL_ADD_OUT_ID),
-            ),
+            Probe::rc_new("p1", (270.0, 120.0), Input::new("alu", ALU_OUT_ID)),
         ],
     };
 

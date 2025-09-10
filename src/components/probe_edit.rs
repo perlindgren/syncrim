@@ -59,7 +59,7 @@ impl Component for ProbeEdit {
     }
 
     // reverse simulation, notice does not touch simulator state, its just internal
-    fn un_clock(&self) {
+    fn un_clock(&self, _: &Simulator) {
         let mut edit_history = self.edit_history.write().unwrap();
         trace!("{} history {:?}", self.id, edit_history);
         let _next = edit_history.pop().unwrap(); // pop the next editable value

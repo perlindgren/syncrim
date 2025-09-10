@@ -17,7 +17,7 @@ fn main() {
     let args = Args::parse();
     let path = PathBuf::from(args.model);
 
-    let cs = ComponentStore::load_file(&path);
+    let cs = ComponentStore::load_file(&path).unwrap();
 
     #[cfg(feature = "gui-egui")]
     syncrim::gui_egui::gui(cs, &path, Library::default()).ok();

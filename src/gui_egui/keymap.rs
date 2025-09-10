@@ -1,4 +1,5 @@
 use crate::common::{ComponentStore, Simulator};
+use crate::component_store::ComponentStoreLoadError;
 use crate::gui_egui::editor::{Editor, EditorMode};
 use crate::gui_egui::editor_wire_mode::reset_wire_mode;
 use crate::gui_egui::gui::create_contexts;
@@ -179,7 +180,7 @@ impl Shortcuts {
             file_new_fn(gui);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.file_open)) {
-            file_open_fn(gui);
+            let _ = file_open_fn(gui);
         }
         if ctx.input_mut(|i| i.consume_shortcut(&self.file_save)) {
             file_save_fn(gui);
@@ -245,12 +246,12 @@ impl Shortcuts {
 }
 
 pub fn file_new_fn(_gui: &mut Gui) {}
-pub fn file_open_fn(gui: &mut Gui) {
+pub fn file_open_fn(gui: &mut Gui) -> Result<(), ComponentStoreLoadError> {
     let files = FileDialog::new().add_filter("json", &["json"]).pick_file();
     if let Some(path_buf) = files {
         gui.path = path_buf;
     }
-    let cs = ComponentStore::load_file(&gui.path);
+    let cs = ComponentStore::load_file(&gui.path)?;
     let contexts = create_contexts(&cs.store);
     match gui.editor_use {
         true => {
@@ -276,6 +277,7 @@ pub fn file_open_fn(gui: &mut Gui) {
             }
         }
     }
+    Ok(())
 }
 pub fn file_save_fn(gui: &mut Gui) {
     match gui.editor_use {
