@@ -380,4 +380,13 @@ impl Component for DataMem {
             Err(_) => ret,
         }
     }
+    fn un_clock(&self, simulator: &Simulator) {
+        let address: u32 = simulator
+            .get_input_value(&self.address_input)
+            .try_into()
+            .unwrap();
+        self.mem_view
+            .borrow_mut()
+            .set_dynamic_symbol("DM_ADRS", address);
+    }
 }
