@@ -27,6 +27,7 @@ pub const CP0_RFE_IN_ID: &str = "cp0_RFE_in";
 pub const CP0_TIMER_INTERRUPT_IN_ID: &str = "cp0_timer_interrupt_in"; // update to timer and io
 pub const CP0_IO_INTERRUPT_IN_ID: &str = "cp0_io_interrupt_in";
 pub const CP0_SYSCALL_IN_ID: &str = "cp0_syscall_in";
+pub const CP0_OVERFLOW_IN_ID: &str = "cp0_overflow_in";
 pub const CP0_INSTRUCTION_ADDRESS_IN: &str = "cp0_instruction_address_in";
 
 // out 0: int addr 0x80001000
@@ -68,6 +69,7 @@ pub struct CP0 {
     pub(crate) timer_interrupt_in: Input,
     pub(crate) io_interrupt_in: Input,
     pub(crate) syscall_in: Input,
+    pub(crate) overflow_in: Input,
     pub(crate) instruction_address_in: Input,
 
     #[serde(skip)]
@@ -95,6 +97,7 @@ impl Component for CP0 {
             timer_interrupt_in: dummy_input.clone(),
             io_interrupt_in: dummy_input.clone(),
             syscall_in: dummy_input.clone(),
+            overflow_in: dummy_input.clone(),
             instruction_address_in: dummy_input.clone(),
             registers: RefCell::new(Regs {
                 sr: 0,
@@ -138,6 +141,10 @@ impl Component for CP0 {
                         input: self.syscall_in.clone(),
                     },
                     &InputPort {
+                        port_id: CP0_OVERFLOW_IN_ID.to_string(),
+                        input: self.overflow_in.clone(),
+                    },
+                    &InputPort {
                         port_id: CP0_INSTRUCTION_ADDRESS_IN.to_string(),
                         input: self.instruction_address_in.clone(),
                     },
@@ -157,6 +164,7 @@ impl Component for CP0 {
             CP0_TIMER_INTERRUPT_IN_ID => self.timer_interrupt_in = new_input,
             CP0_IO_INTERRUPT_IN_ID => self.io_interrupt_in = new_input,
             CP0_SYSCALL_IN_ID => self.syscall_in = new_input,
+            CP0_OVERFLOW_IN_ID => self.overflow_in = new_input,
             CP0_INSTRUCTION_ADDRESS_IN => self.instruction_address_in = new_input,
             _ => {}
         }
@@ -192,18 +200,34 @@ impl Component for CP0 {
             .get_input_value(&self.instruction_address_in)
             .try_into()
             .unwrap();
+        let overflow: u32 = simulator
+            .get_input_value(&self.overflow_in)
+            .try_into()
+            .unwrap();
 
         let mut interrupt_occurred: u32 = 0;
 
         let regs_before = self.registers.borrow().clone();
 
-        if (syscall == 1 || io_interrupt == 1 || timer_interrupt == 1)
+        if (syscall == 1 || io_interrupt == 1 || timer_interrupt == 1 || overflow == 1)
             && self.registers.borrow().sr & 1 == 1
         {
             let mut regs = self.registers.borrow_mut();
 
             // Set bits in ECR according to the interrupt type
-            if timer_interrupt == 1 && ((regs.sr & 0x400) == 0x400) {
+
+            if overflow == 1 {
+                regs.epc = interrupt_address_in;
+                // set current state and interrupt
+                let tmp = (regs.sr & 0xF) << 2;
+                regs.sr &= 0xFFFF_FFC0;
+                regs.sr |= tmp;
+                // enable interrupt
+                interrupt_occurred = 1;
+                // Set bits in ECR according to the interrupt type
+                regs.ecr = regs.ecr & 0xFFFF0003 | 0x130;
+            }
+            else if timer_interrupt == 1 && ((regs.sr & 0x400) == 0x400) {
                 regs.epc = interrupt_address_in;
                 // set current state and interrupt
                 let tmp = (regs.sr & 0xF) << 2;
@@ -316,6 +340,7 @@ impl CP0 {
         io_interrupt_in: Input,
         syscall_in: Input,
         instruction_address_in: Input,
+        overflow_in: Input,
     ) -> Self {
         CP0 {
             id: id.to_string(),
@@ -328,6 +353,7 @@ impl CP0 {
             io_interrupt_in,
             syscall_in,
             instruction_address_in,
+            overflow_in,
             registers: RefCell::new(Regs::default()), // create 32 zeros
             history: RefCell::new(vec![]),
         }
@@ -344,6 +370,7 @@ impl CP0 {
         io_interrupt_in: Input,
         syscall_in: Input,
         instruction_address_in: Input,
+        overflow_in: Input,
     ) -> Rc<Self> {
         Rc::new(Self::new(
             id,
@@ -356,6 +383,7 @@ impl CP0 {
             io_interrupt_in,
             syscall_in,
             instruction_address_in,
+            overflow_in,
         ))
     }
 }

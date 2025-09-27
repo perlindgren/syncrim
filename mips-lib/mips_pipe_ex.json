@@ -2364,6 +2364,10 @@
         "id": "control_unit_0",
         "field": "is_syscall"
       },
+      "overflow_in": {
+        "id": "alu",
+        "field": "alu_overflow_out"
+      },
       "instruction_address_in": {
         "id": "is_int_branch_delay",
         "field": "mux_out"
