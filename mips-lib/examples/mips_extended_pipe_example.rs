@@ -397,7 +397,9 @@ fn main() {
                 Input::new("timer", TIMER_INTERRUPT_OUT_ID),
                 Input::new("io", IO_INTERRUPT_OUT_ID),
                 Input::new("control_unit_0", cntr_field::IS_SYSCALL), // IS SYSCALL
-                Input::new("is_int_branch_delay", MUX_OUT_ID),        // EPC
+                Input::new("is_int_branch_delay", MUX_OUT_ID),
+                Input::new("instruction_ex_4_address_in", REGISTER_OUT_ID), // EPC
+                Input::new("alu", ALU_OVERFLOW_OUT_ID),
             ),
             //
             Rc::new(MipsIO::new(
@@ -551,7 +553,7 @@ fn main() {
         // since we dont have clone, convert to joson and back
         let mut auto_w = autowire(
             serde_json::from_str::<ComponentStore>(&serde_json::to_string(&cs).unwrap()).unwrap(),
-        ); // nice laid out wires and other from mips_pipe.json
+        ); // nice laid out wires and other from mips_pipe_ex.json
 
         let wire_store: ComponentStore =
             serde_json::from_str(include_str!("../mips_pipe.json")).unwrap();
