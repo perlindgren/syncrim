@@ -6,7 +6,7 @@ pub mod helper;
 mod keymap;
 mod library;
 mod menu;
-
+mod gui_options;
 #[cfg(feature = "components")]
 pub mod components;
 

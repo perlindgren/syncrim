@@ -2,6 +2,7 @@ use crate::common::{ComponentStore, Components, Simulator};
 use crate::gui_egui::editor::EditorMode;
 use crate::gui_egui::{
     editor::{Editor, Library},
+    gui_options::GuiOptions,
     keymap,
     keymap::Shortcuts,
     menu::Menu,
@@ -34,6 +35,8 @@ pub struct Gui {
     pub in_built_models: Vec<(String, String)>,
     pub contexts: HashMap<crate::common::Id, EguiExtra>,
     pub library: Library,
+
+    pub gui_options: GuiOptions,
 }
 
 #[derive(Clone, Debug)]
@@ -67,18 +70,23 @@ pub fn gui(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<(), e
         contexts,
         library,
         in_built_models: Vec::default(),
+        gui_options: GuiOptions::default(),
     };
 
     eframe::run_native("SyncRim", options, Box::new(|_cc| Ok(Box::new(gui))))
 }
 
 impl Gui {
-    pub fn new(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<Self, Box<dyn Error>> {
+    pub fn new(
+        cs: ComponentStore,
+        path: &PathBuf,
+        library: Library,
+    ) -> Result<Self, Box<dyn Error>> {
         let contexts = create_contexts(&cs.store);
         let simulator = Simulator::new(cs)?;
         let path = path.to_owned();
         // simulator.save_dot(&path);
-        
+
         Ok(Gui {
             path,
             simulator: Some(simulator),
@@ -95,6 +103,7 @@ impl Gui {
             contexts,
             library,
             in_built_models: Vec::default(),
+            gui_options: GuiOptions::default(),
         })
     }
 
@@ -116,6 +125,9 @@ impl Gui {
 impl eframe::App for Gui {
     fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
         self.shortcuts.inputs(ctx, self);
+        if self.gui_options.window_visible {
+            self.gui_options.render(ctx);
+        }
         if self.editor_use {
             crate::gui_egui::editor::Editor::update(ctx, frame, self);
             return;
