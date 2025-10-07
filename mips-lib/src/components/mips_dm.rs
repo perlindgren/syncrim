@@ -385,11 +385,13 @@ impl Component for DataMem {
             .get_input_value(&self.address_input)
             .try_into()
             .unwrap();
+        #[cfg(feature = "gui-egui")]
         self.mem_view
             .borrow_mut()
             .set_dynamic_symbol("DM_ADRS", address);
     }
     fn reset(&self) {
+        #[cfg(feature = "gui-egui")]
         self.mem_view.borrow_mut().set_dynamic_symbol("DM_ADRS", 0);
     }
 }
