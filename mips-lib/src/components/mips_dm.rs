@@ -380,4 +380,20 @@ impl Component for DataMem {
             Err(_) => ret,
         }
     }
+    fn un_clock(&self, simulator: &Simulator) {
+        let address: u32 = simulator
+            .get_input_value(&self.address_input)
+            .try_into()
+            .unwrap();
+        #[cfg(feature = "gui-egui")]
+        self.mem_view
+            .borrow_mut()
+            .set_dynamic_symbol("DM_ADRS", address);
+    }
+    // resets DM_ADRS to address 0,
+    // as that is what it initializes to when simulator is compiled
+    fn reset(&self) {
+        #[cfg(feature = "gui-egui")]
+        self.mem_view.borrow_mut().set_dynamic_symbol("DM_ADRS", 0);
+    }
 }
