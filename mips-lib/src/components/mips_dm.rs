@@ -390,6 +390,8 @@ impl Component for DataMem {
             .borrow_mut()
             .set_dynamic_symbol("DM_ADRS", address);
     }
+    // resets DM_ADRS to address 0,
+    // as that is what it initializes to when simulator is compiled
     fn reset(&self) {
         #[cfg(feature = "gui-egui")]
         self.mem_view.borrow_mut().set_dynamic_symbol("DM_ADRS", 0);
