@@ -389,4 +389,7 @@ impl Component for DataMem {
             .borrow_mut()
             .set_dynamic_symbol("DM_ADRS", address);
     }
+    fn reset(&self) {
+        self.mem_view.borrow_mut().set_dynamic_symbol("DM_ADRS", 0);
+    }
 }
