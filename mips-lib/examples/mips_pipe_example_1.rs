@@ -43,7 +43,13 @@ fn main() {
                 Input::new("pc", REGISTER_OUT_ID),
                 "phys_mem".into(),
                 "reg_file".into(),
-            )),
+            )
+            .with_dynamic_symbols(&[
+                ("PC_IM", true),
+                ("PC_DE", true),
+                ("PC_EX", true),
+                ("PC_DM", true),
+            ])),
             //
             //
             // MUX to choose what instruction addr to choose from, branch jump, reg, pc+4
