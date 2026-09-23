@@ -225,7 +225,9 @@ impl Component for DataMem {
             // (WE,RE)
             (ON, OFF) => {}
             (OFF, ON) => {}
-            (OFF, OFF) => {return Ok(());}
+            (OFF, OFF) => {
+                return Ok(());
+            }
             (we, re) => {
                 return Err(Condition::Error(format!(
                     "wrong combination of read and write signals read:{:?} write{:?}",

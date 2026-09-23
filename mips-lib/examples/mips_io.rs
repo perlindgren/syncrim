@@ -27,8 +27,7 @@ fn main() {
             Probe::rc_new(
                 "data_out",
                 (320.0, 120.0),
-                Input::new("io_comp", IO_DATA_OUT_ID
-            ),
+                Input::new("io_comp", IO_DATA_OUT_ID),
             ),
             Probe::rc_new(
                 "interrupt",

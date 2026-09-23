@@ -3,7 +3,9 @@ use egui::{pos2, Pos2, ProgressBar, Rect, Response, RichText, Ui, Vec2};
 use syncrim::common::{EguiComponent, Id, Input, Ports, Simulator};
 use syncrim::gui_egui::editor::{EditorMode, EditorRenderReturn, GridOptions};
 use syncrim::gui_egui::gui::EguiExtra;
-use syncrim::gui_egui::helper::{basic_component_gui_with_on_hover, basic_editor_popup, basic_on_hover};
+use syncrim::gui_egui::helper::{
+    basic_component_gui_with_on_hover, basic_editor_popup, basic_on_hover,
+};
 
 const WIDTH: f32 = 70.0;
 const HEIGHT: f32 = 45.0;
@@ -66,16 +68,19 @@ impl EguiComponent for MipsTimer {
         _grid: &GridOptions,
         editor_mode: EditorMode,
     ) -> EditorRenderReturn {
-        let res = self.render(
-            ui,
-            context,
-            simulator,
-            offset,
-            scale,
-            clip_rect,
-            editor_mode,
-        ).unwrap().remove(0); // no panic since we know basic_component_gui returns Some([area_response])
-        basic_editor_popup(self, ui, context, id_ports, res, |_|{})
+        let res = self
+            .render(
+                ui,
+                context,
+                simulator,
+                offset,
+                scale,
+                clip_rect,
+                editor_mode,
+            )
+            .unwrap()
+            .remove(0); // no panic since we know basic_component_gui returns Some([area_response])
+        basic_editor_popup(self, ui, context, id_ports, res, |_| {})
     }
 
     fn set_pos(&mut self, pos: (f32, f32)) {

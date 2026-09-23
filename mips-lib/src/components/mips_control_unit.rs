@@ -52,15 +52,14 @@ pub mod cntr_field {
     // 0 or 1, used for co-processor address stuff
     pub const BRANCH_INTERRUPT_OUT: &str = "branch_interrupt";
 
-    
-    // 0 or 1, used to determine of the mmu should load/store 
-    // data from cp0 instead off mem 
+    // 0 or 1, used to determine of the mmu should load/store
+    // data from cp0 instead off mem
     pub const CP0_MV_OP_OUT: &str = "cp0_out";
-    
+
     // IS SYSCALL/RFE
 
     pub const IS_SYSCALL: &str = "is_syscall";
-    
+
     pub const IS_RFE: &str = "is_rfe";
     //TODO
     // Opcode is passed to branch unit which is responsible to control branch logic
@@ -639,41 +638,50 @@ impl Component for ControlUnit {
             }
             OP_CP0 => {
                 let cp0_op = (instr_in >> 21) & 0b11111;
-                match  cp0_op{
-                // same as load
-                // whole of immediate field can be used as address for cp0
-                // set operand A mux to shamt
-                // since everything in instr[10-3] is zero, shamt will be zero
-                // so alu does imm + zero
-                // note that we don't want to sign extend our im
-                CP0_FUNCT_MFC0 => {
-                    set_load_instr!();
-                    set!(cntr_field::EXTEND_SELECT_OUT, cntr_unit_signals::EXTEND_ZERO);
-                    set!(cntr_field::ALU_SRC_A_OUT, cntr_unit_signals::ALU_SRC_A_SHAMT);
-                    set!(cntr_field::CP0_MV_OP_OUT, cntr_unit_signals::CP0_MV);
-                    Ok(())
-                },
-                CP0_FUNCT_MTF0 => {
-                    set_store_instr!();
-                    set!(cntr_field::EXTEND_SELECT_OUT, cntr_unit_signals::EXTEND_ZERO);
-                    set!(cntr_field::ALU_SRC_A_OUT, cntr_unit_signals::ALU_SRC_A_SHAMT);
-                    set!(cntr_field::CP0_MV_OP_OUT, cntr_unit_signals::CP0_MV);
-                    Ok(())
-                },
-                CP0_FUNCT_SPECIAL => {
-                    // TODO add other functions
-                    // assume its rfe
-                    // other possible outputs
-                    // tlbr, tlbwi tlbwr tlbp
-                    set!(cntr_field::IS_RFE, 1);
-                    Ok(())
-                },
-                _ => {
-                    Err(Condition::Error("unknown cp0 instruction".into()))
+                match cp0_op {
+                    // same as load
+                    // whole of immediate field can be used as address for cp0
+                    // set operand A mux to shamt
+                    // since everything in instr[10-3] is zero, shamt will be zero
+                    // so alu does imm + zero
+                    // note that we don't want to sign extend our im
+                    CP0_FUNCT_MFC0 => {
+                        set_load_instr!();
+                        set!(
+                            cntr_field::EXTEND_SELECT_OUT,
+                            cntr_unit_signals::EXTEND_ZERO
+                        );
+                        set!(
+                            cntr_field::ALU_SRC_A_OUT,
+                            cntr_unit_signals::ALU_SRC_A_SHAMT
+                        );
+                        set!(cntr_field::CP0_MV_OP_OUT, cntr_unit_signals::CP0_MV);
+                        Ok(())
+                    }
+                    CP0_FUNCT_MTF0 => {
+                        set_store_instr!();
+                        set!(
+                            cntr_field::EXTEND_SELECT_OUT,
+                            cntr_unit_signals::EXTEND_ZERO
+                        );
+                        set!(
+                            cntr_field::ALU_SRC_A_OUT,
+                            cntr_unit_signals::ALU_SRC_A_SHAMT
+                        );
+                        set!(cntr_field::CP0_MV_OP_OUT, cntr_unit_signals::CP0_MV);
+                        Ok(())
+                    }
+                    CP0_FUNCT_SPECIAL => {
+                        // TODO add other functions
+                        // assume its rfe
+                        // other possible outputs
+                        // tlbr, tlbwi tlbwr tlbp
+                        set!(cntr_field::IS_RFE, 1);
+                        Ok(())
+                    }
+                    _ => Err(Condition::Error("unknown cp0 instruction".into())),
                 }
-                
-            }}
-            ,
+            }
             OP_LB => {
                 set!(cntr_field::MEM_MODE_OUT, data_op::LOAD_BYTE);
                 set_load_instr!();

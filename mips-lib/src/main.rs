@@ -2,9 +2,9 @@ use clap::Parser;
 // The trait impls from here are used dynamically when json is loaded, so this is actually used
 #[allow(unused_imports)]
 use mips_lib::*;
-use std::{path::PathBuf, rc::Rc};
 #[cfg(feature = "gui-egui")]
 use std::str::FromStr;
+use std::{path::PathBuf, rc::Rc};
 #[cfg(feature = "gui-egui")]
 use syncrim::gui_egui::editor::Library;
 use syncrim::{common::ComponentStore, fern::fern_setup};
@@ -47,29 +47,25 @@ fn main() {
     if let Some(path) = args.model {
         cs = ComponentStore::load_file(&path).unwrap_or(ComponentStore { store: vec![] });
     } else if let Some(model) = args.inbuilt {
-
         let mut cs_tmp;
         match model {
-            InBuilt::SingleCycle => {
-                cs_tmp = ComponentStore::load(BUILT_IN_MODELS[0].1).unwrap()
-            },
-            InBuilt::Pipe => {
-                cs_tmp = ComponentStore::load(BUILT_IN_MODELS[1].1).unwrap()
-            },
-            InBuilt::Extended => {
-                cs_tmp = ComponentStore::load(BUILT_IN_MODELS[2].1).unwrap()
-            },
+            InBuilt::SingleCycle => cs_tmp = ComponentStore::load(BUILT_IN_MODELS[0].1).unwrap(),
+            InBuilt::Pipe => cs_tmp = ComponentStore::load(BUILT_IN_MODELS[1].1).unwrap(),
+            InBuilt::Extended => cs_tmp = ComponentStore::load(BUILT_IN_MODELS[2].1).unwrap(),
         }
 
         // get phys mems position
-        let pos = cs_tmp.store
+        let pos = cs_tmp
+            .store
             .iter()
             .find(|c| c.get_id_ports().0 == "phys_mem")
-            .unwrap().get_pos();
+            .unwrap()
+            .get_pos();
 
         // replace the default mem with our own
         let phys_mem = Rc::new(PhysicalMem::new("phys_mem", pos));
-        *cs_tmp.store
+        *cs_tmp
+            .store
             .iter_mut()
             .find(|c| c.get_id_ports().0 == "phys_mem")
             .unwrap() = phys_mem.clone();
@@ -84,7 +80,15 @@ fn main() {
     }
 
     #[cfg(feature = "gui-egui")]
-    syncrim::gui_egui::Gui::new(cs, &PathBuf::from_str("./new_file.json").unwrap(), Library::default()).unwrap().with_inbuilt(&BUILT_IN_MODELS).run().unwrap();
+    syncrim::gui_egui::Gui::new(
+        cs,
+        &PathBuf::from_str("./new_file.json").unwrap(),
+        Library::default(),
+    )
+    .unwrap()
+    .with_inbuilt(&BUILT_IN_MODELS)
+    .run()
+    .unwrap();
 
     #[cfg(feature = "gui-vizia")]
     syncrim::gui_vizia::gui(cs, &path);

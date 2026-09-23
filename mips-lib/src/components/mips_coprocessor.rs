@@ -238,8 +238,7 @@ impl Component for CP0 {
                 interrupt_occurred = 1;
                 // Set bits in ECR according to the interrupt type
                 regs.ecr = regs.ecr & 0xFFFF0003 | 0x130;
-            }
-            else if timer_interrupt == 1 && ((regs.sr & 0x400) == 0x400) {
+            } else if timer_interrupt == 1 && ((regs.sr & 0x400) == 0x400) {
                 regs.epc = interrupt_address_in;
                 // set current state and interrupt
                 let tmp = (regs.sr & 0xF) << 2;

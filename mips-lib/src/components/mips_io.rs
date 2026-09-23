@@ -45,9 +45,8 @@ pub struct MipsIO {
     pub gui_show: RefCell<bool>,
 }
 
-
-const NO_DATA_READ: bool= false;
-const DATA_READ: bool= true;
+const NO_DATA_READ: bool = false;
+const DATA_READ: bool = true;
 #[derive(Debug, Clone)]
 pub struct MipsIOData {
     pub interrupt: bool,
@@ -214,29 +213,33 @@ impl Component for MipsIO {
     fn un_clock(&self, sim: &Simulator) {
         let mut data = self.data.borrow_mut();
 
-        
-        
         // if we wrote information during the clock we are trying to undo
         if matches!(sim.get_input_value(&self.we_in), SignalValue::Data(1)) {
             let mut data = self.data.borrow_mut();
             let _ = data.out_buff.pop();
-            
+
             // if we read data and data was available
         } else if matches!(sim.get_input_value(&self.re_in), SignalValue::Data(1)) {
             if data.read_pos < data.end_pos {
                 // revert the read, aka move read pointer back
                 data.read_pos -= 1;
             } else if data.read_pos == data.end_pos {
-                if data.read_eq_end_cause.pop().unwrap() == DATA_READ{
+                if data.read_eq_end_cause.pop().unwrap() == DATA_READ {
                     data.read_pos -= 1;
                 }
             } else {
                 panic!("read pos is greater than end pos")
             }
         }
-        
+
         // revert end pos increase
-        if let Some((_,write_amount)) = data.key_buff_write_history.iter().find(|(cycle,_)| *cycle == sim.cycle -1).cloned() { // -1 since cycle increased after eval, but not decreased before unclock
+        if let Some((_, write_amount)) = data
+            .key_buff_write_history
+            .iter()
+            .find(|(cycle, _)| *cycle == sim.cycle - 1)
+            .cloned()
+        {
+            // -1 since cycle increased after eval, but not decreased before unclock
             data.end_pos -= write_amount
         }
         // set available data bit
@@ -245,7 +248,6 @@ impl Component for MipsIO {
         } else {
             data.input_control &= !0b1
         }
-
     }
 
     fn reset(&self) {

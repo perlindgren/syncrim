@@ -77,7 +77,7 @@ impl Component for MipsMmu {
                     &InputPort {
                         port_id: MMU_CP0_MV_INSTR_IN.to_string(),
                         input: self.is_cp0_instr_in.clone(),
-                    }
+                    },
                 ],
                 OutputType::Combinatorial,
                 vec![
@@ -122,7 +122,7 @@ impl Component for MipsMmu {
         simulator.set_out_value(&self.id, MMU_IO_RE_OUT, OFF);
         simulator.set_out_value(&self.id, MMU_CP0_WE_OUT, OFF);
         simulator.set_out_value(&self.id, MMU_CP0_RE_OUT, OFF);
-        
+
         // as well as no specific addresses
         simulator.set_out_value(&self.id, MMU_MEM_ADDRESS_OUT_ID, SignalValue::DontCare);
         simulator.set_out_value(&self.id, MMU_TIMER_ADDRESS_OUT, SignalValue::DontCare);
@@ -140,8 +140,12 @@ impl Component for MipsMmu {
             pass_signal!(&self.address_in, MMU_CP0_ADDRESS_OUT);
             pass_signal!(&self.re_in, MMU_CP0_RE_OUT);
             pass_signal!(&self.we_in, MMU_CP0_WE_OUT);
-            
-            simulator.set_out_value(&self.id, MMU_COMPONENT_SELECT_OUT_ID, mmu_signals::MMU_SELECT_CP0_SRC);
+
+            simulator.set_out_value(
+                &self.id,
+                MMU_COMPONENT_SELECT_OUT_ID,
+                mmu_signals::MMU_SELECT_CP0_SRC,
+            );
             // return dont do normal mmu stuff
             return Ok(());
         }

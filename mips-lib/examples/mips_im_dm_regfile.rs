@@ -20,7 +20,7 @@ fn main() {
             ProbeEdit::rc_new("write_addr", (60.0, 180.0)),
             ProbeEdit::rc_new("write_data", (60.0, 220.0)),
             ProbeEdit::rc_new("write_enable", (60.0, 260.0)),
-                        Probe::rc_new(
+            Probe::rc_new(
                 "rs",
                 (300.0, 120.0),
                 Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID),

@@ -457,11 +457,7 @@ fn main() {
                 Input::new("control_MEM_reg", REGISTER_OUT_ID),
             ),
             //
-            Register::rc_new(
-                "alu_reg",
-                (1470.0, 250.0),
-                Input::new("alu", ALU_OUT_ID),
-            ),
+            Register::rc_new("alu_reg", (1470.0, 250.0), Input::new("alu", ALU_OUT_ID)),
             //
             Register::rc_new(
                 "data_MEM_reg",
