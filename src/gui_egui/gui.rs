@@ -24,6 +24,9 @@ pub struct Gui {
     pub offset: Vec2,
     pub pan: Vec2,
     pub clip_rect: Rect,
+    // Screen area of the drawing canvas of the active view (simulator or editor),
+    // used as the anchor when zooming without a cursor position
+    pub canvas_rect: Rect,
     pub shortcuts: Shortcuts,
     pub pause: bool,
     pub step_amount: usize, //TODO change this to be a menu struct, and maybe move pause and other here
@@ -56,6 +59,7 @@ pub fn gui(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<(), e
         offset: Vec2 { x: 0f32, y: 0f32 },
         pan: Vec2 { x: 0f32, y: 0f32 },
         clip_rect: Rect::NOTHING,
+        canvas_rect: Rect::NOTHING,
         shortcuts: Shortcuts::new(),
         pause: true,
         step_amount: 10,
@@ -65,7 +69,16 @@ pub fn gui(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<(), e
         library,
     };
 
-    eframe::run_native("SyncRim", options, Box::new(|_cc| Ok(Box::new(gui))))
+    eframe::run_native(
+        "SyncRim",
+        options,
+        Box::new(|cc| {
+            // egui's built in ctrl+plus/minus/0 zoom scales the whole ui (menus included)
+            // and fights with our own canvas zoom, so turn it off
+            cc.egui_ctx.options_mut(|o| o.zoom_with_keyboard = false);
+            Ok(Box::new(gui))
+        }),
+    )
 }
 
 impl eframe::App for Gui {
@@ -148,19 +161,12 @@ impl Gui {
                 self.contexts.insert(context.id_tmp.clone(), context);
             }
         });
+        self.canvas_rect = central_panel.response.rect;
         let cpr = central_panel.response.interact(Sense::drag());
         if cpr.dragged_by(PointerButton::Primary) {
             self.pan += cpr.drag_delta();
         }
-        if central_panel.response.hovered() {
-            ctx.input_mut(|i| {
-                if i.raw_scroll_delta.y > 0f32 {
-                    keymap::view_zoom_in_fn(self);
-                } else if i.raw_scroll_delta.y < 0f32 {
-                    keymap::view_zoom_out_fn(self);
-                }
-            });
-        }
+        keymap::view_scroll_zoom(ctx, self);
     }
 
     fn top_bar(&mut self, ctx: &Context) {
