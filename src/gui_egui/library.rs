@@ -48,7 +48,7 @@ pub fn input_mode(ctx: &Context, e: &mut Editor, cpr: Response) {
             offset_reverse_helper_pos2(e.im.cursor_location, e.scale, e.offset_and_pan),
             e.grid.size,
         ) {
-            Some(s) => Vec2::new(s.x, s.y) * e.scale + e.offset + e.pan * e.scale,
+            Some(s) => Vec2::new(s.x, s.y) * e.scale + e.offset_and_pan,
             None => Vec2::new(e.im.cursor_location.x, e.im.cursor_location.y),
         }
     } else {

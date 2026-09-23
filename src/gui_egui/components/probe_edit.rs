@@ -32,6 +32,7 @@ impl EguiComponent for ProbeEdit {
             .enabled(true)
             .interactable(interact)
             .pivot(Align2::CENTER_CENTER)
+            .constrain_to(clip_rect)
             .constrain(false)
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);

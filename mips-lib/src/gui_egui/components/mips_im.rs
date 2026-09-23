@@ -108,6 +108,9 @@ impl EguiComponent for InstrMem {
         // handle mem_window and load of new file
         if let Some(sim) = &simulator {
             self.update_mem_view_register_values(sim);
+            self.mem_view
+                .borrow_mut()
+                .set_all_dynamic_symbols(self.dynamic_symbols.borrow().clone());
             #[allow(clippy::expect_fun_call)]
             let phys_mem: &PhysicalMem = find_component_with_type(sim, &self.phys_mem_id).expect(
                 &format!("can't find {} with type PhysicalMem", self.regfile_id),

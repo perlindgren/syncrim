@@ -85,7 +85,7 @@ impl RegViewWindow {
 
                 // show the display format of the register
                 let mut tmp: RegFormat = self.reg_format.clone();
-                ComboBox::from_id_source(&self.id)
+                ComboBox::from_id_salt(&self.id)
                     .selected_text(format!("{:?}", tmp))
                     .show_ui(ui, |ui| {
                         ui.selectable_value(&mut tmp, RegFormat::Hex, "Hex");
