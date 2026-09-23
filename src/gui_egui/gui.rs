@@ -100,6 +100,7 @@ impl Gui {
             offset: Vec2 { x: 0f32, y: 0f32 },
             pan: Vec2 { x: 0f32, y: 0f32 },
             clip_rect: Rect::NOTHING,
+            canvas_rect: Rect::NOTHING,
             shortcuts: Shortcuts::new(),
             pause: true,
             step_amount: 10,
@@ -113,7 +114,16 @@ impl Gui {
 
     pub fn run(self) -> Result<(), eframe::Error> {
         let options = eframe::NativeOptions::default();
-        eframe::run_native("SyncRim", options, Box::new(|_cc| Ok(Box::new(self))))
+        eframe::run_native(
+            "SyncRim",
+            options,
+            Box::new(|cc| {
+                // egui's built in ctrl+plus/minus/0 zoom scales the whole ui (menus included)
+                // and fights with our own canvas zoom, so turn it off
+                cc.egui_ctx.options_mut(|o| o.zoom_with_keyboard = false);
+                Ok(Box::new(self))
+            }),
+        )
     }
 
     pub fn with_inbuilt(mut self, in_built_models: &[(&str, &str)]) -> Self {
