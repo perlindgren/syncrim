@@ -30,3 +30,9 @@ default = ["gui-egui"]
 components = ["syncrim/components"]
 gui-vizia = ["syncrim/gui-vizia"]
 gui-egui = ["syncrim/gui-egui", "rfd"]
+
+# tests use components such as ProbeOut
+[dev-dependencies.syncrim]
+path = "../"
+default-features = false
+features = ["components"]

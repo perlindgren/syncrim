@@ -40,3 +40,9 @@ gui-egui = ["syncrim/gui-egui", "components"]
 [[example]]
 name = "riscv"
 required-features = ["components"]
+
+# tests use components such as ProbeOut
+[dev-dependencies.syncrim]
+path = "../"
+default-features = false
+features = ["components"]

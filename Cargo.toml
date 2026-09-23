@@ -61,6 +61,34 @@ name = "component_tests"
 required-features = ["components"]
 
 [[example]]
+name = "and"
+required-features = ["components"]
+
+[[example]]
+name = "mips_mux"
+required-features = ["components"]
+
+[[example]]
+name = "mux2"
+required-features = ["components"]
+
+[[example]]
+name = "mux3"
+required-features = ["components"]
+
+[[example]]
+name = "pass_trough"
+required-features = ["components"]
+
+[[example]]
+name = "probe_constant"
+required-features = ["components"]
+
+[[example]]
+name = "probe_stim"
+required-features = ["components"]
+
+[[example]]
 name = "add_edit"
 required-features = ["components"]
 

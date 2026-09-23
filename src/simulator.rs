@@ -563,7 +563,8 @@ impl Simulator {
     }
 }
 
-#[cfg(test)]
+// the tests use ProbeOut
+#[cfg(all(test, feature = "components"))]
 mod test {
     use super::*;
     use crate::components::*;

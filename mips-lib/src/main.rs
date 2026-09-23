@@ -59,8 +59,9 @@ fn main() {
             .store
             .iter()
             .find(|c| c.get_id_ports().0 == "phys_mem")
+            .and_then(|c| c.as_any().downcast_ref::<PhysicalMem>())
             .unwrap()
-            .get_pos();
+            .pos;
 
         // replace the default mem with our own
         let phys_mem = Rc::new(PhysicalMem::new("phys_mem", pos));
