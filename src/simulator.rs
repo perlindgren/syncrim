@@ -8,7 +8,10 @@ use petgraph::{
     dot::{Config, Dot},
     Graph,
 };
-use std::{collections::{HashMap, HashSet}, time::Duration};
+use std::{
+    collections::{HashMap, HashSet},
+    time::Duration,
+};
 use std::{fs::File, io::prelude::*, path::PathBuf};
 
 pub struct IdComponent(pub HashMap<String, Box<dyn Component>>);
@@ -422,7 +425,7 @@ impl Simulator {
         use std::time::Instant;
         let now = Instant::now();
         let mut i: u32 = 0; // used to quickly and inaccurately test performance
-        while now.elapsed() <  *duration{
+        while now.elapsed() < *duration {
             i += 1;
             match self.running_state {
                 RunningState::Running => self.clock(),

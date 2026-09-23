@@ -86,12 +86,16 @@ pub fn gui(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<(), e
 }
 
 impl Gui {
-    pub fn new(cs: ComponentStore, path: &PathBuf, library: Library) -> Result<Self, Box<dyn Error>> {
+    pub fn new(
+        cs: ComponentStore,
+        path: &PathBuf,
+        library: Library,
+    ) -> Result<Self, Box<dyn Error>> {
         let contexts = create_contexts(&cs.store);
         let simulator = Simulator::new(cs)?;
         let path = path.to_owned();
         // simulator.save_dot(&path);
-        
+
         Ok(Gui {
             path,
             simulator: Some(simulator),

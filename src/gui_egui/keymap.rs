@@ -247,7 +247,7 @@ impl Shortcuts {
 
 pub fn file_new_fn(_gui: &mut Gui) {}
 pub fn open_from_str(gui: &mut Gui, model: &str) -> Result<(), ComponentStoreLoadError> {
-let cs = ComponentStore::load(model)?;
+    let cs = ComponentStore::load(model)?;
     let contexts = create_contexts(&cs.store);
     match gui.editor_use {
         true => {
