@@ -32,7 +32,13 @@ pub struct InstrMem {
     pub load_err: RefCell<Option<MemLoadError>>,
     #[serde(skip)]
     pub pc_dm_history: RefCell<Vec<u32>>,
+    #[serde(default = "default_dynamic_symbols")]
     pub dynamic_symbols: RefCell<HashMap<String, (u32, bool)>>,
+}
+
+// PC_IM is always present, the pipeline symbols PC_DE, PC_EX and PC_DM are optional
+fn default_dynamic_symbols() -> RefCell<HashMap<String, (u32, bool)>> {
+    RefCell::new(HashMap::from([("PC_IM".into(), (0, true))]))
 }
 
 impl InstrMem {
@@ -57,7 +63,7 @@ impl InstrMem {
             #[cfg(feature = "gui-egui")]
             load_err: RefCell::new(None),
             pc_dm_history: RefCell::new(vec![]),
-            dynamic_symbols: RefCell::new(HashMap::new()),
+            dynamic_symbols: default_dynamic_symbols(),
         }
     }
     pub fn rc_new(
@@ -68,6 +74,24 @@ impl InstrMem {
         regfile_id: String,
     ) -> Rc<InstrMem> {
         Rc::new(InstrMem::new(id, pos, pc_input, phys_mem_id, regfile_id))
+    }
+    /// Choose which markers the instruction memory view starts with, as (name, visible).
+    /// PC_IM follows the pc, PC_DE, PC_EX and PC_DM follow the pipeline
+    /// but only if all three of them are given.
+    /// ```ignore
+    /// InstrMem::new(..).with_dynamic_symbols(&[
+    ///     ("PC_IM", true),
+    ///     ("PC_DE", false),
+    ///     ("PC_EX", false),
+    ///     ("PC_DM", false),
+    /// ])
+    /// ```
+    pub fn with_dynamic_symbols(self, symbols: &[(&str, bool)]) -> InstrMem {
+        *self.dynamic_symbols.borrow_mut() = symbols
+            .iter()
+            .map(|(name, visible)| (name.to_string(), (0, *visible)))
+            .collect();
+        self
     }
     pub fn clock_dynamic_symbols(&self, new_pc: u32) {
         let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
@@ -84,12 +108,16 @@ impl InstrMem {
             dynamic_symbols.get_mut("PC_EX").unwrap().0 = dynamic_symbols.get("PC_DE").unwrap().0;
             dynamic_symbols.get_mut("PC_DE").unwrap().0 = dynamic_symbols.get("PC_IM").unwrap().0;
         }
-        dynamic_symbols.get_mut("PC_IM").unwrap().0 = new_pc;
+        if let Some(pc_im) = dynamic_symbols.get_mut("PC_IM") {
+            pc_im.0 = new_pc;
+        }
     }
 
     pub fn unclock_dynamic_symbols(&self, new_pc: u32) {
         let mut dynamic_symbols = self.dynamic_symbols.borrow_mut();
-        dynamic_symbols.get_mut("PC_IM").unwrap().0 = new_pc;
+        if let Some(pc_im) = dynamic_symbols.get_mut("PC_IM") {
+            pc_im.0 = new_pc;
+        }
         if dynamic_symbols.contains_key("PC_DM")
             && dynamic_symbols.contains_key("PC_EX")
             && dynamic_symbols.contains_key("PC_DE")
@@ -123,7 +151,7 @@ impl Component for InstrMem {
             regfile_id: "dummy".into(),
             load_err: RefCell::new(None),
             pc_dm_history: RefCell::new(vec![]),
-            dynamic_symbols: RefCell::new(HashMap::new()),
+            dynamic_symbols: default_dynamic_symbols(),
         }))
     }
 
