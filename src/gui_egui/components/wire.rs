@@ -109,6 +109,7 @@ impl EguiComponent for Wire {
                             .movable(false)
                             .enabled(true)
                             .pivot(Align2::CENTER_CENTER)
+                            .constrain_to(clip_rect)
                             .constrain(false)
                             .show(ui.ctx(), |ui: &mut Ui| {
                                 ui.set_min_size(rect.size());

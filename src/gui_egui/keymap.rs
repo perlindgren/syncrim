@@ -340,33 +340,93 @@ pub fn file_quit_fn(_gui: &mut Gui) {}
 pub fn edit_cut_fn(_gui: &mut Gui) {}
 pub fn edit_copy_fn(_gui: &mut Gui) {}
 pub fn edit_paste_fn(_gui: &mut Gui) {}
-pub fn view_zoom_in_fn(gui: &mut Gui) {
-    let scale: &mut f32 = match gui.editor_use {
-        true => &mut gui.editor.as_mut().unwrap().scale,
-        false => &mut gui.scale,
+/// Discrete zoom levels used by the zoom in/out shortcuts and menu buttons
+pub const ZOOM_LEVELS: [f32; 11] = [0.1, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0];
+pub const ZOOM_MIN: f32 = 0.1;
+pub const ZOOM_MAX: f32 = 4.0;
+
+/// Sets the zoom of the active view (simulator or editor) to `new_scale`,
+/// keeping the point under `anchor` (screen coordinates) fixed on screen.
+/// If `anchor` is None the center of the drawing area is used.
+pub fn view_zoom_to(gui: &mut Gui, new_scale: f32, anchor: Option<egui::Pos2>) {
+    let anchor = anchor.unwrap_or(gui.canvas_rect.center());
+    let (scale, pan, offset) = match gui.editor_use {
+        true => {
+            let e = gui.editor.as_mut().unwrap();
+            (&mut e.scale, &mut e.pan, e.offset)
+        }
+        false => (&mut gui.scale, &mut gui.pan, gui.offset),
     };
-    match *scale {
-        x if (0.0f32..0.2f32).contains(&x) => *scale = 0.25f32,
-        x if (0.2f32..0.4f32).contains(&x) => *scale = 0.5f32,
-        x if (0.4f32..0.6f32).contains(&x) => *scale = 1f32,
-        x if (0.9f32..1.1f32).contains(&x) => *scale = 1.5f32,
-        x if (1.4f32..1.6f32).contains(&x) => *scale = 2f32,
-        _ => *scale = 2f32,
+    let new_scale = new_scale.clamp(ZOOM_MIN, ZOOM_MAX);
+    // screen = world * scale + offset + pan
+    // Solve for the world position under the anchor, then pick the pan that
+    // puts that world position under the anchor again with the new scale.
+    if anchor.is_finite() {
+        let world = (anchor.to_vec2() - offset - *pan) / *scale;
+        *pan = anchor.to_vec2() - offset - world * new_scale;
+    }
+    *scale = new_scale;
+    if let Some(e) = gui.editor.as_mut().filter(|_| gui.editor_use) {
+        e.offset_and_pan = e.offset + e.pan;
     }
 }
-pub fn view_zoom_out_fn(gui: &mut Gui) {
-    let scale: &mut f32 = match gui.editor_use {
-        true => &mut gui.editor.as_mut().unwrap().scale,
-        false => &mut gui.scale,
-    };
-    match *scale {
-        x if (0.2f32..0.4f32).contains(&x) => *scale = 0.1f32,
-        x if (0.4f32..0.6f32).contains(&x) => *scale = 0.25f32,
-        x if (0.9f32..1.1f32).contains(&x) => *scale = 0.5f32,
-        x if (1.4f32..1.6f32).contains(&x) => *scale = 1f32,
-        x if (1.9f32..2.1f32).contains(&x) => *scale = 1.5f32,
-        _ => *scale = 0.1f32,
+
+fn view_scale(gui: &Gui) -> f32 {
+    match gui.editor_use {
+        true => gui.editor.as_ref().unwrap().scale,
+        false => gui.scale,
     }
+}
+
+/// Zoom factor per point of scroll, a mouse wheel notch is roughly 50 points
+const ZOOM_SCROLL_SPEED: f32 = 1.0 / 250.0;
+
+/// Zooms the active view with the scroll wheel, ctrl+scroll or pinch gestures,
+/// keeping the point under the cursor fixed.
+/// Call this after the drawing area has been rendered, so that scroll areas inside
+/// components get the first chance to consume the scroll.
+pub fn view_scroll_zoom(ctx: &egui::Context, gui: &mut Gui) {
+    let Some(pointer) = ctx.pointer_hover_pos() else {
+        return;
+    };
+    if !gui.canvas_rect.contains(pointer) {
+        return;
+    }
+    // Don't zoom when hovering menus, popups or tooltips drawn above the canvas
+    if ctx
+        .layer_id_at(pointer)
+        .is_some_and(|l| l.order > egui::Order::Middle)
+    {
+        return;
+    }
+    let factor = ctx.input_mut(|i| {
+        let scroll = i.smooth_scroll_delta.y;
+        i.smooth_scroll_delta.y = 0.0;
+        i.zoom_delta() * (scroll * ZOOM_SCROLL_SPEED).exp()
+    });
+    if factor != 1.0 {
+        let scale = view_scale(gui);
+        view_zoom_to(gui, scale * factor, Some(pointer));
+        ctx.request_repaint();
+    }
+}
+
+pub fn view_zoom_in_fn(gui: &mut Gui) {
+    let scale = view_scale(gui);
+    let next = ZOOM_LEVELS
+        .into_iter()
+        .find(|l| *l > scale * 1.01)
+        .unwrap_or(ZOOM_MAX);
+    view_zoom_to(gui, next, None);
+}
+pub fn view_zoom_out_fn(gui: &mut Gui) {
+    let scale = view_scale(gui);
+    let next = ZOOM_LEVELS
+        .into_iter()
+        .rev()
+        .find(|l| *l < scale * 0.99)
+        .unwrap_or(ZOOM_MIN);
+    view_zoom_to(gui, next, None);
 }
 pub fn view_grid_toggle_fn(gui: &mut Gui) {
     if gui.editor_use {

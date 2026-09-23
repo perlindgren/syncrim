@@ -298,7 +298,7 @@ impl Editor {
                 let e = Editor::gui_to_editor(gui);
                 let screen_rect = ui.ctx().screen_rect();
                 let grid_scale = e.grid.size * e.scale;
-                let start = -(e.pan / e.grid.size / e.scale).floor();
+                let start = (-e.pan / e.grid.size / e.scale).floor();
 
                 let end =
                     (Vec2::new(screen_rect.width(), screen_rect.height()) / e.scale / e.grid.size)
@@ -396,15 +396,8 @@ impl Editor {
                 ctx.output_mut(|o| o.cursor_icon = egui::CursorIcon::Default)
             }
         }
-        if central_panel.response.hovered() {
-            ctx.input_mut(|i| {
-                if i.raw_scroll_delta.y > 0f32 {
-                    keymap::view_zoom_in_fn(gui);
-                } else if i.raw_scroll_delta.y < 0f32 {
-                    keymap::view_zoom_out_fn(gui);
-                }
-            });
-        }
+        gui.canvas_rect = central_panel.response.rect;
+        keymap::view_scroll_zoom(ctx, gui);
     }
 
     fn gui_to_editor(gui: &mut Gui) -> &mut Editor {

@@ -118,6 +118,7 @@ pub fn component_area<R>(
     id: String,
     ctx: &Context,
     pos: impl Into<Pos2>,
+    clip_rect: Rect,
     content: impl FnOnce(&mut Ui) -> R,
 ) -> InnerResponse<R> {
     Area::new(egui::Id::from(id))
@@ -128,6 +129,11 @@ pub fn component_area<R>(
         .interactable(true)
         .sense(Sense::all())
         .pivot(Align2::CENTER_CENTER)
+        // Component areas live on a layer above the panels (top bar, library side panel),
+        // so limit where they can be painted and interacted with to the drawing area.
+        // Otherwise a component under a panel steals the panels' clicks.
+        // constrain_to also enables moving the area inside the rect, so turn that off again.
+        .constrain_to(clip_rect)
         .constrain(false)
         .show(ctx, content)
 }
@@ -222,6 +228,7 @@ pub fn basic_component_gui_with_on_hover(
         component.get_id_ports().0,
         ctx,
         Pos2::from(component.get_pos()) * scale + offset,
+        clip_rect,
         |ui| {
             ui.set_clip_rect(clip_rect);
 

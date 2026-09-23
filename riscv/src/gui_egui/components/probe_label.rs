@@ -36,6 +36,8 @@ impl EguiComponent for ProbeLabel {
             .enabled(true)
             .interactable(false)
             .pivot(Align2::CENTER_CENTER)
+            .constrain_to(clip_rect)
+            .constrain(false)
             .show(ui.ctx(), |ui| {
                 ui.set_clip_rect(clip_rect);
                 let text = if self.input.field != "out" {

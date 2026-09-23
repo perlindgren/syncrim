@@ -13,9 +13,7 @@ impl Menu {
             shared_buttons_file(gui, ui);
             shared_buttons_edit(gui, ui);
 
-            let mut scale = gui.scale;
-            shared_buttons_view(gui, ui, &mut scale, |_| {});
-            gui.scale = scale;
+            shared_buttons_view(gui, ui, |_| {});
 
             shared_buttons_help(gui, ui);
         });
@@ -82,7 +80,6 @@ impl Menu {
         menu::bar(ui, |ui| {
             shared_buttons_file(gui, ui);
             shared_buttons_edit(gui, ui);
-            let mut scale = editor(gui).scale;
             let mut grid_enable = editor(gui).grid.enable;
             let mut grid_size = editor(gui).grid.size;
             let mut grid_opacity = editor(gui).grid.opacity;
@@ -90,7 +87,7 @@ impl Menu {
             let mut grid_snap_distance = editor(gui).grid.snap_distance;
             let view_grid_toggle = gui.shortcuts.view_grid_toggle;
             let view_grid_snap_toggle = gui.shortcuts.view_grid_snap_toggle;
-            shared_buttons_view(gui, ui, &mut scale, |ui| {
+            shared_buttons_view(gui, ui, |ui| {
                 ui.horizontal(|ui| {
                     ui.checkbox(&mut grid_enable, "Grid Enable");
                     ui.label(ui.ctx().format_shortcut(&view_grid_toggle));
@@ -116,7 +113,6 @@ impl Menu {
                     ui.add(DragValue::new(&mut grid_snap_distance).range(0f32..=100f32));
                 });
             });
-            editor(gui).scale = scale;
             editor(gui).grid = GridOptions {
                 enable: grid_enable,
                 size: grid_size,
@@ -187,7 +183,7 @@ fn shared_buttons_edit(gui: &mut Gui, ui: &mut Ui) {
     });
 }
 
-fn shared_buttons_view<P>(gui: &mut Gui, ui: &mut Ui, scale: &mut f32, mut f: P)
+fn shared_buttons_view<P>(gui: &mut Gui, ui: &mut Ui, mut f: P)
 where
     P: FnMut(&mut Ui),
 {
@@ -198,30 +194,15 @@ where
         if btn(ui, "Zoom Out", gui.shortcuts.view_zoom_out).clicked() {
             keymap::view_zoom_out_fn(gui);
         }
-        ui.menu_button("Zoom Level", |ui| {
-            if ui.button("10%").clicked() {
-                // 10% zoom here here
-                *scale = 0.1f32;
-            }
-            if ui.button("25%").clicked() {
-                // 25% zoom here here
-                *scale = 0.25f32;
-            }
-            if ui.button("50%").clicked() {
-                // 50% zoom here here
-                *scale = 0.5f32;
-            }
-            if ui.button("100%").clicked() {
-                // 100% zoom here here
-                *scale = 1f32;
-            }
-            if ui.button("150%").clicked() {
-                // 150% zoom here here
-                *scale = 1.5f32;
-            }
-            if ui.button("200%").clicked() {
-                // 200% zoom here here
-                *scale = 2f32;
+        let scale = match gui.editor_use {
+            true => gui.editor.as_ref().unwrap().scale,
+            false => gui.scale,
+        };
+        ui.menu_button(format!("Zoom Level ({:.0}%)", scale * 100f32), |ui| {
+            for level in keymap::ZOOM_LEVELS {
+                if ui.button(format!("{:.0}%", level * 100f32)).clicked() {
+                    keymap::view_zoom_to(gui, level, None);
+                }
             }
         });
         f(ui);
