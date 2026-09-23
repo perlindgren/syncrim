@@ -37,19 +37,21 @@ fn main() {
             ),
             //
             //
-            Rc::new(InstrMem::new(
-                "instr_mem".into(),
-                (45.0, 585.0),
-                Input::new("pc", REGISTER_OUT_ID),
-                "phys_mem".into(),
-                "reg_file".into(),
-            )
-            .with_dynamic_symbols(&[
-                ("PC_IM", true),
-                ("PC_DE", true),
-                ("PC_EX", true),
-                ("PC_DM", true),
-            ])),
+            Rc::new(
+                InstrMem::new(
+                    "instr_mem".into(),
+                    (45.0, 585.0),
+                    Input::new("pc", REGISTER_OUT_ID),
+                    "phys_mem".into(),
+                    "reg_file".into(),
+                )
+                .with_dynamic_symbols(&[
+                    ("PC_IM", true),
+                    ("PC_DE", true),
+                    ("PC_EX", true),
+                    ("PC_DM", true),
+                ]),
+            ),
             //
             //
             // MUX to choose what instruction addr to choose from, branch jump, reg, pc+4
