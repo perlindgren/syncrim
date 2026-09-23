@@ -468,7 +468,7 @@ fn main() {
         ],
     };
 
-    let path = PathBuf::from("mips_pipe_ex.json");
+    let path = PathBuf::from("mips_pipe_example_1.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]

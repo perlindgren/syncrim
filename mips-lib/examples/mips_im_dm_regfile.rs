@@ -20,8 +20,7 @@ fn main() {
             ProbeEdit::rc_new("write_addr", (60.0, 180.0)),
             ProbeEdit::rc_new("write_data", (60.0, 220.0)),
             ProbeEdit::rc_new("write_enable", (60.0, 260.0)),
-            ProbeEdit::rc_new("read_enable", (60.0, 300.0)),
-            Probe::rc_new(
+                        Probe::rc_new(
                 "rs",
                 (300.0, 120.0),
                 Input::new("reg_file", reg_file_fields::RS_VALUE_OUT_ID),
@@ -43,6 +42,7 @@ fn main() {
             ProbeEdit::rc_new("data_write_enable", (60.0, 700.0)),
             ProbeEdit::rc_new("data_mem_op", (60.0, 740.0)),
             ProbeEdit::rc_new("data_write_data", (60.0, 780.0)),
+            ProbeEdit::rc_new("data_read_enable", (60.0, 820.0)),
             Rc::new(DataMem::new(
                 "data_mem".into(),
                 (200.0, 700.0),

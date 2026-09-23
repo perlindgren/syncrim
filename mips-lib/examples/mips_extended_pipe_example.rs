@@ -398,7 +398,7 @@ fn main() {
                 Input::new("io", IO_INTERRUPT_OUT_ID),
                 Input::new("control_unit_0", cntr_field::IS_SYSCALL), // IS SYSCALL
                 Input::new("is_int_branch_delay", MUX_OUT_ID),
-                Input::new("instruction_ex_4_address_in", REGISTER_OUT_ID), // EPC
+                Input::new("mux_b2_reg", REGISTER_OUT_ID), // EPC
                 Input::new("alu", ALU_OVERFLOW_OUT_ID),
             ),
             //
@@ -542,7 +542,7 @@ fn main() {
         ],
     };
 
-    let path = PathBuf::from("mips_pipe_ex.json");
+    let path = PathBuf::from("mips_extended_pipe_example.json");
     cs.save_file(&path);
 
     #[cfg(feature = "gui-egui")]
