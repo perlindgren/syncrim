@@ -137,7 +137,7 @@ impl Component for MipsTimer {
                 }
                 // reset timer when compare is reached
                 // +1 for syncsim compatibility
-                else if (data.counter == data.compare + 1)
+                else if (data.counter == data.compare.wrapping_add(1))
                     && data.flags & COMPARE1_CR == COMPARE1_CR
                 {
                     // push old OVERFLOW_FG
@@ -263,7 +263,7 @@ impl Component for MipsTimer {
             }
             _ => {}
         }
-        
+
         // undo timer clocking
         if (data.flags & COUNTER_ENABLE) == COUNTER_ENABLE {
             // if we try to decrease a divider which is at zero
@@ -271,6 +271,9 @@ impl Component for MipsTimer {
             data.div_counter = previous_divider;
 
             if overflow {
+                // same check as in clock, done before we undo the counter step
+                let compare_matched = data.counter == data.compare;
+
                 // -1 since never are at data.divider since its set to 0 if so
                 data.div_counter = data.divider - 1;
 
@@ -293,9 +296,9 @@ impl Component for MipsTimer {
                         data.counter = data.compare
                     }
                 }
-                // if we unclock to before compare sets the bit
+                // if compare set the bit this cycle
                 // set our old bit
-                if data.counter == data.compare - 1 {
+                if compare_matched {
                     let previous_compare = data.compare1_fg_history.pop().unwrap();
                     // clear overflow bit
                     data.flags &= !COMPARE1_FG;
@@ -523,5 +526,174 @@ mod test {
                 Condition::Error("Not valid data to write, SignalValue is not data".to_string())
             ))
         );
+    }
+}
+
+#[cfg(test)]
+mod unclock_test {
+    use super::*;
+    use std::rc::Rc;
+    use syncrim::common::{ComponentStore, RunningState, Simulator};
+
+    // Drives we, adrs and data from a script during clock, like the rest of a circuit would.
+    // ProbeOut can't be used, since un_clock needs the inputs as they were during that cycle
+    #[derive(Serialize, Deserialize)]
+    struct Driver {
+        #[serde(skip)]
+        script: Vec<(usize, u32, SignalValue)>, // (cycle, address, data), we is high on these cycles
+    }
+
+    #[typetag::serde]
+    impl Component for Driver {
+        fn to_(&self) {}
+        fn get_id_ports(&self) -> (Id, Ports) {
+            (
+                "drv".into(),
+                Ports::new(
+                    vec![],
+                    OutputType::Combinatorial,
+                    vec!["we", "adrs", "data"],
+                ),
+            )
+        }
+        fn clock(&self, sim: &mut Simulator) -> Result<(), Condition> {
+            let (we, adrs, data) = match self.script.iter().find(|w| w.0 == sim.cycle) {
+                Some((_, adrs, data)) => (1, *adrs, *data),
+                None => (0, 0, SignalValue::Data(0)),
+            };
+            sim.set_out_value("drv", "we", we);
+            sim.set_out_value("drv", "adrs", adrs);
+            sim.set_out_value("drv", "data", data);
+            Ok(())
+        }
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+    }
+
+    #[cfg(feature = "gui-egui")]
+    #[typetag::serde]
+    impl syncrim::common::EguiComponent for Driver {}
+
+    type Snapshot = (u8, u32, u32, u32, usize, usize, usize);
+
+    fn snapshot(sim: &Simulator) -> Snapshot {
+        let timer: &MipsTimer = sim
+            .ordered_components
+            .iter()
+            .find_map(|c| c.as_any().downcast_ref())
+            .unwrap();
+        let d = timer.data.borrow();
+        (
+            d.flags,
+            d.counter,
+            d.compare,
+            d.div_counter,
+            d.overflow_fg_history.len(),
+            d.compare1_fg_history.len(),
+            d.reset_cause_history.len(),
+        )
+    }
+
+    // clock the script, then unclock all the way back and check every cycle is restored
+    fn assert_round_trip(script: &[(usize, u32, SignalValue)], cycles: usize) {
+        let mut sim = Simulator::new(ComponentStore {
+            store: vec![
+                Rc::new(Driver {
+                    script: script.to_vec(),
+                }),
+                Rc::new(MipsTimer::new(
+                    "timer",
+                    (0.0, 0.0),
+                    Input::new("drv", "adrs"),
+                    Input::new("drv", "data"),
+                    Input::new("drv", "we"),
+                )),
+            ],
+        })
+        .unwrap();
+
+        let mut snapshots = vec![snapshot(&sim)];
+        for _ in 0..cycles {
+            // ignore errors, such as writing invalid data
+            sim.running_state = RunningState::Stopped;
+            sim.clock();
+            snapshots.push(snapshot(&sim));
+        }
+        for cycle in (0..cycles).rev() {
+            sim.un_clock();
+            assert_eq!(
+                snapshot(&sim),
+                snapshots[cycle],
+                "after unclock to cycle {cycle}"
+            );
+        }
+    }
+
+    const EN: u32 = COUNTER_ENABLE as u32;
+    const CIE: u32 = COMPARE1_IE as u32;
+    const CR: u32 = COMPARE1_CR as u32;
+    const FLAGS: u32 = 0xFFFF_0010;
+    const COUNT: u32 = 0xFFFF_0014;
+    const COMPARE: u32 = 0xFFFF_0018;
+    use SignalValue::Data;
+
+    // Simulator::new clocks once, so scripts start at cycle 1
+    #[test]
+    fn unclock_compare_zero() {
+        assert_round_trip(&[(1, FLAGS, Data(EN))], 100);
+        assert_round_trip(&[(1, FLAGS, Data(EN | CR))], 100);
+    }
+
+    #[test]
+    fn unclock_compare() {
+        assert_round_trip(&[(1, COMPARE, Data(5)), (2, FLAGS, Data(EN | CIE))], 200);
+        assert_round_trip(
+            &[(1, COMPARE, Data(3)), (2, FLAGS, Data(EN | CIE | CR))],
+            200,
+        );
+    }
+
+    #[test]
+    fn unclock_overflow() {
+        let script = [
+            (1, COMPARE, Data(7)),
+            (2, COUNT, Data(0xFFFF_FFFE)),
+            (3, FLAGS, Data(EN)),
+        ];
+        assert_round_trip(&script, 100);
+    }
+
+    #[test]
+    fn unclock_compare_max() {
+        assert_round_trip(
+            &[(1, COMPARE, Data(u32::MAX)), (2, FLAGS, Data(EN | CR))],
+            40,
+        );
+        let script = [
+            (1, COMPARE, Data(u32::MAX)),
+            (2, COUNT, Data(0xFFFF_FFFD)),
+            (3, FLAGS, Data(EN | CIE)),
+        ];
+        assert_round_trip(&script, 100);
+    }
+
+    #[test]
+    fn unclock_writes() {
+        // clear flags and change count while running
+        let script = [
+            (1, COMPARE, Data(2)),
+            (2, FLAGS, Data(EN | CIE | CR)),
+            (60, FLAGS, Data(EN | CIE | CR)),
+            (61, COUNT, Data(1)),
+        ];
+        assert_round_trip(&script, 150);
+        // move compare below count
+        let script = [
+            (1, COMPARE, Data(9)),
+            (2, FLAGS, Data(EN | CR)),
+            (80, COMPARE, Data(2)),
+        ];
+        assert_round_trip(&script, 150);
     }
 }
