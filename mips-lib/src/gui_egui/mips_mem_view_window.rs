@@ -130,19 +130,16 @@ impl MemViewWindow {
         }
     }
     // replaces all dynamic symbols with the given new_dynamic_symbols
+    // keeps the visibility of already known symbols, new symbols use the given visibility
     pub fn set_all_dynamic_symbols(&mut self, new_dynamic_symbols: HashMap<String, (u32, bool)>) {
-        for symbol in new_dynamic_symbols {
-            self.dynamic_symbols.insert(
-                symbol.0.clone(),
-                (
-                    symbol.1 .0,
-                    self.dynamic_symbols
-                        .get_key_value((symbol.0).as_str())
-                        .unwrap()
-                        .1
-                         .1,
-                ),
-            );
+        self.dynamic_symbols
+            .retain(|name, _| new_dynamic_symbols.contains_key(name));
+        for (name, (adrs, visible)) in new_dynamic_symbols {
+            let visible = self
+                .dynamic_symbols
+                .get(&name)
+                .map_or(visible, |(_, cur_visible)| *cur_visible);
+            self.dynamic_symbols.insert(name, (adrs, visible));
         }
     }
     /// Get the address of a symbol, if no such symbol exist return None

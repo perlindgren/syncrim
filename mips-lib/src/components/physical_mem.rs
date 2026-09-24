@@ -1,4 +1,4 @@
-use elf::{endian::AnyEndian, ElfBytes};
+use elf::{abi::SHT_PROGBITS, endian::AnyEndian, ElfBytes};
 use std::{
     any::Any,
     cell::RefCell,
@@ -43,6 +43,55 @@ impl PhysicalMem {
         self.mem.replace(MipsMem::from_sections(&data)?);
         self.history.borrow_mut().clear();
         Ok(())
+    }
+
+    pub fn get_data(&self, start: u32, array: &mut [u8]) {
+        let mem = &self.mem.borrow().data;
+        for (i, b) in array.iter_mut().enumerate() {
+            *b = *mem.get(&(i as u32 + start)).unwrap_or(&0)
+        }
+    }
+
+    pub fn get_str_at_symbol(&self, symbol: &str) -> String {
+        let sym_indx = &self
+            .mem
+            .borrow()
+            .symbols
+            .iter()
+            .find_map(|(idx, sym)| if sym == symbol { Some(*idx) } else { None })
+            .unwrap();
+        let mem = &self.mem.borrow().data;
+        // this is ugly
+        let mut byte_vec: Vec<u8> = Vec::new();
+        let mut i = 0;
+        loop {
+            let b = *mem.get(&(sym_indx + i)).unwrap_or(&0);
+            byte_vec.push(b);
+            if b == 0 {
+                break;
+            }
+            i += 1;
+        }
+
+        String::from_utf8_lossy(&byte_vec).to_string()
+    }
+
+    pub fn get_address_of_sym(&self, sym: &str) -> Option<u32> {
+        self.mem
+            .borrow()
+            .symbols
+            .iter()
+            .find_map(|(id, internal_sym)| if sym == internal_sym { Some(*id) } else { None })
+    }
+    /// Warning this is not ment to be used for the simulator
+    /// the purpose is debugging and testing
+    /// when this is used unclock becomes unpredictable
+    pub fn hard_set(&self, address: u32, data: u8) {
+        self.mem.borrow_mut().data.insert(address, data);
+    }
+
+    pub fn read(&self, address: u32) -> u8 {
+        *self.mem.borrow().data.get(&address).unwrap_or(&0)
     }
 }
 
@@ -179,11 +228,17 @@ impl MipsMem {
         for sect in sections {
             // if the section has flag alloc(0x2), aka lives in memory
             // if the section has a size larger than zero
-            if sect.sh_flags & 0x2 == 0x2 && sect.sh_size != 0 {
+            // FIXME currently the sde assembler fails to apply section directives such as "wa" or "ex"
+            // for some reason it adds the xa flag to ktxet, regardless of directives
+            // but i haven't manged to get sde to add the flag to kdata, so here is an ugly quick fix
+            if str_tab.get(sect.sh_name as usize)? == ".kdata"
+                || sect.sh_flags & 0x2 == 0x2 && sect.sh_size != 0
+            {
                 let v_address = sect.sh_addr as u32;
 
-                // if type is prog bits write the data to memory
-                if sect.sh_type == 0x1 {
+                // if the section has flag alloc(0x2), aka lives in memory
+                // if the section has a size larger than zero
+                if true {
                     let elf_address = sect.sh_offset; // offset into elf file where data is stored (note inside of elf Segment)
                     let elf_end_address = elf_address + sect.sh_size; // end address of data
                     let sect_data = &elf_bytes[elf_address as usize..elf_end_address as usize];

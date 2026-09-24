@@ -15,7 +15,7 @@ fern = "0.7.1"
 log = "0.4.19"
 num_enum = "0.7.4"
 petgraph = "0.8.2"
-rfd = "0.15.3"
+rfd = {version = "0.15.3", optional = true}
 serde = { version = "1.0.171", features = ["rc"] }
 serde_derive = "1.0.171"
 serde_json = "1.0.103"
@@ -43,7 +43,7 @@ version = "0.31.1"
 default = ["gui-egui"]
 components = []
 gui-vizia = ["vizia", "components"]
-gui-egui = ["egui", "eframe", "epaint", "components"]
+gui-egui = ["egui", "eframe", "epaint", "components", "rfd"]
 
 [profile.dev]
 debug = 1 # faster build, still allows for stack back trace
@@ -58,6 +58,34 @@ debug = 1          # faster build, still allows for stack back trace
 
 [[test]]
 name = "component_tests"
+required-features = ["components"]
+
+[[example]]
+name = "and"
+required-features = ["components"]
+
+[[example]]
+name = "mips_mux"
+required-features = ["components"]
+
+[[example]]
+name = "mux2"
+required-features = ["components"]
+
+[[example]]
+name = "mux3"
+required-features = ["components"]
+
+[[example]]
+name = "pass_trough"
+required-features = ["components"]
+
+[[example]]
+name = "probe_constant"
+required-features = ["components"]
+
+[[example]]
+name = "probe_stim"
 required-features = ["components"]
 
 [[example]]

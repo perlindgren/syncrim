@@ -42,6 +42,7 @@ fn main() {
             ProbeEdit::rc_new("data_write_enable", (60.0, 700.0)),
             ProbeEdit::rc_new("data_mem_op", (60.0, 740.0)),
             ProbeEdit::rc_new("data_write_data", (60.0, 780.0)),
+            ProbeEdit::rc_new("data_read_enable", (60.0, 820.0)),
             Rc::new(DataMem::new(
                 "data_mem".into(),
                 (200.0, 700.0),
@@ -49,6 +50,7 @@ fn main() {
                 Input::new("data_write_data", "out"),
                 Input::new("data_mem_op", "out"),
                 Input::new("data_write_enable", "out"),
+                Input::new("data_read_enable", "out"),
                 "phys_mem".into(),
                 "reg_file".into(),
             )),

@@ -154,6 +154,7 @@ fn main() {
                 Input::new("reg_file", reg_file_fields::RT_VALUE_OUT_ID),
                 Input::new("control_unit", cntr_field::MEM_MODE_OUT),
                 Input::new("control_unit", cntr_field::MEM_WRITE_ENABLE_OUT),
+                Input::new("control_unit", cntr_field::MEM_READ_ENABLE_OUT),
                 "phys_mem".into(),
                 "reg_file".into(),
             )),

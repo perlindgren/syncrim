@@ -9,7 +9,7 @@ pub const WIRE_INPUT_ID: &str = "in";
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Wire {
     pub(crate) id: Id,
-    pub(crate) pos: Vec<(f32, f32)>,
+    pub pos: Vec<(f32, f32)>,
     pub(crate) input: Input,
     // this is colour32, using [u8;4] instead of color
     // because we are not sure if egui feature is present
