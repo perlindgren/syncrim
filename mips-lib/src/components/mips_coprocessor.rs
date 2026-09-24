@@ -296,9 +296,9 @@ impl Component for CP0 {
                 if register_address == 0x6000 {
                     //
                     regs.sr = input_data;
-                } else if register_address == 6800 {
+                } else if register_address == 0x6800 {
                     regs.ecr = input_data;
-                } else if register_address == 7000 {
+                } else if register_address == 0x7000 {
                     regs.epc = input_data;
                 }
             }
@@ -324,7 +324,8 @@ impl Component for CP0 {
 
     fn un_clock(&self, sim: &Simulator) {
         let mut history = self.history.borrow_mut();
-        if let Some(last) = history.pop_if(|r| r.cycle == sim.cycle) {
+        // +1 since cycle increased after clock, but not decreased before unclock
+        if let Some(last) = history.pop_if(|r| r.cycle + 1 == sim.cycle) {
             *self.registers.borrow_mut() = last.regs
         }
     }
@@ -400,5 +401,158 @@ impl CP0 {
             instruction_ex_4_address_in,
             overflow_in,
         ))
+    }
+}
+
+#[cfg(test)]
+mod unclock_test {
+    use super::*;
+    use crate::components::test_utils::*;
+    use syncrim::signal::SignalValue::{self, Data};
+
+    const SR_ADR: u32 = 0x6000;
+    const ECR_ADR: u32 = 0x6800;
+    const EPC_ADR: u32 = 0x7000;
+    // interrupt enable, timer mask and io mask
+    const SR_IE: u32 = 0x1;
+    const SR_TIMER: u32 = 0x400;
+    const SR_IO: u32 = 0x800;
+
+    type Snapshot = (Regs, usize, SignalValue, SignalValue);
+
+    fn snapshot(sim: &Simulator) -> Snapshot {
+        let cp0 = get_component::<CP0>(sim);
+        (
+            cp0.registers.borrow().clone(),
+            cp0.history.borrow().len(),
+            sim.get_input_value(&Input::new("cp0", CP0_IS_INT_OUT_ID)),
+            sim.get_input_value(&Input::new("cp0", CP0_REGISTER_OUT_ID)),
+        )
+    }
+
+    fn sim(script: &[(usize, &'static str, SignalValue)]) -> Simulator {
+        let ports = [
+            "we", "adr", "din", "rfe", "tint", "ioint", "sys", "pc", "ex4", "ovf",
+        ];
+        let driver = TestDriver {
+            outputs: ports.iter().map(|p| (*p, Data(0))).collect(),
+            script: script.to_vec(),
+        };
+        let i = |port| Input::new(DRIVER_ID, port);
+        test_sim(
+            driver,
+            vec![CP0::rc_new(
+                "cp0",
+                (0.0, 0.0),
+                i("we"),
+                i("adr"),
+                i("din"),
+                i("rfe"),
+                i("tint"),
+                i("ioint"),
+                i("sys"),
+                i("pc"),
+                i("ex4"),
+                i("ovf"),
+            )],
+        )
+    }
+
+    // mtc0 at cycle
+    fn write(cycle: usize, adr: u32, data: u32) -> [(usize, &'static str, SignalValue); 3] {
+        [
+            (cycle, "we", Data(1)),
+            (cycle, "adr", Data(adr)),
+            (cycle, "din", Data(data)),
+        ]
+    }
+
+    #[test]
+    fn unclock_writes() {
+        let script = [
+            write(1, SR_ADR, SR_IE | SR_TIMER),
+            write(2, ECR_ADR, 0x1234),
+            write(3, EPC_ADR, 0x8000_0000),
+            // mfc0
+            [
+                (4, "adr", Data(SR_ADR)),
+                (5, "adr", Data(ECR_ADR)),
+                (6, "adr", Data(EPC_ADR)),
+            ],
+        ]
+        .concat();
+        let s = sim(&script);
+        // check that the writes happened
+        {
+            let mut s = sim(&script);
+            for _ in 0..3 {
+                s.clock();
+            }
+            let regs = get_component::<CP0>(&s).registers.borrow().clone();
+            assert_eq!(
+                regs,
+                Regs {
+                    sr: SR_IE | SR_TIMER,
+                    ecr: 0x1234,
+                    epc: 0x8000_0000
+                }
+            );
+        }
+        assert_round_trip(s, 10, snapshot);
+    }
+
+    #[test]
+    fn unclock_interrupts() {
+        let script = [
+            // interrupts disabled, nothing should happen
+            vec![(1, "tint", Data(1)), (2, "sys", Data(1))],
+            write(3, SR_ADR, SR_IE | SR_TIMER | SR_IO).to_vec(),
+            // timer interrupt held high for a few cycles, like the timer does
+            vec![
+                (5, "pc", Data(0x100)),
+                (5, "tint", Data(1)),
+                (6, "tint", Data(1)),
+                (7, "tint", Data(1)),
+                (9, "rfe", Data(1)),
+            ],
+            // io interrupt, rfe
+            vec![
+                (12, "pc", Data(0x200)),
+                (12, "ioint", Data(1)),
+                (14, "rfe", Data(1)),
+            ],
+            // syscall, rfe
+            vec![
+                (16, "pc", Data(0x300)),
+                (16, "sys", Data(1)),
+                (18, "rfe", Data(1)),
+            ],
+            // overflow, rfe
+            vec![
+                (20, "ex4", Data(0x404)),
+                (20, "ovf", Data(1)),
+                (22, "rfe", Data(1)),
+            ],
+            // interrupt and rfe on the same cycle
+            vec![(24, "tint", Data(1)), (24, "rfe", Data(1))],
+            // mask out timer, it should be ignored
+            write(26, SR_ADR, SR_IE).to_vec(),
+            vec![(27, "tint", Data(1))],
+        ]
+        .concat();
+        let s = sim(&script);
+        // check that the interrupts happened
+        {
+            let mut s = sim(&script);
+            for _ in 0..5 {
+                s.clock();
+            }
+            assert_eq!(
+                s.get_input_value(&Input::new("cp0", CP0_IS_INT_OUT_ID)),
+                Data(1)
+            );
+            assert_eq!(get_component::<CP0>(&s).registers.borrow().epc, 0x100);
+        }
+        assert_round_trip(s, 40, snapshot);
     }
 }
