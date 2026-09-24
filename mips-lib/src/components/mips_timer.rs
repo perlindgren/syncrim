@@ -247,8 +247,11 @@ impl Component for MipsTimer {
         match sim.get_input_value(&self.we_in) {
             // write line is zero
             SignalValue::Data(0x0) => {}
-            // write enable write data
-            SignalValue::Data(_) => {
+            // write enable write data, only if data was valid, same as in clock
+            // otherwise nothing was written and data out holds a stale value
+            SignalValue::Data(_)
+                if matches!(sim.get_input_value(&self.data_in), SignalValue::Data(_)) =>
+            {
                 // get the old value (is written to out when we is high)
                 if let SignalValue::Data(out_data) = sim.get_input_value(&data_out) {
                     // set data according to address
@@ -532,58 +535,14 @@ mod test {
 #[cfg(test)]
 mod unclock_test {
     use super::*;
+    use crate::components::test_utils::*;
     use std::rc::Rc;
-    use syncrim::common::{ComponentStore, RunningState, Simulator};
+    use syncrim::common::Simulator;
 
-    // Drives we, adrs and data from a script during clock, like the rest of a circuit would.
-    // ProbeOut can't be used, since un_clock needs the inputs as they were during that cycle
-    #[derive(Serialize, Deserialize)]
-    struct Driver {
-        #[serde(skip)]
-        script: Vec<(usize, u32, SignalValue)>, // (cycle, address, data), we is high on these cycles
-    }
-
-    #[typetag::serde]
-    impl Component for Driver {
-        fn to_(&self) {}
-        fn get_id_ports(&self) -> (Id, Ports) {
-            (
-                "drv".into(),
-                Ports::new(
-                    vec![],
-                    OutputType::Combinatorial,
-                    vec!["we", "adrs", "data"],
-                ),
-            )
-        }
-        fn clock(&self, sim: &mut Simulator) -> Result<(), Condition> {
-            let (we, adrs, data) = match self.script.iter().find(|w| w.0 == sim.cycle) {
-                Some((_, adrs, data)) => (1, *adrs, *data),
-                None => (0, 0, SignalValue::Data(0)),
-            };
-            sim.set_out_value("drv", "we", we);
-            sim.set_out_value("drv", "adrs", adrs);
-            sim.set_out_value("drv", "data", data);
-            Ok(())
-        }
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-    }
-
-    #[cfg(feature = "gui-egui")]
-    #[typetag::serde]
-    impl syncrim::common::EguiComponent for Driver {}
-
-    type Snapshot = (u8, u32, u32, u32, usize, usize, usize);
+    type Snapshot = (u8, u32, u32, u32, usize, usize, usize, SignalValue);
 
     fn snapshot(sim: &Simulator) -> Snapshot {
-        let timer: &MipsTimer = sim
-            .ordered_components
-            .iter()
-            .find_map(|c| c.as_any().downcast_ref())
-            .unwrap();
-        let d = timer.data.borrow();
+        let d = get_component::<MipsTimer>(sim).data.borrow();
         (
             d.flags,
             d.counter,
@@ -592,42 +551,40 @@ mod unclock_test {
             d.overflow_fg_history.len(),
             d.compare1_fg_history.len(),
             d.reset_cause_history.len(),
+            sim.get_input_value(&Input::new("timer", TIMER_INTERRUPT_OUT_ID)),
         )
     }
 
-    // clock the script, then unclock all the way back and check every cycle is restored
+    // we is high on the scripted cycles, (cycle, address, data)
     fn assert_round_trip(script: &[(usize, u32, SignalValue)], cycles: usize) {
-        let mut sim = Simulator::new(ComponentStore {
-            store: vec![
-                Rc::new(Driver {
-                    script: script.to_vec(),
-                }),
-                Rc::new(MipsTimer::new(
-                    "timer",
-                    (0.0, 0.0),
-                    Input::new("drv", "adrs"),
-                    Input::new("drv", "data"),
-                    Input::new("drv", "we"),
-                )),
+        let driver = TestDriver {
+            outputs: vec![
+                ("we", SignalValue::Data(0)),
+                ("adrs", SignalValue::Data(0)),
+                ("data", SignalValue::Data(0)),
             ],
-        })
-        .unwrap();
-
-        let mut snapshots = vec![snapshot(&sim)];
-        for _ in 0..cycles {
-            // ignore errors, such as writing invalid data
-            sim.running_state = RunningState::Stopped;
-            sim.clock();
-            snapshots.push(snapshot(&sim));
-        }
-        for cycle in (0..cycles).rev() {
-            sim.un_clock();
-            assert_eq!(
-                snapshot(&sim),
-                snapshots[cycle],
-                "after unclock to cycle {cycle}"
-            );
-        }
+            script: script
+                .iter()
+                .flat_map(|&(cycle, adrs, data)| {
+                    [
+                        (cycle, "we", SignalValue::Data(1)),
+                        (cycle, "adrs", SignalValue::Data(adrs)),
+                        (cycle, "data", data),
+                    ]
+                })
+                .collect(),
+        };
+        let sim = test_sim(
+            driver,
+            vec![Rc::new(MipsTimer::new(
+                "timer",
+                (0.0, 0.0),
+                Input::new(DRIVER_ID, "adrs"),
+                Input::new(DRIVER_ID, "data"),
+                Input::new(DRIVER_ID, "we"),
+            ))],
+        );
+        crate::components::test_utils::assert_round_trip(sim, cycles, snapshot);
     }
 
     const EN: u32 = COUNTER_ENABLE as u32;
@@ -695,5 +652,17 @@ mod unclock_test {
             (80, COMPARE, Data(2)),
         ];
         assert_round_trip(&script, 150);
+    }
+
+    #[test]
+    fn unclock_invalid_write() {
+        // the invalid write is not done in clock, so it must not be undone either
+        let script = [
+            (1, COUNT, Data(7)),
+            (2, COUNT, SignalValue::Unknown),
+            (3, FLAGS, Data(EN)),
+            (20, FLAGS, SignalValue::Uninitialized),
+        ];
+        assert_round_trip(&script, 60);
     }
 }
