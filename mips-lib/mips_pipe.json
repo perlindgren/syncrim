@@ -575,15 +575,15 @@
         ],
         "PC_DE": [
           0,
-          false
+          true
         ],
         "PC_EX": [
           0,
-          false
+          true
         ],
         "PC_DM": [
           0,
-          false
+          true
         ]
       },
       "mem_view": {
@@ -675,15 +675,15 @@
           ],
           "PC_DE": [
             0,
-            false
+            true
           ],
           "PC_EX": [
             0,
-            false
+            true
           ],
           "PC_DM": [
             0,
-            false
+            true
           ]
         }
       }
