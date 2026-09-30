@@ -1,4 +1,3 @@
-use bitvec::vec::BitVec;
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::{any::Any, cell::RefCell};
@@ -45,9 +44,7 @@ pub struct MipsIO {
     pub gui_show: RefCell<bool>,
 }
 
-const NO_DATA_READ: bool = false;
-const DATA_READ: bool = true;
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct MipsIOData {
     pub interrupt: bool,
     pub input_control: u32,
@@ -55,23 +52,40 @@ pub struct MipsIOData {
     pub key_buff_write_history: Vec<(usize, usize)>,
     pub read_pos: usize,
     pub end_pos: usize,
-    read_eq_end_cause: BitVec,
     pub key_buff: Vec<u8>,
     pub out_buff: Vec<u8>,
+    // (cycle, state before that cycle was clocked), only pushed if the clock changed the state
+    history: Vec<(usize, IOState)>,
 }
 
-impl Default for MipsIOData {
-    fn default() -> Self {
-        Self {
-            interrupt: false,
-            input_control: 0,
-            read_pos: 0,
-            end_pos: 0,
-            key_buff_write_history: Vec::default(),
-            read_eq_end_cause: BitVec::default(),
-            key_buff: Vec::default(),
-            out_buff: Vec::default(),
+// the state changed by clock, key_buff and key_buff_write_history are inputs and are kept
+#[derive(Debug, Clone, PartialEq)]
+struct IOState {
+    interrupt: bool,
+    input_control: u32,
+    read_pos: usize,
+    end_pos: usize,
+    // out_buff is only pushed to, so its length is enough to restore it
+    out_len: usize,
+}
+
+impl MipsIOData {
+    fn state(&self) -> IOState {
+        IOState {
+            interrupt: self.interrupt,
+            input_control: self.input_control,
+            read_pos: self.read_pos,
+            end_pos: self.end_pos,
+            out_len: self.out_buff.len(),
         }
+    }
+
+    fn restore(&mut self, state: IOState) {
+        self.interrupt = state.interrupt;
+        self.input_control = state.input_control;
+        self.read_pos = state.read_pos;
+        self.end_pos = state.end_pos;
+        self.out_buff.truncate(state.out_len);
     }
 }
 
@@ -114,7 +128,7 @@ impl Component for MipsIO {
             IO_REGISTER_SELECT_IN_ID => self.address_in = new_input,
             IO_DATA_IN_ID => self.data_in = new_input,
             IO_WRITE_ENABLE_IN => self.we_in = new_input,
-            IO_READ_ENABLE_IN => self.we_in = new_input,
+            IO_READ_ENABLE_IN => self.re_in = new_input,
             _ => {}
         }
     }
@@ -134,6 +148,9 @@ impl Component for MipsIO {
         };
 
         let mut data = self.data.borrow_mut();
+        let state_before = data.state();
+        let mut ret: Result<(), Condition> = Ok(());
+
         // if we have new data
         if let Some((_, new_data_amount)) = data
             .key_buff_write_history
@@ -163,13 +180,22 @@ impl Component for MipsIO {
                         data.out_buff.push(in_data as u8);
                     }
                     // if the address dont exist in our IO part
-                    SignalValue::Data(_) => todo!("bad address warning condition"),
-                    // if signal is uninitialized dont care or unknown return error
-                    _ => todo!("bad address error condition"),
+                    SignalValue::Data(_) => {
+                        ret = Err(Condition::Warning("Write address out of range".to_string()))
+                    }
+                    SignalValue::DontCare => {}
+                    // if signal is uninitialized or unknown return error
+                    _ => {
+                        ret = Err(Condition::Error(
+                            "Address is uninitialized or unknown".to_string(),
+                        ))
+                    }
                 }
             } else {
                 // trying to write a signal that isn't data
-                todo!("return bad data error")
+                ret = Err(Condition::Error(
+                    "Not valid data to write, SignalValue is not data".to_string(),
+                ))
             }
         }
 
@@ -191,13 +217,10 @@ impl Component for MipsIO {
 
                         // if we have read all the data
                         if data.read_pos == data.end_pos {
-                            data.read_eq_end_cause.push(DATA_READ);
                             data.interrupt = false;
                             // clear data available flag
                             data.input_control &= 0xFFFF_FFFE
                         }
-                    } else {
-                        data.read_eq_end_cause.push(NO_DATA_READ);
                     }
                 }
                 _ => {}
@@ -207,60 +230,29 @@ impl Component for MipsIO {
         // set the interrupt signal
         simulator.set_out_value(&self.id, IO_INTERRUPT_OUT_ID, data.interrupt);
 
-        Ok(())
+        // save the state before this cycle, used for unclock
+        if data.state() != state_before {
+            data.history.push((simulator.cycle, state_before));
+        }
+
+        ret
     }
 
     fn un_clock(&self, sim: &Simulator) {
         let mut data = self.data.borrow_mut();
-
-        // if we wrote information during the clock we are trying to undo
-        if matches!(sim.get_input_value(&self.we_in), SignalValue::Data(1)) {
-            let mut data = self.data.borrow_mut();
-            let _ = data.out_buff.pop();
-
-            // if we read data and data was available
-        } else if matches!(sim.get_input_value(&self.re_in), SignalValue::Data(1)) {
-            if data.read_pos < data.end_pos {
-                // revert the read, aka move read pointer back
-                data.read_pos -= 1;
-            } else if data.read_pos == data.end_pos {
-                if data.read_eq_end_cause.pop().unwrap() == DATA_READ {
-                    data.read_pos -= 1;
-                }
-            } else {
-                panic!("read pos is greater than end pos")
-            }
-        }
-
-        // revert end pos increase
-        if let Some((_, write_amount)) = data
-            .key_buff_write_history
-            .iter()
-            .find(|(cycle, _)| *cycle == sim.cycle - 1)
-            .cloned()
+        // +1 since cycle increased after clock, but not decreased before unclock
+        if data
+            .history
+            .last()
+            .is_some_and(|(cycle, _)| cycle + 1 == sim.cycle)
         {
-            // -1 since cycle increased after eval, but not decreased before unclock
-            data.end_pos -= write_amount
-        }
-        // set available data bit
-        if data.read_pos < data.end_pos {
-            data.input_control |= 0b1
-        } else {
-            data.input_control &= !0b1
+            let (_, state) = data.history.pop().unwrap();
+            data.restore(state);
         }
     }
 
     fn reset(&self) {
-        *self.data.borrow_mut() = MipsIOData {
-            interrupt: false,
-            input_control: 0,
-            read_pos: 0,
-            end_pos: 0,
-            read_eq_end_cause: BitVec::default(),
-            key_buff: Vec::default(),
-            out_buff: Vec::default(),
-            key_buff_write_history: Vec::default(),
-        }
+        *self.data.borrow_mut() = MipsIOData::default()
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -288,5 +280,165 @@ impl MipsIO {
             #[cfg(feature = "gui-egui")]
             gui_show: RefCell::new(false),
         }
+    }
+}
+
+#[cfg(test)]
+mod unclock_test {
+    use super::*;
+    use crate::components::test_utils::*;
+    use std::rc::Rc;
+    use SignalValue::Data;
+
+    const CONTROL: u32 = 0;
+    const KEY: u32 = 1;
+    const OUT: u32 = 2;
+    const IE: u32 = 0b10;
+
+    type Snapshot = (
+        bool,
+        u32,
+        usize,
+        usize,
+        Vec<u8>,
+        usize,
+        SignalValue,
+        SignalValue,
+    );
+
+    fn snapshot(sim: &Simulator) -> Snapshot {
+        let d = get_component::<MipsIO>(sim).data.borrow();
+        (
+            d.interrupt,
+            d.input_control,
+            d.read_pos,
+            d.end_pos,
+            d.out_buff.clone(),
+            d.history.len(),
+            sim.get_input_value(&Input::new("io", IO_INTERRUPT_OUT_ID)),
+            sim.get_input_value(&Input::new("io", IO_DATA_OUT_ID)),
+        )
+    }
+
+    // keys are (cycle, bytes), available during the clock of that cycle, same as the gui does
+    fn sim(script: &[(usize, &'static str, SignalValue)], keys: &[(usize, &[u8])]) -> Simulator {
+        let driver = TestDriver {
+            outputs: ["we", "re", "adr", "din"]
+                .iter()
+                .map(|p| (*p, Data(0)))
+                .collect(),
+            script: script.to_vec(),
+        };
+        let i = |port| Input::new(DRIVER_ID, port);
+        let s = test_sim(
+            driver,
+            vec![Rc::new(MipsIO::new(
+                "io",
+                (0.0, 0.0),
+                i("adr"),
+                i("din"),
+                i("we"),
+                i("re"),
+            ))],
+        );
+        {
+            let mut d = get_component::<MipsIO>(&s).data.borrow_mut();
+            for (cycle, bytes) in keys {
+                d.key_buff.extend_from_slice(bytes);
+                d.key_buff_write_history.push((*cycle, bytes.len()));
+            }
+        }
+        s
+    }
+
+    fn write(cycle: usize, adr: u32, data: SignalValue) -> [(usize, &'static str, SignalValue); 3] {
+        [
+            (cycle, "we", Data(1)),
+            (cycle, "adr", Data(adr)),
+            (cycle, "din", data),
+        ]
+    }
+
+    fn read(cycle: usize, adr: u32) -> [(usize, &'static str, SignalValue); 2] {
+        [(cycle, "re", Data(1)), (cycle, "adr", Data(adr))]
+    }
+
+    #[test]
+    fn unclock_output() {
+        let script = [
+            write(1, OUT, Data(b'h' as u32)),
+            write(2, OUT, Data(b'i' as u32)),
+            // control write must not touch the out buffer
+            write(3, CONTROL, Data(IE)),
+            write(5, OUT, Data(b'!' as u32)),
+        ]
+        .concat();
+        {
+            let mut s = sim(&script, &[]);
+            for _ in 0..5 {
+                s.clock();
+            }
+            assert_eq!(get_component::<MipsIO>(&s).data.borrow().out_buff, b"hi!");
+        }
+        assert_round_trip(sim(&script, &[]), 10, snapshot);
+    }
+
+    #[test]
+    fn unclock_polling() {
+        // poll control and key registers while there is no data, then when there is
+        let script: Vec<_> = (1..40)
+            .flat_map(|c| read(c, if c % 3 == 0 { KEY } else { CONTROL }))
+            .collect();
+        assert_round_trip(sim(&script, &[(10, b"ab"), (25, b"c")]), 50, snapshot);
+    }
+
+    #[test]
+    fn unclock_interrupt() {
+        let script = [
+            write(1, CONTROL, Data(IE)).to_vec(),
+            // drain the first key input
+            read(8, KEY).to_vec(),
+            read(9, KEY).to_vec(),
+            // read with nothing left
+            read(10, KEY).to_vec(),
+            // key arrives the same cycle it is read
+            read(15, KEY).to_vec(),
+            // disable interrupt, then key arrives
+            write(18, CONTROL, Data(0)).to_vec(),
+            read(22, KEY).to_vec(),
+        ]
+        .concat();
+        let keys: &[(usize, &[u8])] = &[(5, b"xy"), (15, b"z"), (20, b"w")];
+        {
+            let mut s = sim(&script, keys);
+            for _ in 0..5 {
+                s.clock();
+            }
+            assert_eq!(
+                s.get_input_value(&Input::new("io", IO_INTERRUPT_OUT_ID)),
+                Data(1)
+            );
+        }
+        assert_round_trip(sim(&script, keys), 30, snapshot);
+    }
+
+    #[test]
+    fn unclock_bad_writes() {
+        // these return conditions and must not change or undo anything
+        let script = [
+            write(1, OUT, Data(b'a' as u32)),
+            write(2, 7, Data(1)),
+            write(3, OUT, SignalValue::Unknown),
+            write(4, CONTROL, Data(IE)),
+            // read and write at the same time
+            [
+                (5, "we", Data(1)),
+                (5, "re", Data(1)),
+                (5, "adr", Data(OUT)),
+            ],
+            write(6, OUT, Data(b'b' as u32)),
+        ]
+        .concat();
+        assert_round_trip(sim(&script, &[(4, b"k")]), 10, snapshot);
     }
 }

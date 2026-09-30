@@ -1,3 +1,5 @@
+#[cfg(test)]
+mod interrupt_test;
 mod mips_alu;
 mod mips_alu_forward;
 mod mips_branch_logic;
@@ -14,6 +16,8 @@ mod mips_reg_file;
 mod mips_timer;
 mod physical_mem;
 mod sz_extend;
+#[cfg(test)]
+mod test_utils;
 
 pub use mips_alu::*;
 pub use mips_alu_forward::*;
