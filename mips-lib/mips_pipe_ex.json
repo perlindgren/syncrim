@@ -2816,6 +2816,24 @@
       },
       "phys_mem_id": "phys_mem",
       "regfile_id": "reg_file",
+      "dynamic_symbols": {
+        "PC_IM": [
+          0,
+          true
+        ],
+        "PC_DE": [
+          0,
+          true
+        ],
+        "PC_EX": [
+          0,
+          true
+        ],
+        "PC_DM": [
+          0,
+          true
+        ]
+      },
       "mem_view": {
         "visible": false,
         "title": "instruction memory view",
@@ -2899,6 +2917,18 @@
         ],
         "dynamic_symbols": {
           "PC_IM": [
+            0,
+            true
+          ],
+          "PC_DE": [
+            0,
+            true
+          ],
+          "PC_EX": [
+            0,
+            true
+          ],
+          "PC_DM": [
             0,
             true
           ]
